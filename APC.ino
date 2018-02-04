@@ -375,38 +375,38 @@ void TC7_Handler() {                                  // interrupt routine - run
 				REG_PIOC_SODR = 268435456;}                   // use Sel0 to disable column driver outputs at half time
 			LampWait++;}}                                  	// increase wait counter
 	else {																							// LEDs selected
-		if (LampCol > 39) {
-			LampCol = 0;}
-		if (LampCol < 8) {
-			LampByte = (byte *) Lamp[LampCol*8];
-			if (APC_settings[LEDsetting] == 1) {
-				LampByte++;}
+		if (LampCol > 39) {																// 20ms over
+			LampCol = 0;}																		// start from the beginning
+		if (LampCol < 8) {																// the first 8 cycles are for transmitting the status of the lamp matrix
+			LampByte = (byte *) Lamp[LampCol*8];						// set the pointer to the current lamp column to be transmitted
+			if (APC_settings[LEDsetting] == 1) {						// if 'playfield only' is selected
+				LampByte++;}																	// ignore the first column
 			REG_PIOC_CODR = AllSelects + AllData;
-			REG_PIOC_SODR = *LampByte<<1;
-			REG_PIOC_SODR = Sel5;
-			LampByte++;
-			LEDByteBuf = *LampByte;
-			LEDFlag = true;
-			LampCol++;}
-		else {
-			if (LampCol < 34) {
-				if (LEDCommandBytes) {
+			REG_PIOC_SODR = *LampByte<<1;										// put the corresponding byte on the bus
+			REG_PIOC_SODR = Sel5;														// activate Sel5
+			LampByte++;																			// increase the pointer by one byte
+			LEDByteBuf = *LampByte;													// put the next byte into the buffer
+			LEDFlag = true;																	// and signal that it's there
+			LampCol++;}																			// next column
+		else {																						// the lamp matrix is already sent
+			if (LampCol < 34) {															// still time to send a command?
+				if (LEDCommandBytes) {												// are there any pending LED commands?
 					REG_PIOC_CODR = AllSelects + AllData;
-					REG_PIOC_SODR = (LEDCommand[LEDCount])<<1;
-					LEDCount++;
-					if (LEDCount != LEDCommandBytes) {
-						LEDByteBuf = LEDCommand[LEDCount];
-						LEDCount++;
-						LEDFlag = true;
-						if (LEDCount != LEDCommandBytes) {
-							LEDCommandBytes = 0;
-							LEDCount = 0;}}
+					REG_PIOC_SODR = (LEDCommand[LEDCount])<<1;	// send the first byte
+					LEDCount++;																	// increase the counter
+					if (LEDCount != LEDCommandBytes) {					// not all command bytes sent?
+						LEDByteBuf = LEDCommand[LEDCount];				// put the next byte into the buffer
+						LEDCount++;																// increase the counter
+						LEDFlag = true;														// indicate there's a byte in the buffer
+						if (LEDCount == LEDCommandBytes) {				// all command bytes sent?
+							LEDCommandBytes = 0;										// clear indicator
+							LEDCount = 0;}}													// and counter
 					else {
 						LEDCommandBytes = 0;
 						LEDCount = 0;}}}
-			else {
+			else {																					// this must be LampCol 36
 				REG_PIOC_CODR = AllSelects + AllData;
-				REG_PIOC_SODR = 170<<1;
+				REG_PIOC_SODR = 170<<1;												// time to sync
 				REG_PIOC_SODR = Sel5;
 				LEDByteBuf = 85;
 				LEDFlag = true;}}
