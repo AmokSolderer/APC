@@ -201,7 +201,7 @@ byte *SettingsPointer;																// points to the settings being changed
 char *SettingsFileName;																// points to the settings file currently being edited
 
 const int UpDown = 53;                                // arduino pin connected to the auto/up - manual/Down button
-//const int Blanking = 22;                              // arduino pin to control the blanking signal
+const int Blanking = 22;                              // arduino pin to control the blanking signal
 const byte VolumePin = 13;														// arduino pin to control the sound volume
 const unsigned long SwitchMask[8] = {65536, 16777216, 8388608, 4194304, 64, 16, 8, 4};
 const unsigned long AllSelects = 871346688;           // mask for all port C pins belonging to select signals except special switch select
@@ -212,9 +212,9 @@ uint16_t LampColMask = 2;                             // mask for lamp column se
 byte SolBuffer[3];                                    // stores the state of the solenoid latches
 
 void setup() {
-	//pinMode(Blanking, OUTPUT);                          // initialize blanking pin
+	pinMode(Blanking, OUTPUT);                          // initialize blanking pin
 	pinMode(VolumePin, OUTPUT);                         // initialize volume PWM pin
-	//digitalWrite(Blanking, LOW);                        // and activate the blanking
+	digitalWrite(Blanking, LOW);                        // and activate the blanking
 	digitalWrite(VolumePin, HIGH);                      // set volume to 0
 	pinMode(UpDown, INPUT);                          		// initialize Up/Down pin
 	Serial.begin(9600);
@@ -263,13 +263,13 @@ void setup() {
   TC2->TC_CHANNEL[1].TC_IER=TC_IER_CPCS;              // IER = interrupt enable register
   TC2->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;             // IDR = interrupt disable register
   NVIC_EnableIRQ(TC7_IRQn);                           // enable interrupt
-  //delay(1000);
+  delay(1000);
   DispPattern1 = AlphaUpper;
   DispPattern2 = AlphaLower;
   DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
   LampPattern = NoLamps;
-  //digitalWrite(Blanking, HIGH);                       // Release the blanking
+  digitalWrite(Blanking, HIGH);                       // Release the blanking
   if (SD.begin(52)) {                                 // look for an SD card
     WriteUpper("SD CARD FOUND ");
     SPI.setClockDivider(4);
