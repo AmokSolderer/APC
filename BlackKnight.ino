@@ -771,6 +771,15 @@ void GameMain(byte Event) {                           // game switch events
       UpperExBall[Player] = false;
       ExBalls++;}
     break;
+  case 65:
+  	ActivateSolenoid(0, 17);
+  	break;
+  case 66:
+  	ActivateSolenoid(0, 18);
+  	break;
+  case 67:
+  	ActivateSolenoid(0, 19);
+  	break;
   case 72:                                            // test mode button pressed?
     NoPlayers = 0;                                    // abort game
     ReleaseAllSolenoids();
