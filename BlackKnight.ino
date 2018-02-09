@@ -31,7 +31,7 @@ byte Multiballs = 1;                                  // balls on playfield (sam
 byte DropTimer[4];                                    // timer for all drop target banks
 byte DropHits[16];                                    // counts how often the target banks have been cleared
 bool DropWait[5];																			// indicates that a waiting time for this drop target bank is active before it it being processed
-byte BallSearchCoils[11] = {4,1,15,16,5,6,7,8,2,19,13}; // coils to fire when the ball watchdog timer runs out
+byte BallSearchCoils[11] = {1,8,10,9,2,3,4,5,7,19,15}; // coils to fire when the ball watchdog timer runs out
 const byte BK_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 											  			0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0,
@@ -192,7 +192,7 @@ const byte BonusLamps[13] = {60,59,58,57,56,55,54,53,52,51,50,49,48}; // numbers
 const byte BonusValues[13] = {40,30,20,10,9,8,7,6,5,4,3,2,1}; // values of the bonus lamps
 const byte FirstMultLamp = 61;
 const byte DropTargets[4] = {25, 29, 33, 37};
-const byte DropSolenoid = 5;
+const byte DropSolenoid = 2;
 const byte DropLamp = 17;
 
 const struct GameDef BK_GameDefinition = {
@@ -219,11 +219,11 @@ void BK_AttractMode() {                                  // Attract Mode
 
 void CheckForLockedBalls(byte Event) {                // check if balls are locked and release them
   if (Switch[20]) {                                   // for the outhole
-    ActivateSolenoid(0, 4);}
-  if (Switch[24]) {                                   // for the lower elect hole
     ActivateSolenoid(0, 1);}
+  if (Switch[24]) {                                   // for the lower elect hole
+    ActivateSolenoid(0, 8);}
   if (Switch[41]) {                                   // for the multiball lock
-    ActivateSolenoid(0, 2);}}
+    ActivateSolenoid(0, 7);}}
 
 void AttractLampCycle(byte Event) {                   // play multiple lamp pattern series
   PatPointer = AttractFlow[AppByte2].FlowPat;         // set the pointer to the current series
@@ -413,7 +413,7 @@ void NewBall(byte Balls) {                            // release ball (Event = e
 			Lamp[9] = false;}}
   Released_Mode = CheckShooterLaneSwitch;
   if (!Switch[45]) {
-    ActivateSolenoid(0, 3);                          	// release ball
+    ActivateSolenoid(0, 6);                          	// release ball
     Mode = BallReleaseCheck;                          // set switch check to enter game
     CheckReleaseTimer = ActivateTimer(5000, Balls-1, CheckReleasedBall);} // start release watchdog
   else {
@@ -497,12 +497,12 @@ void CheckReleasedBall(byte Balls) {                  // ball release watchdog
     WriteLower("              ");
     ShowAllPoints(0);
     BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);
-    ActivateSolenoid(0, 3);}
+    ActivateSolenoid(0, 6);}
   AppByte = CountBallsInTrunk();
   if (AppByte == Balls) {                             // expected number of balls in trunk
     WriteUpper("  BALL MISSING");
     if (Switch[20]) {                                 // outhole switch still active?
-      ActivateSolenoid(0, 4);}}												// shove the ball into the trunk
+      ActivateSolenoid(0, 1);}}												// shove the ball into the trunk
   else {																							//
     if (AppByte == 5) {																// balls not settled
       WriteLower(" TRUNK  ERROR ");
@@ -513,7 +513,7 @@ void CheckReleasedBall(byte Balls) {                  // ball release watchdog
         WriteLower("              ");
         ShowAllPoints(0);
         BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);
-        ActivateSolenoid(0, 3);}}}                    // release again
+        ActivateSolenoid(0, 6);}}}                    // release again
   CheckReleaseTimer = ActivateTimer(5000, Balls, CheckReleasedBall);}
     
 void BlinkScore(byte Event) {
@@ -544,7 +544,7 @@ void TimedRightMagna(byte dummy) {										// runs every second as long as butt
 		AddBlinkLamp(9, 150*RightMagna[Player]);					// adjust blinking rhythm of lamp
 		TimedRightMagnaTimer = ActivateTimer(1000, 0, TimedRightMagna);}// and come back in 1s
 	else {																							// magna save not to be continued
-		ReleaseSolenoid(16);															// turn off magnet
+		ReleaseSolenoid(9);															// turn off magnet
 		if (!TimedLeftMagnaTimer) {
 			Released_Mode = DummyProcess;}
 		EndRightMagna(0);
@@ -556,7 +556,7 @@ void TimedLeftMagna(byte dummy) {											// runs every second as long as butt
 		AddBlinkLamp(10, 150*LeftMagna[Player]);						// adjust blinking rhythm of lamp
 		TimedLeftMagnaTimer = ActivateTimer(1000, 0, TimedLeftMagna);}// and come back in 1s
 	else {																							// magna save not to be continued
-		ReleaseSolenoid(15);															// turn off magnet
+		ReleaseSolenoid(10);															// turn off magnet
 		if (!TimedRightMagnaTimer) {
 			Released_Mode = DummyProcess;}
 		EndLeftMagna(0);
@@ -566,12 +566,12 @@ void TimedMagnaSW(byte Switch) {											// magna save button released
 	if (Switch==9 && TimedRightMagnaTimer) {						// was it the right switch and is the magna save active?
 		KillTimer(TimedRightMagnaTimer);
 		TimedRightMagnaTimer = 0;
-		ReleaseSolenoid(16);															// turn off magnet
+		ReleaseSolenoid(9);															// turn off magnet
 		EndRightMagna(0);}
 	if (Switch==10 && TimedLeftMagnaTimer) {						// was it the left switch and is the magna save active?
 		KillTimer(TimedLeftMagnaTimer);
 		TimedLeftMagnaTimer = 0;
-		ReleaseSolenoid(15);															// turn off magnet
+		ReleaseSolenoid(10);															// turn off magnet
 		EndLeftMagna(0);}
 	if (!TimedRightMagnaTimer && !TimedLeftMagnaTimer) { // no magna save active
 		Released_Mode = DummyProcess;}}										// ignore released switches
@@ -600,12 +600,12 @@ void GameMain(byte Event) {                           // game switch events
     		AddBlinkLamp(9, 150);
     		RightMagna[Player] = 0;                   		// not any more
     		ActivateTimer(4990, 0, EndRightMagna);
-    		ActivateSolenoid(5000, 16);}                  // use it for 5 seconds
+    		ActivateSolenoid(5000, 9);}                  // use it for 5 seconds
     	else {																					// timed magna active
     		Released_Mode = TimedMagnaSW;
     		RightMagna[Player]--;													// reduce magna save seconds
     		AddBlinkLamp(9, 150*RightMagna[Player]);
-    		ActivateSolenoid(6000, 16);										// switch on magnet
+    		ActivateSolenoid(6000, 9);										// switch on magnet
     		TimedRightMagnaTimer = ActivateTimer(1000, 0, TimedRightMagna);}}		// check again in 1s
     break;
   case 10:                                            // left magna save button
@@ -614,12 +614,12 @@ void GameMain(byte Event) {                           // game switch events
     		AddBlinkLamp(10, 150);
     		LeftMagna[Player] = 0;                   			// not any more
     		ActivateTimer(4990, 0, EndLeftMagna);
-    		ActivateSolenoid(5000, 15);}                  // use it for 5 seconds
+    		ActivateSolenoid(5000, 10);}                  // use it for 5 seconds
     	else {																					// timed magna active
     		Released_Mode = TimedMagnaSW;
     		LeftMagna[Player]--;													// reduce magna save seconds
     		AddBlinkLamp(10, 150*LeftMagna[Player]);
-    		ActivateSolenoid(6000, 15);										// switch on magnet
+    		ActivateSolenoid(6000, 10);										// switch on magnet
     		TimedLeftMagnaTimer = ActivateTimer(1000, 0, TimedLeftMagna);}} // check again in 1s
     break;      
   case 11:                                            // left outlane
@@ -712,7 +712,7 @@ void GameMain(byte Event) {                           // game switch events
       LockedBalls[Player]++;
       StartMultiball();}
     else {
-      ActivateTimer(2000, 1, DelaySolenoid);}         // eject ball
+      ActivateTimer(2000, 8, DelaySolenoid);}         // eject ball
     break;
   case 25:
   case 26:                                            // lower left drop targets
@@ -790,7 +790,7 @@ void ClearOuthole(byte Event) {
   if (Switch[20]) {                                   // outhole switch still active?
     if (!BlockOuthole) {															// outhole blocked?
       BlockOuthole = true;														// block outhole until this ball has been processed
-      ActivateSolenoid(0, 4);                         // put ball in trunk
+      ActivateSolenoid(0, 1);                         // put ball in trunk
       if (LastChanceActive && InLock) {								// saved by last chance
         BlockOuthole = false;													// remove outhole block
         Lamp[24] = false;
@@ -798,7 +798,7 @@ void ClearOuthole(byte Event) {
         RemoveBlinkLamp(12);
         InLock--;                                     // decrease number of balls in lock
         LastChanceActive = false;                     // deactivate last chance protection
-        ActivateSolenoid(0, 2);                       // eject 1 ball from the lock
+        ActivateSolenoid(0, 7);                       // eject 1 ball from the lock
         LockedBalls[Player]--;                        // decrease number of locked balls
         if (LockedBalls[Player]) {                    // if player had two locked balls
           RemoveBlinkLamp(40);                        // remove the blinking lock arrow
@@ -812,7 +812,7 @@ void ClearOuthole(byte Event) {
 void LastChanceLock(byte Event) {
   if (Event > 1) {
     DropWait[4] = true;
-    ActivateSolenoid(0, 2);}}
+    ActivateSolenoid(0, 7);}}
     
 void BallEnd(byte Event) {
   AppByte = CountBallsInTrunk();
@@ -918,11 +918,11 @@ void BallEnd2(byte Balls) {
   if (game_settings[TimedMagna]) {              			// if timed magna save mode
 		Released_Mode = DummyProcess;               			// reset the released switch mode
 		if (TimedRightMagnaTimer) {                 			// if the left magnet is currently active
-			ReleaseSolenoid(16);                      			// turn it off
+			ReleaseSolenoid(9);                      			// turn it off
 			KillTimer(TimedRightMagnaTimer);          			// and kill its timer
 			TimedRightMagnaTimer = 0;}
 		if (TimedLeftMagnaTimer) {                  			// same as above
-			ReleaseSolenoid(15);
+			ReleaseSolenoid(10);
 			KillTimer(TimedLeftMagnaTimer);
 			TimedLeftMagnaTimer = 0;}
 		RemoveBlinkLamp(9);                         			// turn off the magna save lamps
@@ -1000,7 +1000,7 @@ void HandleLock(byte Event) {
           Lamp[12] = true;}
         if (InLock > LockedBalls[Player]) {           // more balls in lock than player has?
           InLock--;                                   // eject 1 ball
-          ActivateSolenoid(0, 2);}
+          ActivateSolenoid(0, 7);}
         else {
           Lamp[24] = true;                            // light lower lock
           if (BallWatchdogTimer) {
@@ -1094,7 +1094,7 @@ void StartMultiball() {
     LastChance = false;                               // deactivate it
     Lamp[11] = false;
     Lamp[12] = false;}
-  ActivateSolenoid(1000, 13);                         // ring the bell
+  ActivateSolenoid(1000, 15);                         // ring the bell
   Lamp[24] = false;                                   // unlight lower lock
   if (LockedBalls[Player] == 3) {                     // 2 or 3 ball multiball?
     Multiballs = 3;
@@ -1107,7 +1107,7 @@ void StartMultiball() {
   LockedBalls[Player] = 0;
   ActivateTimer(3000, 1, SwitchDisplay);              // switch display back to main buffer in 3 seconds
   if (Switch[24]) {                                   // for the lower elect hole
-    ActivateTimer(2000, 1, DelaySolenoid);}
+    ActivateTimer(2000, 8, DelaySolenoid);}
   ActivateTimer(3100, 0, ClearLocks);}                // clear out balls after that
 
 void SwitchDisplay(byte Event) {                      // switch between different display buffers
@@ -1124,7 +1124,7 @@ void ClearLocks(byte Event) {
     if (Switch[41+i]) {
       AppByte++;}}  
   if (AppByte) {                                      // balls in lock?
-    ActivateSolenoid(0, 2);
+    ActivateSolenoid(0, 7);
     AppByte--;
     InLock = 0;
     ActivateTimer(1000, 0, ClearLocks);}}

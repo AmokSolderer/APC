@@ -96,7 +96,7 @@ byte SolNumber = 0;                                   // Determines which soleno
 bool SolState = false;                                // and what the desired state is
 byte SolDelayed[20];                                  // Queue for waiting solenoid requests
 unsigned int DurDelayed[20];                          // duration values for waiting solenoid requests
-const unsigned int SolTimes[24] = {30,50,10,30,30,50,50,50,50,30,30,30,999,30,1999,1999,30,30,30,30,30,30,0,0}; // Activation times for solenoids
+const unsigned int SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,5,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
 bool BlockTimers = false;                             // blocks the timer interrupt while timer properties are being changed
 byte ActiveTimers = 0;                                // Number of active timers
 byte SettingsRepeatTimer = 0;													// numberof the timer of the key repeat function in the settings function
