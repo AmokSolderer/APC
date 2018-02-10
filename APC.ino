@@ -68,7 +68,6 @@ const bool *LampPattern;                              // determines which lamp p
 const bool *LampBuffer;
 byte StrobeLightsTimer = 0;
 bool Lamp[LampMax+1];                                 // changeable lamp status buffer
-byte *LampByte;																				// bytewise pointer to the lamp array
 byte LEDByteBuf = 0;																	// buffer for the second byte to be send to the LED exp board
 bool LEDFlag;																					// indicates that a second byte needs to be send to the LED exp board
 byte LEDCommandBytes = 0;															// number of command bytes to be send to the LED exp board
@@ -378,16 +377,26 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (LampCol > 39) {																// 20ms over
 			LampCol = 0;}																		// start from the beginning
 		if (LampCol < 8) {																// the first 8 cycles are for transmitting the status of the lamp matrix
-			LampByte = (byte *) &Lamp[LampCol*8];						// set the pointer to the current lamp column to be transmitted
-			if (APC_settings[LEDsetting] == 1) {						// if 'playfield only' is selected
-				LampByte++;}																	// ignore the first column
+			c = 2;
+			if (!LampCol){                            			// max column reached?
+				for (i=0; i<8; i++) {                       	// write select pattern to buffer
+					if (*(Lamp+i+1)) {
+						REG_PIOC_SODR = c;}
+					c = c<<1;}}
+			else {
+				for (i=0; i<8; i++) {                       	// write select pattern to buffer
+					if (*(LampPattern+LampCol*8+i+1)) {
+						REG_PIOC_SODR = c;}
+					c = c<<1;}}
 			REG_PIOC_CODR = AllSelects + AllData;
-			REG_PIOC_SODR = *LampByte<<1;										// put the corresponding byte on the bus
 			REG_PIOC_SODR = Sel5;														// activate Sel5
-			LampByte++;																			// increase the pointer by one byte
-			LEDByteBuf = *LampByte;													// put the next byte into the buffer
-			LEDFlag = true;																	// and signal that it's there
-			LampCol++;}																			// next column
+			LampCol++;																			// next column
+			c = 1;
+			for (i=0; i<8; i++) {                       	// write select pattern to buffer
+				if (*(LampPattern+LampCol*8+i+1)) {
+					LEDByteBuf = LEDByteBuf | c;}
+				c = c<<1;}
+			LEDFlag = true;}																// and signal that it's there
 		else {																						// the lamp matrix is already sent
 			if (LampCol < 34) {															// still time to send a command?
 				if (LEDCommandBytes) {												// are there any pending LED commands?
