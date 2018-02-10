@@ -378,7 +378,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (LampCol > 39) {																// 20ms over
 			LampCol = 0;}																		// start from the beginning
 		if (LampCol < 8) {																// the first 8 cycles are for transmitting the status of the lamp matrix
-			LampByte = (byte *) Lamp[LampCol*8];						// set the pointer to the current lamp column to be transmitted
+			LampByte = (byte *) &Lamp[LampCol*8];						// set the pointer to the current lamp column to be transmitted
 			if (APC_settings[LEDsetting] == 1) {						// if 'playfield only' is selected
 				LampByte++;}																	// ignore the first column
 			REG_PIOC_CODR = AllSelects + AllData;
