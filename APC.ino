@@ -345,6 +345,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 	*(DisplayLower) = RightCredit[32 + 2 * ActiveTimers]; // debugging
 
 	// Lamps
+
 	if (!APC_settings[LEDsetting]) {
 		if (LampWait == LampPeriod) {                   	// Waiting time has passed
 			LampCol++;                                    	// prepare for next lamp column
@@ -377,6 +378,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (LampCol > 39) {																// 20ms over
 			LampCol = 0;}																		// start from the beginning
 		if (LampCol < 8) {																// the first 8 cycles are for transmitting the status of the lamp matrix
+			REG_PIOC_CODR = AllSelects + AllData;
 			c = 2;
 			if (!LampCol){                            			// max column reached?
 				for (i=0; i<8; i++) {                       	// write select pattern to buffer
@@ -388,9 +390,9 @@ void TC7_Handler() {                                  // interrupt routine - run
 					if (*(LampPattern+LampCol*8+i+1)) {
 						REG_PIOC_SODR = c;}
 					c = c<<1;}}
-			REG_PIOC_CODR = AllSelects + AllData;
 			REG_PIOC_SODR = Sel5;														// activate Sel5
 			LampCol++;																			// next column
+			LEDByteBuf = 0;
 			c = 1;
 			for (i=0; i<8; i++) {                       	// write select pattern to buffer
 				if (*(LampPattern+LampCol*8+i+1)) {
@@ -414,11 +416,13 @@ void TC7_Handler() {                                  // interrupt routine - run
 						LEDCommandBytes = 0;
 						LEDCount = 0;}}}
 			else {																					// this must be LampCol 36
-				REG_PIOC_CODR = AllSelects + AllData;
-				REG_PIOC_SODR = 170<<1;												// time to sync
-				REG_PIOC_SODR = Sel5;
-				LEDByteBuf = 85;
-				LEDFlag = true;}}
+				if (LampCol == 36) {
+					REG_PIOC_CODR = AllSelects + AllData;
+					REG_PIOC_SODR = 170<<1;												// time to sync
+					REG_PIOC_SODR = Sel5;
+					LEDByteBuf = 85;
+					LEDFlag = true;}}
+			LampCol++;}
 		LampCol++;}
 
 	// Switches
@@ -482,8 +486,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 			REG_PIOC_CODR = AllSelects - Sel5 + AllData;    // clear all select signals except Sel5 and the data bus
 			REG_PIOC_SODR = LEDByteBuf<<1;									// put the 2nd LED byte on the bus
 			REG_PIOC_CODR = Sel5;														// and send it to the expansion port
-			LEDFlag = false;}																// clear flag
-		LampCol++;}
+			LEDFlag = false;}}																// clear flag
 
 	// Timers
 
