@@ -375,55 +375,61 @@ void TC7_Handler() {                                  // interrupt routine - run
 				REG_PIOC_SODR = 268435456;}                   // use Sel0 to disable column driver outputs at half time
 			LampWait++;}}                                  	// increase wait counter
 	else {																							// LEDs selected
-		if (LampCol > 39) {																// 20ms over
+		if (LampCol > 31) {																// 20ms over
 			LampCol = 0;}																		// start from the beginning
 		if (LampCol < 8) {																// the first 8 cycles are for transmitting the status of the lamp matrix
-			REG_PIOC_CODR = AllSelects + AllData;
-			c = 2;
-			if (!LampCol){                            			// max column reached?
-				for (i=0; i<8; i++) {                       	// write select pattern to buffer
-					if (*(Lamp+i+1)) {
-						REG_PIOC_SODR = c;}
-					c = c<<1;}}
-			else {
+			if (LampWait) {
+				REG_PIOC_CODR = AllSelects + AllData;
+				c = 2;
+				if (!LampCol){                            			// max column reached?
+					for (i=0; i<8; i++) {                       	// write select pattern to buffer
+						if (*(Lamp+i+1)) {
+							REG_PIOC_SODR = c;}
+						c = c<<1;}}
+				else {
+					for (i=0; i<8; i++) {                       	// write select pattern to buffer
+						if (*(LampPattern+LampCol*8+i+1)) {
+							REG_PIOC_SODR = c;}
+						c = c<<1;}}
+				REG_PIOC_SODR = Sel5;														// activate Sel5
+				LampCol++;																			// next column
+				LEDByteBuf = 0;
+				c = 1;
 				for (i=0; i<8; i++) {                       	// write select pattern to buffer
 					if (*(LampPattern+LampCol*8+i+1)) {
-						REG_PIOC_SODR = c;}
-					c = c<<1;}}
-			REG_PIOC_SODR = Sel5;														// activate Sel5
-			LampCol++;																			// next column
-			LEDByteBuf = 0;
-			c = 1;
-			for (i=0; i<8; i++) {                       	// write select pattern to buffer
-				if (*(LampPattern+LampCol*8+i+1)) {
-					LEDByteBuf = LEDByteBuf | c;}
-				c = c<<1;}
-			LEDFlag = true;}																// and signal that it's there
+						LEDByteBuf = LEDByteBuf | c;}
+					c = c<<1;}
+				LEDFlag = true;
+				LampWait = 0;
+				LampCol++;}
+			else {
+				LampWait = 1;}}																// and signal that it's there
 		else {																						// the lamp matrix is already sent
-			if (LampCol < 34) {															// still time to send a command?
-				if (LEDCommandBytes) {												// are there any pending LED commands?
-					REG_PIOC_CODR = AllSelects + AllData;
-					REG_PIOC_SODR = (LEDCommand[LEDCount])<<1;	// send the first byte
-					LEDCount++;																	// increase the counter
-					if (LEDCount != LEDCommandBytes) {					// not all command bytes sent?
-						LEDByteBuf = LEDCommand[LEDCount];				// put the next byte into the buffer
-						LEDCount++;																// increase the counter
-						LEDFlag = true;														// indicate there's a byte in the buffer
-						if (LEDCount == LEDCommandBytes) {				// all command bytes sent?
-							LEDCommandBytes = 0;										// clear indicator
-							LEDCount = 0;}}													// and counter
-					else {
-						LEDCommandBytes = 0;
-						LEDCount = 0;}}}
-			else {																					// this must be LampCol 36
-				if (LampCol == 36) {
-					REG_PIOC_CODR = AllSelects + AllData;
-					REG_PIOC_SODR = 170<<1;												// time to sync
-					REG_PIOC_SODR = Sel5;
-					LEDByteBuf = 85;
-					LEDFlag = true;}}
-			LampCol++;}
-		LampCol++;}
+			if (LampCol > 9) {
+				if (LampCol < 24) {															// still time to send a command?
+					if (LEDCommandBytes) {												// are there any pending LED commands?
+						REG_PIOC_CODR = AllSelects + AllData;
+						REG_PIOC_SODR = (LEDCommand[LEDCount])<<1;	// send the first byte
+						LEDCount++;																	// increase the counter
+						if (LEDCount != LEDCommandBytes) {					// not all command bytes sent?
+							LEDByteBuf = LEDCommand[LEDCount];				// put the next byte into the buffer
+							LEDCount++;																// increase the counter
+							LEDFlag = true;														// indicate there's a byte in the buffer
+							if (LEDCount == LEDCommandBytes) {				// all command bytes sent?
+								LEDCommandBytes = 0;										// clear indicator
+								LEDCount = 0;}}													// and counter
+						else {
+							LEDCommandBytes = 0;
+							LEDCount = 0;}}}
+				else {																					// this must be LampCol 36
+					if (LampCol == 26) {
+						REG_PIOC_CODR = AllSelects + AllData;
+						REG_PIOC_SODR = 170<<1;												// time to sync
+						REG_PIOC_SODR = Sel5;
+						LampWait = 1;
+						LEDByteBuf = 85;
+						LEDFlag = true;}}}
+			LampCol = LampCol +2;}}
 
 	// Switches
 
