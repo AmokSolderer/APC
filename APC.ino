@@ -375,61 +375,61 @@ void TC7_Handler() {                                  // interrupt routine - run
 				REG_PIOC_SODR = 268435456;}                   // use Sel0 to disable column driver outputs at half time
 			LampWait++;}}                                  	// increase wait counter
 	else {																							// LEDs selected
-		if (LampCol > 31) {																// 20ms over
+		if (LampCol > 19) {																// 20ms over
 			LampCol = 0;}																		// start from the beginning
 		if (LampCol < 8) {																// the first 8 cycles are for transmitting the status of the lamp matrix
-			if (LampWait) {
-				REG_PIOC_CODR = AllSelects + AllData;
-				c = 2;
-				if (!LampCol){                            			// max column reached?
-					for (i=0; i<8; i++) {                       	// write select pattern to buffer
-						if (*(Lamp+i+1)) {
-							REG_PIOC_SODR = c;}
-						c = c<<1;}}
-				else {
-					for (i=0; i<8; i++) {                       	// write select pattern to buffer
-						if (*(LampPattern+LampCol*8+i+1)) {
-							REG_PIOC_SODR = c;}
-						c = c<<1;}}
-				REG_PIOC_SODR = Sel5;														// activate Sel5
-				LampCol++;																			// next column
-				LEDByteBuf = 0;
-				c = 1;
+			REG_PIOC_CODR = AllData;
+			c = 2;
+			if (!LampCol){                            			// max column reached?
+				for (i=0; i<8; i++) {                       	// write select pattern to buffer
+					if (*(Lamp+i+1)) {
+						REG_PIOC_SODR = c;}
+					c = c<<1;}}
+			else {
 				for (i=0; i<8; i++) {                       	// write select pattern to buffer
 					if (*(LampPattern+LampCol*8+i+1)) {
-						LEDByteBuf = LEDByteBuf | c;}
-					c = c<<1;}
-				LEDFlag = true;
-				LampWait = 0;
-				LampCol++;}
+						REG_PIOC_SODR = c;}
+					c = c<<1;}}
+			if (LEDFlag) {
+				LEDFlag = false;
+				REG_PIOC_CODR = Sel5;}													// activate Sel5 falling edge
 			else {
-				LampWait = 1;}}																// and signal that it's there
+				LEDFlag = true;
+				REG_PIOC_SODR = Sel5;}}														// activate Sel5 rising edge
 		else {																						// the lamp matrix is already sent
-			if (LampCol > 9) {
-				if (LampCol < 24) {															// still time to send a command?
-					if (LEDCommandBytes) {												// are there any pending LED commands?
-						REG_PIOC_CODR = AllSelects + AllData;
-						REG_PIOC_SODR = (LEDCommand[LEDCount])<<1;	// send the first byte
-						LEDCount++;																	// increase the counter
-						if (LEDCount != LEDCommandBytes) {					// not all command bytes sent?
-							LEDByteBuf = LEDCommand[LEDCount];				// put the next byte into the buffer
-							LEDCount++;																// increase the counter
-							LEDFlag = true;														// indicate there's a byte in the buffer
-							if (LEDCount == LEDCommandBytes) {				// all command bytes sent?
-								LEDCommandBytes = 0;										// clear indicator
-								LEDCount = 0;}}													// and counter
-						else {
-							LEDCommandBytes = 0;
-							LEDCount = 0;}}}
-				else {																					// this must be LampCol 36
-					if (LampCol == 26) {
-						REG_PIOC_CODR = AllSelects + AllData;
-						REG_PIOC_SODR = 170<<1;												// time to sync
-						REG_PIOC_SODR = Sel5;
-						LampWait = 1;
-						LEDByteBuf = 85;
-						LEDFlag = true;}}}
-			LampCol = LampCol +2;}}
+			if (LampCol < 17) {															// still time to send a command?
+				if (LEDCommandBytes) {												// are there any pending LED commands?
+					REG_PIOC_CODR = AllData;
+					REG_PIOC_SODR = (LEDCommand[LEDCount])<<1;	// send the first byte
+					LEDCount++;																	// increase the counter
+					if (LEDCount != LEDCommandBytes) {					// not all command bytes sent?
+						LEDByteBuf = LEDCommand[LEDCount];				// put the next byte into the buffer
+						LEDCount++;																// increase the counter
+						//LEDFlag = true;														// indicate there's a byte in the buffer
+						if (LEDCount == LEDCommandBytes) {				// all command bytes sent?
+							LEDCommandBytes = 0;										// clear indicator
+							LEDCount = 0;}}													// and counter
+					else {
+						LEDCommandBytes = 0;
+						LEDCount = 0;}
+					if (LEDFlag) {
+						LEDFlag = false;
+						REG_PIOC_CODR = Sel5;}													// activate Sel5 falling edge
+					else {
+						LEDFlag = true;
+						REG_PIOC_SODR = Sel5;}}}
+			else {																					// this must be LampCol 36
+				if (LampCol == 17) {
+					REG_PIOC_CODR = AllData;
+					REG_PIOC_SODR = 170<<1;												// time to sync
+					REG_PIOC_SODR = Sel5;
+				if (LEDFlag) {
+					LEDFlag = false;
+					REG_PIOC_CODR = Sel5;}													// activate Sel5 falling edge
+				else {
+					LEDFlag = true;
+					REG_PIOC_SODR = Sel5;}}}}
+		LampCol++;}
 
 	// Switches
 
@@ -485,15 +485,6 @@ void TC7_Handler() {                                  // interrupt routine - run
 	REG_PIOC_SODR = *(DispRow2+2*DispCol+1)<<1;         // set 1st byte of the display pattern for the upper row
 	REG_PIOC_SODR = 65536;                             	// use Sel11
 
-	// LED lamps 2nd byte
-
-	if (APC_settings[LEDsetting]) {											// if LED lamps are used
-		if (LEDFlag) {																		// is there a byte to be send?
-			REG_PIOC_CODR = AllSelects - Sel5 + AllData;    // clear all select signals except Sel5 and the data bus
-			REG_PIOC_SODR = LEDByteBuf<<1;									// put the 2nd LED byte on the bus
-			REG_PIOC_CODR = Sel5;														// and send it to the expansion port
-			LEDFlag = false;}}																// clear flag
-
 	// Timers
 
 	if (!BlockTimers) {
@@ -515,7 +506,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 	// Solenoids
 
 	if (SolChange) {                                		// is there a solenoid state to be changed?
-		REG_PIOC_CODR = AllSelects + AllData;          		// clear all select signals and the data bus
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;          		// clear all select signals and the data bus
 		if (SolNumber > 8) {                          		// does the solenoid not belong to the first latch?
 			if (SolNumber < 17) {                       		// does it belong to the second latch?
 				c = 1;
