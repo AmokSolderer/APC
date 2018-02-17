@@ -445,37 +445,41 @@ void ResetBallWatchdog(byte Event) {                  // handle switches during 
   GameMain(Event);}                                   // process current switch
 
 void SearchBall(byte Counter) {												// ball watchdog timer has run out
-	BallWatchdogTimer = 0;
-  if (Switch[45]) {																		// if ball is waiting to be launched
-    BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}	// restart watchdog
-  else {  																						// if ball is really missing
-    AppByte = CountBallsInTrunk();										// recount all balls
-    if (AppByte == 3) {																// found 3 balls in trunk?
-    	if (BlockOuthole) {															// is the outhole blocked
-    		BallEnd(0);}																	// then it was probably a ball loss gone wrong
-    	else {
-    		ActivateTimer(1000, 3, NewBall);}}						// otherwise try it with a new ball
-    else {
-    	AppByte2 = 0;
-    	for (i=0; i<3; i++) {                           // count balls in lock
-    		if (Switch[41+i]) {
-    			if (AppByte2 < i) {
-    				AppByte = 5;}                             // set warning flag
-    			AppByte2++;}}
-    	if (AppByte == 5) {															// balls have not settled yet
-    		WriteUpper("  BALL  STUCK ");
-    		BallWatchdogTimer = ActivateTimer(1000, 0, SearchBall);} // and try again in 1s
-    	else {
-    		if (AppByte2 > InLock) {											// more locked balls found than expected?
-    			HandleLock(0);															// lock them
-    			BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}
-    		else {
-    			WriteUpper("  BALL  SEARCH");
-    			ActivateSolenoid(0, BallSearchCoils[Counter]); // fire coil to get ball free
-    			Counter++;
-    			if (Counter == 10) {												// all coils fired?
-    				Counter = 0;}															// start again
-    			BallWatchdogTimer = ActivateTimer(1000, Counter, SearchBall);}}}}} // come again in 1s if no switch is activated
+  BallWatchdogTimer = 0;
+  if (Switch[20]) {
+    BlockOuthole = false;
+    ActivateTimer(1000, 0, ClearOuthole);}
+  else {
+    if (Switch[45]) {																		// if ball is waiting to be launched
+      BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}	// restart watchdog
+    else {  																						// if ball is really missing
+      AppByte = CountBallsInTrunk();										// recount all balls
+      if (AppByte == 3) {																// found 3 balls in trunk?
+      	if (BlockOuthole) {															// is the outhole blocked
+      		BallEnd(0);}																	// then it was probably a ball loss gone wrong
+      	else {
+      		ActivateTimer(1000, 3, NewBall);}}						// otherwise try it with a new ball
+      else {
+      	AppByte2 = 0;
+      	for (i=0; i<3; i++) {                           // count balls in lock
+      		if (Switch[41+i]) {
+      			if (AppByte2 < i) {
+      				AppByte = 5;}                             // set warning flag
+      			AppByte2++;}}
+      	if (AppByte == 5) {															// balls have not settled yet
+      		WriteUpper("  BALL  STUCK ");
+      		BallWatchdogTimer = ActivateTimer(1000, 0, SearchBall);} // and try again in 1s
+      	else {
+      		if (AppByte2 > InLock) {											// more locked balls found than expected?
+      			HandleLock(0);															// lock them
+      			BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}
+      		else {
+      			WriteUpper("  BALL  SEARCH");
+      			ActivateSolenoid(0, BallSearchCoils[Counter]); // fire coil to get ball free
+      			Counter++;
+      			if (Counter == 10) {												// all coils fired?
+      				Counter = 0;}															// start again
+      			BallWatchdogTimer = ActivateTimer(1000, Counter, SearchBall);}}}}}} // come again in 1s if no switch is activated
 
 byte CountBallsInTrunk() {
   byte Balls = 0;
