@@ -95,7 +95,6 @@ byte SolNumber = 0;                                   // Determines which soleno
 bool SolState = false;                                // and what the desired state is
 byte SolDelayed[20];                                  // Queue for waiting solenoid requests
 unsigned int DurDelayed[20];                          // duration values for waiting solenoid requests
-const unsigned int SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,5,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
 bool BlockTimers = false;                             // blocks the timer interrupt while timer properties are being changed
 byte ActiveTimers = 0;                                // Number of active timers
 byte SettingsRepeatTimer = 0;													// numberof the timer of the key repeat function in the settings function
@@ -172,7 +171,7 @@ struct GameDef {
 	char *GameSettingsFileName;														// points to the name of the settings file for the selected game
 	char *HighScoresFileName;															// contains the name of the high scores file for the selected game
 	void (*AttractMode)();																// Pointer to Attract mode of current game
-
+	const unsigned int *SolTimes;													// Default activation times of solenoids
 };
 
 struct GameDef GameDefinition;
@@ -725,7 +724,7 @@ void ConvertToBCD(int Number) {
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
   if (!SolChange) {                               // change request for another solenoid pending?
     if (!Duration) {
-      Duration = SolTimes[Solenoid-1];}           // if no duration is specified use the solenoid specific default
+      Duration = *(GameDefinition.SolTimes+Solenoid-1);} // if no duration is specified use the solenoid specific default
     SolNumber = Solenoid;                         // activate solenoid
     SolState = true;
     if (Duration) {                               // duration = 0 means solenoid is permanently on
@@ -1123,233 +1122,6 @@ void PlayRandomMusic(byte Amount, char* List) {
 
 void PlayNextMusic() {
 	PlayMusic(NextMusicName);}
-
-// Test mode
-
-void TestMode_Enter() {
-  KillAllTimers();
-  Mode = DummyProcess;                                // Switches do nothing
-  if (!digitalRead(UpDown)) {
-    Settings_Enter();}
-  else {
-    WriteUpper("  TEST  MODE  ");                     // Show Test Mode
-    WriteLower("                ");
-    LampPattern = NoLamps;                              // Turn off all lamps
-    ActivateTimer(1000, 0, DisplayTest_Enter);}}         // Wait 1 second and proceed to Display Test
-
-void DisplayTest_Enter(byte Event) {
-  Mode = DisplayTest_EnterSw;                         // Switch functions
-  WriteUpper("DISPLAY TEST  ");}                    // Show 'Display Test'
-
-void DisplayTest_EnterSw(byte Event) {                // Display Test Enter switch handler
-  switch (Event) {
-  case 72:                                             // Next test
-    WriteUpper(" SWITCHEDGES  ");                   // Show 'Switch Edges'
-    Mode = SwitchEdges_Enter;                         // Next mode
-    break;
-  case 3:
-    WriteUpper("0000000000000000");
-    WriteLower("0000000000000000");
-    Mode = DisplayTestSw;
-    AppByte = ActivateTimer(1000, 32, DisplayCycle);}} // Activate timer for display pattern change}
-
-void DisplayTestSw(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);
-    Mode = DisplayTest_EnterSw;
-    *(DisplayLower) = 0;
-    *(DisplayLower+16) = 0;
-    *(DisplayUpper) = 0;
-    *(DisplayUpper+16) = 0;
-    WriteUpper("DISPLAY TEST  ");
-    WriteLower("              ");}}
-
-void DisplayCycle(byte Event) {                       // Display cycle test
-  if (!digitalRead(UpDown)) {                         // cycle only if Up/Down switch is not pressed
-    if (Event == 118) {                             // if the last character is reached
-      AppByte2 = 34;}                                 // start from the beginning
-    else {
-      if (Event == 50) {                            // reached the gap between numbers and characters?
-        AppByte2 = 66;}
-      else {
-        AppByte2 = Event+2;}}                       // otherwise show next character
-    for (i=0; i<16; i++) {                            // use for all alpha digits
-      if ((i==0) || (i==8)) {
-        DisplayUpper[2*i] = LeftCredit[AppByte2];
-        DisplayUpper[2*i+1] = LeftCredit[AppByte2+1];
-        DisplayLower[2*i] = RightCredit[AppByte2];
-        DisplayLower[2*i+1] = RightCredit[AppByte2+1];}
-      else {
-        DisplayUpper[2*i] = DispPattern1[AppByte2];
-        DisplayUpper[2*i+1] = DispPattern1[AppByte2+1];
-        DisplayLower[2*i] = DispPattern2[AppByte2];
-        DisplayLower[2*i+1] = DispPattern2[AppByte2+1];}}}
-  AppByte = ActivateTimer(500, AppByte2, DisplayCycle);}   // restart timer
-
-void SwitchEdges_Enter(byte Event) {
-  switch (Event) {
-    case 72:
-      WriteUpper("  COIL  TEST  ");                 // go to Solenoid Test Enter
-      WriteLower("              ");
-      Mode = Solenoids_Enter;
-      break;
-    case 3:
-      WriteUpper(" LATESTEDGES  ");                 // show 'Latest Edges'
-      WriteLower("              ");
-      Mode = SwitchEdges;}}
-
-void SwitchEdges(byte Event) {
-  if (Event == 72) {
-    Mode = SwitchEdges_Enter;                         // back to Switch edges enter
-    WriteUpper(" SWITCHEDGES  ");
-    WriteLower("              ");}
-  else {
-    ConvertToBCD(Event);                              // convert the switch number to BCD
-    for (i=1; i<24; i++) {                            // move all characters in the lower display row 4 chars to the left
-      DisplayLower[i] = DisplayLower[i+8];}
-    *(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and insert the two result digits to the right of the row
-    *(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-    *(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-    *(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];}}
-
-void Solenoids_Enter(byte Event) {
-  switch (Event) {
-    case 72:
-      WriteUpper(" SINGLE LAMP  ");                 // go to next test
-      Mode = SingleLamp_Enter;
-      break;
-    case 3:
-      WriteUpper(" FIRINGCOIL NO");
-      WriteLower("              ");
-        Mode = SolenoidsTest;
-        //digitalWrite(SpcSolEnable, HIGH);             // enable special solenoids
-        AppByte2 = 1;                                 // start with solenoid 1
-        AppByte = ActivateTimer(1000, 0, FireSolenoids);}} // start after 1 second
-
-void SolenoidsTest(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);                               // kill running timer for next solenoid
-    //digitalWrite(SpcSolEnable, LOW);                  // disable special solenoids
-    WriteUpper("  COIL  TEST  ");                   // back to Solenoid Test Enter
-    WriteLower("              ");
-    Mode = Solenoids_Enter;}}
-
-void FireSolenoids(byte Event) {                      // cycle all solenoids
-  ConvertToBCD(AppByte2);                             // convert the actual solenoid number
-  *(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
-  *(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-  *(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-  *(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
-  ActivateSolenoid(0, AppByte2);                     // activate the solenoid for 50ms
-  if (!digitalRead(UpDown)) {
-    AppByte2++;                                       // increase the solenoid counter
-  if (AppByte2 == 20) {                               // maximum reached?
-    AppByte2 = 1;}}                                   // then start again
-  AppByte = ActivateTimer(1000, 0, FireSolenoids);}   // come back in one second
-
-void SingleLamp_Enter(byte Event) {
-  switch (Event) {
-    case 72:
-      WriteUpper("  ALL   LAMPS ");                 // go to next test
-      Mode = AllLamps_Enter;
-      break;
-    case 3:
-      WriteUpper(" ACTUAL LAMP  ");
-      WriteLower("              ");
-      for (i=0; i<(LampMax+1); i++){                  // erase lamp matrix
-        Lamp[i] = false;}
-      LampPattern = Lamp;                             // and show it
-      Mode = SingleLamp;
-      AppByte2 = 1;                                 // start with lamp 1
-      AppByte = ActivateTimer(1000, 0, ShowLamp);}} // start after 1 second
-
-void SingleLamp(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);                               // kill running timer for next solenoid
-    LampPattern = NoLamps;                            // Turn off all lamps
-    WriteUpper(" SINGLE LAMP  ");
-    WriteLower("              ");
-    Mode = SingleLamp_Enter;}}
-
-void ShowLamp(byte Event) {                           // cycle all solenoids
-  if (!digitalRead(UpDown)) {
-    ConvertToBCD(AppByte2);                           // convert the actual solenoid number
-    *(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
-    *(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-    *(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-    *(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
-    Lamp[AppByte2] = true;                            // turn on lamp
-    if (AppByte2 > 1) {                               // and turn off the previous one
-      Lamp[AppByte2-1] = false;}
-    else {
-      Lamp[LampMax] = false;}
-    AppByte2++;                                       // increase the lamp counter
-    if (AppByte2 == LampMax+1) {                      // maximum reached?
-      AppByte2 = 1;}}                                 // then start again
-  AppByte = ActivateTimer(1000, 0, ShowLamp);}        // come back in one second
-
-void AllLamps_Enter(byte Event) {
-  switch (Event) {
-    case 72:
-    	WriteUpper(" SOUND  TEST  ");                 // go to next test
-      Mode = SoundTest_Enter;
-      AppByte = 0;
-      break;
-    case 3:
-      WriteUpper("FLASHNG LAMPS ");
-      Mode = ModeAllLamps;
-      AppByte2 = 0;
-      AppByte = ActivateTimer(500, 0, ShowAllLamps);}} // start after 500ms
-
-void ModeAllLamps(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);                               // kill running timer for next solenoid
-    LampPattern = NoLamps;                            // Turn off all lamps
-    WriteUpper("  ALL   LAMPS ");
-    Mode = AllLamps_Enter;}}
-
-void ShowAllLamps(byte Event) {                       // Flash all lamps
-  if (AppByte2) {                                     // if all lamps are on
-    LampPattern = NoLamps;                            // turn them off
-    AppByte2 = 0;}
-  else {                                              // or the other way around
-    LampPattern = AllLamps;
-    AppByte2 = 1;}
-  AppByte = ActivateTimer(500, 0, ShowAllLamps);}     // come back in 500ms
-
-void SoundTest_Enter(byte Switch) {
-  switch (Switch) {
-    case 72:
-      GameDefinition.AttractMode();
-      break;
-    case 3:
-      WriteUpper("PLAYING SOUND ");
-      WriteLower("            01");
-      Mode = SoundTest;
-      AfterMusic = NextTestSound;
-      PlayMusic((char*) TestSounds[AppByte]);}}
-
-void NextTestSound() {
-  if (!digitalRead(UpDown)) {
-	  AppByte++;}
-	if (!TestSounds[AppByte][0]) {
-		AppByte = 0;}
-  ConvertToBCD(AppByte+1);                           // convert the actual solenoid number
-  *(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
-  *(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-  *(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-  *(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
-	PlayMusic((char*) TestSounds[AppByte]);}
-
-void SoundTest(byte Switch) {
-	if (Switch == 3) {
-		NextTestSound();}
-	if (Switch == 72) {
-    AfterMusic = 0;
-		StopPlayingMusic();
-		WriteUpper(" SOUND  TEST  ");
-    Mode = SoundTest_Enter;
-    AppByte = 0;}}
 
 void Settings_Enter() {
   WriteUpper("   SETTINGS   ");                     	// Show Test Mode
