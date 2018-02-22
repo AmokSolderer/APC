@@ -152,7 +152,7 @@ const byte DimInserts = 3;                            // Reduce lighting time of
 const byte Volume = 4;                             		// Volume of the speaker
 const byte LEDsetting = 5;                            // Setting for the APC_LED_EXP board
 
-char TxTGameSelect[3][15] = {{" BLACK KNIGHT "},{" FIRE   POWER "},{" KOKOS  NUSS  "}};
+char TxTGameSelect[3][15] = {{" BLACK KNIGHT "},{" FIRE   POWER "},{"    PINBOT    "}};
 char TxTLEDSelect[3][15] = {{"   NO   LEDS  "},{"PLAYFLD ONLY  "},{"PLAYFLDBACKBOX"}};
 char TxTDisplaySelect[5][15] = {{"4 ALPHA+CREDIT"},{" SYS11 PINBOT "},{" SYS11  F-14  "},{" SYS11  BK2K  "},{" SYS11   TAXI "}};
 struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTGameSelect[0][0],0,2},
@@ -293,12 +293,12 @@ void Init_System() {
 	Init_System2(0);}
 
 void Init_System2(byte State) {
-	switch(APC_settings[ActiveGame]) {
+	switch(APC_settings[ActiveGame]) {									// init calls for all valid games
 	case 0:
 		BK_init();
 		break;
 	case 2:
-		//KN_init();
+		PB_init();
 		break;
 	default:
 		WriteUpper("NO GAMESELECTD");

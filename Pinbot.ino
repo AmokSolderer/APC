@@ -24,6 +24,9 @@ const struct GameDef PB_GameDefinition = {
 	PB_AttractMode,																			// AttractMode
 	PB_SolTimes};																				// Default activation times of solenoids
 
-void PB_AttractMode() {
+void PB_init() {
+	GameDefinition = PB_GameDefinition;}								// read the game specific settings and highscores
 
+void PB_AttractMode() {
+	WriteUpper("THE APC PINBOT");
 }
