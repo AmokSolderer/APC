@@ -151,6 +151,7 @@ const byte FreeGame = 2;															// Free game mode?
 const byte DimInserts = 3;                            // Reduce lighting time of playfield lamps by 50%
 const byte Volume = 4;                             		// Volume of the speaker
 const byte LEDsetting = 5;                            // Setting for the APC_LED_EXP board
+const byte DisplayType = 6;														// which display is used?
 
 char TxTGameSelect[3][15] = {{" BLACK KNIGHT "},{" FIRE   POWER "},{"    PINBOT    "}};
 char TxTLEDSelect[3][15] = {{"   NO   LEDS  "},{"PLAYFLD ONLY  "},{"PLAYFLDBACKBOX"}};
@@ -304,6 +305,8 @@ void Init_System2(byte State) {
 		WriteUpper("NO GAMESELECTD");
 		while (true) {}
 	}
+	if ((APC_settings[DisplayType] == 1) || (APC_settings[DisplayType] == 2)) { // display with numerical lower row
+		DispPattern2 = NumLower;}													// use patterns for num displays
 	if (SDfound) {
 		File HighScore = SD.open(GameDefinition.HighScoresFileName);
 		if (!HighScore) {
