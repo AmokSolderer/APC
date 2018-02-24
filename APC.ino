@@ -104,8 +104,8 @@ byte TimerArgument[64];
 byte TimerEvents;                                     // indicates the number of timer events to be processed
 void (*TimerEvent[64])(byte);                         // pointers to the procedures to be executed on the timer event
 void (*TimerBuffer)(byte);
-void (*Mode)(byte);                                   // Pointer to current behavior mode for activated switches
-void (*Released_Mode)(byte);                          // Pointer to current behavior mode for released switches
+void (*Switch_Pressed)(byte);                         // Pointer to current behavior mode for activated switches
+void (*Switch_Released)(byte);                          // Pointer to current behavior mode for released switches
 //void (*AttractMode)();																// Pointer to Attract mode of current game
 //unsigned long SystemTime = 0;
 char EnterIni[3];
@@ -166,12 +166,12 @@ struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTG
 		  {"  EXIT SETTNGS",ExitSettings,0,0,0},
       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 struct GameDef {
-	struct SettingTopic *GameSettingsList;								// points to the settings definition of the current game
-	byte *GameDefaultsPointer;														// points to the default settings of the selected game
-	char *GameSettingsFileName;														// points to the name of the settings file for the selected game
-	char *HighScoresFileName;															// contains the name of the high scores file for the selected game
-	void (*AttractMode)();																// Pointer to Attract mode of current game
-	const unsigned int *SolTimes;													// Default activation times of solenoids
+	struct SettingTopic *GameSettingsList;							// points to the settings definition of the current game
+	byte *GameDefaultsPointer;													// points to the default settings of the selected game
+	char *GameSettingsFileName;													// points to the name of the settings file for the selected game
+	char *HighScoresFileName;														// contains the name of the high scores file for the selected game
+	void (*AttractMode)();															// Pointer to Attract mode of current game
+	const unsigned int *SolTimes;												// Default activation times of solenoids
 };
 
 struct GameDef GameDefinition;
@@ -418,7 +418,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 	// Solenoids
 
 	if (SolChange) {                                		// is there a solenoid state to be changed?
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;          		// clear all select signals and the data bus
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals and the data bus
 		if (SolNumber > 8) {                          		// does the solenoid not belong to the first latch?
 			if (SolNumber < 17) {                       		// does it belong to the second latch?
 				c = 1;
@@ -490,10 +490,10 @@ void TC7_Handler() {                                  // interrupt routine - run
           c = c<<1;}}
       if (LEDFlag) {
         LEDFlag = false;
-        REG_PIOC_CODR = Sel5;}                          // activate Sel5 falling edge
+        REG_PIOC_CODR = Sel5;}                        // activate Sel5 falling edge
       else {
         LEDFlag = true;
-        REG_PIOC_SODR = Sel5;}}                           // activate Sel5 rising edge
+        REG_PIOC_SODR = Sel5;}}                       // activate Sel5 rising edge
     else {                                            // the lamp matrix is already sent
       if (LampCol < 17) {                             // still time to send a command?
         if (LEDCommandBytes) {                        // are there any pending LED commands?
@@ -512,18 +512,18 @@ void TC7_Handler() {                                  // interrupt routine - run
             LEDCount = 0;}
           if (LEDFlag) {
             LEDFlag = false;
-            REG_PIOC_CODR = Sel5;}                          // activate Sel5 falling edge
+            REG_PIOC_CODR = Sel5;}                    // activate Sel5 falling edge
           else {
             LEDFlag = true;
             REG_PIOC_SODR = Sel5;}}}
       else {                                          // this must be LampCol 36
         if (LampCol == 17) {
           REG_PIOC_CODR = AllData;
-          REG_PIOC_SODR = 170<<1;                       // time to sync
+          REG_PIOC_SODR = 170<<1;                     // time to sync
           REG_PIOC_SODR = Sel5;
         if (LEDFlag) {
           LEDFlag = false;
-          REG_PIOC_CODR = Sel5;}                          // activate Sel5 falling edge
+          REG_PIOC_CODR = Sel5;}                      // activate Sel5 falling edge
         else {
           LEDFlag = true;
           REG_PIOC_SODR = Sel5;}}}}
@@ -558,10 +558,10 @@ void loop() {
 			i = ChangedSwitches[c];													// buffer the switch number
 			ChangedSwitches[c] = 0;													// clear the event
 			if (Switch[i]) {                                // process SET switches
-        Mode(i);}																			// access the set switch handler
+				Switch_Pressed(i);}														// access the set switch handler
 			else {																					// process released switches
-				Released_Mode(i);}														// access the released switch handler
-			c++;}}																						// increase counter
+				Switch_Released(i);}													// access the released switch handler
+			c++;}}																					// increase counter
 	c = 0;                                  						// initialize counter
 	while (TimerEvents) {                               // as long as there are timer events to process
 		if (Timer[c]) {                                   // event for this timer pending?
@@ -602,45 +602,47 @@ void SwitchReleased(int SwNumber) {
   Serial.print(" Switch released ");
   Serial.println(SwNumber); }
 
+void DummyProcess(byte Dummy) {;}
+
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
-  byte i = 1;                                     // reset counter
+  byte i = 1;                                     		// reset counter
   BlockTimers = true;
-  while (TimerValue[i] || Timer[i]) {             // search for a free timer
+  while (TimerValue[i] || Timer[i]) {             		// search for a free timer
     i++;}
-  TimerArgument[i] = Argument;                    // initialize it
+  TimerArgument[i] = Argument;                    		// initialize it
   TimerEvent[i] = EventPointer;
   TimerValue[i] = Value;                          
-  ActiveTimers++;                                 // increase the number of active timers
+  ActiveTimers++;                                 		// increase the number of active timers
   BlockTimers = false;
-  return i;}                                      // and return its number
+  return i;}                                      		// and return its number
 
 void KillAllTimers() {
-  for (i=1; i<64; i++) {                          // check all 64 timers
-    if (TimerValue[i] || Timer[i]) {              // if the timer is active
-      KillTimer(i);}}                             // kill it
-  if (ActiveTimers) {                             // active timers left?
-    ErrorHandler(1,i,ActiveTimers);}              // show error 1
-  if (TimerEvents) {                              // timer events left?
-    ErrorHandler(2,i,TimerEvents);}}              // show error 2
+  for (i=1; i<64; i++) {                          		// check all 64 timers
+    if (TimerValue[i] || Timer[i]) {              		// if the timer is active
+      KillTimer(i);}}                             		// kill it
+  if (ActiveTimers) {                             		// active timers left?
+    ErrorHandler(1,i,ActiveTimers);}              		// show error 1
+  if (TimerEvents) {                              		// timer events left?
+    ErrorHandler(2,i,TimerEvents);}}              		// show error 2
     
 void KillTimer(byte TimerNo) {
 	BlockTimers = true;
-	if (Timer[TimerNo]) {                           // is there a pending timer event?
-		Timer[TimerNo] = false;                       // remove it
+	if (Timer[TimerNo]) {                           		// is there a pending timer event?
+		Timer[TimerNo] = false;                       		// remove it
 		TimerEvents--;}
-	else {                                          // no pending timer event?
+	else {                                          		// no pending timer event?
 		if (TimerValue[TimerNo]) {
-			if (!ActiveTimers) {                        // number of active timers already 0?
-				ErrorHandler(10,TimerNo,ActiveTimers);}   // that's wrong
+			if (!ActiveTimers) {                        		// number of active timers already 0?
+				ErrorHandler(10,TimerNo,ActiveTimers);}   		// that's wrong
 			else {
-				ActiveTimers--;}}                         // reduce number of active timers
+				ActiveTimers--;}}                         		// reduce number of active timers
 		else {
 			ErrorHandler(11,TimerNo,(uint) TimerEvent[TimerNo]);}}
-	TimerValue[TimerNo] = 0;                        // set counter to 0
-	TimerEvent[TimerNo] = 0;												// clear Timer Event
+	TimerValue[TimerNo] = 0;                        		// set counter to 0
+	TimerEvent[TimerNo] = 0;														// clear Timer Event
 	BlockTimers = false;}
 
-void WriteUpper(char* DisplayText) {              // dont use columns 0 and 8 as they are reserved for the credit display
+void WriteUpper(char* DisplayText) {              		// dont use columns 0 and 8 as they are reserved for the credit display
   for (i=0; i<7; i++) { 
     *(DisplayUpper+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
     *(DisplayUpper+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
@@ -668,22 +670,22 @@ void WriteLower2(char* DisplayText) {
     *(DisplayLower2+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
     *(DisplayLower2+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}
 
-void ScrollUpper(byte Step) {											// call with Step = 1 and the text being in DisplayUpper2
-	for (i=2; i<14; i++) {													// scroll display 1
+void ScrollUpper(byte Step) {													// call with Step = 1 and the text being in DisplayUpper2
+	for (i=2; i<14; i++) {															// scroll display 1
 		DisplayUpper[i] = DisplayUpper[i+2];}
-	DisplayUpper[14] = DisplayUpper[18];						// add put the leftmost char of the display 2 to the end
+	DisplayUpper[14] = DisplayUpper[18];								// add put the leftmost char of the display 2 to the end
 	DisplayUpper[15] = DisplayUpper[19];
-	for (i=18; i<30; i++) {                         // scroll display 2
+	for (i=18; i<30; i++) {                         		// scroll display 2
 			DisplayUpper[i] = DisplayUpper[i+2];}
-	DisplayUpper[30] = DisplayUpper2[2*Step];				// add the corresponding char of DisplayUpper2
+	DisplayUpper[30] = DisplayUpper2[2*Step];						// add the corresponding char of DisplayUpper2
 	DisplayUpper[31] = DisplayUpper2[2*Step+1];
-	Step++;																					// increase step
-  if (Step == 8) {																// skip position 9 (belongs to the credit display
+	Step++;																							// increase step
+  if (Step == 8) {																		// skip position 9 (belongs to the credit display
     Step++;}
-	if (Step < 16) {																// if its not already over
-		ActivateTimer(50, Step, ScrollUpper);}}				// come back
+	if (Step < 16) {																		// if its not already over
+		ActivateTimer(50, Step, ScrollUpper);}}						// come back
 
-void AddScrollUpper(byte Step) {									// call with Step = 1 and the text being in DisplayUpper2
+void AddScrollUpper(byte Step) {											// call with Step = 1 and the text being in DisplayUpper2
 	if (Step > 8) {
 		for (i=0; i<2*(Step-9);i++) {
 			DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];}
@@ -697,111 +699,114 @@ void AddScrollUpper(byte Step) {									// call with Step = 1 and the text bein
 	DisplayUpper[30] = DisplayUpper2[2*Step];
 	DisplayUpper[31] = DisplayUpper2[2*Step+1];
 	Step++;
-  if (Step == 8) {																// skip position 9 (belongs to the credit display
+  if (Step == 8) {																		// skip position 9 (belongs to the credit display
     Step++;}
   if (!DisplayUpper[32-(2*Step)] && !DisplayUpper[33-(2*Step)] && Step < 14) {
   	ActivateTimer(50, Step, AddScrollUpper);}}
 
-void ScrollLower(byte Step) {											// call with Step = 1 and the text being in DisplayLower2
-	if (Step < 8) {																	// do display 3 first
-		for (i=2; i<14; i++) {												// scroll display 3
+void ScrollLower(byte Step) {													// call with Step = 1 and the text being in DisplayLower2
+	if (Step < 8) {																			// do display 3 first
+		for (i=2; i<14; i++) {														// scroll display 3
 			DisplayLower[i] = DisplayLower[i+2];}
-		DisplayLower[14] = DisplayLower2[2*Step];			// add the corresponding char of DisplayLower2
+		DisplayLower[14] = DisplayLower2[2*Step];					// add the corresponding char of DisplayLower2
 		DisplayLower[15] = DisplayLower2[2*Step+1];}
-	else {																					// do display 4
-		for (i=18; i<30; i++) {												// scroll display 4
+	else {																							// do display 4
+		for (i=18; i<30; i++) {														// scroll display 4
       DisplayLower[i] = DisplayLower[i+2];}
-		DisplayLower[30] = DisplayLower2[2*Step+2];		// add the corresponding char of DisplayLower2
+		DisplayLower[30] = DisplayLower2[2*Step+2];				// add the corresponding char of DisplayLower2
 		DisplayLower[31] = DisplayLower2[2*Step+3];}
   Step++;
-  if (Step < 15) {																// if its not already over
-    ActivateTimer(50, Step, ScrollLower);}}				// come back
+  if (Step < 15) {																		// if its not already over
+    ActivateTimer(50, Step, ScrollLower);}}						// come back
       
 void ConvertToBCD(int Number) {
   ByteBuffer = Number % 10;
   ByteBuffer2 = (Number-ByteBuffer)/10;}
 
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
-  if (!SolChange) {                               // change request for another solenoid pending?
+  if (!SolChange) {                               		// change request for another solenoid pending?
     if (!Duration) {
       Duration = *(GameDefinition.SolTimes+Solenoid-1);} // if no duration is specified use the solenoid specific default
-    SolNumber = Solenoid;                         // activate solenoid
+    SolNumber = Solenoid;                         		// activate solenoid
     SolState = true;
-    if (Duration) {                               // duration = 0 means solenoid is permanently on
+    if (Duration) {                               		// duration = 0 means solenoid is permanently on
       ActivateTimer(Duration, Solenoid, ReleaseSolenoid);} // otherwise use a timer to turn it off again
     SolChange = true;}
-  else {                                        	// if a change request is already pending
+  else {                                        			// if a change request is already pending
     i = 0;
-    while (SolDelayed[i]) {                     	// look for a free slot in the list of solenoids to be processed later
+    while (SolDelayed[i]) {                     			// look for a free slot in the list of solenoids to be processed later
       i++;}
-    SolDelayed[i] = Solenoid;                   	// insert the solenoid number
-    DurDelayed[i] = Duration;                   	// and its duration into the list
-    ActivateTimer(25, Solenoid, ActivateLater);}}// and try again later
+    SolDelayed[i] = Solenoid;                   			// insert the solenoid number
+    DurDelayed[i] = Duration;                   			// and its duration into the list
+    ActivateTimer(25, Solenoid, ActivateLater);}}			// and try again later
 
-void ActivateLater(byte Solenoid) {               // handle delayed solenoid change requests
+void ActivateLater(byte Solenoid) {               		// handle delayed solenoid change requests
   byte i = 0;
   unsigned int Duration;
-  while (SolDelayed[i] != Solenoid) {             // search the list of delayed solenoid requests
+  while (SolDelayed[i] != Solenoid) {             		// search the list of delayed solenoid requests
     i++;}
-  SolDelayed[i] = 0;                              // remove its entry
-  Duration = DurDelayed[i];                       // get the duration
-  ActivateSolenoid(Duration, Solenoid);}          // and try again to activate it
+  SolDelayed[i] = 0;                              		// remove its entry
+  Duration = DurDelayed[i];                       		// get the duration
+  ActivateSolenoid(Duration, Solenoid);}         	 		// and try again to activate it
 
 void ReleaseAllSolenoids() {
-  for (i=1; i< 25; i++) {
-    ReleaseSolenoid(i);}}
+	for (i=0; i< 3; i++) {															// clear all solenoid buffers
+		SolBuffer[i] = 0;}
+	ReleaseSolenoid(1);																	// release one solenoid of each buffer
+	ReleaseSolenoid(9);
+	ReleaseSolenoid(17);}
 
 void ReleaseSolenoid(byte Solenoid) {
-  if (!SolChange) {                               // change request for another solenoid pending?
-    SolNumber = Solenoid;                         // if not process it
+  if (!SolChange) {                               		// change request for another solenoid pending?
+    SolNumber = Solenoid;                         		// if not process it
     SolState = false;
     SolChange = true;}
-  else {                                          // if yes
-    ActivateTimer(1, Solenoid, ReleaseSolenoid);}}// try again later
+  else {                                          		// if yes
+    ActivateTimer(1, Solenoid, ReleaseSolenoid);}}		// try again later
 
-void ShowPoints(byte Player) {                    // display the points of the selected player
+void ShowPoints(byte Player) {                    		// display the points of the selected player
   DisplayScore(Player, Points[Player]);}
   
 void DisplayScore (byte Position, unsigned int Score) {
-  byte i=0;                                       // use a private counter
-  switch (Position) {
-    case 1:                                       // for the players 1 and 3
-    case 3:
-      ByteBuffer = 2;                             // start in column 1
-      break;
-    case 2:                                       // for the players 2 and 4
-    case 4:
-      ByteBuffer = 18;                            // start in column 9
-      break;}
-    if (Score) {                                  // if the score is not 0    
-      while (Score && i<7) {                      // for all 7 display digits
-        ByteBuffer2 = Score % 10;                 // extract the least significant digit
-        Score = (Score-ByteBuffer2) / 10;         // prepare for the next digit
-        ByteBuffer2 = 32+2*ByteBuffer2;           // determine the corresponding display pattern
-        if (Position < 3) {                       // depending on the player number show it in the upper display row 
-          if ((i==3) || (i==6)) {
-            *(DisplayUpper+ByteBuffer+12-2*i) = 128 | DispPattern1[ByteBuffer2];} // add a comma if necessary
-          else {
-            *(DisplayUpper+ByteBuffer+12-2*i) = DispPattern1[ByteBuffer2];} 
-          *(DisplayUpper+ByteBuffer+13-2*i) = DispPattern1[ByteBuffer2+1];} 
-        else {                                    // the same for the lower display row
-          if ((i==3) || (i==6)) {
-            *(DisplayLower+ByteBuffer+12-2*i) = 1 | DispPattern2[ByteBuffer2];}
-          else {
-            *(DisplayLower+ByteBuffer+12-2*i) = DispPattern2[ByteBuffer2];}
-          *(DisplayLower+ByteBuffer+13-2*i) = DispPattern2[ByteBuffer2+1];} // 
-        i++;}}
-    else {                                        // if the points are 0 
-      if (Position < 3) {
-        *(DisplayUpper+ByteBuffer+12) = DispPattern1[32];        // just show two 0s
-        *(DisplayUpper+ByteBuffer+13) = DispPattern1[33];
-        *(DisplayUpper+ByteBuffer+10) = DispPattern1[32];
-        *(DisplayUpper+ByteBuffer+11) = DispPattern1[33];}
-      else {
-        *(DisplayLower+ByteBuffer+12) = DispPattern2[32];        // just show two 0s
-        *(DisplayLower+ByteBuffer+13) = DispPattern2[33];
-        *(DisplayLower+ByteBuffer+10) = DispPattern2[32];
-        *(DisplayLower+ByteBuffer+11) = DispPattern2[33];}}}
+	byte i=0;                                       		// use a private counter
+	switch (Position) {
+	case 1:                                       			// for the players 1 and 3
+	case 3:
+		ByteBuffer = 2;                             			// start in column 1
+		break;
+	case 2:                                       			// for the players 2 and 4
+	case 4:
+		ByteBuffer = 18;                            			// start in column 9
+		break;}
+	if (Score) {                                  			// if the score is not 0
+		while (Score && i<7) {                      			// for all 7 display digits
+			ByteBuffer2 = Score % 10;                 			// extract the least significant digit
+			Score = (Score-ByteBuffer2) / 10;         			// prepare for the next digit
+			ByteBuffer2 = 32+2*ByteBuffer2;           			// determine the corresponding display pattern
+			if (Position < 3) {                       			// depending on the player number show it in the upper display row
+				if ((i==3) || (i==6)) {
+					*(DisplayUpper+ByteBuffer+12-2*i) = 128 | DispPattern1[ByteBuffer2];} // add a comma if necessary
+				else {
+					*(DisplayUpper+ByteBuffer+12-2*i) = DispPattern1[ByteBuffer2];}
+				*(DisplayUpper+ByteBuffer+13-2*i) = DispPattern1[ByteBuffer2+1];}
+			else {                                    			// the same for the lower display row
+				if ((i==3) || (i==6)) {
+					*(DisplayLower+ByteBuffer+12-2*i) = 1 | DispPattern2[ByteBuffer2];}
+				else {
+					*(DisplayLower+ByteBuffer+12-2*i) = DispPattern2[ByteBuffer2];}
+				*(DisplayLower+ByteBuffer+13-2*i) = DispPattern2[ByteBuffer2+1];} //
+			i++;}}
+	else {                                        			// if the points are 0
+		if (Position < 3) {
+			*(DisplayUpper+ByteBuffer+12) = DispPattern1[32];        // just show two 0s
+			*(DisplayUpper+ByteBuffer+13) = DispPattern1[33];
+			*(DisplayUpper+ByteBuffer+10) = DispPattern1[32];
+			*(DisplayUpper+ByteBuffer+11) = DispPattern1[33];}
+		else {
+			*(DisplayLower+ByteBuffer+12) = DispPattern2[32];        // just show two 0s
+			*(DisplayLower+ByteBuffer+13) = DispPattern2[33];
+			*(DisplayLower+ByteBuffer+10) = DispPattern2[32];
+			*(DisplayLower+ByteBuffer+11) = DispPattern2[33];}}}
 
 void ShowNumber(byte Position, unsigned int Number) {
 	byte Buffer = 0;
@@ -832,10 +837,10 @@ void ShowNumber(byte Position, unsigned int Number) {
 			*(DisplayLower2+2*Position-14) = DispPattern2[32]; // just show 0
 			*(DisplayLower2+2*Position-13) = DispPattern2[33];}}}
 
-void ShowAllPoints(byte Event) {                  // just a dummy event to access it via timer
-  WriteUpper("              ");                   // erase display
+void ShowAllPoints(byte Event) {                  		// just a dummy event to access it via timer
+  WriteUpper("              ");                   		// erase display
   WriteLower("              ");
-  for (i=1; i<=NoPlayers; i++) {                  // display the points of all active players
+  for (i=1; i<=NoPlayers; i++) {                  		// display the points of all active players
     ShowPoints(i);}}
 
 void BlinkLamps(byte BlTimer) {
@@ -981,7 +986,7 @@ void ShowInitialsMessage(byte Player) {
       *(DisplayLower+15) = DispPattern2[33 + 2 * Player];
       break;}
   if (ByteBuffer == 7) {
-    Mode = EnterInitials;
+    Switch_Pressed = EnterInitials;
     EnterIni[0] = 'A';
     EnterIni[1] = 'A';
     EnterIni[2] = 'A';
@@ -991,9 +996,9 @@ void ShowInitialsMessage(byte Player) {
     ByteBuffer++;
     ActivateTimer(1000, Player, ShowInitialsMessage);}}
 
-void BlinkInitial(byte State) {                         // blink actual character
+void BlinkInitial(byte State) {                       // blink actual character
   if (State) {
-    *(DisplayLower+20+4*ByteBuffer) = 0;                // show a blank
+    *(DisplayLower+20+4*ByteBuffer) = 0;              // show a blank
     *(DisplayLower+21+4*ByteBuffer) = 0;
     State = 0;}
   else {
@@ -1005,7 +1010,7 @@ void BlinkInitial(byte State) {                         // blink actual characte
 
 void EnterInitials(byte Event) {
   switch (Event) {
-    case 3:                                             // credit button 
+    case 3:                                           // credit button
       KillTimer(ByteBuffer2);
       ByteBuffer++;
       if (ByteBuffer > 2) {
@@ -1015,13 +1020,13 @@ void EnterInitials(byte Event) {
         *(DisplayLower+28) = DispPattern2[32 + 2 * (ByteBuffer2+1)];
         *(DisplayLower+29) = DispPattern2[33 + 2 * (ByteBuffer2+1)];
         LampPattern = Lamp;
-        ActivateSolenoid(0, 23);                          // enable flipper fingers
+        ActivateSolenoid(0, 23);                      // enable flipper fingers
         ActivateSolenoid(0, 24);
         ActivateTimer(2000, 0, BallEnd3);}
       else {
         BlinkInitial(1);}
       break;
-    case 9:                                             // right magna save button
+    case 9:                                           // right magna save button
       if (EnterIni[ByteBuffer] == 57) {
         EnterIni[ByteBuffer] = 65;}
       else if (EnterIni[ByteBuffer] == 90) {
@@ -1033,7 +1038,7 @@ void EnterInitials(byte Event) {
       KillTimer(ByteBuffer2);
       BlinkInitial(0);
       break;
-    case 10:                                            // left magna save button
+    case 10:                                          // left magna save button
       if (EnterIni[ByteBuffer] == 65) {
         EnterIni[ByteBuffer] = 57;}
       else if (EnterIni[ByteBuffer] == 48) {
@@ -1048,13 +1053,13 @@ void EnterInitials(byte Event) {
       
 void HandleHighScores(unsigned int Score) {
     ByteBuffer2 = 0;
-    while (HallOfFame.Scores[ByteBuffer2] > Score) {     // check to which position of the highscore list it belongs
+    while (HallOfFame.Scores[ByteBuffer2] > Score) {  // check to which position of the highscore list it belongs
       ByteBuffer2++;}
-    for (i=3; i>ByteBuffer2; i--) {                      // move all lower highscores down
+    for (i=3; i>ByteBuffer2; i--) {                   // move all lower highscores down
       HallOfFame.Scores[i] = HallOfFame.Scores[i-1];}
     for (i=9; i>ByteBuffer2*3; i--) {
       HallOfFame.Initials[i+2] = HallOfFame.Initials[i-1];}
-    HallOfFame.Scores[ByteBuffer2] = Score;              // and include the new highscore to the list
+    HallOfFame.Scores[ByteBuffer2] = Score;           // and include the new highscore to the list
     for (i=0; i<3; i++) {
       HallOfFame.Initials[ByteBuffer2*3+i] = EnterIni[i];} // copy initials
     if (SDfound) {
@@ -1067,25 +1072,25 @@ void HandleHighScores(unsigned int Score) {
 //      delay(2000);}
 		}
 
-void ShowLampPatterns(byte Step) {                      // shows a series of lamp patterns
-  IntBuffer = (PatPointer+Step)->Duration;              // buffer the duration for the current pattern
+void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns
+  IntBuffer = (PatPointer+Step)->Duration;            // buffer the duration for the current pattern
   if (StrobeLightsTimer) {
-    LampBuffer = ((PatPointer+Step)->Pattern)-8;}       // show the pattern
+    LampBuffer = ((PatPointer+Step)->Pattern)-8;}     // show the pattern
   else {
-    LampPattern = ((PatPointer+Step)->Pattern)-8;}      // show the pattern
-  Step++;                                               // increase the pattern number
-  if (!((PatPointer+Step)->Duration)) {                 // if the duration for the next pattern is 0
-    Step = 0;                                           // reset the pattern
-    FlowRepeat--;                                       // decrease the number of repetitions
-    if (!FlowRepeat) {                                  // if no more repetitions pending
-      if (LampReturn) {                                 // is a return pointer given?
-        LampReturn(0);}                                 // call the procedure
-      return;}}                                         // otherwise just quit
+    LampPattern = ((PatPointer+Step)->Pattern)-8;}    // show the pattern
+  Step++;                                             // increase the pattern number
+  if (!((PatPointer+Step)->Duration)) {               // if the duration for the next pattern is 0
+    Step = 0;                                         // reset the pattern
+    FlowRepeat--;                                     // decrease the number of repetitions
+    if (!FlowRepeat) {                                // if no more repetitions pending
+      if (LampReturn) {                               // is a return pointer given?
+        LampReturn(0);}                               // call the procedure
+      return;}}                                       // otherwise just quit
   ByteBuffer3 = ActivateTimer(IntBuffer, Step, ShowLampPatterns);} // come back after the given duration
 
 void StrobeLights(byte State) {
   if (State) {
-    LampPattern = LampBuffer;                         	// show the pattern
+    LampPattern = LampBuffer;                         // show the pattern
     State = 0;}
   else {
     LampPattern = NoLamps;
@@ -1129,7 +1134,7 @@ void Settings_Enter() {
   LampPattern = NoLamps;                              // Turn off all lamps
   AppByte = 0;
   AppByte2 = 0;
-  Mode = SelectSettings;
+  Switch_Pressed = SelectSettings;
   ActivateTimer(2000, 0, SelectSettings);}         		// Wait 1 second and proceed to Display Test
 
 void SelectSettings(byte Switch) {										// select system or game settings
@@ -1148,7 +1153,7 @@ void SelectSettings(byte Switch) {										// select system or game settings
 				SettingsPointer = APC_settings;
 				SettingsList = APC_setList;
 				SettingsFileName = (char*)APC_set_file_name;}
-			Mode = SelSetting;
+			Switch_Pressed = SelSetting;
 			SelSetting(0);
 			break;
 		case 72:
@@ -1176,7 +1181,7 @@ void StopRepeatSelectKey(byte Switch) {								// stop repeating the start butto
 	if (Switch ==3) {
 		KillTimer(SettingsRepeatTimer);
     SettingsRepeatTimer = 0;
-		Released_Mode = DummyProcess;}}
+		Switch_Released = DummyProcess;}}
 
 void SelSetting(byte Switch) {												// Switch mode of the settings
 	switch (Switch) {
@@ -1202,7 +1207,7 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 		case 3:
       if (!SettingsRepeatTimer) {											// start timer to determine whether key 3 is pressed longer than 1s
         SettingsRepeatTimer = ActivateTimer(1000, 0, RepeatSelectKey);
-        Released_Mode = StopRepeatSelectKey;}
+        Switch_Released = StopRepeatSelectKey;}
 			SettingsList[AppByte].EventPointer(true);}}			// call the corresponding method and indicate changes
 
 void HandleBoolSetting(bool change) {									// handling method for boolean settings

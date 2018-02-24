@@ -49,8 +49,6 @@ struct SettingTopic BK_setList[4] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
        {"  EXIT SETTNGS",ExitSettings,0,0,0},
        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
-void DummyProcess(byte Event) {;}
-
                               	 // Duration080910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364
 const struct LampPat AttractPat1[52] = {{30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 														           	{30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -208,11 +206,11 @@ void BK_init() {
 	GameDefinition = BK_GameDefinition;}								// read the game specific settings and highscores
   
 void BK_AttractMode() {                               // Attract Mode
-  DispRow1 = DisplayUpper;                            // Show Attract message
+  DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
   LampPattern = NoLamps;
-  Mode = AttractModeSW;
-  Released_Mode = DummyProcess;
+  Switch_Pressed = AttractModeSW;
+  Switch_Released = DummyProcess;
   AppByte2 = 0;
   LampReturn = AttractLampCycle;
   AddBlinkLamp(4, 150);                               // blink Game Over lamp
@@ -323,7 +321,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 			StrobeLightsTimer = 0;
 			RemoveBlinkLamp(4);
 			RemoveBlinkLamp(6);
-			Mode = DummyProcess;                            // Switches do nothing
+			Switch_Pressed = DummyProcess;                            // Switches do nothing
 			KillAllTimers();                                // stop the lamp cycling
 			for (i=0; i< LampMax+1; i++) {
 				Lamp[i] = false;}
@@ -413,17 +411,17 @@ void NewBall(byte Balls) {                            // release ball (Event = e
 			Lamp[9] = true;}
 		else {
 			Lamp[9] = false;}}
-  Released_Mode = CheckShooterLaneSwitch;
+  Switch_Released = CheckShooterLaneSwitch;
   if (!Switch[45]) {
     ActivateSolenoid(0, 6);                          	// release ball
-    Mode = BallReleaseCheck;                          // set switch check to enter game
+    Switch_Pressed = BallReleaseCheck;                          // set switch check to enter game
     CheckReleaseTimer = ActivateTimer(5000, Balls-1, CheckReleasedBall);} // start release watchdog
   else {
-    Mode = ResetBallWatchdog;}}
+    Switch_Pressed = ResetBallWatchdog;}}
 
 void CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 45) {                                 // shooter lane switch released?
-    Released_Mode = DummyProcess;
+    Switch_Released = DummyProcess;
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}}}
   
@@ -432,9 +430,9 @@ void BallReleaseCheck(byte Switch) {                  // handle switches during 
   	if (CheckReleaseTimer) {
   		KillTimer(CheckReleaseTimer);
   		CheckReleaseTimer = 0;}                   			// stop watchdog
-    Mode = ResetBallWatchdog;
+    Switch_Pressed = ResetBallWatchdog;
     if (Switch == 45) {																// ball is in the shooter lane
-      Released_Mode = CheckShooterLaneSwitch;}				// set mode to register when ball is shot
+      Switch_Released = CheckShooterLaneSwitch;}				// set mode to register when ball is shot
     else {
       BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}} // set switch mode to game
   GameMain(Switch);}                                  // process current switch
@@ -552,7 +550,7 @@ void TimedRightMagna(byte dummy) {										// runs every second as long as butt
 	else {																							// magna save not to be continued
 		ReleaseSolenoid(9);															// turn off magnet
 		if (!TimedLeftMagnaTimer) {
-			Released_Mode = DummyProcess;}
+			Switch_Released = DummyProcess;}
 		EndRightMagna(0);
 		TimedRightMagnaTimer = 0;}}
 
@@ -564,7 +562,7 @@ void TimedLeftMagna(byte dummy) {											// runs every second as long as butt
 	else {																							// magna save not to be continued
 		ReleaseSolenoid(10);															// turn off magnet
 		if (!TimedRightMagnaTimer) {
-			Released_Mode = DummyProcess;}
+			Switch_Released = DummyProcess;}
 		EndLeftMagna(0);
 		TimedLeftMagnaTimer = 0;}}
 
@@ -580,7 +578,7 @@ void TimedMagnaSW(byte Switch) {											// magna save button released
 		ReleaseSolenoid(10);															// turn off magnet
 		EndLeftMagna(0);}
 	if (!TimedRightMagnaTimer && !TimedLeftMagnaTimer) { // no magna save active
-		Released_Mode = DummyProcess;}}										// ignore released switches
+		Switch_Released = DummyProcess;}}										// ignore released switches
 
 void GameMain(byte Event) {                           // game switch events
   switch (Event) {
@@ -608,7 +606,7 @@ void GameMain(byte Event) {                           // game switch events
     		ActivateTimer(4990, 0, EndRightMagna);
     		ActivateSolenoid(5000, 9);}                  // use it for 5 seconds
     	else {																					// timed magna active
-    		Released_Mode = TimedMagnaSW;
+    		Switch_Released = TimedMagnaSW;
     		RightMagna[Player]--;													// reduce magna save seconds
     		AddBlinkLamp(9, 150*RightMagna[Player]);
     		ActivateSolenoid(6000, 9);										// switch on magnet
@@ -622,7 +620,7 @@ void GameMain(byte Event) {                           // game switch events
     		ActivateTimer(4990, 0, EndLeftMagna);
     		ActivateSolenoid(5000, 10);}                  // use it for 5 seconds
     	else {																					// timed magna active
-    		Released_Mode = TimedMagnaSW;
+    		Switch_Released = TimedMagnaSW;
     		LeftMagna[Player]--;													// reduce magna save seconds
     		AddBlinkLamp(10, 150*LeftMagna[Player]);
     		ActivateSolenoid(6000, 10);										// switch on magnet
@@ -931,7 +929,7 @@ void BallEnd2(byte Balls) {
     KillTimer(BallWatchdogTimer);
     BallWatchdogTimer = 0;}
   if (game_settings[TimedMagna]) {              			// if timed magna save mode
-		Released_Mode = DummyProcess;               			// reset the released switch mode
+		Switch_Released = DummyProcess;               			// reset the released switch mode
 		if (TimedRightMagnaTimer) {                 			// if the left magnet is currently active
 			ReleaseSolenoid(9);                      			// turn it off
 			KillTimer(TimedRightMagnaTimer);          			// and kill its timer
@@ -951,7 +949,7 @@ void BallEnd2(byte Balls) {
     BlockOuthole = false;}														// remove outhole block
   else {                                        			// Player has no extra balls
     if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
-      Mode = DummyProcess;                                // Switches do nothing
+      Switch_Pressed = DummyProcess;                                // Switches do nothing
       CheckHighScore(Player);}
     else {
       BallEnd3(Balls);}}}
@@ -1273,35 +1271,35 @@ void LockChaseLight(byte ChaseLamp) {                 // controls the chase ligh
 
 void TestMode_Enter() {
   KillAllTimers();
-  Mode = DummyProcess;                                // Switches do nothing
+  Switch_Pressed = DummyProcess;                                // Switches do nothing
   if (!digitalRead(UpDown)) {
     Settings_Enter();}
   else {
     WriteUpper("  TEST  MODE  ");                     // Show Test Mode
-    WriteLower("                ");
-    LampPattern = NoLamps;                              // Turn off all lamps
-    ActivateTimer(1000, 0, DisplayTest_Enter);}}         // Wait 1 second and proceed to Display Test
+    WriteLower("              ");
+    LampPattern = NoLamps;                            // Turn off all lamps
+    ActivateTimer(1000, 0, DisplayTest_Enter);}}      // Wait 1 second and proceed to Display Test
 
 void DisplayTest_Enter(byte Event) {
-  Mode = DisplayTest_EnterSw;                         // Switch functions
-  WriteUpper("DISPLAY TEST  ");}                    // Show 'Display Test'
+  Switch_Pressed = DisplayTest_EnterSw;                         // Switch functions
+  WriteUpper("DISPLAY TEST  ");}                    	// Show 'Display Test'
 
 void DisplayTest_EnterSw(byte Event) {                // Display Test Enter switch handler
   switch (Event) {
-  case 72:                                             // Next test
-    WriteUpper(" SWITCHEDGES  ");                   // Show 'Switch Edges'
-    Mode = SwitchEdges_Enter;                         // Next mode
+  case 72:                                            // Next test
+    WriteUpper(" SWITCHEDGES  ");                   	// Show 'Switch Edges'
+    Switch_Pressed = SwitchEdges_Enter;                         // Next mode
     break;
   case 3:
     WriteUpper("0000000000000000");
     WriteLower("0000000000000000");
-    Mode = DisplayTestSw;
+    Switch_Pressed = DisplayTestSw;
     AppByte = ActivateTimer(1000, 32, DisplayCycle);}} // Activate timer for display pattern change}
 
 void DisplayTestSw(byte Event) {
   if (Event == 72) {
     KillTimer(AppByte);
-    Mode = DisplayTest_EnterSw;
+    Switch_Pressed = DisplayTest_EnterSw;
     *(DisplayLower) = 0;
     *(DisplayLower+16) = 0;
     *(DisplayUpper) = 0;
@@ -1311,13 +1309,13 @@ void DisplayTestSw(byte Event) {
 
 void DisplayCycle(byte Event) {                       // Display cycle test
   if (!digitalRead(UpDown)) {                         // cycle only if Up/Down switch is not pressed
-    if (Event == 118) {                             // if the last character is reached
+    if (Event == 118) {                             	// if the last character is reached
       AppByte2 = 34;}                                 // start from the beginning
     else {
-      if (Event == 50) {                            // reached the gap between numbers and characters?
+      if (Event == 50) {                            	// reached the gap between numbers and characters?
         AppByte2 = 66;}
       else {
-        AppByte2 = Event+2;}}                       // otherwise show next character
+        AppByte2 = Event+2;}}                       	// otherwise show next character
     for (i=0; i<16; i++) {                            // use for all alpha digits
       if ((i==0) || (i==8)) {
         DisplayUpper[2*i] = LeftCredit[AppByte2];
@@ -1334,18 +1332,18 @@ void DisplayCycle(byte Event) {                       // Display cycle test
 void SwitchEdges_Enter(byte Event) {
   switch (Event) {
     case 72:
-      WriteUpper("  COIL  TEST  ");                 // go to Solenoid Test Enter
+      WriteUpper("  COIL  TEST  ");                 	// go to Solenoid Test Enter
       WriteLower("              ");
-      Mode = Solenoids_Enter;
+      Switch_Pressed = Solenoids_Enter;
       break;
     case 3:
-      WriteUpper(" LATESTEDGES  ");                 // show 'Latest Edges'
+      WriteUpper(" LATESTEDGES  ");                 	// show 'Latest Edges'
       WriteLower("              ");
-      Mode = SwitchEdges;}}
+      Switch_Pressed = SwitchEdges;}}
 
 void SwitchEdges(byte Event) {
   if (Event == 72) {
-    Mode = SwitchEdges_Enter;                         // back to Switch edges enter
+    Switch_Pressed = SwitchEdges_Enter;                         // back to Switch edges enter
     WriteUpper(" SWITCHEDGES  ");
     WriteLower("              ");}
   else {
@@ -1360,24 +1358,22 @@ void SwitchEdges(byte Event) {
 void Solenoids_Enter(byte Event) {
   switch (Event) {
     case 72:
-      WriteUpper(" SINGLE LAMP  ");                 // go to next test
-      Mode = SingleLamp_Enter;
+      WriteUpper(" SINGLE LAMP  ");                 	// go to next test
+      Switch_Pressed = SingleLamp_Enter;
       break;
     case 3:
       WriteUpper(" FIRINGCOIL NO");
       WriteLower("              ");
-        Mode = SolenoidsTest;
-        //digitalWrite(SpcSolEnable, HIGH);             // enable special solenoids
+        Switch_Pressed = SolenoidsTest;
         AppByte2 = 1;                                 // start with solenoid 1
         AppByte = ActivateTimer(1000, 0, FireSolenoids);}} // start after 1 second
 
 void SolenoidsTest(byte Event) {
   if (Event == 72) {
     KillTimer(AppByte);                               // kill running timer for next solenoid
-    //digitalWrite(SpcSolEnable, LOW);                  // disable special solenoids
-    WriteUpper("  COIL  TEST  ");                   // back to Solenoid Test Enter
+    WriteUpper("  COIL  TEST  ");                   	// back to Solenoid Test Enter
     WriteLower("              ");
-    Mode = Solenoids_Enter;}}
+    Switch_Pressed = Solenoids_Enter;}}
 
 void FireSolenoids(byte Event) {                      // cycle all solenoids
   ConvertToBCD(AppByte2);                             // convert the actual solenoid number
@@ -1385,7 +1381,7 @@ void FireSolenoids(byte Event) {                      // cycle all solenoids
   *(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
   *(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
   *(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
-  ActivateSolenoid(0, AppByte2);                     // activate the solenoid for 50ms
+  ActivateSolenoid(0, AppByte2);                     	// activate the solenoid for 50ms
   if (!digitalRead(UpDown)) {
     AppByte2++;                                       // increase the solenoid counter
   if (AppByte2 == 20) {                               // maximum reached?
@@ -1395,8 +1391,8 @@ void FireSolenoids(byte Event) {                      // cycle all solenoids
 void SingleLamp_Enter(byte Event) {
   switch (Event) {
     case 72:
-      WriteUpper("  ALL   LAMPS ");                 // go to next test
-      Mode = AllLamps_Enter;
+      WriteUpper("  ALL   LAMPS ");                 	// go to next test
+      Switch_Pressed = AllLamps_Enter;
       break;
     case 3:
       WriteUpper(" ACTUAL LAMP  ");
@@ -1404,9 +1400,9 @@ void SingleLamp_Enter(byte Event) {
       for (i=0; i<(LampMax+1); i++){                  // erase lamp matrix
         Lamp[i] = false;}
       LampPattern = Lamp;                             // and show it
-      Mode = SingleLamp;
-      AppByte2 = 1;                                 // start with lamp 1
-      AppByte = ActivateTimer(1000, 0, ShowLamp);}} // start after 1 second
+      Switch_Pressed = SingleLamp;
+      AppByte2 = 1;                                 	// start with lamp 1
+      AppByte = ActivateTimer(1000, 0, ShowLamp);}} 	// start after 1 second
 
 void SingleLamp(byte Event) {
   if (Event == 72) {
@@ -1414,7 +1410,7 @@ void SingleLamp(byte Event) {
     LampPattern = NoLamps;                            // Turn off all lamps
     WriteUpper(" SINGLE LAMP  ");
     WriteLower("              ");
-    Mode = SingleLamp_Enter;}}
+    Switch_Pressed = SingleLamp_Enter;}}
 
 void ShowLamp(byte Event) {                           // cycle all solenoids
   if (!digitalRead(UpDown)) {
@@ -1436,13 +1432,13 @@ void ShowLamp(byte Event) {                           // cycle all solenoids
 void AllLamps_Enter(byte Event) {
   switch (Event) {
     case 72:
-    	WriteUpper(" SOUND  TEST  ");                 // go to next test
-      Mode = SoundTest_Enter;
+    	WriteUpper(" SOUND  TEST  ");                 	// go to next test
+      Switch_Pressed = SoundTest_Enter;
       AppByte = 0;
       break;
     case 3:
       WriteUpper("FLASHNG LAMPS ");
-      Mode = ModeAllLamps;
+      Switch_Pressed = ModeAllLamps;
       AppByte2 = 0;
       AppByte = ActivateTimer(500, 0, ShowAllLamps);}} // start after 500ms
 
@@ -1451,7 +1447,7 @@ void ModeAllLamps(byte Event) {
     KillTimer(AppByte);                               // kill running timer for next solenoid
     LampPattern = NoLamps;                            // Turn off all lamps
     WriteUpper("  ALL   LAMPS ");
-    Mode = AllLamps_Enter;}}
+    Switch_Pressed = AllLamps_Enter;}}
 
 void ShowAllLamps(byte Event) {                       // Flash all lamps
   if (AppByte2) {                                     // if all lamps are on
@@ -1470,7 +1466,7 @@ void SoundTest_Enter(byte Switch) {
     case 3:
       WriteUpper("PLAYING SOUND ");
       WriteLower("            01");
-      Mode = SoundTest;
+      Switch_Pressed = SoundTest;
       AfterMusic = NextTestSound;
       PlayMusic((char*) TestSounds[AppByte]);}}
 
@@ -1479,7 +1475,7 @@ void NextTestSound() {
 	  AppByte++;}
 	if (!TestSounds[AppByte][0]) {
 		AppByte = 0;}
-  ConvertToBCD(AppByte+1);                           // convert the actual solenoid number
+  ConvertToBCD(AppByte+1);                           	// convert the actual solenoid number
   *(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
   *(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
   *(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
@@ -1493,6 +1489,6 @@ void SoundTest(byte Switch) {
     AfterMusic = 0;
 		StopPlayingMusic();
 		WriteUpper(" SOUND  TEST  ");
-    Mode = SoundTest_Enter;
+    Switch_Pressed = SoundTest_Enter;
     AppByte = 0;}}
 
