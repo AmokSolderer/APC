@@ -205,7 +205,7 @@ void PB_ShowAllLamps(byte State) {                    // Flash all lamps
 
 void PB_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 	if (AppBool) {																			// if C bank solenoid
-		ActivateSolenoid(0, 14);													// activate the relay
+		ActivateSolenoid(700, 14);													// activate the relay
 		ActivateTimer(100, Solenoid, PB_ActivateC_Bank);	// and delay the solenoid
 		*(DisplayLower+30) = DispPattern2[('C'-32)*2];		// show the C
 		*(DisplayLower+31) = DispPattern2[('C'-32)*2+1];
