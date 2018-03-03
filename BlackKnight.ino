@@ -1309,8 +1309,8 @@ void DisplayTestSw(byte Event) {
 
 void DisplayCycle(byte Event) {                       // Display cycle test
   if (!digitalRead(UpDown)) {                         // cycle only if Up/Down switch is not pressed
-    if (Event == 118) {                             	// if the last character is reached
-      AppByte2 = 34;}                                 // start from the beginning
+    if (Event == 116) {                             	// if the last character is reached
+      AppByte2 = 32;}                                 // start from the beginning
     else {
       if (Event == 50) {                            	// reached the gap between numbers and characters?
         AppByte2 = 66;}

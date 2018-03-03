@@ -77,10 +77,10 @@ byte LampCol = 0;                                     // lamp column being illum
 byte LampWait = 1;                                    // counter for lamp waiting time until next column is applied
 const struct LampPat *PatPointer;                     // Pointer to the lamp flow to be shown
 struct LampPat {                                      // a lamp pattern sequence played by ShowLampPatterns
-  short Duration;
+  uint16_t Duration;
   bool Pattern[LampMax-7];};
 struct LampFlow {                                     // defines a series of lamp patterns shown by AttractLampCycle
-  short Repeat;
+	uint16_t Repeat;
   const struct LampPat *FlowPat;};
 short FlowRepeat = 0;                                 // number of repeats for the LampFlow
 void (*LampReturn)(byte);                             // Pointer to the procedure to be executed after the lamp flow has been shown

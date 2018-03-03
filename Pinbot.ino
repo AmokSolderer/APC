@@ -8,6 +8,11 @@ struct SettingTopic PB_setList[4] = {{"DROP TG TIME  ",HandleNumSetting,0,3,10},
        {"  EXIT SETTNGS",ExitSettings,0,0,0},
        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
+const struct LampPat PB_AttractPat1[4] = {{300,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+														           	{300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+														            {300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+																				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+
 const byte PB_defaults[64] = {5,0,0,0,0,0,0,0,		 		// game default settings
 											  			0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0,
@@ -34,6 +39,9 @@ void PB_AttractMode() {
 	Switch_Pressed = PB_AttractModeSW;
 	Switch_Released = DummyProcess;
 	WriteUpper("THE APC PINBOT");
+	PatPointer = PB_AttractPat1;
+	FlowRepeat = 100;
+	ShowLampPatterns(0);
 }
 
 void PB_AttractModeSW(byte Select) {
@@ -205,7 +213,7 @@ void PB_ShowAllLamps(byte State) {                    // Flash all lamps
 
 void PB_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 	if (AppBool) {																			// if C bank solenoid
-		ActivateSolenoid(700, 14);													// activate the relay
+		ActivateSolenoid(700, 14);												// activate the relay
 		ActivateTimer(100, Solenoid, PB_ActivateC_Bank);	// and delay the solenoid
 		*(DisplayLower+30) = DispPattern2[('C'-32)*2];		// show the C
 		*(DisplayLower+31) = DispPattern2[('C'-32)*2+1];
@@ -238,8 +246,8 @@ void PB_ActivateC_Bank(byte Solenoid) {
 
 void PB_DisplayCycle(byte CharNo) {                   // Display cycle test
   if (!digitalRead(UpDown)) {                         // cycle only if Up/Down switch is not pressed
-    if (CharNo == 118) {                             	// if the last character is reached
-    	CharNo = 34;}                                 	// start from the beginning
+    if (CharNo == 116) {                             	// if the last character is reached
+    	CharNo = 32;}                                 	// start from the beginning
     else {
       if (CharNo == 50) {                            	// reached the gap between numbers and characters?
       	CharNo = 66;}
