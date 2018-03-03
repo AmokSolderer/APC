@@ -1,6 +1,6 @@
 // Rules for the Pinbot pinball machine
 
-const unsigned int PB_SolTimes[24] = {30,30,30,50,30,200,30,30,500,500,999,999,999,999,500,500,50,500,50,50,50,50,0,0}; // Activation times for solenoids
+const unsigned int PB_SolTimes[24] = {50,30,30,50,30,200,30,30,500,500,999,999,0,999,500,500,50,500,50,50,50,50,0,0}; // Activation times for solenoids
 const unsigned int PB_C_BankTimes[8] = {50,500,500,500,500,500,500,500};
 
 struct SettingTopic PB_setList[4] = {{"DROP TG TIME  ",HandleNumSetting,0,3,10},
@@ -179,7 +179,6 @@ void PB_Testmode(byte Select) {
 				AppByte2 = 0;}
 			else {
 				AppByte++;}
-				return;
 			PB_Testmode(0);}
 		break;
 	case 5:																							// all lamps test
@@ -193,7 +192,7 @@ void PB_Testmode(byte Select) {
 			WriteUpper("PLAYING MUSIC ");
 			AfterMusic = NextTestSound;
 			AppByte2 = 1;
-			PlayMusic((char*) TestSounds[AppByte]);
+			PlayMusic((char*) TestSounds[0]);
 			break;
 		case 72:
 	    AfterMusic = 0;
@@ -248,8 +247,8 @@ void PB_Testmode(byte Select) {
 			else {
 				// AppByte++;}
 				GameDefinition.AttractMode();
-				return;
-			PB_Testmode(0);}
+				return;}
+			PB_Testmode(0);
 		break;
 	}}}
 
@@ -294,7 +293,10 @@ void PB_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 		*(DisplayLower+27) = DispPattern2[33 + 2 * ByteBuffer2];
 		*(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer];
 		*(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer];
-		ActivateSolenoid(0, Solenoid);                    // activate the solenoid
+    if (Solenoid == 13) {
+      ActivateSolenoid(999, Solenoid);}
+    else {
+		  ActivateSolenoid(0, Solenoid);}                 // activate the solenoid
 		if (Solenoid < 9) {
 			*(DisplayLower+30) = DispPattern2[('A'-32)*2];	// show the A
 			*(DisplayLower+31) = DispPattern2[('A'-32)*2+1];
