@@ -161,7 +161,7 @@ void PB_Testmode(byte Select) {
 				AppByte++;}
 			PB_Testmode(0);}
 		break;
-	case 4:
+	case 4:																							// all lamps test
 		switch(Select) {																	// switch events
 		case 0:																						// init (not triggered by switch)
 			WriteUpper("  ALL   LAMPS ");
@@ -176,6 +176,74 @@ void PB_Testmode(byte Select) {
 			LampPattern = NoLamps;
 			if (AppByte2) {
 				KillTimer(AppByte2);
+				AppByte2 = 0;}
+			else {
+				AppByte++;}
+				return;
+			PB_Testmode(0);}
+		break;
+	case 5:																							// all lamps test
+		switch(Select) {																	// switch events
+		case 0:																						// init (not triggered by switch)
+			WriteUpper(" MUSIC  TEST  ");
+			WriteLower("              ");
+			AppByte2 = 0;
+			break;
+		case 3:
+			WriteUpper("PLAYING MUSIC ");
+			AfterMusic = NextTestSound;
+			AppByte2 = 1;
+			PlayMusic((char*) TestSounds[AppByte]);
+			break;
+		case 72:
+	    AfterMusic = 0;
+			StopPlayingMusic();
+			if (AppByte2) {
+				AppByte2 = 0;}
+			else {
+				AppByte++;}
+			PB_Testmode(0);}
+		break;
+	case 6:																							// visor test
+		switch(Select) {																	// switch events
+		case 0:																						// init (not triggered by switch)
+			WriteUpper(" VISOR  TEST  ");
+			WriteLower("              ");
+			AppByte2 = 0;
+			AppBool = false;
+			break;
+		case 3:
+			AppByte2 = 1;
+			if (AppBool) {
+				if (Switch[46]) {
+					AppBool = false;
+					PB_Testmode(3);}
+				else {
+					WriteUpper("CLOSING VISOR ");
+					ActivateSolenoid(0, 13);}}
+			else {
+				if (Switch[47]) {
+					AppBool = true;
+					PB_Testmode(3);}
+				else {
+					WriteUpper("OPENING VISOR ");
+					ActivateSolenoid(0, 13);}}
+			break;
+		case 46:
+			if (AppBool) {
+				ReleaseSolenoid(13);
+				AppBool = false;
+				WriteUpper(" VISOR CLOSED ");}
+			break;
+		case 47:
+			if (!AppBool) {
+				ReleaseSolenoid(13);
+				AppBool = true;
+				WriteUpper(" VISOR  OPEN  ");}
+			break;
+		case 72:
+			ReleaseSolenoid(13);
+			if (AppByte2) {
 				AppByte2 = 0;}
 			else {
 				// AppByte++;}

@@ -119,8 +119,7 @@ bool PlayingMusic = false;														// StartMusic done -> continuously playi
 File MusicFile;																				// file handle for the music file (SD)
 void (*AfterMusic)() = 0;															// program to execute after music file has ended
 char *NextMusicName;
-const char TestSounds[24][15] = {{"KK_001.bin"},{"KK_002.bin"},{"KK_003.bin"},{"KK_004.bin"},{"KK_005.bin"},{"KK_006.bin"},{"KK_007.bin"},{"KK_008.bin"},{"KK_009.bin"},{"KK_010.bin"},{"KK_011.bin"},{"KK_012.bin"},
-				{"KK_013.bin"},{"KK_014.bin"},{"KK_015.bin"},{"KK_016.bin"},{"KK_017.bin"},{"KK_018.bin"},{"KK_019.bin"},{"KK_020.bin"},{"KK_021.bin"},{"KK_022.bin"},{"KK_023.bin"},0};
+const char TestSounds[2][15] = {{"Musik.bin"},0};
 void ExitSettings(bool change);
 void HandleTextSetting(bool change);
 void HandleNumSetting(bool change);
