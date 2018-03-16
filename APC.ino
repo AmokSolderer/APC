@@ -98,6 +98,9 @@ unsigned int DurDelayed[20];                          // duration values for wai
 bool BlockTimers = false;                             // blocks the timer interrupt while timer properties are being changed
 byte ActiveTimers = 0;                                // Number of active timers
 byte SettingsRepeatTimer = 0;													// numberof the timer of the key repeat function in the settings function
+byte BlinkScoreTimer = 0;                             // number of the timer for the score blinking
+byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
+byte CheckReleaseTimer = 0;														// number of the timer for the ball release check
 unsigned int TimerValue[64];                          // Timer values
 bool Timer[64];                                       // indicates a timer event
 byte TimerArgument[64];
@@ -106,8 +109,6 @@ void (*TimerEvent[64])(byte);                         // pointers to the procedu
 void (*TimerBuffer)(byte);
 void (*Switch_Pressed)(byte);                         // Pointer to current behavior mode for activated switches
 void (*Switch_Released)(byte);                          // Pointer to current behavior mode for released switches
-//void (*AttractMode)();																// Pointer to Attract mode of current game
-//unsigned long SystemTime = 0;
 char EnterIni[3];
 uint16_t *EmptyBuffer;																// to be used when no audio is played on this channel
 uint16_t *MusicBuffer;																// buffers music data from SD to be processed by interrupt
@@ -179,11 +180,17 @@ struct SettingTopic *SettingsList;
 
 															// game variables
 
+bool BlockOuthole = false;														// blocks the outhole as long as the previous ball loss is not handled completely
+byte LockedBalls[5];                                  // locked balls of all players (starting from 1)
+byte InLock = 0;                                      // number of balls currently in lock
+byte Multiballs = 1;                                  // balls on playfield (same as multiball point multiplier)
 byte NoPlayers = 0;                                   // number of players
 byte Player = 0;                                      // current player
 byte Coins = 0;                                       // inserted coins
 byte Ball = 0;                                        // No of current ball
 byte ExBalls = 0;                                     // No of extra balls
+byte Bonus = 1;                                       // bonus points of the current player
+byte BonusMultiplier = 1;															// current bonus multiplier
 unsigned int Points[5];                               // points of all players (starting from 1)
 struct HighScores {
   unsigned int Scores[4] = {4000000, 3000000, 2000000, 1000000}; // all time high scores
@@ -1085,6 +1092,7 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
     Step = 0;                                         // reset the pattern
     FlowRepeat--;                                     // decrease the number of repetitions
     if (!FlowRepeat) {                                // if no more repetitions pending
+    	ByteBuffer3 = 0;																// indicate that the process has stopped
       if (LampReturn) {                               // is a return pointer given?
         LampReturn(0);}                               // call the procedure
       return;}}                                       // otherwise just quit

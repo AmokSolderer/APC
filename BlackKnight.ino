@@ -7,27 +7,18 @@ bool RightAfterMagna = false;                         // number of the timer for
 bool LastChance = false;                              // last chance active?
 bool LastChanceActive = false;                        // give a last chance ball
 bool LastChanceOver = false;                          // did the player already have a last chance?
-bool BlockOuthole = false;														// blocks the outhole as long as the previous ball loss is not handled completely
 byte RightMysteryTimer = 0;                           // number of the timer for the right mystery (if active)
 byte LeftMysteryTimer = 0;                            // number of the timer for the left mystery (if active)
 byte LockLightsTimer = 0;                             // number of the timer for the lock chase light
-byte BlinkScoreTimer = 0;                             // number of the timer for the score blinking
 byte CurrentLockLight = 0;                            // number of the lock light being illuminated at the moment
-byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte TimedRightMagnaTimer = 0;												// number of the timer for the right timed magna save
 byte TimedLeftMagnaTimer = 0;													// number of the timer for the left timed magna save
-byte CheckReleaseTimer = 0;														// number of the timer for the ball release check
-byte Bonus = 1;                                       // bonus points of the current player x1000
 byte BonusToAdd = 0;																	// bonus points to be added by AddBonus()
 byte BonusCountTime = 0;															// counter to reduce the waiting time between the bonus counts
 const byte BonusLamp = 48;														// first lamp of the bonus ladder
-byte BonusMultiplier = 1;															// current bonus multiplier
 bool LowerExBall[5];                                  // extra ball in turnaround pending?
 bool UpperExBall[5];                                  // extra ball in left ramp pending?
 bool PlayersExBalls[5];                               // did the player already get an extra ball?
-byte LockedBalls[5];                                  // locked balls of all players (starting from 1)
-byte InLock = 0;                                      // number of balls currently in lock
-byte Multiballs = 1;                                  // balls on playfield (same as multiball point multiplier)
 byte DropTimer[4];                                    // timer for all drop target banks
 byte DropHits[16];                                    // counts how often the target banks have been cleared
 bool DropWait[5];																			// indicates that a waiting time for this drop target bank is active before it it being processed
