@@ -775,7 +775,29 @@ void ReleaseSolenoid(byte Solenoid) {
 
 void ShowPoints(byte Player) {                    		// display the points of the selected player
   DisplayScore(Player, Points[Player]);}
-  
+
+void BlinkScore(byte Event) {
+  switch (Player) {
+    case 1:                                           // for the players 1 and 3
+    case 3:
+      ByteBuffer = 2;                                 // start in column 1
+      break;
+    case 2:                                           // for the players 2 and 4
+    case 4:
+      ByteBuffer = 18;                                // start in column 9
+      break;}
+  if (Event) {
+    if (Player < 3) {
+      for (i=0; i<14; i++) {
+        *(DisplayUpper+ByteBuffer+i) = 0;}}
+    else {
+      for (i=0; i<14; i++) {
+        *(DisplayLower+ByteBuffer+i) = 0;}}
+    BlinkScoreTimer = ActivateTimer(300, 0, BlinkScore);}
+  else {
+    ShowPoints(Player);
+    BlinkScoreTimer = ActivateTimer(2000, 1, BlinkScore);}}
+    
 void DisplayScore (byte Position, unsigned int Score) {
 	byte i=0;                                       		// use a private counter
 	switch (Position) {
@@ -1031,7 +1053,8 @@ void EnterInitials(byte Event) {
         LampPattern = Lamp;
         ActivateSolenoid(0, 23);                      // enable flipper fingers
         ActivateSolenoid(0, 24);
-        ActivateTimer(2000, 0, BallEnd3);}
+        // ActivateTimer(2000, 0, BallEnd3);                                XXXXXXXXXXXXXXXXXX
+        }
       else {
         BlinkInitial(1);}
       break;

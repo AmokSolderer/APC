@@ -15,21 +15,21 @@ struct SettingTopic PB_setList[4] = {{"DROP TG TIME  ",HandleNumSetting,0,3,10},
        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
 																	 //  DurationXX0910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364
-const struct LampPat PB_AttractPat1[5] = {{300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-														           		{300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
-																					{300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1},
-																					{300,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,1,1,1,1},
+const struct LampPat PB_AttractPat1[5] = {{150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+														           		{150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
+																					{150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1},
+																					{150,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,1,1,1,1},
 																					{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
-const struct LampPat PB_AttractPat2[5] = {{300,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0},
- 																					{300,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0,1,1,1,0,1,0,0,0,1,1,1,0,1,0,0,0,0,0,0,0},
-																					{300,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,1,1,1,1,1,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1},
-																					{300,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,1,1,1,1},
+const struct LampPat PB_AttractPat2[5] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0},
+ 																					{150,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0,1,1,1,0,1,0,0,0,1,1,1,0,1,0,0,0,0,0,0,0},
+																					{150,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,1,1,1,1,1,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1},
+																					{150,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,1,1,1,1},
 																					{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
-const struct LampPat PB_AttractPat3[4] = {{300,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0},
- 																					{300,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0},
-																					{300,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+const struct LampPat PB_AttractPat3[4] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0},
+ 																					{150,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0},
+																					{150,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 																					{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
 const struct LampFlow PB_AttractFlow[4] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{0,0}};
@@ -62,6 +62,7 @@ void PB_AttractMode() {
 	WriteUpper("THE APC PINBOT");
   AddBlinkLamp(1, 150);                               // blink Game Over lamp
   AppByte2 = 0;
+  LampReturn = PB_AttractLampCycle;
   PB_AttractLampCycle(0);
 
 }
@@ -84,17 +85,20 @@ void PB_AttractModeSW(byte Select) {
 		for (i=0; i< LampMax+1; i++) {
 			Lamp[i] = false;}
 		LampPattern = Lamp;
-		Lamp[2] = true;                                 	// turn on Ball in Play lamp
+		Lamp[3] = true;                                 	// turn on Ball in Play lamp
 		NoPlayers = 0;
 		WriteUpper("              ");
 		WriteLower("              ");
 		Ball = 1;
-		AddPlayer();
+		PB_AddPlayer();
+    InLock = 0;
 		Player = 1;
 		ExBalls = 0;
+    Multiballs = 1;
 		Bonus = 1;
 		BonusMultiplier = 1;
-		PB_CycleDropLights(41);														// start the blinking drop target lights
+    DropBlinkLamp = 41;
+		PB_CycleDropLights(0);														// start the blinking drop target lights
 		if (Switch[49] || Switch[50] || Switch[51]) {			// any drop target down?
 			ActivateSolenoid(0, 4);}												// reset it
 		if (!Switch[44]) {																// ramp in up state?
@@ -111,6 +115,7 @@ void PB_AttractModeSW(byte Select) {
 			ByteBuffer3 = 0;}
 		RemoveBlinkLamp(1);																// stop the blinking of the game over lamp
 		LampPattern = NoLamps;                          	// Turn off all lamps
+   // BlinkScoreTimer
 		ReleaseAllSolenoids();
 		if (digitalRead(UpDown)) {
 			WriteUpper("  TEST  MODE  ");
@@ -122,11 +127,19 @@ void PB_AttractModeSW(byte Select) {
 		break;
 	}}
 
+void PB_AddPlayer() {
+  if ((NoPlayers < 4) && (Ball == 1)) {               // if actual number of players < 4
+    NoPlayers++;                                      // add a player
+    Points[NoPlayers] = 0;                            // delete the points of the new player
+    ShowPoints(NoPlayers);}}                          // and show them
+    
 void PB_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
   ShowAllPoints(0);
-  ShowBonus();
+  //ShowBonus();
   *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball]; 		// show current ball in left credit
   //*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
+  if (!BlinkScoreTimer) {
+    BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);}
   if (!Switch[20]) {
   	Switch_Released = DummyProcess;										//	UNTERSCHIED
     ActivateSolenoid(0, 2);                          	// release ball
@@ -159,7 +172,7 @@ void PB_BallReleaseCheck(byte Switch) {               // handle switches during 
       Switch_Released = PB_CheckShooterLaneSwitch;}		// set mode to register when ball is shot
     else {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}} // set switch mode to game
-  GameMain(Switch);}
+  PB_GameMain(Switch);}
 
 void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
   if (BlinkScoreTimer) {															// stop blinking to show messages
@@ -282,14 +295,11 @@ void PB_GameMain(byte Switch) {
 			OpenVisor = false;
 			ReleaseSolenoid(13);}
 		break;
-	case 65:																						// left jet bumper
-		ActivateSolenoid(0, 19);
-		break;
-	case 66:																						// upper jet bumper
-		ActivateSolenoid(0, 22);
-		break;
-	case 67:																						// lower jet bumper
+	case 65:																						// lower jet bumper
 		ActivateSolenoid(0, 17);
+		break;
+	case 67:																						// left jet bumper
+		ActivateSolenoid(0, 19);
 		break;
 	case 68:																						// left slingshot
 		ActivateSolenoid(0, 20);
@@ -297,6 +307,9 @@ void PB_GameMain(byte Switch) {
 	case 69:																						// right slingshot
 		ActivateSolenoid(0, 21);
 		break;
+  case 70:                                            // upper jet bumper
+    ActivateSolenoid(0, 22);
+    break;
 	}
 }
 
@@ -313,14 +326,14 @@ void PB_CycleDropLights(byte Dummy) {
 		AddBlinkLamp(DropBlinkLamp+1, 100);								// start the next one
 		RemoveBlinkLamp(DropBlinkLamp);										// remove the current one
 		DropBlinkLamp++;}																	// increase number of currently blinking lamp
-	CycleDropTimer = ActivateTimer(1000, 0, PB_CycleDropLights);}
+	CycleDropTimer = ActivateTimer(3000, 0, PB_CycleDropLights);}
 
 void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 	AppByte = PB_CountBallsInTrunk();
-	if ((AppByte == 5)||(AppByte < 4-Multiballs-InLock)) {
+	if ((AppByte == 5)||(AppByte < 3-Multiballs-InLock)) {
 		InLock = 0;
 		if (Multiballs == 1) {
-			for (i=0; i<3; i++) {                         	// check how many balls are on the ball ramp
+			for (i=0; i<2; i++) {                         	// check how many balls are on the ball ramp
 				if (Switch[41+i]) {
 					InLock++;}}}
 		WriteLower(" BALL   ERROR ");
@@ -332,17 +345,23 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 			Event = 0;
 			PB_ClearOuthole(0);}}
 	else {
-		if (Multiballs) {																	// multiball running?
-			Multiballs = 0;																	// turn it off
+		if (Multiballs == 2) {														// multiball running?
+			Multiballs = 1;																	// turn it off
 			if (AppByte == 2) {															// 2 balls detected in the trunk
 				ActivateTimer(1000, 0, PB_BallEnd);}					// come back and check again
 			else {
 				BlockOuthole = false;}}												// remove outhole block
 		else {
 			LockedBalls[Player] = 0;
-			BonusToAdd = Bonus;
-			BonusCountTime = 20;
+			//BonusToAdd = Bonus;
+			//BonusCountTime = 20;
 			//CountBonus(AppByte);
+      if (BlinkScoreTimer) {
+        KillTimer(BlinkScoreTimer);
+        BlinkScoreTimer = 0;}
+      if (BallWatchdogTimer) {
+        KillTimer(BallWatchdogTimer);
+        BallWatchdogTimer = 0;}
 			BlockOuthole = false;														// remove outhole block
 			if (ExBalls) {                                	// Player has extra balls
 				AddBlinkLamp(33, 250);                      	// Let the extra ball lamp blink
