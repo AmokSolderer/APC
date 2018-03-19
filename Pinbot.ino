@@ -2,17 +2,25 @@
 
 bool OpenVisor = false;																// visor is being opened if true
 bool CloseVisor = false;															// visor is being closed if true
-byte CycleDropTimer = 0;															// number of the CycleDropLight timer
+bool PB_DropWait = false;															// ignore drop target switches when true
+bool PB_DropRamp = false;															// ramp needs to be dropped when possible
+bool PB_EnergyActive = false;													// score energy active?
+byte PB_DropTimer = 0;																// number of the drop target timer
+byte PB_Planet[5];																		// reached planets for all players
+byte PB_ExBallsLit = 0;																// no of lanes lit for extra ball
+//byte CycleDropTimer = 0;															// number of the CycleDropLight timer
 byte DropBlinkLamp = 0;																// number of the lamp currently blinking
 
 const unsigned int PB_SolTimes[24] = {50,30,30,50,30,200,30,30,500,500,999,999,0,999,500,500,50,500,50,50,50,50,0,0}; // Activation times for solenoids
 const unsigned int PB_C_BankTimes[8] = {50,500,500,500,500,500,500,500};
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
 
-struct SettingTopic PB_setList[4] = {{"DROP TG TIME  ",HandleNumSetting,0,3,10},
-       {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
-       {"  EXIT SETTNGS",ExitSettings,0,0,0},
-       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+struct SettingTopic PB_setList[6] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20},
+		{" REACH PLANET ",HandleNumSetting,0,1,9},
+		{" ENERGY TIMER ",HandleNumSetting,0,1,90},
+    {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
+    {"  EXIT SETTNGS",ExitSettings,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
 																	 //  DurationXX0910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364
 const struct LampPat PB_AttractPat1[5] = {{150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -34,7 +42,11 @@ const struct LampPat PB_AttractPat3[4] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1
 
 const struct LampFlow PB_AttractFlow[4] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{0,0}};
 
-const byte PB_defaults[64] = {5,0,0,0,0,0,0,0,		 		// game default settings
+const byte PB_DropTime = 0;														// drop target down time setting
+const byte PB_ReachPlanet = 1;												// target planet setting
+const byte PB_EnergyTimer = 2;												// energy timer setting
+
+const byte PB_defaults[64] = {5,6,15,0,0,0,0,0,		 		// game default settings
 											  			0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0,
@@ -91,6 +103,8 @@ void PB_AttractModeSW(byte Select) {
 		WriteLower("              ");
 		Ball = 1;
 		PB_AddPlayer();
+		for (i=1;i<5;i++) {																// reset reached planets
+			PB_Planet[i] = 0;}
     InLock = 0;
 		Player = 1;
 		ExBalls = 0;
@@ -98,7 +112,6 @@ void PB_AttractModeSW(byte Select) {
 		Bonus = 1;
 		BonusMultiplier = 1;
     DropBlinkLamp = 41;
-		PB_CycleDropLights(0);														// start the blinking drop target lights
 		if (Switch[49] || Switch[50] || Switch[51]) {			// any drop target down?
 			ActivateSolenoid(0, 4);}												// reset it
 		if (!Switch[44]) {																// ramp in up state?
@@ -106,7 +119,6 @@ void PB_AttractModeSW(byte Select) {
 		PB_NewBall(2);                                    // release a new ball (2 expected balls in the trunk)
 		ActivateSolenoid(0, 23);                        	// enable flipper fingers
 		ActivateSolenoid(0, 24);
-		// enter game
 		break;
 	case 72:
 		Switch_Pressed = DummyProcess;
@@ -134,20 +146,23 @@ void PB_AddPlayer() {
     ShowPoints(NoPlayers);}}                          // and show them
     
 void PB_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
-  ShowAllPoints(0);
-  //ShowBonus();
-  *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball]; 		// show current ball in left credit
-  //*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
-  if (!BlinkScoreTimer) {
-    BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);}
-  if (!Switch[20]) {
-  	Switch_Released = DummyProcess;										//	UNTERSCHIED
-    ActivateSolenoid(0, 2);                          	// release ball
-    Switch_Pressed = PB_BallReleaseCheck;             // set switch check to enter game
-    CheckReleaseTimer = ActivateTimer(5000, Balls-1, PB_CheckReleasedBall);} // start release watchdog
-  else {
-  	Switch_Released = PB_CheckShooterLaneSwitch;			//	UNTERSCHIED
-    Switch_Pressed = PB_ResetBallWatchdog;}}
+	ShowAllPoints(0);
+	//ShowBonus();
+	*(DisplayUpper+16) = LeftCredit[32 + 2 * Ball]; 		// show current ball in left credit
+	//*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
+	if (!BlinkScoreTimer) {
+		BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);}
+	PB_CycleDropLights(1);															// start the blinking drop target lights
+	if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {	// target planet not reached yet?
+		AddBlinkLamp(18+game_settings[PB_ReachPlanet],100);}		// let target planet blink
+	if (!Switch[20]) {
+		Switch_Released = DummyProcess;										//	UNTERSCHIED
+		ActivateSolenoid(0, 2);                          	// release ball
+		Switch_Pressed = PB_BallReleaseCheck;             // set switch check to enter game
+		CheckReleaseTimer = ActivateTimer(5000, Balls-1, PB_CheckReleasedBall);} // start release watchdog
+	else {
+		Switch_Released = PB_CheckShooterLaneSwitch;			//	UNTERSCHIED
+		Switch_Pressed = PB_ResetBallWatchdog;}}
 
 void PB_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 20) {                                 // shooter lane switch released?
@@ -159,6 +174,9 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
   if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
     if (BallWatchdogTimer) {
       KillTimer(BallWatchdogTimer);}                  // stop watchdog
+    if (PB_DropRamp&&(Switch != 45)&&(Switch != 49)&&(Switch != 50)&&(Switch != 51)) { // switch not close to the ramp?
+    	PB_DropRamp = false;														// clear request
+    	ActivateSolenoid(0, 6);}												// drop ramp
     BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
   PB_GameMain(Switch);}                               // process current switch
 
@@ -285,6 +303,20 @@ void PB_GameMain(byte Switch) {
 	case 36:
 	case 37:
 		break;
+	case 41:
+	case 42:
+	case 43:
+    if (!DropWait) {
+      PB_DropWait = true;
+      Points[Player] += Multiballs * 1000;
+      ShowPoints(Player);
+      ActivateTimer(200, Switch, PB_HandleDropTargets);}
+		break;
+	case 45:																						// score energy switch
+		if (PB_EnergyActive) {
+																	// score energy value
+			PB_EnergyOff(0);}
+		break;
 	case 46:
 		if (CloseVisor) {
 			CloseVisor = false;
@@ -317,16 +349,61 @@ void PB_HandleLock(byte Dummy) {
 	;
 }
 
-void PB_CycleDropLights(byte Dummy) {
-	if (DropBlinkLamp == 43) {													// last lamp blinking?
-		AddBlinkLamp(41, 100);														// start again with the first one
-		RemoveBlinkLamp(43);															// remove the current one
-		DropBlinkLamp = 41;}															// reset the number of the currently blinking lamp
-	else {																							// not the last one
-		AddBlinkLamp(DropBlinkLamp+1, 100);								// start the next one
-		RemoveBlinkLamp(DropBlinkLamp);										// remove the current one
-		DropBlinkLamp++;}																	// increase number of currently blinking lamp
-	CycleDropTimer = ActivateTimer(3000, 0, PB_CycleDropLights);}
+void PB_HandleDropTargets(byte Target) {
+	PB_DropWait = false;																// stop ignoring drop target switches
+	if (Switch[49] && Switch[50] && Switch[51]) {				// all targets down
+		if (PB_DropTimer) {																// any targets down before?
+			KillTimer(PB_DropTimer);												// turn off timer
+			PB_DropTimer = 0;
+			RemoveBlinkLamp(17);}														// stop blinking of timer lamp
+		Points[Player] += Multiballs * 25000;
+		PB_Planet[Player]++;															// player has reached next planet
+		ActivateSolenoid(0, 4);														// reset drop targets
+		if (PB_Planet[Player] > 10) {											// sun already reached before?
+			PB_Planet[Player] = 10;}												// set it back to the sun
+		else {
+						//  10 = Sun
+			if (PB_Planet[Player] == game_settings[PB_ReachPlanet]) { // target planet reached
+				PB_ExBallsLit++;
+				RemoveBlinkLamp(game_settings[PB_ReachPlanet]);}	// stop blinking
+			Lamp[PB_Planet[Player]] = true;}}
+	else {
+		if (!PB_DropTimer) {															// first target hit
+			if (Target-8 == DropBlinkLamp) {								// blinking target hit?
+				ActivateSolenoid(0, 5);												// raise ramp
+				AddBlinkLamp(34, 500);												// blink energy lamp
+				PB_EnergyActive = true;												// energy value on
+				ActivateTimer(game_settings[PB_EnergyTimer]*1000, 0, PB_EnergyOff);}
+			PB_CycleDropLights(0);													// stop blinking of drop target lights
+			AddBlinkLamp(17, 500);													// blink drop target timer lamp
+			PB_DropTimer = ActivateTimer(game_settings[PB_DropTime]*1000, 0, PB_ResetDropTargets);}}}
+
+void PB_ResetDropTargets(byte Dummy) {
+	RemoveBlinkLamp(17);																// stop drop target timer lamp
+	ActivateSolenoid(0, 4);}														// reset drop targets
+
+void PB_EnergyOff(byte Dummy) {
+	if (PB_EnergyActive) {
+		RemoveBlinkLamp(34);															// stop blinking of energy lamp
+		PB_EnergyActive = false;													// energy value off
+		PB_DropRamp = true;}}															// ramp needs to be dropped
+
+void PB_CycleDropLights(byte State) {
+	if (State) {
+		if (DropBlinkLamp) {															// blink lamp active?
+			if (DropBlinkLamp == 43) {											// last lamp blinking?
+				AddBlinkLamp(41, 100);												// start again with the first one
+				RemoveBlinkLamp(43);													// remove the current one
+				DropBlinkLamp = 41;}													// reset the number of the currently blinking lamp
+			else {																					// not the last one
+				AddBlinkLamp(DropBlinkLamp+1, 100);						// start the next one
+				RemoveBlinkLamp(DropBlinkLamp);								// remove the current one
+				DropBlinkLamp++;}															// increase number of currently blinking lamp
+			ActivateTimer(3000, 1, PB_CycleDropLights);}}
+	else {
+		if (DropBlinkLamp) {															// blink lamp active?
+			RemoveBlinkLamp(DropBlinkLamp);
+			DropBlinkLamp = 0;}}}
 
 void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 	AppByte = PB_CountBallsInTrunk();
@@ -356,6 +433,7 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 			//BonusToAdd = Bonus;
 			//BonusCountTime = 20;
 			//CountBonus(AppByte);
+			PB_CycleDropLights(0);
       if (BlinkScoreTimer) {
         KillTimer(BlinkScoreTimer);
         BlinkScoreTimer = 0;}
