@@ -11,8 +11,7 @@ byte PB_ExBallsLit = 0;																// no of lanes lit for extra ball
 //byte CycleDropTimer = 0;															// number of the CycleDropLight timer
 byte DropBlinkLamp = 0;																// number of the lamp currently blinking
 
-const unsigned int PB_SolTimes[24] = {50,30,30,50,30,200,30,30,500,500,999,999,0,999,500,500,50,500,50,50,50,50,0,0}; // Activation times for solenoids
-const unsigned int PB_C_BankTimes[8] = {50,500,500,500,500,500,500,500};
+const unsigned int PB_SolTimes[32] = {50,30,30,50,30,200,30,30,500,500,999,999,0,999,500,500,50,500,50,50,50,50,0,0,50,500,500,500,500,500,500,500}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
 
 struct SettingTopic PB_setList[6] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20},
@@ -111,11 +110,10 @@ void PB_AttractModeSW(byte Select) {
     Multiballs = 1;
 		Bonus = 1;
 		BonusMultiplier = 1;
-    DropBlinkLamp = 41;
 		if (Switch[49] || Switch[50] || Switch[51]) {			// any drop target down?
-			ActivateSolenoid(0, 4);}												// reset it
+			ActA_BankSol(0, 4);}												// reset it
 		if (!Switch[44]) {																// ramp in up state?
-			ActivateSolenoid(0, 6);}												// put it down
+			ActA_BankSol(0, 6);}												// put it down
 		PB_NewBall(2);                                    // release a new ball (2 expected balls in the trunk)
 		ActivateSolenoid(0, 23);                        	// enable flipper fingers
 		ActivateSolenoid(0, 24);
@@ -152,12 +150,13 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 	//*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
 	if (!BlinkScoreTimer) {
 		BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);}
+  DropBlinkLamp = 41;
 	PB_CycleDropLights(1);															// start the blinking drop target lights
 	if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {	// target planet not reached yet?
 		AddBlinkLamp(18+game_settings[PB_ReachPlanet],100);}		// let target planet blink
 	if (!Switch[20]) {
 		Switch_Released = DummyProcess;										//	UNTERSCHIED
-		ActivateSolenoid(0, 2);                          	// release ball
+		ActA_BankSol(0, 2);                          	// release ball
 		Switch_Pressed = PB_BallReleaseCheck;             // set switch check to enter game
 		CheckReleaseTimer = ActivateTimer(5000, Balls-1, PB_CheckReleasedBall);} // start release watchdog
 	else {
@@ -176,7 +175,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
       KillTimer(BallWatchdogTimer);}                  // stop watchdog
     if (PB_DropRamp&&(Switch != 45)&&(Switch != 49)&&(Switch != 50)&&(Switch != 51)) { // switch not close to the ramp?
     	PB_DropRamp = false;														// clear request
-    	ActivateSolenoid(0, 6);}												// drop ramp
+    	ActA_BankSol(0, 6);}												// drop ramp
     BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
   PB_GameMain(Switch);}                               // process current switch
 
@@ -203,12 +202,12 @@ void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
     WriteLower("              ");
     ShowAllPoints(0);
     BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);
-    ActivateSolenoid(0, 2);}
+    ActA_BankSol(0, 2);}
   AppByte = PB_CountBallsInTrunk();
   if (AppByte == Balls) {                             // expected number of balls in trunk
     WriteUpper("  BALL MISSING");
     if (Switch[16]) {                                 // outhole switch still active?
-      ActivateSolenoid(0, 1);}}												// shove the ball into the trunk
+      ActA_BankSol(0, 1);}}												// shove the ball into the trunk
   else {																							//
     if (AppByte == 5) {																// balls not settled
       WriteLower(" TRUNK  ERROR ");
@@ -219,7 +218,7 @@ void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
         WriteLower("              ");
         ShowAllPoints(0);
         BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);
-        ActivateSolenoid(0, 2);}}}                    // release again
+        ActA_BankSol(0, 2);}}}                    // release again
   CheckReleaseTimer = ActivateTimer(5000, Balls, PB_CheckReleasedBall);}
 
 byte PB_CountBallsInTrunk() {
@@ -278,7 +277,7 @@ void PB_ClearOuthole(byte Event) {
   if (Switch[16]) {                                   // outhole switch still active?
     if (!BlockOuthole) {															// outhole blocked?
       BlockOuthole = true;														// block outhole until this ball has been processed
-      ActivateSolenoid(0, 1);                         // put ball in trunk
+      ActA_BankSol(0, 1);                         // put ball in trunk
       ActivateTimer(2000, 0, PB_BallEnd);}}
     else {
       ActivateTimer(2000, 0, PB_ClearOuthole);}}			// come back in 2s if outhole is blocked
@@ -303,15 +302,6 @@ void PB_GameMain(byte Switch) {
 	case 36:
 	case 37:
 		break;
-	case 41:
-	case 42:
-	case 43:
-    if (!DropWait) {
-      PB_DropWait = true;
-      Points[Player] += Multiballs * 1000;
-      ShowPoints(Player);
-      ActivateTimer(200, Switch, PB_HandleDropTargets);}
-		break;
 	case 45:																						// score energy switch
 		if (PB_EnergyActive) {
 																	// score energy value
@@ -326,6 +316,15 @@ void PB_GameMain(byte Switch) {
 		if (OpenVisor) {
 			OpenVisor = false;
 			ReleaseSolenoid(13);}
+		break;
+	case 49:																						// drop targets
+	case 50:
+	case 51:
+    if (!PB_DropWait) {
+      PB_DropWait = true;
+      Points[Player] += Multiballs * 1000;
+      ShowPoints(Player);
+      ActivateTimer(200, Switch, PB_HandleDropTargets);}
 		break;
 	case 65:																						// lower jet bumper
 		ActivateSolenoid(0, 17);
@@ -355,22 +354,26 @@ void PB_HandleDropTargets(byte Target) {
 		if (PB_DropTimer) {																// any targets down before?
 			KillTimer(PB_DropTimer);												// turn off timer
 			PB_DropTimer = 0;
+			DropBlinkLamp = 41;
+			PB_CycleDropLights(1);													// start the blinking drop target lights
 			RemoveBlinkLamp(17);}														// stop blinking of timer lamp
 		Points[Player] += Multiballs * 25000;
 		PB_Planet[Player]++;															// player has reached next planet
-		ActivateSolenoid(0, 4);														// reset drop targets
+		ActA_BankSol(0, 4);														// reset drop targets
 		if (PB_Planet[Player] > 10) {											// sun already reached before?
 			PB_Planet[Player] = 10;}												// set it back to the sun
 		else {
-						//  10 = Sun
-			if (PB_Planet[Player] == game_settings[PB_ReachPlanet]) { // target planet reached
-				PB_ExBallsLit++;
-				RemoveBlinkLamp(game_settings[PB_ReachPlanet]);}	// stop blinking
-			Lamp[PB_Planet[Player]] = true;}}
+			if 	(PB_Planet[Player] == 10) {									//  10 = Sun
+				PB_ExBallsLit++;}
+			else {
+				if (PB_Planet[Player] == game_settings[PB_ReachPlanet]) { // target planet reached
+					PB_ExBallsLit++;
+					RemoveBlinkLamp(game_settings[PB_ReachPlanet]);}	// stop blinking
+				Lamp[PB_Planet[Player]] = true;}}}
 	else {
 		if (!PB_DropTimer) {															// first target hit
 			if (Target-8 == DropBlinkLamp) {								// blinking target hit?
-				ActivateSolenoid(0, 5);												// raise ramp
+				ActA_BankSol(0, 5);												// raise ramp
 				AddBlinkLamp(34, 500);												// blink energy lamp
 				PB_EnergyActive = true;												// energy value on
 				ActivateTimer(game_settings[PB_EnergyTimer]*1000, 0, PB_EnergyOff);}
@@ -380,7 +383,9 @@ void PB_HandleDropTargets(byte Target) {
 
 void PB_ResetDropTargets(byte Dummy) {
 	RemoveBlinkLamp(17);																// stop drop target timer lamp
-	ActivateSolenoid(0, 4);}														// reset drop targets
+  DropBlinkLamp = 41;
+	PB_CycleDropLights(1);															// start the blinking drop target lights
+	ActA_BankSol(0, 4);}														// reset drop targets
 
 void PB_EnergyOff(byte Dummy) {
 	if (PB_EnergyActive) {
@@ -683,8 +688,7 @@ void PB_ShowAllLamps(byte State) {                    // Flash all lamps
 
 void PB_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 	if (AppBool) {																			// if C bank solenoid
-		ActivateSolenoid(700, 14);												// activate the relay
-		ActivateTimer(100, Solenoid, PB_ActivateC_Bank);	// and delay the solenoid
+		ActC_BankSol(Solenoid);
 		*(DisplayLower+30) = DispPattern2[('C'-32)*2];		// show the C
 		*(DisplayLower+31) = DispPattern2[('C'-32)*2+1];
 		if (!digitalRead(UpDown)) {
@@ -713,9 +717,6 @@ void PB_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 				if (Solenoid == 22) {                         // maximum reached?
 					Solenoid = 1;}}}}                           // then start again
 	AppByte2 = ActivateTimer(1000, Solenoid, PB_FireSolenoids);}   // come back in one second
-
-void PB_ActivateC_Bank(byte Solenoid) {
-	ActivateSolenoid(PB_C_BankTimes[Solenoid], Solenoid);}
 
 void PB_DisplayCycle(byte CharNo) {                   // Display cycle test
   if (!digitalRead(UpDown)) {                         // cycle only if Up/Down switch is not pressed

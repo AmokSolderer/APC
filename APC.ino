@@ -94,6 +94,10 @@ bool SolChange = false;                               // Indicates that the stat
 byte SolNumber = 0;                                   // Determines which solenoid is to be changed ...
 bool SolState = false;                                // and what the desired state is
 byte SolDelayed[20];                                  // Queue for waiting solenoid requests
+bool C_BankActive = false;													// A/C relay currently doing C bank?
+byte A_BankWaitingNo = 0;															// amount of coils in A bank waiting list
+byte A_BankWaiting[10];																// list of waiting A bank coils
+unsigned int A_BankWaitDuration[10];									// duration values for waiting A bank coils
 unsigned int DurDelayed[20];                          // duration values for waiting solenoid requests
 bool BlockTimers = false;                             // blocks the timer interrupt while timer properties are being changed
 byte ActiveTimers = 0;                                // Number of active timers
@@ -772,6 +776,46 @@ void ReleaseSolenoid(byte Solenoid) {
     SolChange = true;}
   else {                                          		// if yes
     ActivateTimer(1, Solenoid, ReleaseSolenoid);}}		// try again later
+
+void ActA_BankSol(unsigned int Duration, byte Solenoid) {
+	if (!C_BankActive) {
+		ActivateSolenoid(Duration, Solenoid);}
+	else {
+		i = 0;
+		while (A_BankWaiting[i]) {                     		// look for a free slot in the list of solenoids to be processed later
+			i++;}
+		if (i > 9) {																			// list full?
+			ErrorHandler(20,0,Solenoid);}         					// show error 20
+		A_BankWaitDuration[i] = Duration;									// store duration value
+		A_BankWaiting[i] = Solenoid;                   		// insert the solenoid number
+		if (!A_BankWaitingNo) {														// the first waiting solenoid?
+			ActivateTimer(500, 0, ActA_BankLater);}			// then start timer
+		A_BankWaitingNo++;}}															// increase number of waiting coils
+
+void ActA_BankLater(byte Dummy) {
+	i = 0;
+  while (!A_BankWaiting[i]) {                     		// look for a used slot in the list of solenoids to be processed later
+    i++;}
+  if (i > 9) {																				// list empty?
+  	ErrorHandler(21,0,0);}         										// show error 20
+  ActivateSolenoid(A_BankWaitDuration[i], A_BankWaiting[i]);
+  A_BankWaiting[i] = 0;																// delete list entry
+  A_BankWaitingNo--;																	// reduce number of entries
+  if (A_BankWaitingNo)	{															// is there another entry?
+  	ActivateTimer(25, 0, ActA_BankLater);}}				// then come back
+
+void ActC_BankSol(byte Solenoid) {
+	ActivateSolenoid(0, 14);
+	C_BankActive = true;
+	ActivateTimer(50, Solenoid, ActC_BankSol2);
+	ActivateTimer(*(GameDefinition.SolTimes+Solenoid+23)+100, 0, PB_ResetAC_Relay);}
+
+void ActC_BankSol2(byte Solenoid) {
+	ActivateSolenoid(*(GameDefinition.SolTimes+Solenoid+23), Solenoid);}
+
+void PB_ResetAC_Relay(byte Dummy) {
+	C_BankActive = false;
+	ReleaseSolenoid(14);}
 
 void ShowPoints(byte Player) {                    		// display the points of the selected player
   DisplayScore(Player, Points[Player]);}
