@@ -789,20 +789,23 @@ void ActA_BankSol(unsigned int Duration, byte Solenoid) {
 		A_BankWaitDuration[i] = Duration;									// store duration value
 		A_BankWaiting[i] = Solenoid;                   		// insert the solenoid number
 		if (!A_BankWaitingNo) {														// the first waiting solenoid?
-			ActivateTimer(500, 0, ActA_BankLater);}			// then start timer
+			ActivateTimer(500, 0, ActA_BankLater);}					// then start timer
 		A_BankWaitingNo++;}}															// increase number of waiting coils
 
 void ActA_BankLater(byte Dummy) {
-	i = 0;
-  while (!A_BankWaiting[i]) {                     		// look for a used slot in the list of solenoids to be processed later
-    i++;}
-  if (i > 9) {																				// list empty?
-  	ErrorHandler(21,0,0);}         										// show error 20
-  ActivateSolenoid(A_BankWaitDuration[i], A_BankWaiting[i]);
-  A_BankWaiting[i] = 0;																// delete list entry
-  A_BankWaitingNo--;																	// reduce number of entries
-  if (A_BankWaitingNo)	{															// is there another entry?
-  	ActivateTimer(25, 0, ActA_BankLater);}}				// then come back
+	if (!C_BankActive) {																// C bank still in use?
+		i = 0;
+		while (!A_BankWaiting[i]) {                     	// look for a used slot in the list of solenoids to be processed later
+			i++;}
+		if (i > 9) {																			// list empty?
+			ErrorHandler(21,0,0);}         									// show error 20
+		ActivateSolenoid(A_BankWaitDuration[i], A_BankWaiting[i]);
+		A_BankWaiting[i] = 0;															// delete list entry
+		A_BankWaitingNo--;																// reduce number of entries
+		if (A_BankWaitingNo)	{														// is there another entry?
+			ActivateTimer(25, 0, ActA_BankLater);}}					// then come back
+	else {
+		ActivateTimer(500, 0, ActA_BankLater);}}
 
 void ActC_BankSol(byte Solenoid) {
 	ActivateSolenoid(0, 14);
