@@ -103,12 +103,12 @@ void PB_AttractDisplayCycle(byte Event) {
       WriteUpper2("1>     2>     ");
       WriteLower2("              ");
       for (i=0; i<3; i++) {
-        *(DisplayLower2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
-        *(DisplayLower2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-        *(DisplayLower2+22+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
-        *(DisplayLower2+22+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
-      ShowNumber(31, HallOfFame.Scores[0]);
-      ShowNumber(47, HallOfFame.Scores[1]);
+        *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+        *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+        *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
+        *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
+      ShowNumber(23, HallOfFame.Scores[0]);
+      ShowNumber(31, HallOfFame.Scores[1]);
       ActivateTimer(50, 1, ScrollUpper);
       ActivateTimer(900, 1, ScrollLower);
       Event++;
@@ -117,12 +117,12 @@ void PB_AttractDisplayCycle(byte Event) {
       WriteUpper2("3>     4>     ");
       WriteLower2("              ");
       for (i=0; i<3; i++) {
-        *(DisplayLower2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
-        *(DisplayLower2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-        *(DisplayLower2+22+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
-        *(DisplayLower2+22+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
-      ShowNumber(31, HallOfFame.Scores[2]);
-      ShowNumber(47, HallOfFame.Scores[3]);
+        *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+        *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+        *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
+        *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
+      ShowNumber(23, HallOfFame.Scores[2]);
+      ShowNumber(31, HallOfFame.Scores[3]);
       ActivateTimer(50, 1, ScrollUpper);
       ActivateTimer(900, 1, ScrollLower);
       Event = 0;}
@@ -143,10 +143,13 @@ void PB_AttractLampCycle(byte Event) {                // play multiple lamp patt
 void PB_AttractModeSW(byte Select) {
 	switch(Select) {
 	case 3:																							// credit button
-		if (ByteBuffer3) {																// ShowLampPattern running?
-			KillTimer(ByteBuffer3);													// stop it
-			ByteBuffer3 = 0;}
+//		if (ByteBuffer3) {																// ShowLampPattern running?
+//			KillTimer(ByteBuffer3);													// stop it
+//	  ByteBuffer3 = 0;}
 		RemoveBlinkLamp(1);																// stop the blinking of the game over lamp
+    KillAllTimers();
+    StrobeLightsTimer = 0;
+    ByteBuffer3 = 0;
 		for (i=0; i< LampMax+1; i++) {
 			Lamp[i] = false;}
 		LampPattern = Lamp;
@@ -184,10 +187,12 @@ void PB_AttractModeSW(byte Select) {
 		break;
 	case 72:
 		Switch_Pressed = DummyProcess;
-		if (ByteBuffer3) {																// ShowLampPattern running?
-			KillTimer(ByteBuffer3);													// stop it
-			ByteBuffer3 = 0;}
-		RemoveBlinkLamp(1);																// stop the blinking of the game over lamp
+//		if (ByteBuffer3) {																// ShowLampPattern running?
+//			KillTimer(ByteBuffer3);													// stop it
+    RemoveBlinkLamp(1);                                // stop the blinking of the game over lamp
+    KillAllTimers();
+    StrobeLightsTimer = 0;
+		ByteBuffer3 = 0;
 		LampPattern = NoLamps;                          	// Turn off all lamps
    // BlinkScoreTimer
 		ReleaseAllSolenoids();
@@ -213,7 +218,6 @@ void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are lock
 			else {																					// right eye
 				ActA_BankSol(0, 8);}}													// eject ball
 		else {																						// visor is not open
-			Switch_Pressed = DummyProcess;									// ignore switches while visor is moving
 			ActivateSolenoid(0, 13);												// activate visor motor
 			ActivateTimer(2000, 0, PB_OpenVisor);}}					// ignore the visor switch for 2 seconds
 	else {																							// no balls in lock
