@@ -5,10 +5,11 @@ bool CloseVisor = false;															// visor is being closed if true
 bool PB_DropWait = false;															// ignore drop target switches when true
 bool PB_DropRamp = false;															// ramp needs to be dropped when possible
 bool PB_EnergyActive = false;													// score energy active?
+bool PB_SkillShot = false;														// is the skill shot active?
 byte PB_DropTimer = 0;																// number of the drop target timer
 byte PB_Planet[5];																		// reached planets for all players
 byte PB_ExBallsLit = 0;																// no of lanes lit for extra ball
-//byte CycleDropTimer = 0;															// number of the CycleDropLight timer
+byte PB_SkillMultiplier = 1;													// Multiplier for the skill shot value
 byte DropBlinkLamp = 0;																// number of the lamp currently blinking
 
 const unsigned int PB_SolTimes[32] = {50,30,30,70,30,200,30,30,500,500,999,999,0,0,500,500,50,500,50,50,50,50,0,0,50,500,500,500,500,500,500,500}; // Activation times for solenoids (last 8 are C bank)
@@ -85,12 +86,12 @@ void PB_AttractDisplayCycle(byte Event) {
       ActivateTimer(900, 1, PB_AttractScroll);
       WriteLower2("              ");
       ActivateTimer(1400, 1, ScrollLower);
-      if (NoPlayers) {
-        Event++;}
-      else {
-        Event = 2;}
+      if (NoPlayers) {																// was there a previous game?
+        Event++;}																			// proceed to case 1 next time
+      else {																					// no previous games since power on
+        Event = 2;}																		// skip case 1
       break;
-    case 1:
+    case 1:																						// show points of previous game
     	WriteUpper2("              ");                  // erase display
     	WriteLower2("              ");
     	  for (i=1; i<=NoPlayers; i++) {                // display the points of all active players
@@ -110,7 +111,7 @@ void PB_AttractDisplayCycle(byte Event) {
       ShowNumber(23, HallOfFame.Scores[0]);
       ShowNumber(31, HallOfFame.Scores[1]);
       ActivateTimer(50, 1, ScrollUpper);
-      ActivateTimer(900, 1, ScrollLower);
+      ActivateTimer(900, 1, ScrollLower2);
       Event++;
       break;
     case 3:
@@ -124,7 +125,7 @@ void PB_AttractDisplayCycle(byte Event) {
       ShowNumber(23, HallOfFame.Scores[2]);
       ShowNumber(31, HallOfFame.Scores[3]);
       ActivateTimer(50, 1, ScrollUpper);
-      ActivateTimer(900, 1, ScrollLower);
+      ActivateTimer(900, 1, ScrollLower2);
       Event = 0;}
     ActivateTimer(4000, Event, PB_AttractDisplayCycle);}
 
@@ -143,9 +144,6 @@ void PB_AttractLampCycle(byte Event) {                // play multiple lamp patt
 void PB_AttractModeSW(byte Select) {
 	switch(Select) {
 	case 3:																							// credit button
-//		if (ByteBuffer3) {																// ShowLampPattern running?
-//			KillTimer(ByteBuffer3);													// stop it
-//	  ByteBuffer3 = 0;}
 		RemoveBlinkLamp(1);																// stop the blinking of the game over lamp
     KillAllTimers();
     StrobeLightsTimer = 0;
@@ -240,15 +238,16 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 		BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);}
   DropBlinkLamp = 41;
 	PB_CycleDropLights(1);															// start the blinking drop target lights
+	PB_SkillShot = true;																// the first shot is a skill shot
 	if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {	// target planet not reached yet?
 		AddBlinkLamp(18+game_settings[PB_ReachPlanet],100);}		// let target planet blink
-	if (!Switch[20]) {
-		Switch_Released = DummyProcess;										//	UNTERSCHIED
+	if (!Switch[20]) {																	// ball not yet in shooter lane?
+		Switch_Released = DummyProcess;
 		ActA_BankSol(0, 2);                          			// release ball
 		Switch_Pressed = PB_BallReleaseCheck;             // set switch check to enter game
 		CheckReleaseTimer = ActivateTimer(5000, Balls-1, PB_CheckReleasedBall);} // start release watchdog
-	else {
-		Switch_Released = PB_CheckShooterLaneSwitch;			//	UNTERSCHIED
+	else {																							// ball already in shooter lane
+		Switch_Released = PB_CheckShooterLaneSwitch;			//	wait for switch 20 to be released
 		Switch_Pressed = PB_ResetBallWatchdog;}}
 
 void PB_CheckShooterLaneSwitch(byte Switch) {
@@ -258,14 +257,29 @@ void PB_CheckShooterLaneSwitch(byte Switch) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
 void PB_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
-  if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
-    if (BallWatchdogTimer) {
-      KillTimer(BallWatchdogTimer);}                  // stop watchdog
-    if (PB_DropRamp&&(Switch != 45)&&(Switch != 49)&&(Switch != 50)&&(Switch != 51)) { // switch not close to the ramp?
-    	PB_DropRamp = false;														// clear request
-    	ActA_BankSol(0, 6);}														// drop ramp
-    BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
-  PB_GameMain(Switch);}                               // process current switch
+	if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
+		if (BallWatchdogTimer) {
+			KillTimer(BallWatchdogTimer);}                  // stop watchdog
+		if (PB_DropRamp&&(Switch != 45)&&(Switch != 49)&&(Switch != 50)&&(Switch != 51)) { // switch not close to the ramp?
+			PB_DropRamp = false;														// clear request
+			ActA_BankSol(0, 6);}														// drop ramp
+		if (PB_SkillShot) {																// is this a skill shot?
+			switch (Switch) {																// was a skill shot target hit
+			case 22:
+				Points[Player] += 20000 * PB_SkillMultiplier;
+				ShowPoints(Player);
+				break;
+			case 23:
+				Points[Player] += 100000 * PB_SkillMultiplier;
+				ShowPoints(Player);
+				break;
+			case 24:
+				Points[Player] += 5000 * PB_SkillMultiplier;
+				ShowPoints(Player);
+				break;}}
+		PB_SkillShot = false;															// the next shot is not a skill shot any more
+		BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
+	PB_GameMain(Switch);}                               // process current switch
 
 void PB_BallReleaseCheck(byte Switch) {               // handle switches during ball release
   if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
@@ -531,37 +545,44 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 			//BonusCountTime = 20;
 			//CountBonus(AppByte);
 			PB_CycleDropLights(0);
-      if (BlinkScoreTimer) {
-        KillTimer(BlinkScoreTimer);
-        BlinkScoreTimer = 0;}
-      if (BallWatchdogTimer) {
-        KillTimer(BallWatchdogTimer);
-        BallWatchdogTimer = 0;}
+			if (BlinkScoreTimer) {
+				KillTimer(BlinkScoreTimer);
+				BlinkScoreTimer = 0;}
+			if (BallWatchdogTimer) {
+				KillTimer(BallWatchdogTimer);
+				BallWatchdogTimer = 0;}
 			BlockOuthole = false;														// remove outhole block
 			if (ExBalls) {                                	// Player has extra balls
 				AddBlinkLamp(33, 250);                      	// Let the extra ball lamp blink
 				ExBalls--;
+				if (PB_SkillMultiplier < 10) {
+					PB_SkillMultiplier++;
+					//					if (PB_SkillMultiplier == 10) {
+					//						Super Skill Shot
+					//					}
+				}
 				//ActivateTimer(2000, 0, AfterExBallRelease);
 				ActivateTimer(1000, AppByte, PB_NewBall);}		// remove outhole block
 			else {                                        	// Player has no extra balls
+				PB_SkillMultiplier = 1;
 				if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
 					Switch_Pressed = DummyProcess;              // Switches do nothing
 					CheckHighScore(Player);}
 				else {
-				 	if (Player < NoPlayers) {                 	// last player?
-				 		Player++;
-				 		ActivateTimer(1000, AppByte, PB_NewBall);}
-				 	else {
-				 		if (Ball < APC_settings[NofBalls]) {			// last ball?
-				 			Player = 1;															// not yet
-				 			Ball++;
-				 			ActivateTimer(1000, AppByte, PB_NewBall);}
-				 		else {																		// game end
-				 			ReleaseSolenoid(23);                  	// disable flipper fingers
-				 			ReleaseSolenoid(24);
-				 			//PB_CheckForLockedBalls(0);
-				      Lamp[3] = false;                      	// turn off Ball in Play lamp
-				 			GameDefinition.AttractMode();}}}}}}}
+					if (Player < NoPlayers) {                 	// last player?
+						Player++;
+						ActivateTimer(1000, AppByte, PB_NewBall);}
+					else {
+						if (Ball < APC_settings[NofBalls]) {			// last ball?
+							Player = 1;															// not yet
+							Ball++;
+							ActivateTimer(1000, AppByte, PB_NewBall);}
+						else {																		// game end
+							ReleaseSolenoid(23);                  	// disable flipper fingers
+							ReleaseSolenoid(24);
+							//PB_CheckForLockedBalls(0);
+							Lamp[3] = false;                      	// turn off Ball in Play lamp
+							GameDefinition.AttractMode();}}}}}}}
 
 void PB_Testmode(byte Select) {
 	Switch_Pressed = PB_Testmode;

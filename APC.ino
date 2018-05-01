@@ -51,7 +51,7 @@ bool SDfound = false;                                 // SD card present?
 bool Switch[SwMax+3];                                 // stores the present status of all switches (Advance is 72, HighScoreRest is 71)
 bool SwHistory[SwMax+3];                              // stores the previous switch status
 //byte SwDebounce[SwMax+3] = {0,10,10,10,10,10,10,10,10,5,5,2,2,1,2,2,2,10,10,10,10,2,2,1,10,10,10,10,0,10,10,10,0,10,10,10,3,10,10,10,0,10,10,10,2,10,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,10,10,10,10,10,10,10,10,10}; // debounce value for all switches
-byte SwCount[SwMax+3];                                // debounce counter for all switches
+//byte SwCount[SwMax+3];                                // debounce counter for all switches
 byte SwitchEvents = 0;                                // the number of pending switch events
 byte ChangedSwitches[SwMax+2];												// switches with pending events
 int SwDrv = 0;                                        // switch driver being accessed at the moment
@@ -731,7 +731,22 @@ void ScrollLower(byte Step) {													// call with Step = 1 and the text bei
   Step++;
   if (Step < 15) {																		// if its not already over
     ActivateTimer(50, Step, ScrollLower);}}						// come back
-      
+
+void ScrollLower2(byte Step) {													// call with Step = 1 and the text being in DisplayUpper2
+	for (i=2; i<14; i++) {															// scroll display 1
+		DisplayLower[i] = DisplayLower[i+2];}
+	DisplayLower[14] = DisplayLower[18];								// add put the leftmost char of the display 2 to the end
+	DisplayLower[15] = DisplayLower[19];
+	for (i=18; i<30; i++) {                         		// scroll display 2
+			DisplayLower[i] = DisplayLower[i+2];}
+	DisplayLower[30] = DisplayLower2[2*Step];						// add the corresponding char of DisplayLower2
+	DisplayLower[31] = DisplayLower2[2*Step+1];
+	Step++;																							// increase step
+  if (Step == 8) {																		// skip position 9 (belongs to the credit display
+    Step++;}
+	if (Step < 16) {																		// if its not already over
+		ActivateTimer(50, Step, ScrollLower2);}}					// come back
+
 void ConvertToBCD(int Number) {
   ByteBuffer = Number % 10;
   ByteBuffer2 = (Number-ByteBuffer)/10;}
@@ -1016,140 +1031,6 @@ void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3
   DisplayScore(3, Number2);
   DisplayScore(4, Number3);
   while (1) {}}
-
-void CheckHighScore(byte Player) {                    // show congratulations
-  LampPattern = NoLamps;
-  ReleaseSolenoid(23);                                // disable flipper fingers
-  ReleaseSolenoid(24);
-  Points[0] = Points[1];
-  Points[1] = Points[Player];
-  WriteUpper("        GREAT ");
-  WriteLower(" SCORE PLAYER ");
-  ShowPoints(1);
-  Points[1] = Points[0];
-  *(DisplayLower+30) = DispPattern2[32 + 2 * Player];
-  *(DisplayLower+31) = DispPattern2[33 + 2 * Player];
-  Points[0] = Points[Player];
-  ByteBuffer = 0;
-  ActivateTimer(5000, Player, ShowInitialsMessage);}
-
-void ShowInitialsMessage(byte Player) {
-  switch (ByteBuffer) {
-    case 0: 
-      WriteUpper("USE           ");
-      WriteLower("              ");
-      break;
-    case 1: 
-      WriteUpper("USE MAGNA     ");
-      break;
-    case 2: 
-      WriteUpper("USE MAGNA SAVE");
-      break;
-    case 3: 
-      WriteLower("BUTTONS       ");
-      break;
-    case 4: 
-      WriteLower("BUTTONS   TO  ");
-      break;
-    case 5: 
-      WriteUpper("ENTER         ");
-      WriteLower("              ");
-      break;
-    case 6:
-      WriteUpper("ENTER INITIALS");
-      break;
-    case 7:
-      WriteLower("PLAYER        ");
-      *(DisplayLower+14) = DispPattern2[32 + 2 * Player];
-      *(DisplayLower+15) = DispPattern2[33 + 2 * Player];
-      break;}
-  if (ByteBuffer == 7) {
-    Switch_Pressed = EnterInitials;
-    EnterIni[0] = 'A';
-    EnterIni[1] = 'A';
-    EnterIni[2] = 'A';
-    ByteBuffer = 0;
-    ActivateTimer(500, 1, BlinkInitial);}
-  else {
-    ByteBuffer++;
-    ActivateTimer(1000, Player, ShowInitialsMessage);}}
-
-void BlinkInitial(byte State) {                       // blink actual character
-  if (State) {
-    *(DisplayLower+20+4*ByteBuffer) = 0;              // show a blank
-    *(DisplayLower+21+4*ByteBuffer) = 0;
-    State = 0;}
-  else {
-    for (i=0; i<3; i++) {
-      *(DisplayLower+20+4*i) = DispPattern2[(EnterIni[i]-32)*2];
-      *(DisplayLower+20+4*i+1) = DispPattern2[(EnterIni[i]-32)*2+1];}// restore the characters
-    State = 1;}
-  ByteBuffer2 = ActivateTimer(100+State*2000, State, BlinkInitial);}  // and come back
-
-void EnterInitials(byte Event) {
-  switch (Event) {
-    case 3:                                           // credit button
-      KillTimer(ByteBuffer2);
-      ByteBuffer++;
-      if (ByteBuffer > 2) {
-        HandleHighScores(Points[Player]);
-        WriteUpper(" HIGH   SCORE ");
-        WriteLower("TABLE  POS    ");
-        *(DisplayLower+28) = DispPattern2[32 + 2 * (ByteBuffer2+1)];
-        *(DisplayLower+29) = DispPattern2[33 + 2 * (ByteBuffer2+1)];
-        LampPattern = Lamp;
-        ActivateSolenoid(0, 23);                      // enable flipper fingers
-        ActivateSolenoid(0, 24);
-        // ActivateTimer(2000, 0, BallEnd3);                                XXXXXXXXXXXXXXXXXX
-        }
-      else {
-        BlinkInitial(1);}
-      break;
-    case 9:                                           // right magna save button
-      if (EnterIni[ByteBuffer] == 57) {
-        EnterIni[ByteBuffer] = 65;}
-      else if (EnterIni[ByteBuffer] == 90) {
-              EnterIni[ByteBuffer] = 32;}
-           else if (EnterIni[ByteBuffer] == 32) {
-              EnterIni[ByteBuffer] = 48;}
-                else {
-                  EnterIni[ByteBuffer]++;}
-      KillTimer(ByteBuffer2);
-      BlinkInitial(0);
-      break;
-    case 10:                                          // left magna save button
-      if (EnterIni[ByteBuffer] == 65) {
-        EnterIni[ByteBuffer] = 57;}
-      else if (EnterIni[ByteBuffer] == 48) {
-              EnterIni[ByteBuffer] = 32;}
-           else if (EnterIni[ByteBuffer] == 32) {
-              EnterIni[ByteBuffer] = 90;}
-                else {
-                  EnterIni[ByteBuffer]--;}
-      KillTimer(ByteBuffer2);
-      BlinkInitial(0);
-      break;}}
-      
-void HandleHighScores(unsigned int Score) {
-    ByteBuffer2 = 0;
-    while (HallOfFame.Scores[ByteBuffer2] > Score) {  // check to which position of the highscore list it belongs
-      ByteBuffer2++;}
-    for (i=3; i>ByteBuffer2; i--) {                   // move all lower highscores down
-      HallOfFame.Scores[i] = HallOfFame.Scores[i-1];}
-    for (i=9; i>ByteBuffer2*3; i--) {
-      HallOfFame.Initials[i+2] = HallOfFame.Initials[i-1];}
-    HallOfFame.Scores[ByteBuffer2] = Score;           // and include the new highscore to the list
-    for (i=0; i<3; i++) {
-      HallOfFame.Initials[ByteBuffer2*3+i] = EnterIni[i];} // copy initials
-    if (SDfound) {
-      SD.remove(GameDefinition.HighScoresFileName);
-      File HighScore = SD.open(GameDefinition.HighScoresFileName,FILE_WRITE);  // open the highscore file on the SD card
-      HighScore.write((byte*) &HallOfFame, sizeof HallOfFame); // and write the HallOfFame structure
-      HighScore.close();}
-//    else {
-//      WriteUpper("  NO   SD CARD");
-//      delay(2000);}
-		}
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns
   IntBuffer = (PatPointer+Step)->Duration;            // buffer the duration for the current pattern

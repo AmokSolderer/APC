@@ -105,7 +105,7 @@ const struct LampPat AttractPat3[6] = {{90,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0
 														           {90,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,1,0,0,1},
 														           {90,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,1,0,0,1,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,1,0},
 																				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
-                                 
+
 const struct LampPat AttractPat4[52] = {{30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                                         {30,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                                         {30,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -195,7 +195,7 @@ const struct GameDef BK_GameDefinition = {
 
 void BK_init() {
 	GameDefinition = BK_GameDefinition;}								// read the game specific settings and highscores
-  
+
 void BK_AttractMode() {                               // Attract Mode
   DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
@@ -211,7 +211,7 @@ void BK_AttractMode() {                               // Attract Mode
 void CheckForLockedBalls(byte Event) {                // check if balls are locked and release them
   if (Switch[20]) {                                   // for the outhole
     ActivateSolenoid(0, 1);}
-  if (Switch[24]) {                                   // for the lower elect hole
+  if (Switch[24]) {                                   // for the lower eject hole
     ActivateSolenoid(0, 8);}
   if (Switch[41]) {                                   // for the multiball lock
     ActivateSolenoid(0, 7);}}
@@ -233,7 +233,7 @@ void AttractLampCycle(byte Event) {                   // play multiple lamp patt
 void AttractScroll(byte Dummy) {
   WriteUpper2("SPEZIAL       ");
   AddScrollUpper(1);}
-  
+
 void AttractDisplayCycle(byte Event) {
   CheckForLockedBalls(0);
   switch (Event) {
@@ -312,7 +312,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 			StrobeLightsTimer = 0;
 			RemoveBlinkLamp(4);
 			RemoveBlinkLamp(6);
-			Switch_Pressed = DummyProcess;                            // Switches do nothing
+			Switch_Pressed = DummyProcess;                  // Switches do nothing
 			KillAllTimers();                                // stop the lamp cycling
 			for (i=0; i< LampMax+1; i++) {
 				Lamp[i] = false;}
@@ -415,7 +415,7 @@ void CheckShooterLaneSwitch(byte Switch) {
     Switch_Released = DummyProcess;
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}}}
-  
+
 void BallReleaseCheck(byte Switch) {                  // handle switches during ball release
   if ((Switch > 10)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 46)) { // playfield switch activated?
   	if (CheckReleaseTimer) {
@@ -441,35 +441,35 @@ void SearchBall(byte Counter) {												// ball watchdog timer has run out
     BlockOuthole = false;
     ActivateTimer(1000, 0, ClearOuthole);}
   else {
-    if (Switch[45]) {																		// if ball is waiting to be launched
+    if (Switch[45]) {																	// if ball is waiting to be launched
       BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}	// restart watchdog
-    else {  																						// if ball is really missing
-      AppByte = CountBallsInTrunk();										// recount all balls
-      if (AppByte == 3) {																// found 3 balls in trunk?
-      	if (BlockOuthole) {															// is the outhole blocked
-      		BallEnd(0);}																	// then it was probably a ball loss gone wrong
+    else {  																					// if ball is really missing
+      AppByte = CountBallsInTrunk();									// recount all balls
+      if (AppByte == 3) {															// found 3 balls in trunk?
+      	if (BlockOuthole) {														// is the outhole blocked
+      		BallEnd(0);}																// then it was probably a ball loss gone wrong
       	else {
-      		ActivateTimer(1000, 3, NewBall);}}						// otherwise try it with a new ball
+      		ActivateTimer(1000, 3, NewBall);}}					// otherwise try it with a new ball
       else {
       	AppByte2 = 0;
-      	for (i=0; i<3; i++) {                           // count balls in lock
+      	for (i=0; i<3; i++) {                         // count balls in lock
       		if (Switch[41+i]) {
       			if (AppByte2 < i) {
-      				AppByte = 5;}                             // set warning flag
+      				AppByte = 5;}                           // set warning flag
       			AppByte2++;}}
-      	if (AppByte == 5) {															// balls have not settled yet
+      	if (AppByte == 5) {														// balls have not settled yet
       		WriteUpper("  BALL  STUCK ");
       		BallWatchdogTimer = ActivateTimer(1000, 0, SearchBall);} // and try again in 1s
       	else {
-      		if (AppByte2 > InLock) {											// more locked balls found than expected?
-      			HandleLock(0);															// lock them
+      		if (AppByte2 > InLock) {										// more locked balls found than expected?
+      			HandleLock(0);														// lock them
       			BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}
       		else {
       			WriteUpper("  BALL  SEARCH");
       			ActivateSolenoid(0, BallSearchCoils[Counter]); // fire coil to get ball free
       			Counter++;
-      			if (Counter == 10) {												// all coils fired?
-      				Counter = 0;}															// start again
+      			if (Counter == 10) {											// all coils fired?
+      				Counter = 0;}														// start again
       			BallWatchdogTimer = ActivateTimer(1000, Counter, SearchBall);}}}}}} // come again in 1s if no switch is activated
 
 byte CountBallsInTrunk() {
@@ -510,14 +510,14 @@ void CheckReleasedBall(byte Balls) {                  // ball release watchdog
         BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);
         ActivateSolenoid(0, 6);}}}                    // release again
   CheckReleaseTimer = ActivateTimer(5000, Balls, CheckReleasedBall);}
-    
+
 void TimedRightMagna(byte dummy) {										// runs every second as long as button is pressed
 	if (Switch[9] && RightMagna[Player]) {							// button still pressed and magna seconds left?
 		RightMagna[Player]--;															// reduce magna save seconds
 		AddBlinkLamp(9, 150*RightMagna[Player]);					// adjust blinking rhythm of lamp
 		TimedRightMagnaTimer = ActivateTimer(1000, 0, TimedRightMagna);}// and come back in 1s
 	else {																							// magna save not to be continued
-		ReleaseSolenoid(9);															// turn off magnet
+		ReleaseSolenoid(9);																// turn off magnet
 		if (!TimedLeftMagnaTimer) {
 			Switch_Released = DummyProcess;}
 		EndRightMagna(0);
@@ -526,7 +526,7 @@ void TimedRightMagna(byte dummy) {										// runs every second as long as butt
 void TimedLeftMagna(byte dummy) {											// runs every second as long as button is pressed
 	if (Switch[10] && LeftMagna[Player]) {							// button still pressed and magna seconds left?
 		LeftMagna[Player]--;															// reduce magna save seconds
-		AddBlinkLamp(10, 150*LeftMagna[Player]);						// adjust blinking rhythm of lamp
+		AddBlinkLamp(10, 150*LeftMagna[Player]);					// adjust blinking rhythm of lamp
 		TimedLeftMagnaTimer = ActivateTimer(1000, 0, TimedLeftMagna);}// and come back in 1s
 	else {																							// magna save not to be continued
 		ReleaseSolenoid(10);															// turn off magnet
@@ -539,7 +539,7 @@ void TimedMagnaSW(byte Switch) {											// magna save button released
 	if (Switch==9 && TimedRightMagnaTimer) {						// was it the right switch and is the magna save active?
 		KillTimer(TimedRightMagnaTimer);
 		TimedRightMagnaTimer = 0;
-		ReleaseSolenoid(9);															// turn off magnet
+		ReleaseSolenoid(9);																// turn off magnet
 		EndRightMagna(0);}
 	if (Switch==10 && TimedLeftMagnaTimer) {						// was it the left switch and is the magna save active?
 		KillTimer(TimedLeftMagnaTimer);
@@ -547,7 +547,7 @@ void TimedMagnaSW(byte Switch) {											// magna save button released
 		ReleaseSolenoid(10);															// turn off magnet
 		EndLeftMagna(0);}
 	if (!TimedRightMagnaTimer && !TimedLeftMagnaTimer) { // no magna save active
-		Switch_Released = DummyProcess;}}										// ignore released switches
+		Switch_Released = DummyProcess;}}									// ignore released switches
 
 void GameMain(byte Event) {                           // game switch events
   switch (Event) {
@@ -573,7 +573,7 @@ void GameMain(byte Event) {                           // game switch events
     		AddBlinkLamp(9, 150);
     		RightMagna[Player] = 0;                   		// not any more
     		ActivateTimer(4990, 0, EndRightMagna);
-    		ActivateSolenoid(5000, 9);}                  // use it for 5 seconds
+    		ActivateSolenoid(5000, 9);}                  	// use it for 5 seconds
     	else {																					// timed magna active
     		Switch_Released = TimedMagnaSW;
     		RightMagna[Player]--;													// reduce magna save seconds
@@ -594,7 +594,7 @@ void GameMain(byte Event) {                           // game switch events
     		AddBlinkLamp(10, 150*LeftMagna[Player]);
     		ActivateSolenoid(6000, 10);										// switch on magnet
     		TimedLeftMagnaTimer = ActivateTimer(1000, 0, TimedLeftMagna);}} // check again in 1s
-    break;      
+    break;
   case 11:                                            // left outlane
   case 12:                                            // right outlane
     Points[Player] += Multiballs * 5000;              // add 5000 points
@@ -658,7 +658,7 @@ void GameMain(byte Event) {                           // game switch events
     break;
   case 20:                                            // outhole
     ActivateTimer(200, 0, ClearOuthole);              // check again in 200ms
-    break;      
+    break;
   case 21:                                            // left slingshot
   case 22:                                            // right slingshot
     Points[Player] += Multiballs * 10;
@@ -795,7 +795,7 @@ void LastChanceLock(byte Event) {
   if (Event > 1) {
     DropWait[4] = true;
     ActivateSolenoid(0, 7);}}
-    
+
 void BallEnd(byte Event) {
   AppByte = CountBallsInTrunk();
   if ((AppByte == 5)||(AppByte < 4-Multiballs-InLock)) {
@@ -805,14 +805,14 @@ void BallEnd(byte Event) {
         if (Switch[41+i]) {
           InLock++;}}}
     WriteLower(" BALL   ERROR ");
-    if (Event < 11) {                                // have I been here already?
+    if (Event < 11) {                                	// have I been here already?
       Event++;
-      ActivateTimer(1000, Event, BallEnd);}          // if not try again in 1s
-    else {                                          // ball may be still in outhole
+      ActivateTimer(1000, Event, BallEnd);}          	// if not try again in 1s
+    else {                                          	// ball may be still in outhole
       BlockOuthole = false;
       Event = 0;
       ClearOuthole(0);}}
-  else {      
+  else {
     switch (Multiballs) {
     case 3:                                           // goto 2 ball multiball
       Multiballs = 2;
@@ -852,7 +852,7 @@ void BallEnd(byte Event) {
           BlinkScoreTimer = 0;}
         LastChance = false;                           // deactivate last chance
         Lamp[11] = false;
-        Lamp[12] = false;            
+        Lamp[12] = false;
         LastChanceOver = false;
         LastChanceActive = false;
 //        Lamp[FirstMultLamp] = false;
@@ -898,9 +898,9 @@ void BallEnd2(byte Balls) {
     KillTimer(BallWatchdogTimer);
     BallWatchdogTimer = 0;}
   if (game_settings[TimedMagna]) {              			// if timed magna save mode
-		Switch_Released = DummyProcess;               			// reset the released switch mode
+		Switch_Released = DummyProcess;               		// reset the released switch mode
 		if (TimedRightMagnaTimer) {                 			// if the left magnet is currently active
-			ReleaseSolenoid(9);                      			// turn it off
+			ReleaseSolenoid(9);                      				// turn it off
 			KillTimer(TimedRightMagnaTimer);          			// and kill its timer
 			TimedRightMagnaTimer = 0;}
 		if (TimedLeftMagnaTimer) {                  			// same as above
@@ -938,11 +938,144 @@ void BallEnd3(byte Balls) {
  			Lamp[36] = false;                     					// bumper light off
  			ReleaseSolenoid(23);                  					// disable flipper fingers
  			ReleaseSolenoid(24);
- 			//digitalWrite(SpcSolEnable, LOW);      					// disable special solenoids
+ 			//digitalWrite(SpcSolEnable, LOW);      				// disable special solenoids
  			CheckForLockedBalls(0);
       Lamp[2] = false;                      					// turn off Ball in Play lamp
  			GameDefinition.AttractMode();}}}
-  
+
+void CheckHighScore(byte Player) {                    // show congratulations
+	LampPattern = NoLamps;
+	ReleaseSolenoid(23);                                // disable flipper fingers
+	ReleaseSolenoid(24);
+	Points[0] = Points[1];
+	Points[1] = Points[Player];
+	WriteUpper("        GREAT ");
+	WriteLower(" SCORE PLAYER ");
+	ShowPoints(1);
+	Points[1] = Points[0];
+	*(DisplayLower+30) = DispPattern2[32 + 2 * Player];
+	*(DisplayLower+31) = DispPattern2[33 + 2 * Player];
+	Points[0] = Points[Player];
+	ByteBuffer = 0;
+	ActivateTimer(5000, Player, ShowInitialsMessage);}
+
+void ShowInitialsMessage(byte Player) {
+	switch (ByteBuffer) {
+	case 0:
+		WriteUpper("USE           ");
+		WriteLower("              ");
+		break;
+	case 1:
+		WriteUpper("USE MAGNA     ");
+		break;
+	case 2:
+		WriteUpper("USE MAGNA SAVE");
+		break;
+	case 3:
+		WriteLower("BUTTONS       ");
+		break;
+	case 4:
+		WriteLower("BUTTONS   TO  ");
+		break;
+	case 5:
+		WriteUpper("ENTER         ");
+		WriteLower("              ");
+		break;
+	case 6:
+		WriteUpper("ENTER INITIALS");
+		break;
+	case 7:
+		WriteLower("PLAYER        ");
+		*(DisplayLower+14) = DispPattern2[32 + 2 * Player];
+		*(DisplayLower+15) = DispPattern2[33 + 2 * Player];
+		break;}
+	if (ByteBuffer == 7) {
+		Switch_Pressed = EnterInitials;
+		EnterIni[0] = 'A';
+		EnterIni[1] = 'A';
+		EnterIni[2] = 'A';
+		ByteBuffer = 0;
+		ActivateTimer(500, 1, BlinkInitial);}
+	else {
+		ByteBuffer++;
+		ActivateTimer(1000, Player, ShowInitialsMessage);}}
+
+void BlinkInitial(byte State) {                       // blink actual character
+	if (State) {
+		*(DisplayLower+20+4*ByteBuffer) = 0;              // show a blank
+		*(DisplayLower+21+4*ByteBuffer) = 0;
+		State = 0;}
+	else {
+		for (i=0; i<3; i++) {
+			*(DisplayLower+20+4*i) = DispPattern2[(EnterIni[i]-32)*2];
+			*(DisplayLower+20+4*i+1) = DispPattern2[(EnterIni[i]-32)*2+1];}// restore the characters
+		State = 1;}
+	ByteBuffer2 = ActivateTimer(100+State*2000, State, BlinkInitial);}  // and come back
+
+void EnterInitials(byte Event) {
+	switch (Event) {
+	case 3:                                           	// credit button
+		KillTimer(ByteBuffer2);
+		ByteBuffer++;
+		if (ByteBuffer > 2) {
+			HandleHighScores(Points[Player]);
+			WriteUpper(" HIGH   SCORE ");
+			WriteLower("TABLE  POS    ");
+			*(DisplayLower+28) = DispPattern2[32 + 2 * (ByteBuffer2+1)];
+			*(DisplayLower+29) = DispPattern2[33 + 2 * (ByteBuffer2+1)];
+			LampPattern = Lamp;
+			ActivateSolenoid(0, 23);                      	// enable flipper fingers
+			ActivateSolenoid(0, 24);
+			ActivateTimer(2000, 0, BallEnd3);}
+		else {
+			BlinkInitial(1);}
+		break;
+	case 9:                                           	// right magna save button
+		if (EnterIni[ByteBuffer] == 57) {
+			EnterIni[ByteBuffer] = 65;}
+		else if (EnterIni[ByteBuffer] == 90) {
+			EnterIni[ByteBuffer] = 32;}
+		else if (EnterIni[ByteBuffer] == 32) {
+			EnterIni[ByteBuffer] = 48;}
+		else {
+			EnterIni[ByteBuffer]++;}
+		KillTimer(ByteBuffer2);
+		BlinkInitial(0);
+		break;
+	case 10:                                          	// left magna save button
+		if (EnterIni[ByteBuffer] == 65) {
+			EnterIni[ByteBuffer] = 57;}
+		else if (EnterIni[ByteBuffer] == 48) {
+			EnterIni[ByteBuffer] = 32;}
+		else if (EnterIni[ByteBuffer] == 32) {
+			EnterIni[ByteBuffer] = 90;}
+		else {
+			EnterIni[ByteBuffer]--;}
+		KillTimer(ByteBuffer2);
+		BlinkInitial(0);
+		break;}}
+
+void HandleHighScores(unsigned int Score) {
+	ByteBuffer2 = 0;
+	while (HallOfFame.Scores[ByteBuffer2] > Score) {  	// check to which position of the highscore list it belongs
+		ByteBuffer2++;}
+	for (i=3; i>ByteBuffer2; i--) {                   	// move all lower highscores down
+		HallOfFame.Scores[i] = HallOfFame.Scores[i-1];}
+	for (i=9; i>ByteBuffer2*3; i--) {
+		HallOfFame.Initials[i+2] = HallOfFame.Initials[i-1];}
+	HallOfFame.Scores[ByteBuffer2] = Score;           	// and include the new highscore to the list
+	for (i=0; i<3; i++) {
+		HallOfFame.Initials[ByteBuffer2*3+i] = EnterIni[i];} // copy initials
+	if (SDfound) {
+		SD.remove(GameDefinition.HighScoresFileName);
+		File HighScore = SD.open(GameDefinition.HighScoresFileName,FILE_WRITE);  // open the highscore file on the SD card
+		HighScore.write((byte*) &HallOfFame, sizeof HallOfFame); // and write the HallOfFame structure
+		HighScore.close();}
+	else {
+		WriteUpper("  NO   SD CARD");
+		delay(2000);}
+}
+
 void AfterExBallRelease(byte Event) {
   if (Switch[45]) {                                   // ball still in the shooting lane?
     ActivateTimer(2000, Event, AfterExBallRelease);}  // come back in2s
@@ -952,7 +1085,7 @@ void AfterExBallRelease(byte Event) {
     if (ExBalls) {                                    // player still has an extra balls
       Lamp[1] = true;
       Lamp[47] = true;}}}
-    
+
 void HandleLock(byte Event) {
   AppBool = false;
   AppByte = 0;
@@ -970,7 +1103,7 @@ void HandleLock(byte Event) {
   else {                                            	// no multiball running
     if (AppByte > InLock) {                           // more than before?
       Points[Player] += 5000;
-      ShowPoints(Player);                                                            
+      ShowPoints(Player);
       InLock++;
       LockedBalls[Player]++;                          // increase number of locked balls
       if (LockedBalls[Player] == 3) {                 // 3 locked balls?
@@ -1055,7 +1188,7 @@ void BlinkFaster(byte Event) {                        // increase blink frequenc
   RemoveBlinkLamp(DropLamp+Event);
   AddBlinkLamp(DropLamp+Event, 200);
   DropTimer[Event] = ActivateTimer(2000, Event, ResetDropTargets);}
-  
+
 void ResetDropTargets(byte Event) {
   DropTimer[Event] = 0;
   RemoveBlinkLamp(DropLamp+Event);
@@ -1068,7 +1201,7 @@ void ResetDropWait(byte Event) {                      // ensure waiting time to 
 
 void DelaySolenoid(byte Event) {                      // activate solenoid after delay time
   ActivateSolenoid(0, Event);}
-  
+
 void StartMultiball() {
   WriteUpper2(" MULTI  BALL  ");                     	// switch display to alternate buffer
   DispRow1 = DisplayUpper2;
@@ -1104,7 +1237,7 @@ void ClearLocks(byte Event) {
   AppByte = 0;
   for (i=0; i<3; i++) {                               // count balls in lock
     if (Switch[41+i]) {
-      AppByte++;}}  
+      AppByte++;}}
   if (AppByte) {                                      // balls in lock?
     ActivateSolenoid(0, 7);
     AppByte--;
@@ -1114,7 +1247,7 @@ void ClearLocks(byte Event) {
 void SetBonusMultiplier(byte Event) {                 // switch from blinking bonus multiplier lamp to permanent on
   RemoveBlinkLamp(Event);
   Lamp[Event] = true;}
-  
+
 void AddBonus(byte BonusPts) {
 	byte OldBonusToAdd = BonusToAdd;
 	if (Bonus < 49) {
@@ -1219,7 +1352,7 @@ void LockChaseLight(byte ChaseLamp) {                 // controls the chase ligh
         AddBlinkLamp(40, 500);}                       // and let the first one blink
       else {                                          // otherwise
         Lamp[40] = true;                              // turn the first lamp on
-        LockLightsTimer = ActivateTimer(1000, 21, LockChaseLight);} // and come back in one second to process lamp 21 
+        LockLightsTimer = ActivateTimer(1000, 21, LockChaseLight);} // and come back in one second to process lamp 21
       break;
     case 21:                                          // is it the middle lamp?
       Lamp[40] = false;                               // turn off the first
@@ -1257,7 +1390,7 @@ void DisplayTest_EnterSw(byte Event) {                // Display Test Enter swit
   switch (Event) {
   case 72:                                            // Next test
     WriteUpper(" SWITCHEDGES  ");                   	// Show 'Switch Edges'
-    Switch_Pressed = SwitchEdges_Enter;                         // Next mode
+    Switch_Pressed = SwitchEdges_Enter;               // Next mode
     break;
   case 3:
     WriteUpper("0000000000000000");
@@ -1312,7 +1445,7 @@ void SwitchEdges_Enter(byte Event) {
 
 void SwitchEdges(byte Event) {
   if (Event == 72) {
-    Switch_Pressed = SwitchEdges_Enter;                         // back to Switch edges enter
+    Switch_Pressed = SwitchEdges_Enter;               // back to Switch edges enter
     WriteUpper(" SWITCHEDGES  ");
     WriteLower("              ");}
   else {
