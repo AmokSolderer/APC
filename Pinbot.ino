@@ -6,7 +6,9 @@ bool PB_DropWait = false;															// ignore drop target switches when true
 bool PB_DropRamp = false;															// ramp needs to be dropped when possible
 bool PB_EnergyActive = false;													// score energy active?
 bool PB_SkillShot = false;														// is the skill shot active?
+byte PB_ChestMode = 0;																// current status of the chest and visor
 byte PB_DropTimer = 0;																// number of the drop target timer
+byte PB_ChestLightsTimer = 0;													// number of the timer controlling the chest lamp sequencing
 byte PB_Planet[5];																		// reached planets for all players
 byte PB_ExBallsLit = 0;																// no of lanes lit for extra ball
 byte PB_SkillMultiplier = 1;													// Multiplier for the skill shot value
@@ -14,6 +16,8 @@ byte DropBlinkLamp = 0;																// number of the lamp currently blinking
 
 const unsigned int PB_SolTimes[32] = {50,30,30,70,30,200,30,30,500,500,999,999,0,0,500,500,50,500,50,50,50,50,0,0,50,500,500,500,500,500,500,500}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
+const byte ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
+																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 
 struct SettingTopic PB_setList[6] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20},
 		{" REACH PLANET ",HandleNumSetting,0,1,9},
@@ -170,8 +174,13 @@ void PB_AttractModeSW(byte Select) {
 		if (!Switch[44]) {																// ramp in up state?
 			ActA_BankSol(0, 6);}														// put it down
 		PB_NewBall(2);                                    // release a new ball (2 expected balls in the trunk)
+		PB_ChestMode = 1;
+		PB_LightChestRows(0); 								// TO BE CHANGED LATER
 		ActivateSolenoid(0, 23);                        	// enable flipper fingers
 		ActivateSolenoid(0, 24);
+		break;
+	case 8:																							// high score reset
+		digitalWrite(Blanking, HIGH);                     // invoke the blanking
 		break;
 	case 46:
 		if (CloseVisor) {
@@ -264,6 +273,8 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
 			PB_DropRamp = false;														// clear request
 			ActA_BankSol(0, 6);}														// drop ramp
 		if (PB_SkillShot) {																// is this a skill shot?
+			if (Switch != 20) {															// no bouncing of the shooter lane switch?
+				PB_SkillShot = false;}												// the next shot is not a skill shot any more
 			switch (Switch) {																// was a skill shot target hit
 			case 22:
 				Points[Player] += 20000 * PB_SkillMultiplier;
@@ -277,7 +288,6 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
 				Points[Player] += 5000 * PB_SkillMultiplier;
 				ShowPoints(Player);
 				break;}}
-		PB_SkillShot = false;															// the next shot is not a skill shot any more
 		BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
 	PB_GameMain(Switch);}                               // process current switch
 
@@ -389,6 +399,9 @@ void PB_ClearOuthole(byte Event) {
 
 void PB_GameMain(byte Switch) {
 	switch(Switch) {
+	case 8:																							// high score reset
+		digitalWrite(Blanking, HIGH);                     // invoke the blanking
+		break;
 	case 16:
     ActivateTimer(200, 0, PB_ClearOuthole);           // check again in 200ms
     break;
@@ -448,6 +461,17 @@ void PB_GameMain(byte Switch) {
     break;
 	}
 }
+
+void PB_LightChestRows(byte Dummy) {									// and columns
+	AddBlinkLamp(ChestRows[PB_ChestMode][0], 100);
+	for (i=0; i<5; i++) {
+		RemoveBlinkLamp(ChestRows[PB_ChestMode-1][i]);}
+	for (i=1; i<5; i++) {
+		AddBlinkLamp(ChestRows[PB_ChestMode][i], 100);}
+	PB_ChestMode++;
+	if (PB_ChestMode > 10) {
+		PB_ChestMode = 1;}
+	PB_ChestLightsTimer = ActivateTimer(1000, 0, PB_LightChestRows);}
 
 void PB_HandleLock(byte Dummy) {
 	;
