@@ -46,6 +46,13 @@ const struct LampPat PB_AttractPat3[4] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1
 
 const struct LampFlow PB_AttractFlow[4] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{0,0}};
 
+const bool PB_ChestPatterns[4][25] =  {{1,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,1,0,1,0,0,1,0,1},
+																			 {1,1,1,0,0,0,0,1,0,1,1,0,0,1,0,1,0,1,1,0,1,0,0,1,0},
+																			 {0,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1},
+																			 {0,1,0,1,0,1,1,0,1,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0}};
+
+bool PB_ChestLamp[25];
+
 const byte PB_DropTime = 0;														// drop target down time setting
 const byte PB_ReachPlanet = 1;												// target planet setting
 const byte PB_EnergyTimer = 2;												// energy timer setting
@@ -292,15 +299,16 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
 	PB_GameMain(Switch);}                               // process current switch
 
 void PB_BallReleaseCheck(byte Switch) {               // handle switches during ball release
-  if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
-  	if (CheckReleaseTimer) {
-  		KillTimer(CheckReleaseTimer);
-  		CheckReleaseTimer = 0;}                   			// stop watchdog
-    Switch_Pressed = PB_ResetBallWatchdog;
-    if (Switch == 20) {																// ball is in the shooter lane
-      Switch_Released = PB_CheckShooterLaneSwitch;}		// set mode to register when ball is shot
-    else {
-      BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}} // set switch mode to game
+	if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
+		if (CheckReleaseTimer) {
+			KillTimer(CheckReleaseTimer);
+			CheckReleaseTimer = 0;}                   			// stop watchdog
+		Switch_Pressed = PB_ResetBallWatchdog;
+		if (Switch == 20) {																// ball is in the shooter lane
+			Switch_Released = PB_CheckShooterLaneSwitch;}		// set mode to register when ball is shot
+		else {
+			if (!BallWatchdogTimer) {
+				BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}} // set switch mode to game
   PB_GameMain(Switch);}
 
 void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
@@ -419,6 +427,22 @@ void PB_GameMain(byte Switch) {
 	case 35:
 	case 36:
 	case 37:
+		if (PB_ChestMode > 0) {														// chest switches active?
+			if (PB_ChestMode < 10) {												// visor can be opened with one row / column hit
+				if (Switch == PB_ChestMode) {									// correct row / column hit?
+					OpenVisor = true;
+					ActivateSolenoid(0, 13);}										// open visor
+				else {																				// incorrect row / column hit
+					if (PB_ChestLightsTimer) {
+						KillTimer(PB_ChestLightsTimer);						// disable timer to change row / column blinking
+						PB_ChestLightsTimer = 0;}
+					for (i=0; i<5; i++) {												// turn off blinking row / column
+						RemoveBlinkLamp(ChestRows[PB_ChestMode-1][i]);}
+					PB_ChestMode = 15;
+					PB_ChestLightsTimer = ActivateTimer(200, 0, PB_LightChestPattern);}
+			}
+		}
+
 		break;
 	case 45:																						// score energy switch
 		if (PB_EnergyActive) {
@@ -463,15 +487,27 @@ void PB_GameMain(byte Switch) {
 }
 
 void PB_LightChestRows(byte Dummy) {									// and columns
-	AddBlinkLamp(ChestRows[PB_ChestMode][0], 100);
+	//AddBlinkLamp(ChestRows[PB_ChestMode][0], 100);
 	for (i=0; i<5; i++) {
 		RemoveBlinkLamp(ChestRows[PB_ChestMode-1][i]);}
-	for (i=1; i<5; i++) {
-		AddBlinkLamp(ChestRows[PB_ChestMode][i], 100);}
+	for (i=0; i<5; i++) {
+		AddBlinkLamp(ChestRows[PB_ChestMode][i], 75);}
 	PB_ChestMode++;
 	if (PB_ChestMode > 10) {
 		PB_ChestMode = 1;}
 	PB_ChestLightsTimer = ActivateTimer(1000, 0, PB_LightChestRows);}
+
+void PB_LightChestPattern(byte step) {
+	byte x = 0;
+	byte y = 0;
+	for (x=0; x<5; x++) {
+		for (y=0; y<5; y++) {
+			if (!PB_ChestLamp[28+8*x+y]) {
+				Lamp[28+8*x+y] = PB_ChestPatterns[step][5*y+x];}}}
+	step++;
+	if (step == 4) {
+		step = 0;}
+	PB_ChestLightsTimer = ActivateTimer(200, step, PB_LightChestPattern);}
 
 void PB_HandleLock(byte Dummy) {
 	;

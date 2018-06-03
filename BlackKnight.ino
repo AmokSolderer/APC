@@ -35,10 +35,11 @@ const byte BK_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 
 const byte TimedMagna = 0;                            // Timed Magna saves?
 
-struct SettingTopic BK_setList[4] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
-       {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
-       {"  EXIT SETTNGS",ExitSettings,0,0,0},
-       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+struct SettingTopic BK_setList[5] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
+			{" RESET  HIGH  ",ResetHighScores,0,0,0},
+      {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
+      {"  EXIT SETTNGS",ExitSettings,0,0,0},
+      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
                               	 // Duration080910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364
 const struct LampPat AttractPat1[52] = {{30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -322,6 +323,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 			WriteUpper("              ");
 			WriteLower("              ");
 			Ball = 1;
+			ResetAllDropTargets(0);
 			AddPlayer();
 			Player = 1;
 			ExBalls = 0;
@@ -343,6 +345,13 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 			//digitalWrite(SpcSolEnable, HIGH);               // enable special solenoids
 			ActivateSolenoid(0, 23);                        // enable flipper fingers
 			ActivateSolenoid(0, 24);}}}
+
+void ResetAllDropTargets(byte Dummy) {
+	for (Dummy=0; Dummy <4; Dummy++) {									// Dummy counts through the drop target banks
+		for (i=0; i<3;i++) {															// for each target
+			if (Switch[DropTargets[Dummy]+i]) {							// target down?
+				ActivateSolenoid(0, DropSolenoid+Dummy);			// reset
+				return;}}}}																		// quit for next bank
 
 void AddPlayer() {
   if ((NoPlayers < 4) && (Ball == 1)) {               // if actual number of players < 4
@@ -417,16 +426,17 @@ void CheckShooterLaneSwitch(byte Switch) {
       BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}}}
 
 void BallReleaseCheck(byte Switch) {                  // handle switches during ball release
-  if ((Switch > 10)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 46)) { // playfield switch activated?
-  	if (CheckReleaseTimer) {
-  		KillTimer(CheckReleaseTimer);
-  		CheckReleaseTimer = 0;}                   			// stop watchdog
-    Switch_Pressed = ResetBallWatchdog;
-    if (Switch == 45) {																// ball is in the shooter lane
-      Switch_Released = CheckShooterLaneSwitch;}				// set mode to register when ball is shot
-    else {
-      BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}} // set switch mode to game
-  GameMain(Switch);}                                  // process current switch
+	if ((Switch > 10)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 46)) { // playfield switch activated?
+		if (CheckReleaseTimer) {
+			KillTimer(CheckReleaseTimer);
+			CheckReleaseTimer = 0;}                   			// stop watchdog
+		Switch_Pressed = ResetBallWatchdog;
+		if (Switch == 45) {																// ball is in the shooter lane
+			Switch_Released = CheckShooterLaneSwitch;}				// set mode to register when ball is shot
+		else {
+			if (!BallWatchdogTimer) {
+				BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}}} // set switch mode to game
+	GameMain(Switch);}                                  // process current switch
 
 void ResetBallWatchdog(byte Event) {                  // handle switches during ball release
   if ((Event > 10)&&(Event != 17)&&(Event != 18)&&(Event != 19)&&(Event != 46)) { // playfield switch activated?
@@ -1368,6 +1378,18 @@ void LockChaseLight(byte ChaseLamp) {                 // controls the chase ligh
       Lamp[42] = true;                                // turn on the last lamp
       LockLightsTimer = ActivateTimer(1000, 40, LockChaseLight); // and come back in one second to process lamp 40
       break;}}
+
+void ResetHighScores(bool change) {										// delete the high scores file
+	if (change) {																				// if the start button has been pressed
+		if (SDfound) {
+			SD.remove(GameDefinition.HighScoresFileName);
+			struct HighScores HScBuffer;										// create new high score table
+			HallOfFame = HScBuffer;													// copy it to the hall of fame
+			WriteLower(" SCORES DONE  ");}
+		else {
+			WriteLower(" SCORES NO SD ");}}
+	else {
+		WriteLower(" SCORES       ");}}
 
 // Test mode
 

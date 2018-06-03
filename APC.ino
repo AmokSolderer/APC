@@ -1140,8 +1140,9 @@ void RepeatSelectKey(byte Run) {											// Repeat the start button (No 3) if 
 
 void StopRepeatSelectKey(byte Switch) {								// stop repeating the start button if it has been released
 	if (Switch ==3) {
-		KillTimer(SettingsRepeatTimer);
-    SettingsRepeatTimer = 0;
+		if (SettingsRepeatTimer) {
+			KillTimer(SettingsRepeatTimer);
+			SettingsRepeatTimer = 0;}
 		Switch_Released = DummyProcess;}}
 
 void SelSetting(byte Switch) {												// Switch mode of the settings
@@ -1197,6 +1198,9 @@ void RestoreDefaults(bool change) {										// restore the default settings
 		WriteLower("SETTNGS       ");}}
 
 void ExitSettings(bool change) {											// exit settings and save them if necessary
+	if (SettingsRepeatTimer) {													// kill key repeat timer for button 3
+		KillTimer(SettingsRepeatTimer);
+		SettingsRepeatTimer = 0;}
   WriteLower("              ");
 	if (change) {																				// if the start button has been pressed
 		if (AppByte2) {																		// and the change indicator has been set
