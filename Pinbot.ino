@@ -19,9 +19,10 @@ const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire wh
 const byte ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 
-struct SettingTopic PB_setList[6] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20},
+struct SettingTopic PB_setList[7] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20},
 		{" REACH PLANET ",HandleNumSetting,0,1,9},
 		{" ENERGY TIMER ",HandleNumSetting,0,1,90},
+    {" RESET  HIGH  ",PB_ResetHighScores,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
@@ -47,8 +48,8 @@ const struct LampPat PB_AttractPat3[4] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1
 const struct LampFlow PB_AttractFlow[4] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{0,0}};
 
 const bool PB_ChestPatterns[4][25] =  {{1,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,1,0,1,0,0,1,0,1},
-																			 {1,1,1,0,0,0,0,1,0,1,1,0,0,1,0,1,0,1,1,0,1,0,0,1,0},
-																			 {0,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1},
+																			 {1,1,1,0,0,0,0,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,0,1,0},
+																			 {0,0,1,0,1,1,1,0,1,0,1,0,1,0,0,0,1,0,0,1,0,1,1,0,1},
 																			 {0,1,0,1,0,1,1,0,1,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0}};
 
 bool PB_ChestLamp[25];
@@ -429,7 +430,7 @@ void PB_GameMain(byte Switch) {
 	case 37:
 		if (PB_ChestMode > 0) {														// chest switches active?
 			if (PB_ChestMode < 10) {												// visor can be opened with one row / column hit
-				if (Switch == PB_ChestMode) {									// correct row / column hit?
+				if (Switch-27 == PB_ChestMode) {						  // correct row / column hit?
 					OpenVisor = true;
 					ActivateSolenoid(0, 13);}										// open visor
 				else {																				// incorrect row / column hit
@@ -487,14 +488,13 @@ void PB_GameMain(byte Switch) {
 }
 
 void PB_LightChestRows(byte Dummy) {									// and columns
-	//AddBlinkLamp(ChestRows[PB_ChestMode][0], 100);
+  PB_ChestMode++;
+  if (PB_ChestMode > 10) {
+    PB_ChestMode = 1;}
 	for (i=0; i<5; i++) {
 		RemoveBlinkLamp(ChestRows[PB_ChestMode-1][i]);}
 	for (i=0; i<5; i++) {
 		AddBlinkLamp(ChestRows[PB_ChestMode][i], 75);}
-	PB_ChestMode++;
-	if (PB_ChestMode > 10) {
-		PB_ChestMode = 1;}
 	PB_ChestLightsTimer = ActivateTimer(1000, 0, PB_LightChestRows);}
 
 void PB_LightChestPattern(byte step) {
@@ -643,6 +643,18 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 							//PB_CheckForLockedBalls(0);
 							Lamp[3] = false;                      	// turn off Ball in Play lamp
 							GameDefinition.AttractMode();}}}}}}}
+
+void PB_ResetHighScores(bool change) {                // delete the high scores file
+  if (change) {                                       // if the start button has been pressed
+    if (SDfound) {
+      SD.remove(GameDefinition.HighScoresFileName);
+      struct HighScores HScBuffer;                    // create new high score table
+      HallOfFame = HScBuffer;                         // copy it to the hall of fame
+      WriteLower(" SCORES DONE  ");}
+    else {
+      WriteLower(" SCORES NO SD ");}}
+  else {
+    WriteLower(" SCORES       ");}}              
 
 void PB_Testmode(byte Select) {
 	Switch_Pressed = PB_Testmode;
