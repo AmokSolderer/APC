@@ -351,7 +351,7 @@ void ResetAllDropTargets(byte Dummy) {
 		for (i=0; i<3;i++) {															// for each target
 			if (Switch[DropTargets[Dummy]+i]) {							// target down?
 				ActivateSolenoid(0, DropSolenoid+Dummy);			// reset
-				return;}}}}																		// quit for next bank
+				break;}}}}																		// quit for next bank
 
 void AddPlayer() {
   if ((NoPlayers < 4) && (Ball == 1)) {               // if actual number of players < 4
@@ -1395,6 +1395,8 @@ void ResetHighScores(bool change) {										// delete the high scores file
 
 void TestMode_Enter() {
   KillAllTimers();
+  ActivateSolenoid(0, 23);                            // enable flipper fingers
+  ActivateSolenoid(0, 24);
   Switch_Pressed = DummyProcess;                                // Switches do nothing
   if (!digitalRead(UpDown)) {
     Settings_Enter();}
@@ -1585,6 +1587,8 @@ void ShowAllLamps(byte Event) {                       // Flash all lamps
 void SoundTest_Enter(byte Switch) {
   switch (Switch) {
     case 72:
+      ReleaseSolenoid(23);                            // disable flipper fingers
+      ReleaseSolenoid(24);
       GameDefinition.AttractMode();
       break;
     case 3:

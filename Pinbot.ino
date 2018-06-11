@@ -12,7 +12,8 @@ byte PB_ChestLightsTimer = 0;													// number of the timer controlling the
 byte PB_Planet[5];																		// reached planets for all players
 byte PB_ExBallsLit = 0;																// no of lanes lit for extra ball
 byte PB_SkillMultiplier = 1;													// Multiplier for the skill shot value
-byte DropBlinkLamp = 0;																// number of the lamp currently blinking
+byte PB_DropBlinkLamp = 0;														// number of the lamp currently blinking
+byte PB_Eject_Mode = 0;																// current mode of the eject hole
 
 const unsigned int PB_SolTimes[32] = {30,20,30,70,30,200,30,30,500,500,999,999,0,0,500,500,50,500,50,50,50,50,0,0,50,500,500,500,500,500,500,500}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
@@ -253,7 +254,7 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 	//*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
 	if (!BlinkScoreTimer) {
 		BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);}
-  DropBlinkLamp = 41;
+  PB_DropBlinkLamp = 41;
 	PB_CycleDropLights(1);															// start the blinking drop target lights
 	PB_SkillShot = true;																// the first shot is a skill shot
 	if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {	// target planet not reached yet?
@@ -445,6 +446,8 @@ void PB_GameMain(byte Switch) {
 		}
 
 		break;
+	case 38:																						// eject hole
+		// TODO eject mode
 	case 45:																						// score energy switch
 		if (PB_EnergyActive) {
 																	// score energy value
@@ -519,7 +522,7 @@ void PB_HandleDropTargets(byte Target) {
 		if (PB_DropTimer) {																// any targets down before?
 			KillTimer(PB_DropTimer);												// turn off timer
 			PB_DropTimer = 0;
-			DropBlinkLamp = 41;
+			PB_DropBlinkLamp = 41;
 			PB_CycleDropLights(1);													// start the blinking drop target lights
 			RemoveBlinkLamp(17);}														// stop blinking of timer lamp
 		Points[Player] += Multiballs * 25000;
@@ -537,7 +540,7 @@ void PB_HandleDropTargets(byte Target) {
 				Lamp[PB_Planet[Player]+18] = true;}}}
 	else {
 		if (!PB_DropTimer) {															// first target hit
-			if (Target-8 == DropBlinkLamp) {								// blinking target hit?
+			if (Target-8 == PB_DropBlinkLamp) {								// blinking target hit?
 				ActA_BankSol(0, 5);														// raise ramp
 				AddBlinkLamp(34, 500);												// blink energy lamp
 				PB_EnergyActive = true;												// energy value on
@@ -548,7 +551,7 @@ void PB_HandleDropTargets(byte Target) {
 
 void PB_ResetDropTargets(byte Dummy) {
 	RemoveBlinkLamp(17);																// stop drop target timer lamp
-  DropBlinkLamp = 41;
+  PB_DropBlinkLamp = 41;
   PB_DropTimer = 0;
 	PB_CycleDropLights(1);															// start the blinking drop target lights
 	ActA_BankSol(0, 4);}																// reset drop targets
@@ -561,20 +564,20 @@ void PB_EnergyOff(byte Dummy) {
 
 void PB_CycleDropLights(byte State) {
 	if (State) {
-		if (DropBlinkLamp) {															// blink lamp active?
-			if (DropBlinkLamp == 43) {											// last lamp blinking?
+		if (PB_DropBlinkLamp) {															// blink lamp active?
+			if (PB_DropBlinkLamp == 43) {											// last lamp blinking?
 				AddBlinkLamp(41, 100);												// start again with the first one
 				RemoveBlinkLamp(43);													// remove the current one
-				DropBlinkLamp = 41;}													// reset the number of the currently blinking lamp
+				PB_DropBlinkLamp = 41;}													// reset the number of the currently blinking lamp
 			else {																					// not the last one
-				AddBlinkLamp(DropBlinkLamp+1, 100);						// start the next one
-				RemoveBlinkLamp(DropBlinkLamp);								// remove the current one
-				DropBlinkLamp++;}															// increase number of currently blinking lamp
+				AddBlinkLamp(PB_DropBlinkLamp+1, 100);						// start the next one
+				RemoveBlinkLamp(PB_DropBlinkLamp);								// remove the current one
+				PB_DropBlinkLamp++;}															// increase number of currently blinking lamp
 			ActivateTimer(3000, 1, PB_CycleDropLights);}}
 	else {
-		if (DropBlinkLamp) {															// blink lamp active?
-			RemoveBlinkLamp(DropBlinkLamp);
-			DropBlinkLamp = 0;}}}
+		if (PB_DropBlinkLamp) {															// blink lamp active?
+			RemoveBlinkLamp(PB_DropBlinkLamp);
+			PB_DropBlinkLamp = 0;}}}
 
 void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 	AppByte = PB_CountBallsInTrunk();
