@@ -14,7 +14,7 @@ byte PB_ExBallsLit = 0;																// no of lanes lit for extra ball
 byte PB_SkillMultiplier = 1;													// Multiplier for the skill shot value
 byte DropBlinkLamp = 0;																// number of the lamp currently blinking
 
-const unsigned int PB_SolTimes[32] = {50,30,30,70,30,200,30,30,500,500,999,999,0,0,500,500,50,500,50,50,50,50,0,0,50,500,500,500,500,500,500,500}; // Activation times for solenoids (last 8 are C bank)
+const unsigned int PB_SolTimes[32] = {30,20,30,70,30,200,30,30,500,500,999,999,0,0,500,500,50,500,50,50,50,50,0,0,50,500,500,500,500,500,500,500}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
 const byte ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
@@ -48,9 +48,9 @@ const struct LampPat PB_AttractPat3[4] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1
 const struct LampFlow PB_AttractFlow[4] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{0,0}};
 
 const bool PB_ChestPatterns[4][25] =  {{1,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,1,0,1,0,0,1,0,1},
-																			 {1,1,1,0,0,0,0,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,0,1,0},
-																			 {0,0,1,0,1,1,1,0,1,0,1,0,1,0,0,0,1,0,0,1,0,1,1,0,1},
-																			 {0,1,0,1,0,1,1,0,1,1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0}};
+																			 {1,1,1,0,0,0,0,1,0,1,1,0,0,1,1,1,0,1,0,0,1,0,0,1,0},
+																			 {0,0,1,0,1,1,1,0,1,0,1,0,1,1,0,0,1,0,1,1,0,1,1,0,1},
+																			 {0,1,0,1,0,1,1,0,1,1,0,1,0,0,1,0,1,0,1,0,1,1,0,1,0}};
 
 bool PB_ChestLamp[25];
 
@@ -430,15 +430,15 @@ void PB_GameMain(byte Switch) {
 	case 37:
 		if (PB_ChestMode > 0) {														// chest switches active?
 			if (PB_ChestMode < 10) {												// visor can be opened with one row / column hit
+        if (PB_ChestLightsTimer) {
+          KillTimer(PB_ChestLightsTimer);             // disable timer to change row / column blinking
+          PB_ChestLightsTimer = 0;}
+        for (i=0; i<5; i++) {                         // turn off blinking row / column
+          RemoveBlinkLamp(ChestRows[PB_ChestMode][i]);}
 				if (Switch-27 == PB_ChestMode) {						  // correct row / column hit?
 					OpenVisor = true;
 					ActivateSolenoid(0, 13);}										// open visor
 				else {																				// incorrect row / column hit
-					if (PB_ChestLightsTimer) {
-						KillTimer(PB_ChestLightsTimer);						// disable timer to change row / column blinking
-						PB_ChestLightsTimer = 0;}
-					for (i=0; i<5; i++) {												// turn off blinking row / column
-						RemoveBlinkLamp(ChestRows[PB_ChestMode-1][i]);}
 					PB_ChestMode = 15;
 					PB_ChestLightsTimer = ActivateTimer(200, 0, PB_LightChestPattern);}
 			}
