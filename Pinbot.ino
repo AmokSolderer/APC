@@ -184,7 +184,7 @@ void PB_AttractModeSW(byte Select) {
 			ActA_BankSol(0, 6);}														// put it down
 		PB_NewBall(2);                                    // release a new ball (2 expected balls in the trunk)
 		PB_ChestMode = 1;
-		PB_LightChestRows(0); 								// TO BE CHANGED LATER
+		PB_LightChestRows(0); 								// TODO put it into NewBall
 		ActivateSolenoid(0, 23);                        	// enable flipper fingers
 		ActivateSolenoid(0, 24);
 		break;
@@ -436,13 +436,19 @@ void PB_GameMain(byte Switch) {
           PB_ChestLightsTimer = 0;}
         for (i=0; i<5; i++) {                         // turn off blinking row / column
           RemoveBlinkLamp(ChestRows[PB_ChestMode][i]);}
+        if (Switch > 32) {
+          Switch = 70 - Switch;}                      // swap 
 				if (Switch-27 == PB_ChestMode) {						  // correct row / column hit?
 					OpenVisor = true;
 					ActivateSolenoid(0, 13);}										// open visor
 				else {																				// incorrect row / column hit
-					PB_ChestMode = 15;
-					PB_ChestLightsTimer = ActivateTimer(200, 0, PB_LightChestPattern);}
-			}
+					PB_ChestMode = Switch-17;                   // Store row / column hit
+          PB_ClearChest();                            // turn off chest lamps
+          PB_HitRowColumn(0);}}                       // call effect routine
+					
+      else {                                          // the cumbersome way to open the visor
+        
+      }
 		}
 
 		break;
@@ -490,6 +496,24 @@ void PB_GameMain(byte Switch) {
 	}
 }
 
+void PB_HitRowColumn(byte State) {
+  if (State < 5) {                                    // turn on phase
+    Lamp[ChestRows[PB_ChestMode-10][State]] = true;}
+  else {                                              // turn off phase
+    Lamp[ChestRows[PB_ChestMode-10][State-5]] = false;}
+  State++;
+  if (State < 10) {                                    // not yet done
+    ActivateTimer(100, State, PB_HitRowColumn);}
+  else {
+    PB_ChestLightsTimer = ActivateTimer(500, 0, PB_LightChestPattern);}}
+    
+void PB_ClearChest() {                                // turn off chest lamps
+  byte x = 0;
+  byte y = 0;
+  for (x=0; x<5; x++) {
+    for (y=0; y<5; y++) {
+      Lamp[28+8*x+y] = false;}}}
+      
 void PB_LightChestRows(byte Dummy) {									// and columns
   PB_ChestMode++;
   if (PB_ChestMode > 10) {
@@ -505,7 +529,7 @@ void PB_LightChestPattern(byte step) {
 	byte y = 0;
 	for (x=0; x<5; x++) {
 		for (y=0; y<5; y++) {
-			if (!PB_ChestLamp[28+8*x+y]) {
+			if (!PB_ChestLamp[5*x+y]) {
 				Lamp[28+8*x+y] = PB_ChestPatterns[step][5*y+x];}}}
 	step++;
 	if (step == 4) {
@@ -580,6 +604,7 @@ void PB_CycleDropLights(byte State) {
 			PB_DropBlinkLamp = 0;}}}
 
 void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
+  PB_CycleDropLights(0);                              // stop the blinking drop target lights
 	AppByte = PB_CountBallsInTrunk();
 	if ((AppByte == 5)||(AppByte < 3-Multiballs-InLock)) {
 		InLock = 0;
