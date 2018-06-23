@@ -22,7 +22,7 @@ bool PlayersExBalls[5];                               // did the player already 
 byte DropTimer[4];                                    // timer for all drop target banks
 byte DropHits[16];                                    // counts how often the target banks have been cleared
 bool DropWait[5];																			// indicates that a waiting time for this drop target bank is active before it it being processed
-byte BallSearchCoils[11] = {1,8,10,9,2,3,4,5,7,19,15}; // coils to fire when the ball watchdog timer runs out
+const byte BallSearchCoils[11] = {1,8,10,9,2,3,4,5,7,19,15}; // coils to fire when the ball watchdog timer runs out
 const unsigned int BK_SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,5,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
 const byte BK_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 											  			0,0,0,0,0,0,0,0,

@@ -14,13 +14,16 @@ byte PB_ExBallsLit = 0;																// no of lanes lit for extra ball
 byte PB_SkillMultiplier = 1;													// Multiplier for the skill shot value
 byte PB_DropBlinkLamp = 0;														// number of the lamp currently blinking
 byte PB_Eject_Mode = 0;																// current mode of the eject hole
+byte PB_LitChestLamps = 0;														// amount of lit chest lamps
+byte PB_ChestLamp[4][5];															// status of the chest lamps for each player / one column per byte
+byte PB_LampsToLit = 2;																// number of lamps to be lit when chest is hit
 
-const unsigned int PB_SolTimes[32] = {30,20,30,70,30,200,30,30,500,500,999,999,0,0,500,500,50,500,50,50,50,50,0,0,50,500,500,500,500,500,500,500}; // Activation times for solenoids (last 8 are C bank)
+const unsigned int PB_SolTimes[32] = {30,20,30,70,30,200,30,30,500,500,999,999,0,0,500,500,50,500,50,50,50,50,0,0,50,50,50,50,50,50,50,50}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
 const byte ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 
-struct SettingTopic PB_setList[7] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20},
+struct SettingTopic PB_setList[7] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
 		{" REACH PLANET ",HandleNumSetting,0,1,9},
 		{" ENERGY TIMER ",HandleNumSetting,0,1,90},
     {" RESET  HIGH  ",PB_ResetHighScores,0,0,0},
@@ -48,12 +51,10 @@ const struct LampPat PB_AttractPat3[4] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1
 
 const struct LampFlow PB_AttractFlow[4] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{0,0}};
 
-const bool PB_ChestPatterns[4][25] =  {{1,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,1,0,1,0,0,1,0,1},
-																			 {1,1,1,0,0,0,0,1,0,1,1,0,0,1,1,1,0,1,0,0,1,0,0,1,0},
-																			 {0,0,1,0,1,1,1,0,1,0,1,0,1,1,0,0,1,0,1,1,0,1,1,0,1},
-																			 {0,1,0,1,0,1,1,0,1,1,0,1,0,0,1,0,1,0,1,0,1,1,0,1,0}};
-
-bool PB_ChestLamp[25];
+const bool PB_ChestPatterns[4][5] =  {{0b10011,0b00100,0b01100,0b10101,0b00101},
+																			 {0b11100,0b00101,0b10011,0b10100,0b10010},
+																			 {0b00101,0b11010,0b10110,0b01011,0b01101},
+																			 {0b01010,0b11011,0b01001,0b01010,0b11010}};
 
 const byte PB_DropTime = 0;														// drop target down time setting
 const byte PB_ReachPlanet = 1;												// target planet setting
@@ -429,7 +430,7 @@ void PB_GameMain(byte Switch) {
 	case 35:
 	case 36:
 	case 37:
-		if (PB_ChestMode > 0) {														// chest switches active?
+		if (PB_ChestMode > 0) {														// visor closed?
 			if (PB_ChestMode < 10) {												// visor can be opened with one row / column hit
         if (PB_ChestLightsTimer) {
           KillTimer(PB_ChestLightsTimer);             // disable timer to change row / column blinking
@@ -443,9 +444,9 @@ void PB_GameMain(byte Switch) {
 					ActivateSolenoid(0, 13);}										// open visor
 				else {																				// incorrect row / column hit
 					PB_ChestMode = Switch-17;                   // Store row / column hit
+					PB_SetChestLamps();
           PB_ClearChest();                            // turn off chest lamps
           PB_HitRowColumn(0);}}                       // call effect routine
-					
       else {                                          // the cumbersome way to open the visor
         
       }
@@ -513,7 +514,48 @@ void PB_ClearChest() {                                // turn off chest lamps
   for (x=0; x<5; x++) {
     for (y=0; y<5; y++) {
       Lamp[28+8*x+y] = false;}}}
+
+void PB_SetChestLamps() {
+	byte Pos = 0;
+	byte Buffer;
+	byte Buffer2 = PB_LampsToLit;
+	if (PB_ChestMode-11 < 5) {
+		Buffer = PB_ChestLamp[Player][PB_ChestMode-11];
+		while (!(Buffer & 1) && (Pos < 5)) {
+			Pos++;
+			Buffer = Buffer>>1;}
+		if (Pos) {
+			while (Pos && Buffer2) {
+				Pos--;
+				Buffer = (Buffer<<1) | 1;
+				Buffer2--;}
+			PB_ChestLamp[Player][PB_ChestMode-11] = Buffer;}
+		// add else for column already full
+	}
+	else {
+		Buffer = 1<<(PB_ChestMode-16);
+		Pos = 4;
+		while (!(PB_ChestLamp[Player][Pos] & Buffer) && Pos) {
+			Pos--;}
+		if (Pos < 4) {
+			while ((Pos < 4) && Buffer2) {
+				Buffer2--;
+				PB_ChestLamp[Player][Pos] = PB_ChestLamp[Player][Pos] | Buffer;
+				Pos++;}}
+		// add else for column already full
+	}
+}
       
+void PB_CountLitChestLamps() {												// count the lit chest lamps for the current player
+	byte Buffer;
+	PB_LitChestLamps = 0;																// reset counter
+	for (byte x=0; x<5; x++) {													// for all rows
+		Buffer = PB_ChestLamp[Player][x];									// buffer the current row
+		for (i=0; i<5; i++) {															// for all columns
+			if (Buffer & 1) {																// lamp lit?
+				PB_LitChestLamps++;}													// increase counter
+			Buffer = Buffer>>1;}}}													// shift buffer to the next lamp
+
 void PB_LightChestRows(byte Dummy) {									// and columns
   PB_ChestMode++;
   if (PB_ChestMode > 10) {
@@ -524,16 +566,22 @@ void PB_LightChestRows(byte Dummy) {									// and columns
 		AddBlinkLamp(ChestRows[PB_ChestMode][i], 75);}
 	PB_ChestLightsTimer = ActivateTimer(1000, 0, PB_LightChestRows);}
 
-void PB_LightChestPattern(byte step) {
-	byte x = 0;
-	byte y = 0;
-	for (x=0; x<5; x++) {
-		for (y=0; y<5; y++) {
-			if (!PB_ChestLamp[5*x+y]) {
-				Lamp[28+8*x+y] = PB_ChestPatterns[step][5*y+x];}}}
-	step++;
-	if (step == 4) {
-		step = 0;}
+void PB_LightChestPattern(byte step) {								// show chest lamp patterns but keep lit chest lamps
+	byte Mask;
+	byte Buffer;
+	for (byte x=0; x<5; x++) {													// for all columns
+		Mask = 1;																					// mask to access the stored lamps for this player
+		Buffer = PB_ChestPatterns[step][x];								// buffer the current row
+		for (i=0; i<5; i++) {															// for all columns
+			if (PB_ChestLamp[Player][x] & Mask) {						// if the lamp is stored
+				Lamp[28+8*x+i] = true;}												// turn it on
+			else {																					// otherwise
+				Lamp[28+8*x+i] = Buffer & 1;}									// it is controlled by the pattern
+			Mask = Mask<<1;																	// adjust the mask
+			Buffer = Buffer>>1;}}														// and the buffer
+	step++;																							// prepare for the next pattern
+	if (step == 4) {																		// all patterns shown?
+		step = 0;}																				// then start over again
 	PB_ChestLightsTimer = ActivateTimer(200, step, PB_LightChestPattern);}
 
 void PB_HandleLock(byte Dummy) {
@@ -632,7 +680,6 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 			//BonusToAdd = Bonus;
 			//BonusCountTime = 20;
 			//CountBonus(AppByte);
-			PB_CycleDropLights(0);
 			if (BlinkScoreTimer) {
 				KillTimer(BlinkScoreTimer);
 				BlinkScoreTimer = 0;}
@@ -650,7 +697,7 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 					//					}
 				}
 				//ActivateTimer(2000, 0, AfterExBallRelease);
-				ActivateTimer(1000, AppByte, PB_NewBall);}		// remove outhole block
+				ActivateTimer(1000, AppByte, PB_NewBall);}
 			else {                                        	// Player has no extra balls
 				PB_SkillMultiplier = 1;
 				if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
