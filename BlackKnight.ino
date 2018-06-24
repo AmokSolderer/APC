@@ -1209,9 +1209,6 @@ void ResetDropTargets(byte Event) {
 void ResetDropWait(byte Event) {                      // ensure waiting time to ignore switch bouncing
   DropWait[Event] = false;}
 
-void DelaySolenoid(byte Event) {                      // activate solenoid after delay time
-  ActivateSolenoid(0, Event);}
-
 void StartMultiball() {
   WriteUpper2(" MULTI  BALL  ");                     	// switch display to alternate buffer
   DispRow1 = DisplayUpper2;
