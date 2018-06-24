@@ -777,6 +777,9 @@ void ActivateLater(byte Solenoid) {               		// handle delayed solenoid c
   Duration = DurDelayed[i];                       		// get the duration
   ActivateSolenoid(Duration, Solenoid);}         	 		// and try again to activate it
 
+void DelaySolenoid(byte Solenoid) {                   // activate solenoid after delay time
+  ActivateSolenoid(0, Solenoid);}
+
 void ReleaseAllSolenoids() {
 	for (i=0; i< 3; i++) {															// clear all solenoid buffers
 		SolBuffer[i] = 0;}

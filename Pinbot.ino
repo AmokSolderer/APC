@@ -6,6 +6,7 @@ bool PB_DropWait = false;															// ignore drop target switches when true
 bool PB_DropRamp = false;															// ramp needs to be dropped when possible
 bool PB_EnergyActive = false;													// score energy active?
 bool PB_SkillShot = false;														// is the skill shot active?
+bool PB_EjectIgnore = false;                          // ignore the hole switch while the ball is in the hole
 byte PB_ChestMode = 0;																// current status of the chest and visor
 byte PB_DropTimer = 0;																// number of the drop target timer
 byte PB_ChestLightsTimer = 0;													// number of the timer controlling the chest lamp sequencing
@@ -18,7 +19,7 @@ byte PB_LitChestLamps = 0;														// amount of lit chest lamps
 byte PB_ChestLamp[4][5];															// status of the chest lamps for each player / one column per byte
 byte PB_LampsToLit = 2;																// number of lamps to be lit when chest is hit
 
-const unsigned int PB_SolTimes[32] = {30,20,30,70,30,200,30,30,500,500,999,999,0,0,500,500,50,500,50,50,50,50,0,0,50,50,50,50,50,50,50,50}; // Activation times for solenoids (last 8 are C bank)
+const unsigned int PB_SolTimes[32] = {50,20,30,70,30,200,30,30,100,100,999,999,0,0,100,100,50,100,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
 const byte ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
@@ -190,7 +191,7 @@ void PB_AttractModeSW(byte Select) {
 		ActivateSolenoid(0, 24);
 		break;
 	case 8:																							// high score reset
-		digitalWrite(Blanking, HIGH);                     // invoke the blanking
+		digitalWrite(Blanking, LOW);                     // invoke the blanking
 		break;
 	case 46:
 		if (CloseVisor) {
@@ -411,7 +412,7 @@ void PB_ClearOuthole(byte Event) {
 void PB_GameMain(byte Switch) {
 	switch(Switch) {
 	case 8:																							// high score reset
-		digitalWrite(Blanking, HIGH);                     // invoke the blanking
+		digitalWrite(Blanking, LOW);                     // invoke the blanking
 		break;
 	case 16:
     ActivateTimer(200, 0, PB_ClearOuthole);           // check again in 200ms
@@ -454,8 +455,12 @@ void PB_GameMain(byte Switch) {
 
 		break;
 	case 38:																						// eject hole
-		// TODO eject mode
-	case 45:																						// score energy switch
+    if (!PB_EjectIgnore) {
+      PB_EjectIgnore = true;
+		  Points[Player] += Multiballs * 2000;
+      ActivateTimer(1000, 3, ClearEjectHole);}
+    break;
+  case 45:																						// score energy switch
 		if (PB_EnergyActive) {
 																	// score energy value
 			PB_EnergyOff(0);}
@@ -497,6 +502,10 @@ void PB_GameMain(byte Switch) {
 	}
 }
 
+void ClearEjectHole(byte Solenoid) {                   // activate solenoid after delay time
+  PB_EjectIgnore = false;
+  ActivateSolenoid(0, Solenoid);}
+  
 void PB_HitRowColumn(byte State) {
   if (State < 5) {                                    // turn on phase
     Lamp[ChestRows[PB_ChestMode-10][State]] = true;}
@@ -571,8 +580,8 @@ void PB_LightChestPattern(byte step) {								// show chest lamp patterns but ke
 	byte Buffer;
 	for (byte x=0; x<5; x++) {													// for all columns
 		Mask = 1;																					// mask to access the stored lamps for this player
-		Buffer = PB_ChestPatterns[step][x];								// buffer the current row
-		for (i=0; i<5; i++) {															// for all columns
+		Buffer = PB_ChestPatterns[step][x];								// buffer the current column
+		for (i=0; i<5; i++) {															// for all rows
 			if (PB_ChestLamp[Player][x] & Mask) {						// if the lamp is stored
 				Lamp[28+8*x+i] = true;}												// turn it on
 			else {																					// otherwise
