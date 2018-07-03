@@ -52,7 +52,7 @@ const struct LampPat PB_AttractPat3[4] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1
 
 const struct LampFlow PB_AttractFlow[4] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{0,0}};
 
-const bool PB_ChestPatterns[4][5] =  {{0b10011,0b00100,0b01100,0b10101,0b00101},
+const byte PB_ChestPatterns[4][5] =  {{0b10011,0b00100,0b01100,0b10101,0b00101},
 																			 {0b11100,0b00101,0b10011,0b10100,0b10010},
 																			 {0b00101,0b11010,0b10110,0b01011,0b01101},
 																			 {0b01010,0b11011,0b01001,0b01010,0b11010}};
@@ -529,7 +529,7 @@ void PB_SetChestLamps() {
 	byte Buffer;
 	byte Buffer2 = PB_LampsToLit;
 	if (PB_ChestMode-11 < 5) {
-		Buffer = PB_ChestLamp[Player][PB_ChestMode-11];
+		Buffer = PB_ChestLamp[Player-1][PB_ChestMode-11];
 		while (!(Buffer & 1) && (Pos < 5)) {
 			Pos++;
 			Buffer = Buffer>>1;}
@@ -538,18 +538,18 @@ void PB_SetChestLamps() {
 				Pos--;
 				Buffer = (Buffer<<1) | 1;
 				Buffer2--;}
-			PB_ChestLamp[Player][PB_ChestMode-11] = Buffer;}
+			PB_ChestLamp[Player-1][PB_ChestMode-11] = Buffer;}
 		// add else for column already full
 	}
 	else {
 		Buffer = 1<<(PB_ChestMode-16);
 		Pos = 4;
-		while (!(PB_ChestLamp[Player][Pos] & Buffer) && Pos) {
+		while (!(PB_ChestLamp[Player-1][Pos] & Buffer) && Pos) {
 			Pos--;}
 		if (Pos < 4) {
 			while ((Pos < 4) && Buffer2) {
 				Buffer2--;
-				PB_ChestLamp[Player][Pos] = PB_ChestLamp[Player][Pos] | Buffer;
+				PB_ChestLamp[Player-1][Pos] = PB_ChestLamp[Player-1][Pos] | Buffer;
 				Pos++;}}
 		// add else for column already full
 	}
@@ -559,7 +559,7 @@ void PB_CountLitChestLamps() {												// count the lit chest lamps for the c
 	byte Buffer;
 	PB_LitChestLamps = 0;																// reset counter
 	for (byte x=0; x<5; x++) {													// for all rows
-		Buffer = PB_ChestLamp[Player][x];									// buffer the current row
+		Buffer = PB_ChestLamp[Player-1][x];									// buffer the current row
 		for (i=0; i<5; i++) {															// for all columns
 			if (Buffer & 1) {																// lamp lit?
 				PB_LitChestLamps++;}													// increase counter
@@ -582,7 +582,7 @@ void PB_LightChestPattern(byte step) {								// show chest lamp patterns but ke
 		Mask = 1;																					// mask to access the stored lamps for this player
 		Buffer = PB_ChestPatterns[step][x];								// buffer the current column
 		for (i=0; i<5; i++) {															// for all rows
-			if (PB_ChestLamp[Player][x] & Mask) {						// if the lamp is stored
+			if (PB_ChestLamp[Player-1][x] & Mask) {						// if the lamp is stored
 				Lamp[28+8*x+i] = true;}												// turn it on
 			else {																					// otherwise
 				Lamp[28+8*x+i] = Buffer & 1;}									// it is controlled by the pattern
@@ -711,7 +711,8 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 				PB_SkillMultiplier = 1;
 				if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
 					Switch_Pressed = DummyProcess;              // Switches do nothing
-					CheckHighScore(Player);}
+					// CheckHighScore(Player);
+				}
 				else {
 					if (Player < NoPlayers) {                 	// last player?
 						Player++;
