@@ -48,12 +48,13 @@ byte i = 0;                                           // general purpose counter
 byte x = 0;                                           // general purpose counter
 byte c = 0;                                           // reserved counter
 bool SDfound = false;                                 // SD card present?
+byte SwitchStack = 0;                                 // determines which switch events stack is active
+byte ChangedSw[2][30];                                // two stacks of switches with pending events
+byte SwEvents[2];                                     // contains the number of pending switch events in each stack
 bool Switch[SwMax+3];                                 // stores the present status of all switches (Advance is 72, HighScoreRest is 71)
 bool SwHistory[SwMax+3];                              // stores the previous switch status
 //byte SwDebounce[SwMax+3] = {0,10,10,10,10,10,10,10,10,5,5,2,2,1,2,2,2,10,10,10,10,2,2,1,10,10,10,10,0,10,10,10,0,10,10,10,3,10,10,10,0,10,10,10,2,10,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,10,10,10,10,10,10,10,10,10}; // debounce value for all switches
 //byte SwCount[SwMax+3];                                // debounce counter for all switches
-byte SwitchEvents = 0;                                // the number of pending switch events
-byte ChangedSwitches[SwMax+2];												// switches with pending events
 int SwDrv = 0;                                        // switch driver being accessed at the moment
 const byte *DispRow1;                                  // determines which patterns are to be shown (2 lines with 16 chars each)
 const byte *DispRow2;
@@ -99,16 +100,17 @@ byte A_BankWaitingNo = 0;															// amount of coils in A bank waiting lis
 byte A_BankWaiting[10];																// list of waiting A bank coils
 unsigned int A_BankWaitDuration[10];									// duration values for waiting A bank coils
 unsigned int DurDelayed[20];                          // duration values for waiting solenoid requests
-bool BlockTimers = false;                             // blocks the timer interrupt while timer properties are being changed
-byte ActiveTimers = 0;                                // Number of active timers
 byte SettingsRepeatTimer = 0;													// numberof the timer of the key repeat function in the settings function
 byte BlinkScoreTimer = 0;                             // number of the timer for the score blinking
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte CheckReleaseTimer = 0;														// number of the timer for the ball release check
+bool BlockTimers = false;                             // blocks the timer interrupt while timer properties are being changed
+byte ActiveTimers = 0;                                // Number of active timers
 unsigned int TimerValue[64];                          // Timer values
-bool Timer[64];                                       // indicates a timer event
+byte TimerStack = 0;                                  // determines which timer events stack is active
+byte RunOutTimers[2][30];                             // two stacks of timers with pending events
+byte TimerEvents[2];                                  // contains the number of pending timer events in each stack
 byte TimerArgument[64];
-byte TimerEvents;                                     // indicates the number of timer events to be processed
 void (*TimerEvent[64])(byte);                         // pointers to the procedures to be executed on the timer event
 void (*TimerBuffer)(byte);
 void (*Switch_Pressed)(byte);                         // Pointer to current behavior mode for activated switches
@@ -366,11 +368,11 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (SwHistory[SwDrv*8+i+1] == c) {
 			Switch[SwDrv*8+i+1] = !SwHistory[SwDrv*8+i+1]; 	// update the switch status
       SwHistory[SwDrv*8+i+1] = !SwHistory[SwDrv*8+i+1];
-			SwitchEvents++;																	// increase the number of pending switch events
+			SwEvents[SwitchStack]++;												// increase the number of pending switch events
 			c = 0;
-			while (ChangedSwitches[c] && (c<60)) {					// look for a free slot
+			while (ChangedSw[SwitchStack][c] && (c<30)) {		// look for a free slot
 				c++;}
-			ChangedSwitches[c] = SwDrv*8+i+1;}}
+			ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}
 	SwDrv++;                                  					// next switch driver
 	SwDrvMask = SwDrvMask<<1;                  					// and the corresponding select pattern
 	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals except Sel5 and the data bus
@@ -420,8 +422,11 @@ void TC7_Handler() {                                  // interrupt routine - run
 				buff--;                                   		// Decrease number of timers to process
 				TimerValue[i]--;                          		// Decrease timer value
 				if (TimerValue[i]==0) {                   		// Timer run out?
-					Timer[i] = true;                        		// Set timer event flag
-					TimerEvents++;                          		// increase the number of pending timer events
+          c = 0;
+          while (RunOutTimers[TimerStack][c]) {
+            c++;}
+          RunOutTimers[TimerStack][c] = i;
+          TimerEvents[TimerStack]++;                  // increase the number of pending timer events                     		
 					if (!ActiveTimers) {                    		// number of active timers already 0?
 						ErrorHandler(9,i,0);}                 		// that's wrong
 					else {
@@ -565,27 +570,35 @@ void TC7_Handler() {                                  // interrupt routine - run
 void loop() {
 
 	c = 0;                                  						// initialize counter
-	while (SwitchEvents) {															// as long as there are switch events to process
-		if (ChangedSwitches[c]) {													// pending switch event found?
-			SwitchEvents--;																	// decrease number of pending events
-			i = ChangedSwitches[c];													// buffer the switch number
-			ChangedSwitches[c] = 0;													// clear the event
-			if (Switch[i]) {                                // process SET switches
-				Switch_Pressed(i);}														// access the set switch handler
-			else {																					// process released switches
-				Switch_Released(i);}													// access the released switch handler
-			c++;}}																					// increase counter
+  if (SwEvents[SwitchStack]) {                        // switch event pending?
+    SwitchStack = 1-SwitchStack;                      // switch to the other stack to avoid a conflict with the interrupt
+  	while (SwEvents[1-SwitchStack]) {									// as long as there are switch events to process
+  		if (ChangedSw[1-SwitchStack][c]) {							// pending switch event found?
+  			SwEvents[1-SwitchStack]--;										// decrease number of pending events
+  			i = ChangedSw[1-SwitchStack][c];							// buffer the switch number
+  			ChangedSw[1-SwitchStack][c] = 0;							// clear the event
+  			if (Switch[i]) {                              // process SET switches
+  				Switch_Pressed(i);}													// access the set switch handler
+  			else {																				// process released switches
+  				Switch_Released(i);}}												// access the released switch handler
+      if (c < 29) {                                   // number of pending events still in the allowed range?
+  		  c++;}																				  // increase counter
+      else {
+        ErrorHandler(21,0,c);}}}
 	c = 0;                                  						// initialize counter
-	while (TimerEvents) {                               // as long as there are timer events to process
-		if (Timer[c]) {                                   // event for this timer pending?
-			TimerEvents--;                                  // decrease number of pending events
-			Timer[c] = false;                               // clear event flag
-			TimerBuffer = TimerEvent[c];                    // Buffer the current timer event
-			if (!TimerBuffer) {															// TimerEvent but be specified
-				ErrorHandler(20,0,c);}
-			TimerEvent[c] = 0;                              // and delete it to show the timer as free
-			TimerBuffer(TimerArgument[c]);}                 // call event procedure
-		c++;}                                             // increase counter
+  if (TimerEvents[TimerStack]) {                      // timer event pending?
+    TimerStack = 1-TimerStack;                        // switch to the other stack to avoid a conflict with the interrupt
+    while (TimerEvents[1-TimerStack]) {               // as long as there are timer events to process
+      if (RunOutTimers[1-TimerStack][c]) {            // number of run out timer found?
+        TimerEvents[1-TimerStack]--;                  // decrease number of pending events
+        i = RunOutTimers[1-TimerStack][c];            // buffer the timer number
+        TimerBuffer = TimerEvent[i];                  // Buffer the event for this timer
+        if (!TimerBuffer) {                           // TimerEvent must be specified
+          ErrorHandler(20,0,c);}
+        RunOutTimers[1-TimerStack][c] = 0;            // delete the timer from the list
+        TimerEvent[i] = 0;                            // delete the event to show the timer as free
+        TimerBuffer(TimerArgument[i]);}               // call event procedure
+      c++;}}                                          // increase search counter
 	if (!StopMusic && (MBP != MusicIRpos)) {
 		if (MusicFile.available() > 255) {
 			MusicFile.read(MusicBuffer+MBP*128,2*128);
@@ -620,7 +633,7 @@ void DummyProcess(byte Dummy) {;}
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
   byte i = 1;                                     		// reset counter
   BlockTimers = true;
-  while (TimerValue[i] || Timer[i]) {             		// search for a free timer
+  while (TimerEvent[i]) {             		            // search for a free timer
     i++;}
   TimerArgument[i] = Argument;                    		// initialize it
   TimerEvent[i] = EventPointer;
@@ -630,21 +643,37 @@ byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)
   return i;}                                      		// and return its number
 
 void KillAllTimers() {
+  BlockTimers = true;                                 // block the interrupt the prevent it from interfering
+  ActiveTimers = 0;
+  TimerStack = 0;
   for (i=1; i<64; i++) {                          		// check all 64 timers
-    if (TimerValue[i] || Timer[i]) {              		// if the timer is active
-      KillTimer(i);}}                             		// kill it
-  if (ActiveTimers) {                             		// active timers left?
-    ErrorHandler(1,i,ActiveTimers);}              		// show error 1
-  if (TimerEvents) {                              		// timer events left?
-    ErrorHandler(2,i,TimerEvents);}}              		// show error 2
-    
+    TimerValue[i] = 0;
+    TimerArgument[i] = 0;
+    TimerEvent[i] = 0;}
+  for (byte x=0; x<2; x++) {
+    TimerEvents[x] = 0;
+    for (i=0; i<30; i++) {
+      RunOutTimers[x][i] = 0;}}
+  BlockTimers = false;}
+
 void KillTimer(byte TimerNo) {
-	BlockTimers = true;
-	if (Timer[TimerNo]) {                           		// is there a pending timer event?
-		Timer[TimerNo] = false;                       		// remove it
-		TimerEvents--;}
-	else {                                          		// no pending timer event?
-		if (TimerValue[TimerNo]) {
+	bool FoundFlag = false;
+  byte ToFind = 0;
+  byte c = 0;
+	BlockTimers = true;                                 // block the interrupt the prevent it from interfering
+  for (byte x=0; x<2; x++) {                          // for both timer event stacks
+    ToFind = TimerEvents[x];                          // determine the number of pending events in the current stack
+    while (ToFind) {                                  // search for all of these
+      if (RunOutTimers[x][c]) {                       // run out timer found
+        ToFind--;                                     // reduce the goal
+        if (RunOutTimers[x][c] == TimerNo) {          // is it the timer to be killed?
+          FoundFlag = true;                           // indicate it
+          RunOutTimers[x][c] = 0;                     // remove it from the list
+          TimerEvents[x]--;                           // reduce the number of pending events for this stack
+          ToFind = 0;}}                               // stop searching
+      c++;}}      
+	if (!FoundFlag)  {                                  // no pending timer event?
+		if (TimerValue[TimerNo]) {                        // timer still active?
 			if (!ActiveTimers) {                        		// number of active timers already 0?
 				ErrorHandler(10,TimerNo,ActiveTimers);}   		// that's wrong
 			else {
