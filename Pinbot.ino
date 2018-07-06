@@ -174,6 +174,7 @@ void PB_AttractModeSW(byte Select) {
 		PB_AddPlayer();
 		for (i=1;i<5;i++) {																// reset reached planets
 			PB_Planet[i] = 0;}
+    PB_LitChestLamps = 0;
     InLock = 0;
 		Player = 1;
 		ExBalls = 0;
@@ -432,26 +433,31 @@ void PB_GameMain(byte Switch) {
 	case 36:
 	case 37:
 		if (PB_ChestMode > 0) {														// visor closed?
+      AppByte = Switch-27;                            // buffer the switch number
+      if (Switch > 32) {                              // is it a row?
+        AppByte = 16 - AppByte;}                       // turn the rows upside down
 			if (PB_ChestMode < 10) {												// visor can be opened with one row / column hit
         if (PB_ChestLightsTimer) {
           KillTimer(PB_ChestLightsTimer);             // disable timer to change row / column blinking
           PB_ChestLightsTimer = 0;}
         for (i=0; i<5; i++) {                         // turn off blinking row / column
           RemoveBlinkLamp(ChestRows[PB_ChestMode][i]);}
-        if (Switch > 32) {
-          Switch = 70 - Switch;}                      // swap 
-				if (Switch-27 == PB_ChestMode) {						  // correct row / column hit?
+				if (AppByte-27 == PB_ChestMode) {						  // correct row / column hit?
 					OpenVisor = true;
 					ActivateSolenoid(0, 13);}										// open visor
 				else {																				// incorrect row / column hit
 					PB_ChestMode = Switch-17;                   // Store row / column hit
-					PB_SetChestLamps();
+					PB_SetChestLamps();                         // add the lamps for the hit row / column in PB_ChestLamp
           PB_ClearChest();                            // turn off chest lamps
           PB_HitRowColumn(0);}}                       // call effect routine
       else {                                          // the cumbersome way to open the visor
-        
-      }
-		}
+        if (PB_ChestLightsTimer) {
+          KillTimer(PB_ChestLightsTimer);             // disable timer to stop chest light patterns
+        PB_ChestLightsTimer = 0;}
+        PB_ChestMode = Switch-17;                     // Store row / column hit
+        PB_SetChestLamps();                           // add the lamps for the hit row / column in PB_ChestLamp
+        PB_ClearChest();                              // turn off chest lamps
+        PB_HitRowColumn(0);}}                         // call effect routine       
 
 		break;
 	case 38:																						// eject hole
@@ -508,9 +514,9 @@ void ClearEjectHole(byte Solenoid) {                   // activate solenoid afte
   
 void PB_HitRowColumn(byte State) {
   if (State < 5) {                                    // turn on phase
-    Lamp[ChestRows[PB_ChestMode-10][State]] = true;}
+    Lamp[ChestRows[AppByte][State]] = true;}
   else {                                              // turn off phase
-    Lamp[ChestRows[PB_ChestMode-10][State-5]] = false;}
+    Lamp[ChestRows[AppByte][State-5]] = false;}
   State++;
   if (State < 10) {                                    // not yet done
     ActivateTimer(100, State, PB_HitRowColumn);}
@@ -524,35 +530,40 @@ void PB_ClearChest() {                                // turn off chest lamps
     for (y=0; y<5; y++) {
       Lamp[28+8*x+y] = false;}}}
 
-void PB_SetChestLamps() {
+void PB_SetChestLamps() {                             // add the lamps for the hit row / column in PB_ChestLamp
 	byte Pos = 0;
 	byte Buffer;
 	byte Buffer2 = PB_LampsToLit;
-	if (PB_ChestMode-11 < 5) {
-		Buffer = PB_ChestLamp[Player-1][PB_ChestMode-11];
-		while (!(Buffer & 1) && (Pos < 5)) {
-			Pos++;
-			Buffer = Buffer>>1;}
-		if (Pos) {
-			while (Pos && Buffer2) {
-				Pos--;
-				Buffer = (Buffer<<1) | 1;
-				Buffer2--;}
-			PB_ChestLamp[Player-1][PB_ChestMode-11] = Buffer;}
-		// add else for column already full
+	if (PB_ChestMode-11 < 5) {                          // is it a column?
+		Buffer = PB_ChestLamp[Player-1][PB_ChestMode-11]; // buffer it
+    Pos = 16;                                         // start with a mask value of 10000b 
+    while (Pos && Buffer2) {                          // until all rows are processed or the required number of lamps has been lit
+      if (!(Buffer & Pos)) {                          // if the lamp is not lit
+        Buffer2--;                                    // reduce the number of lamps to be lit
+        PB_LitChestLamps++;                           // increase the number of lit chest lamps
+        Buffer = Buffer | Pos;}                       // set the corresponding bit in the buffer
+      Pos = Pos>>1;}                                  // next row
+    PB_ChestLamp[Player-1][PB_ChestMode-11] = Buffer; // copy the buffer to the chest lamp array for this player
+//    if (Buffer2 == PB_LampsToLit) {
+//      Column already full
 	}
-	else {
-		Buffer = 1<<(PB_ChestMode-16);
-		Pos = 4;
-		while (!(PB_ChestLamp[Player-1][Pos] & Buffer) && Pos) {
-			Pos--;}
-		if (Pos < 4) {
-			while ((Pos < 4) && Buffer2) {
-				Buffer2--;
-				PB_ChestLamp[Player-1][Pos] = PB_ChestLamp[Player-1][Pos] | Buffer;
-				Pos++;}}
-		// add else for column already full
+  else {                                              // it is a row
+    Buffer = 1<<(PB_ChestMode-16);                    // calculate the mask from the row
+    Pos = 0;                                          // start on the left of the chest
+    while ((Pos < 5) && Buffer2) {                    // until all columns are processed or the required number of lamps has been lit
+      if (!(PB_ChestLamp[Player-1][Pos] & Buffer)) {  // if the lamp is not lit
+        Buffer2--;                                    // reduce the number of lamps to be lit
+        PB_LitChestLamps++;                           // increase the number of lit chest lamps
+        PB_ChestLamp[Player-1][Pos] = PB_ChestLamp[Player-1][Pos] | Buffer;} // set the bit for this lamp in the chest lamp array for this player
+      Pos++;}
+//    if (Buffer2 == PB_LampsToLit) {
+//      row already full    
 	}
+  if (PB_LitChestLamps == 25) {                       // complete chest lit?
+    PB_LitChestLamps = 0;                             // reset the counter
+    PB_ClearChest();                                  // turn off chest lamps
+    OpenVisor = true;
+    ActivateSolenoid(0, 13);}                         // open visor       
 }
       
 void PB_CountLitChestLamps() {												// count the lit chest lamps for the current player
