@@ -782,7 +782,7 @@ void ClearOuthole(byte Event) {
   if (Switch[20]) {                                   // outhole switch still active?
     if (!BlockOuthole) {															// outhole blocked?
       BlockOuthole = true;														// block outhole until this ball has been processed
-      ActivateSolenoid(0, 1);                         // put ball in trunk
+      ActivateSolenoid(20, 1);                        // put ball in trunk
       if (LastChanceActive && InLock) {								// saved by last chance
         BlockOuthole = false;													// remove outhole block
         Lamp[24] = false;
@@ -815,13 +815,17 @@ void BallEnd(byte Event) {
         if (Switch[41+i]) {
           InLock++;}}}
     WriteLower(" BALL   ERROR ");
-    if (Event < 11) {                                	// have I been here already?
-      Event++;
-      ActivateTimer(1000, Event, BallEnd);}          	// if not try again in 1s
-    else {                                          	// ball may be still in outhole
-      BlockOuthole = false;
-      Event = 0;
-      ClearOuthole(0);}}
+    if (Switch[16]) {                                 // ball still in outhole?
+      ActA_BankSol(0, 1);                             // make the coil a bit stronger
+      ActivateTimer(2000, Event, BallEnd);}           // and come back in 2s
+    else {
+      if (Event < 11) {                               // have I been here already?
+        Event++;
+        ActivateTimer(1000, Event, BallEnd);}         // if not try again in 1s
+      else {                                          // ball may be still in outhole
+        BlockOuthole = false;
+        Event = 0;
+        ClearOuthole(0);}}}
   else {
     switch (Multiballs) {
     case 3:                                           // goto 2 ball multiball

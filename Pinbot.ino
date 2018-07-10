@@ -18,9 +18,12 @@ byte PB_Eject_Mode = 0;																// current mode of the eject hole
 byte PB_LitChestLamps = 0;														// amount of lit chest lamps
 byte PB_ChestLamp[4][5];															// status of the chest lamps for each player / one column per byte
 byte PB_LampsToLit = 2;																// number of lamps to be lit when chest is hit
+byte *PB_FlashSequence;                               // pointer to the current flash lamp sequence
+byte *PB_ChestPatterns;                               // pointer to the current chest lamp pattern
 
 const unsigned int PB_SolTimes[32] = {50,20,30,70,30,200,30,30,100,100,999,999,0,0,100,100,50,100,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
+const byte PB_OpenVisorSeq[45] = {30,2,30,2,30,2,5,3,5,7,5,8,5,5,5,4,5,2,2,5,3,5,7,5,8,5,5,5,4,5,2,2,5,3,5,7,5,8,5,5,5,4,10,2,0};
 const byte ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 
@@ -50,12 +53,70 @@ const struct LampPat PB_AttractPat3[4] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1
 																					{150,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 																					{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
+                                      //  DurationXX0910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364
+const struct LampPat PB_OpenVisorPat[23] = {{100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1},
+                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1},                                                                                                                            
+                                            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+                                      
 const struct LampFlow PB_AttractFlow[4] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{0,0}};
 
-const byte PB_ChestPatterns[4][5] =  {{0b10011,0b00100,0b01100,0b10101,0b00101},
-																			 {0b11100,0b00101,0b10011,0b10100,0b10010},
-																			 {0b00101,0b11010,0b10110,0b01011,0b01101},
-																			 {0b01010,0b11011,0b01001,0b01010,0b11010}};
+const byte PB_RandomChestPat[25] =  {15,0b10011,0b00100,0b01100,0b10101,0b00101,
+																		 15,0b11100,0b00101,0b10011,0b10100,0b10010,
+																		 15,0b00101,0b11010,0b10110,0b01011,0b01101,
+																		 15,0b01010,0b11011,0b01001,0b01010,0b11010,0};
+
+const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
+                                   15,0b00100,0b00100,0b00100,0b00100,0b00100,
+                                   15,0b00010,0b00010,0b00010,0b00010,0b00010,
+                                   15,0b00001,0b00001,0b00001,0b00001,0b00001,
+                                   15,0b00001,0b00010,0b00010,0b00100,0b01000,
+                                   15,0b00001,0b00010,0b00100,0b01000,0b10000,
+                                   15,0b00001,0b00110,0b11000,0b00000,0b00000,
+                                   15,0b11111,0b00000,0b00000,0b00000,0b00000,
+                                   15,0b00000,0b11111,0b00000,0b00000,0b00000,
+                                   15,0b00000,0b00000,0b11111,0b00000,0b00000,
+                                   15,0b00000,0b00000,0b00000,0b11111,0b00000,
+                                   15,0b00000,0b00000,0b00000,0b00000,0b11111,                                  
+                                   15,0b00000,0b00000,0b11000,0b00110,0b00001,
+                                   15,0b10000,0b01000,0b00100,0b00010,0b00001,
+                                   15,0b00100,0b00100,0b00010,0b00010,0b00001,
+                                   15,0b00001,0b00001,0b00001,0b00001,0b00001,
+                                   15,0b00010,0b00010,0b00010,0b00010,0b00010,
+                                   15,0b00100,0b00100,0b00100,0b00100,0b00100,
+                                   15,0b01000,0b01000,0b01000,0b01000,0b01000,
+                                   15,0b10000,0b10000,0b10000,0b10000,0b10000,
+                                   15,0b00100,0b00100,0b01000,0b01000,0b10000,                                   
+                                   15,0b00001,0b00010,0b00100,0b01000,0b10000,
+                                   15,0b00000,0b00000,0b00110,0b01100,0b10000,
+                                   15,0b00000,0b00000,0b00000,0b00000,0b11111,
+                                   15,0b00000,0b00000,0b00000,0b11111,0b00000,
+                                   15,0b00000,0b00000,0b11111,0b00000,0b00000,
+                                   15,0b00000,0b11111,0b00000,0b00000,0b00000,
+                                   15,0b11111,0b00000,0b00000,0b00000,0b00000,
+                                   15,0b10000,0b01100,0b00110,0b00000,0b00000,
+                                   15,0b10000,0b01000,0b00100,0b00010,0b00001,
+                                   15,0b10000,0b01000,0b01000,0b00100,0b00100,
+                                   15,0b10000,0b10000,0b10000,0b10000,0b10000,0};                                   
 
 const byte PB_DropTime = 0;														// drop target down time setting
 const byte PB_ReachPlanet = 1;												// target planet setting
@@ -405,7 +466,7 @@ void PB_ClearOuthole(byte Event) {
   if (Switch[16]) {                                   // outhole switch still active?
     if (!BlockOuthole) {															// outhole blocked?
       BlockOuthole = true;														// block outhole until this ball has been processed
-      ActA_BankSol(0, 1);                         		// put ball in trunk
+      ActA_BankSol(30, 1);                         		// put ball in trunk
       ActivateTimer(2000, 0, PB_BallEnd);}}
     else {
       ActivateTimer(2000, 0, PB_ClearOuthole);}}			// come back in 2s if outhole is blocked
@@ -435,15 +496,23 @@ void PB_GameMain(byte Switch) {
 		if (PB_ChestMode > 0) {														// visor closed?
       AppByte = Switch-27;                            // buffer the switch number
       if (Switch > 32) {                              // is it a row?
-        AppByte = 16 - AppByte;}                       // turn the rows upside down
+        AppByte = 16 - AppByte;}                      // turn the rows upside down
 			if (PB_ChestMode < 10) {												// visor can be opened with one row / column hit
         if (PB_ChestLightsTimer) {
           KillTimer(PB_ChestLightsTimer);             // disable timer to change row / column blinking
           PB_ChestLightsTimer = 0;}
         for (i=0; i<5; i++) {                         // turn off blinking row / column
           RemoveBlinkLamp(ChestRows[PB_ChestMode][i]);}
-				if (AppByte-27 == PB_ChestMode) {						  // correct row / column hit?
+				if (AppByte == PB_ChestMode) {						    // correct row / column hit?
+          PB_ChestMode = 0;                           // indicate that the visor is open
 					OpenVisor = true;
+          PB_PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
+          PatPointer = PB_OpenVisorPat;               // set the pointer to the current series
+          FlowRepeat = 1;                             // set the repetitions
+          PB_ChestPatterns = (byte*)PB_WalkingLines;
+          LampReturn = PB_StartChestPattern;
+          ShowLampPatterns(0);                        // start the player
+          ActivateSolenoid(4000, 11);                 // turn the backbox GI off
 					ActivateSolenoid(0, 13);}										// open visor
 				else {																				// incorrect row / column hit
 					PB_ChestMode = Switch-17;                   // Store row / column hit
@@ -521,6 +590,7 @@ void PB_HitRowColumn(byte State) {
   if (State < 10) {                                    // not yet done
     ActivateTimer(100, State, PB_HitRowColumn);}
   else {
+    PB_ChestPatterns = (byte*)PB_RandomChestPat;
     PB_ChestLightsTimer = ActivateTimer(500, 0, PB_LightChestPattern);}}
     
 void PB_ClearChest() {                                // turn off chest lamps
@@ -560,9 +630,17 @@ void PB_SetChestLamps() {                             // add the lamps for the h
 //      row already full    
 	}
   if (PB_LitChestLamps == 25) {                       // complete chest lit?
+    PB_ChestMode = 0;                                 // indicate that the visor is open
     PB_LitChestLamps = 0;                             // reset the counter
     PB_ClearChest();                                  // turn off chest lamps
     OpenVisor = true;
+    PB_PlayFlashSequence((byte*) PB_OpenVisorSeq);    // play flasher sequence
+    PatPointer = PB_OpenVisorPat;                     // set the pointer to the current series
+    FlowRepeat = 1;                                   // set the repetitions
+    PB_ChestPatterns = (byte*)PB_WalkingLines;
+    LampReturn = PB_StartChestPattern;
+    ShowLampPatterns(0);                              // start the player
+    ActivateSolenoid(4000, 11);                       // turn the backbox GI off
     ActivateSolenoid(0, 13);}                         // open visor       
 }
       
@@ -586,24 +664,42 @@ void PB_LightChestRows(byte Dummy) {									// and columns
 		AddBlinkLamp(ChestRows[PB_ChestMode][i], 75);}
 	PB_ChestLightsTimer = ActivateTimer(1000, 0, PB_LightChestRows);}
 
+void PB_StartChestPattern(byte Dummy) {
+  LampPattern = Lamp;
+  PB_LightChestPattern(0);}
+
 void PB_LightChestPattern(byte step) {								// show chest lamp patterns but keep lit chest lamps
 	byte Mask;
 	byte Buffer;
+  if (!PB_ChestPatterns[6*step]) {
+    step = 0;}
 	for (byte x=0; x<5; x++) {													// for all columns
 		Mask = 1;																					// mask to access the stored lamps for this player
-		Buffer = PB_ChestPatterns[step][x];								// buffer the current column
+		Buffer = PB_ChestPatterns[6*step+x+1];						// buffer the current column
 		for (i=0; i<5; i++) {															// for all rows
-			if (PB_ChestLamp[Player-1][x] & Mask) {						// if the lamp is stored
+			if (PB_ChestLamp[Player-1][x] & Mask) {					// if the lamp is stored
 				Lamp[28+8*x+i] = true;}												// turn it on
 			else {																					// otherwise
 				Lamp[28+8*x+i] = Buffer & 1;}									// it is controlled by the pattern
 			Mask = Mask<<1;																	// adjust the mask
 			Buffer = Buffer>>1;}}														// and the buffer
-	step++;																							// prepare for the next pattern
-	if (step == 4) {																		// all patterns shown?
-		step = 0;}																				// then start over again
-	PB_ChestLightsTimer = ActivateTimer(200, step, PB_LightChestPattern);}
+	PB_ChestLightsTimer = ActivateTimer(PB_ChestPatterns[6*step]*10, step+1, PB_LightChestPattern);}
 
+void PB_PlayFlashSequence(byte* Sequence) {           // prepare for playing a flasher sequence
+  ActivateSolenoid(0, 14);                            // switch A/C relay to C
+  C_BankActive = true;                                // indicate that the C bank is active
+  PB_FlashSequence = Sequence;                        // set the PB_FlashSequence pointer to the current sequence
+  ActivateTimer(50, 0, PB_FlSeqPlayer);}              // start the sequence in 50ms when the A/C relay had some time to switch
+
+void PB_FlSeqPlayer(byte Step) {                      // play flasher sequence
+  if (PB_FlashSequence[Step]) {                       // if the next list entry is not zero
+    ActivateSolenoid(*(GameDefinition.SolTimes+PB_FlashSequence[Step+1]+23), PB_FlashSequence[Step+1]); // Activate the flasher with its standard activate time
+    ActivateTimer(PB_FlashSequence[Step]*10, Step+2, PB_FlSeqPlayer);} // increase the step counter and play the next list entry in duration*10ms
+  else {                                              // if the next list entry is zero
+    PB_FlashSequence = 0;                             // set the list pointer to zero
+    ReleaseSolenoid(14);                              // release the A/C relay
+    C_BankActive = false;}}                           // and indicate the C bank as not active
+    
 void PB_HandleLock(byte Dummy) {
 	;
 }
@@ -681,13 +777,17 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 				if (Switch[41+i]) {
 					InLock++;}}}
 		WriteLower(" BALL   ERROR ");
-		if (Event < 11) {                                	// have I been here already?
-			Event++;
-			ActivateTimer(1000, Event, PB_BallEnd);}        // if not try again in 1s
-		else {                                          	// ball may be still in outhole
-			BlockOuthole = false;
-			Event = 0;
-			PB_ClearOuthole(0);}}
+    if (Switch[16]) {                                 // ball still in outhole?
+      ActA_BankSol(0, 1);                             // make the coil a bit stronger
+      ActivateTimer(2000, Event, PB_BallEnd);}        // and come back in 2s
+    else {
+  		if (Event < 11) {                                	// have I been here already?
+	  		Event++;
+		  	ActivateTimer(1000, Event, PB_BallEnd);}        // if not try again in 1s
+		  else {                                          	// ball may be still in outhole
+			  BlockOuthole = false;
+			  Event = 0;
+			  PB_ClearOuthole(0);}}}
 	else {
 		if (Multiballs == 2) {														// multiball running?
 			Multiballs = 1;																	// turn it off
