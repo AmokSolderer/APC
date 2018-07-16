@@ -329,14 +329,16 @@ void Init_System2(byte State) {
 		File Settings = SD.open(GameDefinition.GameSettingsFileName);
 		if (!Settings) {
 			WriteLower("NO GAMESETTNGS");
-			for(i=0;i<64;i++) {
-				game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}
+     if (!State) {                                   // only initialize the settings in the boot up run
+			  for(i=0;i<64;i++) {
+				  game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
 		else {
 			Settings.read(&game_settings, sizeof game_settings);}
 		Settings.close();}
 	else {
-		for(i=0;i<64;i++) {
-			game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}
+    if (!State) {                                    // only initialize the settings in the boot up run
+		  for(i=0;i<64;i++) {
+			  game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
 	if (APC_settings[Volume]) {													// system set to digital volume control?
 		analogWrite(VolumePin,255-APC_settings[Volume]);}	// adjust PWM to volume setting
 	else {

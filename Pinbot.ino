@@ -1,7 +1,7 @@
 // Rules for the Pinbot pinball machine
 
-bool OpenVisor = false;																// visor is being opened if true
-bool CloseVisor = false;															// visor is being closed if true
+bool PB_OpenVisorFlag = false;																// visor is being opened if true
+bool PB_CloseVisorFlag = false;															// visor is being closed if true
 bool PB_DropWait = false;															// ignore drop target switches when true
 bool PB_DropRamp = false;															// ramp needs to be dropped when possible
 bool PB_EnergyActive = false;													// score energy active?
@@ -10,16 +10,19 @@ bool PB_EjectIgnore = false;                          // ignore the hole switch 
 byte PB_ChestMode = 0;																// current status of the chest and visor
 byte PB_DropTimer = 0;																// number of the drop target timer
 byte PB_ChestLightsTimer = 0;													// number of the timer controlling the chest lamp sequencing
+byte PB_DropLightsTimer = 0;                          // number of the timer controlling the drop target light sequencing
 byte PB_Planet[5];																		// reached planets for all players
 byte PB_ExBallsLit = 0;																// no of lanes lit for extra ball
 byte PB_SkillMultiplier = 1;													// Multiplier for the skill shot value
 byte PB_DropBlinkLamp = 0;														// number of the lamp currently blinking
-byte PB_Eject_Mode = 0;																// current mode of the eject hole
+byte PB_EjectMode = 0;																// current mode of the eject hole
 byte PB_LitChestLamps = 0;														// amount of lit chest lamps
 byte PB_ChestLamp[4][5];															// status of the chest lamps for each player / one column per byte
-byte PB_LampsToLit = 2;																// number of lamps to be lit when chest is hit
+byte PB_Chest_Status[5];                              // number of visor openings for this player / > 100 means visor is actually open
+byte PB_LampsToLight = 2;															// number of lamps to light when chest is hit
 byte *PB_FlashSequence;                               // pointer to the current flash lamp sequence
 byte *PB_ChestPatterns;                               // pointer to the current chest lamp pattern
+uint16_t ChestPatternCounter = 0;                     // counter for the current chest lamp pattern to be shown
 
 const unsigned int PB_SolTimes[32] = {50,20,30,70,30,200,30,30,100,100,999,999,0,0,100,100,50,100,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
@@ -222,7 +225,7 @@ void PB_AttractModeSW(byte Select) {
 	case 3:																							// credit button
 		RemoveBlinkLamp(1);																// stop the blinking of the game over lamp
     KillAllTimers();
-    StrobeLightsTimer = 0;
+    // StrobeLightsTimer = 0;
     ByteBuffer3 = 0;
 		for (i=0; i< LampMax+1; i++) {
 			Lamp[i] = false;}
@@ -233,8 +236,10 @@ void PB_AttractModeSW(byte Select) {
 		WriteLower("              ");
 		Ball = 1;
 		PB_AddPlayer();
-		for (i=1;i<5;i++) {																// reset reached planets
-			PB_Planet[i] = 0;}
+		for (i=1;i<5;i++) {																// for all players
+      PB_Chest_Status[i] = 0;                         // reset the number of number of visor openings
+      PB_ResetPlayersChestLamps(i);                   // reset the chest lamps
+			PB_Planet[i] = 0;}                              // reset reached planets
     PB_LitChestLamps = 0;
     InLock = 0;
 		Player = 1;
@@ -248,7 +253,6 @@ void PB_AttractModeSW(byte Select) {
 			ActA_BankSol(0, 6);}														// put it down
 		PB_NewBall(2);                                    // release a new ball (2 expected balls in the trunk)
 		PB_ChestMode = 1;
-		PB_LightChestRows(0); 								// TODO put it into NewBall
 		ActivateSolenoid(0, 23);                        	// enable flipper fingers
 		ActivateSolenoid(0, 24);
 		break;
@@ -256,13 +260,13 @@ void PB_AttractModeSW(byte Select) {
 		digitalWrite(Blanking, LOW);                     // invoke the blanking
 		break;
 	case 46:
-		if (CloseVisor) {
-			CloseVisor = false;
+		if (PB_CloseVisorFlag) {
+			PB_CloseVisorFlag = false;
 			ReleaseSolenoid(13);}
 		break;
 	case 47:
-		if (OpenVisor) {
-			OpenVisor = false;
+		if (PB_OpenVisorFlag) {
+			PB_OpenVisorFlag = false;
 			ReleaseSolenoid(13);}
 		break;
 	case 72:
@@ -271,7 +275,7 @@ void PB_AttractModeSW(byte Select) {
 //			KillTimer(ByteBuffer3);													// stop it
     RemoveBlinkLamp(1);                                // stop the blinking of the game over lamp
     KillAllTimers();
-    StrobeLightsTimer = 0;
+    // StrobeLightsTimer = 0;
 		ByteBuffer3 = 0;
 		LampPattern = NoLamps;                          	// Turn off all lamps
    // BlinkScoreTimer
@@ -318,6 +322,32 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 	//*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
 	if (!BlinkScoreTimer) {
 		BlinkScoreTimer = ActivateTimer(1000, 1, BlinkScore);}
+  PB_ClearChest();                                    // turn off chest lamps
+  PB_CountLitChestLamps();                            // check how many chest lamps are lit
+  if ((PB_Chest_Status[Player] > 100)) {              // > 100 means visor has to be open
+    PB_Chest_Status[Player] = PB_Chest_Status[Player] - 100; // use it as a counter for opened visors
+    PB_LampsToLight = 1;
+    PB_ChestMode = 0;                                 // indicate an open visor
+    if (!Switch[47]) {                                // visor not already open?
+      PB_OpenVisorFlag = true;
+      ActivateSolenoid(0, 13);}                       // open visor
+    PB_ChestPatterns = (byte*)PB_WalkingLines;        // set chest lamps pattern
+    PB_ChestLightsTimer = ActivateTimer(500, 0, PB_StartChestPattern);} // start player
+  else {
+    if (!Switch[46]) {                                // visor not already closed?
+      PB_CloseVisorFlag = true;
+      ActivateSolenoid(0, 13);}                       // close visor    
+    if (PB_LitChestLamps) {                           // chest lamps lit?
+      PB_ChestMode = 12;                              // indicate that the visor can not be opened with one hit      
+      PB_ChestPatterns = (byte*)PB_RandomChestPat;    // set chest lamps pattern
+      PB_ChestLightsTimer = ActivateTimer(500, 0, PB_StartChestPattern);} // start player
+    else {
+      PB_ChestMode = 1;                               // indicate that the visor can be opened with one hit
+      PB_ChestLightHandler(0);}}                      // start moving rows / columns
+  if (PB_Chest_Status[Player] > 2) {                  // visor has been open more than 2 times
+    PB_LampsToLight = 1;}                             // TODO change according to difficulty setting
+  else {
+    PB_LampsToLight = 2;}
   PB_DropBlinkLamp = 41;
 	PB_CycleDropLights(1);															// start the blinking drop target lights
 	PB_SkillShot = true;																// the first shot is a skill shot
@@ -435,8 +465,6 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
       	AppByte2 = 0;
       	for (i=0; i<2; i++) {                         // count balls in lock
       		if (Switch[25+i]) {
-      			if (AppByte2 < i) {
-      				AppByte = 5;}                           // set warning flag
       			AppByte2++;}}
       	if (AppByte == 5) {														// balls have not settled yet
       		WriteUpper("  BALL  STUCK ");
@@ -451,16 +479,16 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
       			Counter++;
       			if (Counter == 9) {												// all coils fired?
       				Counter = 0;}														// start again
-      			if (Switch[46] && !CloseVisor) {					// visor closed?
+      			if (Switch[46] && !PB_CloseVisorFlag) {					// visor closed?
       				ActivateSolenoid(0, 13);								// open it enough to deactivate switch 46
       				ActivateTimer(2000, 0, PB_CloseVisor);}	// and prepare to close it again
       			BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}}}}}} // come again in 1s if no switch is activated
 
 void PB_OpenVisor(byte Dummy) {
-	OpenVisor = true;}																	// set flag to stop visor motor when open
+	PB_OpenVisorFlag = true;}																	// set flag to stop visor motor when open
 
 void PB_CloseVisor(byte Dummy) {
-	CloseVisor = true;}																	// set flag to stop visor motor when closed
+	PB_CloseVisorFlag = true;}																	// set flag to stop visor motor when closed
 
 void PB_ClearOuthole(byte Event) {
   if (Switch[16]) {                                   // outhole switch still active?
@@ -473,9 +501,17 @@ void PB_ClearOuthole(byte Event) {
 
 void PB_GameMain(byte Switch) {
 	switch(Switch) {
+  case 3:
+    PB_AddPlayer();
+    break;
 	case 8:																							// high score reset
 		digitalWrite(Blanking, LOW);                     // invoke the blanking
 		break;
+  case 14:
+    if (PB_EjectMode < 4) {
+      AddBlinkLamp(PB_EjectMode+13, 100);
+      PB_EjectMode = PB_EjectMode + 5;}
+    break;
 	case 16:
     ActivateTimer(200, 0, PB_ClearOuthole);           // check again in 200ms
     break;
@@ -493,47 +529,55 @@ void PB_GameMain(byte Switch) {
 	case 35:
 	case 36:
 	case 37:
-		if (PB_ChestMode > 0) {														// visor closed?
+		if (PB_ChestMode) {														    // visor closed?
+      if (PB_ChestLightsTimer) {
+        KillTimer(PB_ChestLightsTimer);               // disable timer to change row / column blinking
+        PB_ChestLightsTimer = 0;}      
       AppByte = Switch-27;                            // buffer the switch number
       if (Switch > 32) {                              // is it a row?
         AppByte = 16 - AppByte;}                      // turn the rows upside down
-			if (PB_ChestMode < 10) {												// visor can be opened with one row / column hit
-        if (PB_ChestLightsTimer) {
-          KillTimer(PB_ChestLightsTimer);             // disable timer to change row / column blinking
-          PB_ChestLightsTimer = 0;}
+			if (PB_ChestMode < 11) {												// visor can be opened with one row / column hit
         for (i=0; i<5; i++) {                         // turn off blinking row / column
           RemoveBlinkLamp(ChestRows[PB_ChestMode][i]);}
 				if (AppByte == PB_ChestMode) {						    // correct row / column hit?
-          PB_ChestMode = 0;                           // indicate that the visor is open
-					OpenVisor = true;
-          PB_PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
-          PatPointer = PB_OpenVisorPat;               // set the pointer to the current series
-          FlowRepeat = 1;                             // set the repetitions
-          PB_ChestPatterns = (byte*)PB_WalkingLines;
-          LampReturn = PB_StartChestPattern;
-          ShowLampPatterns(0);                        // start the player
-          ActivateSolenoid(4000, 11);                 // turn the backbox GI off
-					ActivateSolenoid(0, 13);}										// open visor
+          OpenVisorProc();}										        // open visor
 				else {																				// incorrect row / column hit
 					PB_ChestMode = Switch-17;                   // Store row / column hit
-					PB_SetChestLamps();                         // add the lamps for the hit row / column in PB_ChestLamp
+					PB_SetChestLamps(Switch-28);                // add the lamps for the hit row / column in PB_ChestLamp
           PB_ClearChest();                            // turn off chest lamps
-          PB_HitRowColumn(0);}}                       // call effect routine
+          PB_ChestLightHandler(1);}}                  // call effect routine
       else {                                          // the cumbersome way to open the visor
-        if (PB_ChestLightsTimer) {
-          KillTimer(PB_ChestLightsTimer);             // disable timer to stop chest light patterns
-        PB_ChestLightsTimer = 0;}
         PB_ChestMode = Switch-17;                     // Store row / column hit
-        PB_SetChestLamps();                           // add the lamps for the hit row / column in PB_ChestLamp
-        PB_ClearChest();                              // turn off chest lamps
-        PB_HitRowColumn(0);}}                         // call effect routine       
-
+        PB_SetChestLamps(Switch-28);                  // add the lamps for the hit row / column in PB_ChestLamp
+        if (PB_LitChestLamps == 25) {                 // complete chest lit?
+          OpenVisorProc();}                           // open visor
+        else {
+          PB_ClearChest();                            // turn off chest lamps
+          PB_ChestLightHandler(1);}}}                 // call effect routine                                      
+    else {                                            // visor open
+      PB_SetChestLamps(Switch-28);                    // add the lamps for the hit row / column in PB_ChestLamp
+    }
 		break;
 	case 38:																						// eject hole
     if (!PB_EjectIgnore) {
+      Serial.print("EM");
+      Serial.println(PB_EjectMode);
       PB_EjectIgnore = true;
-		  Points[Player] += Multiballs * 2000;
-      ActivateTimer(1000, 3, ClearEjectHole);}
+      if (PB_EjectMode < 5) {
+		    Points[Player] += Multiballs * 2000;
+		    ActivateTimer(1000, 3, ClearEjectHole);}
+      else {
+        RemoveBlinkLamp(PB_EjectMode + 8);
+        Lamp[PB_EjectMode + 8] = true;
+        PB_PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
+        Points[Player] += Multiballs * (PB_EjectMode - 4) * 25000;
+        PB_EjectMode = PB_EjectMode - 4;
+        if (PB_EjectMode == 4) {
+          // Extra Ball
+        }
+        ClearEjectHole(3);
+      }
+      }
     break;
   case 45:																						// score energy switch
 		if (PB_EnergyActive) {
@@ -541,13 +585,13 @@ void PB_GameMain(byte Switch) {
 			PB_EnergyOff(0);}
 		break;
 	case 46:
-		if (CloseVisor) {
-			CloseVisor = false;
+		if (PB_CloseVisorFlag) {
+			PB_CloseVisorFlag = false;
 			ReleaseSolenoid(13);}
 		break;
 	case 47:
-		if (OpenVisor) {
-			OpenVisor = false;
+		if (PB_OpenVisorFlag) {
+			PB_OpenVisorFlag = false;
 			ReleaseSolenoid(13);}
 		break;
 	case 49:																						// drop targets
@@ -579,20 +623,70 @@ void PB_GameMain(byte Switch) {
 
 void ClearEjectHole(byte Solenoid) {                   // activate solenoid after delay time
   PB_EjectIgnore = false;
-  ActivateSolenoid(0, Solenoid);}
+  ActA_BankSol(0, Solenoid);}
+
+void PB_StartChestPattern(byte Dummy) {
+  ChestPatternCounter = 0;
+  LampPattern = Lamp;
+  PB_ChestLightHandler(0);}
+
+void OpenVisorProc() {                              // measures to open the visor
+  PB_ChestMode = 0;                                 // indicate that the visor is open
+  PB_Chest_Status[Player]++;                        // increase the number of visor openings 
+  PB_LitChestLamps = 0;                             // reset the counter
+  PB_ResetPlayersChestLamps(Player);                // reset the stored lamps
+  PB_ClearChest();                                  // turn off chest lamps
+  PB_OpenVisorFlag = true;
+  PB_PlayFlashSequence((byte*) PB_OpenVisorSeq);    // play flasher sequence
+  PatPointer = PB_OpenVisorPat;                     // set the pointer to the current series
+  FlowRepeat = 1;                                   // set the repetitions
+  PB_ChestPatterns = (byte*)PB_WalkingLines;
+  LampReturn = PB_StartChestPattern;
+  ShowLampPatterns(0);                              // start the player
+  ActivateSolenoid(4000, 11);                       // turn the backbox GI off
+  ActivateSolenoid(0, 13);}
   
-void PB_HitRowColumn(byte State) {
-  if (State < 5) {                                    // turn on phase
-    Lamp[ChestRows[AppByte][State]] = true;}
-  else {                                              // turn off phase
-    Lamp[ChestRows[AppByte][State-5]] = false;}
-  State++;
-  if (State < 10) {                                    // not yet done
-    ActivateTimer(100, State, PB_HitRowColumn);}
-  else {
-    PB_ChestPatterns = (byte*)PB_RandomChestPat;
-    PB_ChestLightsTimer = ActivateTimer(500, 0, PB_LightChestPattern);}}
-    
+void PB_ChestLightHandler(byte State) {               // handle chest lights timer
+  if (State) {                                        // is there an animation for a row / column hit running?
+    if (State < 6) {                                  // turn on phase
+      Lamp[ChestRows[AppByte][State-1]] = true;}
+    else {                                            // turn off phase
+      Lamp[ChestRows[AppByte][State-6]] = false;}
+    State++;
+    if (State < 11) {                                 // not yet done
+      PB_ChestLightsTimer = ActivateTimer(100, State, PB_ChestLightHandler);} // come back with the current state set
+    else {
+      PB_ChestPatterns = (byte*)PB_RandomChestPat;    // set pattern
+      ChestPatternCounter = 0;
+      PB_ChestLightsTimer = ActivateTimer(500, 0, PB_ChestLightHandler);}} // come back with no state set
+  else {    
+    if (PB_ChestMode && (PB_ChestMode < 11)) {        // visor is closed and can be opened with one row / column hit
+      PB_ChestMode++;                                 // proceed to next row / column
+      if (PB_ChestMode == 11) {                       // last row reached?
+        PB_ChestMode = 1;}                            // start with first column      
+      for (i=0; i<5; i++) {                           // turn off previous blinking row / column
+        RemoveBlinkLamp(ChestRows[PB_ChestMode-1][i]);}
+      for (i=0; i<5; i++) {                           // turn on next blinking row / column
+        AddBlinkLamp(ChestRows[PB_ChestMode][i], 75);}
+      PB_ChestLightsTimer = ActivateTimer(1000, 0, PB_ChestLightHandler);}
+    else {
+      byte Mask;
+      byte Buffer;
+      if (!PB_ChestPatterns[6*ChestPatternCounter]) {
+        ChestPatternCounter = 0;}
+      for (byte x=0; x<5; x++) {                      // for all columns
+        Mask = 1;                                     // mask to access the stored lamps for this player
+        Buffer = PB_ChestPatterns[6*ChestPatternCounter+x+1]; // buffer the current column
+        for (i=0; i<5; i++) {                         // for all rows
+          if (PB_ChestLamp[Player-1][x] & Mask) {     // if the lamp is stored
+            Lamp[28+8*x+i] = true;}                   // turn it on
+          else {                                      // otherwise
+            Lamp[28+8*x+i] = Buffer & 1;}             // it is controlled by the pattern
+          Mask = Mask<<1;                             // adjust the mask
+          Buffer = Buffer>>1;}}                       // and the buffer
+      ChestPatternCounter++;
+      PB_ChestLightsTimer = ActivateTimer(PB_ChestPatterns[6*(ChestPatternCounter-1)]*10, 0, PB_ChestLightHandler);}}}
+
 void PB_ClearChest() {                                // turn off chest lamps
   byte x = 0;
   byte y = 0;
@@ -600,12 +694,12 @@ void PB_ClearChest() {                                // turn off chest lamps
     for (y=0; y<5; y++) {
       Lamp[28+8*x+y] = false;}}}
 
-void PB_SetChestLamps() {                             // add the lamps for the hit row / column in PB_ChestLamp
+void PB_SetChestLamps(byte Switch) {                  // add the lamps for the hit row / column in PB_ChestLamp
 	byte Pos = 0;
 	byte Buffer;
-	byte Buffer2 = PB_LampsToLit;
-	if (PB_ChestMode-11 < 5) {                          // is it a column?
-		Buffer = PB_ChestLamp[Player-1][PB_ChestMode-11]; // buffer it
+	byte Buffer2 = PB_LampsToLight;
+	if (Switch < 5) {                                   // is it a column?
+		Buffer = PB_ChestLamp[Player-1][Switch];          // buffer it
     Pos = 16;                                         // start with a mask value of 10000b 
     while (Pos && Buffer2) {                          // until all rows are processed or the required number of lamps has been lit
       if (!(Buffer & Pos)) {                          // if the lamp is not lit
@@ -613,12 +707,12 @@ void PB_SetChestLamps() {                             // add the lamps for the h
         PB_LitChestLamps++;                           // increase the number of lit chest lamps
         Buffer = Buffer | Pos;}                       // set the corresponding bit in the buffer
       Pos = Pos>>1;}                                  // next row
-    PB_ChestLamp[Player-1][PB_ChestMode-11] = Buffer; // copy the buffer to the chest lamp array for this player
-//    if (Buffer2 == PB_LampsToLit) {
+    PB_ChestLamp[Player-1][Switch] = Buffer;          // copy the buffer to the chest lamp array for this player
+//    if (Buffer2 == PB_LampsToLight) {
 //      Column already full
 	}
   else {                                              // it is a row
-    Buffer = 1<<(PB_ChestMode-16);                    // calculate the mask from the row
+    Buffer = 1<<(Switch-5);                           // calculate the mask from the row
     Pos = 0;                                          // start on the left of the chest
     while ((Pos < 5) && Buffer2) {                    // until all columns are processed or the required number of lamps has been lit
       if (!(PB_ChestLamp[Player-1][Pos] & Buffer)) {  // if the lamp is not lit
@@ -626,22 +720,10 @@ void PB_SetChestLamps() {                             // add the lamps for the h
         PB_LitChestLamps++;                           // increase the number of lit chest lamps
         PB_ChestLamp[Player-1][Pos] = PB_ChestLamp[Player-1][Pos] | Buffer;} // set the bit for this lamp in the chest lamp array for this player
       Pos++;}
-//    if (Buffer2 == PB_LampsToLit) {
+//    if (Buffer2 == PB_LampsToLight) {
 //      row already full    
 	}
-  if (PB_LitChestLamps == 25) {                       // complete chest lit?
-    PB_ChestMode = 0;                                 // indicate that the visor is open
-    PB_LitChestLamps = 0;                             // reset the counter
-    PB_ClearChest();                                  // turn off chest lamps
-    OpenVisor = true;
-    PB_PlayFlashSequence((byte*) PB_OpenVisorSeq);    // play flasher sequence
-    PatPointer = PB_OpenVisorPat;                     // set the pointer to the current series
-    FlowRepeat = 1;                                   // set the repetitions
-    PB_ChestPatterns = (byte*)PB_WalkingLines;
-    LampReturn = PB_StartChestPattern;
-    ShowLampPatterns(0);                              // start the player
-    ActivateSolenoid(4000, 11);                       // turn the backbox GI off
-    ActivateSolenoid(0, 13);}                         // open visor       
+      
 }
       
 void PB_CountLitChestLamps() {												// count the lit chest lamps for the current player
@@ -654,36 +736,9 @@ void PB_CountLitChestLamps() {												// count the lit chest lamps for the c
 				PB_LitChestLamps++;}													// increase counter
 			Buffer = Buffer>>1;}}}													// shift buffer to the next lamp
 
-void PB_LightChestRows(byte Dummy) {									// and columns
-  PB_ChestMode++;
-  if (PB_ChestMode > 10) {
-    PB_ChestMode = 1;}
-	for (i=0; i<5; i++) {
-		RemoveBlinkLamp(ChestRows[PB_ChestMode-1][i]);}
-	for (i=0; i<5; i++) {
-		AddBlinkLamp(ChestRows[PB_ChestMode][i], 75);}
-	PB_ChestLightsTimer = ActivateTimer(1000, 0, PB_LightChestRows);}
-
-void PB_StartChestPattern(byte Dummy) {
-  LampPattern = Lamp;
-  PB_LightChestPattern(0);}
-
-void PB_LightChestPattern(byte step) {								// show chest lamp patterns but keep lit chest lamps
-	byte Mask;
-	byte Buffer;
-  if (!PB_ChestPatterns[6*step]) {
-    step = 0;}
-	for (byte x=0; x<5; x++) {													// for all columns
-		Mask = 1;																					// mask to access the stored lamps for this player
-		Buffer = PB_ChestPatterns[6*step+x+1];						// buffer the current column
-		for (i=0; i<5; i++) {															// for all rows
-			if (PB_ChestLamp[Player-1][x] & Mask) {					// if the lamp is stored
-				Lamp[28+8*x+i] = true;}												// turn it on
-			else {																					// otherwise
-				Lamp[28+8*x+i] = Buffer & 1;}									// it is controlled by the pattern
-			Mask = Mask<<1;																	// adjust the mask
-			Buffer = Buffer>>1;}}														// and the buffer
-	PB_ChestLightsTimer = ActivateTimer(PB_ChestPatterns[6*step]*10, step+1, PB_LightChestPattern);}
+void PB_ResetPlayersChestLamps(byte Player) {         // Reset the chest lamps for this player
+  for (byte c=0; c<5; c++) {
+    PB_ChestLamp[Player-1][c] = 0;}}
 
 void PB_PlayFlashSequence(byte* Sequence) {           // prepare for playing a flasher sequence
   ActivateSolenoid(0, 14);                            // switch A/C relay to C
@@ -728,7 +783,7 @@ void PB_HandleDropTargets(byte Target) {
 				Lamp[PB_Planet[Player]+18] = true;}}}
 	else {
 		if (!PB_DropTimer) {															// first target hit
-			if (Target-8 == PB_DropBlinkLamp) {								// blinking target hit?
+			if (Target-8 == PB_DropBlinkLamp) {							// blinking target hit?
 				ActA_BankSol(0, 5);														// raise ramp
 				AddBlinkLamp(34, 500);												// blink energy lamp
 				PB_EnergyActive = true;												// energy value on
@@ -751,24 +806,33 @@ void PB_EnergyOff(byte Dummy) {
 		PB_DropRamp = true;}}															// ramp needs to be dropped
 
 void PB_CycleDropLights(byte State) {
-	if (State) {
-		if (PB_DropBlinkLamp) {															// blink lamp active?
-			if (PB_DropBlinkLamp == 43) {											// last lamp blinking?
+	if ((State == 2) || ((State == 1) && !PB_DropLightsTimer)) { // State = 1 is a new start and not allowed when timer is already running
+		if (PB_DropBlinkLamp) {														// blink lamp active?
+			if (PB_DropBlinkLamp == 43) {										// last lamp blinking?
 				AddBlinkLamp(41, 100);												// start again with the first one
 				RemoveBlinkLamp(43);													// remove the current one
-				PB_DropBlinkLamp = 41;}													// reset the number of the currently blinking lamp
+				PB_DropBlinkLamp = 41;}												// reset the number of the currently blinking lamp
 			else {																					// not the last one
-				AddBlinkLamp(PB_DropBlinkLamp+1, 100);						// start the next one
-				RemoveBlinkLamp(PB_DropBlinkLamp);								// remove the current one
-				PB_DropBlinkLamp++;}															// increase number of currently blinking lamp
-			ActivateTimer(3000, 1, PB_CycleDropLights);}}
+				AddBlinkLamp(PB_DropBlinkLamp+1, 100);				// start the next one
+				RemoveBlinkLamp(PB_DropBlinkLamp);						// remove the current one
+				PB_DropBlinkLamp++;}													// increase number of currently blinking lamp
+			PB_DropLightsTimer = ActivateTimer(3000, 2, PB_CycleDropLights);}}
 	else {
-		if (PB_DropBlinkLamp) {															// blink lamp active?
+    if (PB_DropLightsTimer) {
+      KillTimer(PB_DropLightsTimer);
+      PB_DropLightsTimer = 0;}
+		if (PB_DropBlinkLamp) {														// blink lamp active?
 			RemoveBlinkLamp(PB_DropBlinkLamp);
 			PB_DropBlinkLamp = 0;}}}
 
 void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
   PB_CycleDropLights(0);                              // stop the blinking drop target lights
+  if (PB_ChestLightsTimer) {                          // stop the chest light animation
+    KillTimer(PB_ChestLightsTimer);
+    PB_ChestLightsTimer = 0;}
+  PB_ClearChest();                                    // turn off chest lamps
+  if (!PB_ChestMode) {
+    PB_Chest_Status[Player] = PB_Chest_Status[Player] + 100;} // indicate that the visor has been open
 	AppByte = PB_CountBallsInTrunk();
 	if ((AppByte == 5)||(AppByte < 3-Multiballs-InLock)) {
 		InLock = 0;
@@ -781,10 +845,10 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
       ActA_BankSol(0, 1);                             // make the coil a bit stronger
       ActivateTimer(2000, Event, PB_BallEnd);}        // and come back in 2s
     else {
-  		if (Event < 11) {                                	// have I been here already?
+  		if (Event < 11) {                               // have I been here already?
 	  		Event++;
-		  	ActivateTimer(1000, Event, PB_BallEnd);}        // if not try again in 1s
-		  else {                                          	// ball may be still in outhole
+		  	ActivateTimer(1000, Event, PB_BallEnd);}      // if not try again in 1s
+		  else {                                          // ball may be still in outhole
 			  BlockOuthole = false;
 			  Event = 0;
 			  PB_ClearOuthole(0);}}}
@@ -800,6 +864,7 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 			//BonusToAdd = Bonus;
 			//BonusCountTime = 20;
 			//CountBonus(AppByte);
+      RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);
 			if (BlinkScoreTimer) {
 				KillTimer(BlinkScoreTimer);
 				BlinkScoreTimer = 0;}
