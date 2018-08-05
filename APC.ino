@@ -104,6 +104,7 @@ byte SettingsRepeatTimer = 0;													// numberof the timer of the key repea
 byte BlinkScoreTimer = 0;                             // number of the timer for the score blinking
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte CheckReleaseTimer = 0;														// number of the timer for the ball release check
+byte ShowMessageTimer = 0;                            // number of the timer to show a temporary message
 bool BlockTimers = false;                             // blocks the timer interrupt while timer properties are being changed
 byte ActiveTimers = 0;                                // Number of active timers
 unsigned int TimerValue[64];                          // Timer values
@@ -778,6 +779,16 @@ void ScrollLower2(byte Step) {													// call with Step = 1 and the text be
 	if (Step < 16) {																		// if its not already over
 		ActivateTimer(50, Step, ScrollLower2);}}					// come back
 
+void ShowMessage(byte Seconds) {                      // switch to the second display buffer for Seconds
+  if (Seconds) {                                      // time <> 0?
+    if (ShowMessageTimer) {                           // timer already running?
+      KillTimer(ShowMessageTimer);}                   // kill it
+    SwitchDisplay(0);                                 // switch to DispRow2
+    ShowMessageTimer =  ActivateTimer(Seconds*1000, 0, ShowMessage);} // and start timer to come back
+  else {                                              // no time specified means the routine called itself
+    ShowMessageTimer = 0;                             // indicate that timer is not running any more
+    SwitchDisplay(1);}}                               // switch back to DispRow1
+    
 void ConvertToBCD(int Number) {
   ByteBuffer = Number % 10;
   ByteBuffer2 = (Number-ByteBuffer)/10;}
@@ -825,6 +836,10 @@ void ReleaseSolenoid(byte Solenoid) {
     SolChange = true;}
   else {                                          		// if yes
     ActivateTimer(1, Solenoid, ReleaseSolenoid);}}		// try again later
+
+bool SolenoidStatus(byte Solenoid) {                  // determine the current state of a solenoid
+  bool State = SolBuffer[Solenoid / 8] & (1<<(Solenoid % 8));
+  return State;}
 
 void ActA_BankSol(unsigned int Duration, byte Solenoid) {
 	if (!C_BankActive) {
@@ -969,6 +984,14 @@ void ShowAllPoints(byte Event) {                  		// just a dummy event to acc
   WriteLower("              ");
   for (i=1; i<=NoPlayers; i++) {                  		// display the points of all active players
     ShowPoints(i);}}
+
+void SwitchDisplay(byte Event) {                      // switch between different display buffers
+  if (Event == 1) {
+    DispRow1 = DisplayUpper;
+    DispRow2 = DisplayLower;}
+  else {
+    DispRow1 = DisplayUpper2;
+    DispRow2 = DisplayLower2;}}
 
 void BlinkLamps(byte BlTimer) {
   ByteBuffer = 0;

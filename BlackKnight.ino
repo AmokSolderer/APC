@@ -1236,14 +1236,6 @@ void StartMultiball() {
     ActivateTimer(2000, 8, DelaySolenoid);}
   ActivateTimer(3100, 0, ClearLocks);}                // clear out balls after that
 
-void SwitchDisplay(byte Event) {                      // switch between different display buffers
-  if (Event == 1) {
-    DispRow1 = DisplayUpper;
-    DispRow2 = DisplayLower;}
-  else {
-    DispRow1 = DisplayUpper2;
-    DispRow2 = DisplayLower2;}}
-
 void ClearLocks(byte Event) {
   AppByte = 0;
   for (i=0; i<3; i++) {                               // count balls in lock
