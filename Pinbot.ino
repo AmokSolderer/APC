@@ -22,11 +22,11 @@ byte PB_Chest_Status[5];                              // number of visor opening
 byte PB_Planet[5];                                    // reached planets for all players
 byte PB_ExBallsLit[5];                                // no of lanes lit for extra ball
 byte PB_EjectMode[5];                                 // current mode of the eject hole
-byte PB_EnergyValue[5];                              // energy value for current player (value = byte*2000)
+byte PB_EnergyValue[5];                              	// energy value for current player (value = byte*2000)
 byte PB_LampsToLight = 2;															// number of lamps to light when chest is hit
 byte *PB_FlashSequence;                               // pointer to the current flash lamp sequence
 byte *PB_ChestPatterns;                               // pointer to the current chest lamp pattern
-uint16_t PB_ChestPatternCounter = 0;                     // counter for the current chest lamp pattern to be shown
+uint16_t PB_ChestPatternCounter = 0;                  // counter for the current chest lamp pattern to be shown
 
 const unsigned int PB_SolTimes[32] = {50,20,30,70,50,200,30,30,100,100,999,999,0,0,100,100,50,100,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
@@ -606,6 +606,8 @@ void PB_GameMain(byte Switch) {
   case 19:                                            // advance planet
     if (Lamp[18]) {
       Lamp[18] = false;
+      if (Lamp[51]) {																	// special lit?
+      	PB_AddExBall();}
       PB_AddBonus(1);
       PB_AdvancePlanet();}
     break;
@@ -626,6 +628,7 @@ void PB_GameMain(byte Switch) {
 	case 26:
     if (!PB_IgnoreLock) {
       PB_IgnoreLock = true;
+      PB_AddBonus(1);
 		  ActivateTimer(1000, 0, PB_HandleLock);}         // handle locked balls after 1s
 		break;
 	case 28:																						// chest
@@ -649,6 +652,7 @@ void PB_GameMain(byte Switch) {
         for (i=0; i<5; i++) {                         // turn off blinking row / column
           RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
 				if (AppByte == PB_ChestMode) {						    // correct row / column hit?
+					PB_AddBonus(1);
           PB_OpenVisorProc();}										    // open visor
 				else {																				// incorrect row / column hit
 					PB_ChestMode = Switch-17;                   // Store row / column hit
@@ -670,6 +674,7 @@ void PB_GameMain(byte Switch) {
 	case 38:																						// eject hole
     if (!PB_EjectIgnore) {
       PB_EjectIgnore = true;
+      PB_AddBonus(1);
       if (PB_EjectMode[Player] < 5) {
 		    Points[Player] += 2000;
         ShowPoints(Player);
@@ -692,7 +697,7 @@ void PB_GameMain(byte Switch) {
         ActivateTimer(1000, 3, ClearEjectHole);}}
     break;
   case 39:                                            // solar ramp exit
-    byte Buffer;
+    uint16_t Buffer;
     PB_AddBonus(1);
     if (PB_SolarValueTimer) {                         // solar ramp lit
       KillTimer(PB_SolarValueTimer);
@@ -743,6 +748,7 @@ void PB_GameMain(byte Switch) {
 	case 51:
     if (!PB_DropWait) {
       PB_DropWait = true;
+      PB_AddBonus(1);
       Points[Player] += 1000;
       ShowPoints(Player);
       ActivateTimer(200, Switch, PB_HandleDropTargets);}
@@ -849,9 +855,11 @@ void PB_StartChestPattern(byte Dummy) {
   LampPattern = Lamp;
   PB_ChestLightHandler(0);}
 
-void PB_OpenVisorProc() {                   // measures to open the visor
+void PB_OpenVisorProc() {                   				// measures to open the visor
   PB_ChestMode = 0;                                 // indicate that the visor is open
-  PB_Chest_Status[Player]++;                        // increase the number of visor openings 
+  PB_Chest_Status[Player]++;                        // increase the number of visor openings
+  if (PB_Chest_Status[Player] == 2) {								// visor opened two times?
+  	PB_AddExBall();}
   PB_LitChestLamps = 0;                             // reset the counter
   PB_ResetPlayersChestLamps(Player);                // reset the stored lamps
   PB_ClearChest();                                  // turn off chest lamps
@@ -923,6 +931,8 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
     Pos = 16;                                         // start with a mask value of 10000b 
     while (Pos && Buffer2) {                          // until all rows are processed or the required number of lamps has been lit
       if (!(Buffer & Pos)) {                          // if the lamp is not lit
+      	if (Buffer2 == 1) {														// only once per target hit
+      		PB_AddBonus(1);}
         Buffer2--;                                    // reduce the number of lamps to be lit
         PB_LitChestLamps++;                           // increase the number of lit chest lamps
         Buffer = Buffer | Pos;}                       // set the corresponding bit in the buffer
@@ -936,6 +946,8 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
     Pos = 0;                                          // start on the left of the chest
     while ((Pos < 5) && Buffer2) {                    // until all columns are processed or the required number of lamps has been lit
       if (!(PB_ChestLamp[Player-1][Pos] & Buffer)) {  // if the lamp is not lit
+      	if (Buffer2 == 1) {														// only once per taget hit
+      		PB_AddBonus(1);}
         Buffer2--;                                    // reduce the number of lamps to be lit
         PB_LitChestLamps++;                           // increase the number of lit chest lamps
         PB_ChestLamp[Player-1][Pos] = PB_ChestLamp[Player-1][Pos] | Buffer;} // set the bit for this lamp in the chest lamp array for this player
@@ -976,38 +988,38 @@ void PB_FlSeqPlayer(byte Step) {                      // play flasher sequence
     C_BankActive = false;}}                           // and indicate the C bank as not active
     
 void PB_HandleLock(byte State) {
-  if (!State) {                                       // routine didn't call itself
-    PB_IgnoreLock = false;
-    InLock++;}
-  c = 0;
-  if (Switch[25]) {                                   // count locked balls
-    c++;}
-  if (Switch[26]) {
-    c++;}
-  if (c != InLock) {                                  // not as expected?
-    InLock = c;                                       // take the new count value
-    ActivateTimer(200, 1, PB_HandleLock);}            // and come back to recheck
-  else {                                              // number of locked balls as expected
-    if (InLock) {                                     // locked ball found?
-      if (PB_ChestMode) {                             // visor is supposed to be closed
-        PB_ClearOutLock(1);}                          // remove balls from lock
-      else {
-        if (InLock == 1) {
-          if (Multiballs > 1) {                       // multiball already running?
-            AddBlinkLamp(35, 100);                    // start blinking of solar energy ramp
-            PB_OpenVisorFlag = false;
-            ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
-            ActivateSolenoid(0, 13);                  // start visor motor
-            PB_SolarValueTimer = ActivateTimer(8000, 0,PB_ReopenVisor);} // 8s to score the solar value
-          else {                                      // multiball not yet running
-            PB_GiveBall(1);}}                         // give second ball
-        else {                                        // both balls in lock
-          if (Multiballs == 1) {                      // multiball not yet running?
-            Multiballs = 2;                           // start multiball
-            ActivateTimer(1000, 0, PB_ClearOutLock);  // eject first ball
-            PB_ClearOutLock(0);}                      // eject second ball
-          else {
-            PB_ClearOutLock(1);}}}}}}                 // eject 1 ball and close visor
+	if (!State) {                                       // routine didn't call itself
+		PB_IgnoreLock = false;
+		InLock++;}
+	c = 0;
+	if (Switch[25]) {                                   // count locked balls
+		c++;}
+	if (Switch[26]) {
+		c++;}
+	if (c != InLock) {                                  // not as expected?
+		InLock = c;                                       // take the new count value
+		ActivateTimer(200, 1, PB_HandleLock);}            // and come back to recheck
+	else {                                              // number of locked balls as expected
+		if (InLock) {                                     // locked ball found?
+			if (PB_ChestMode) {                             // visor is supposed to be closed
+				PB_ClearOutLock(1);}                          // remove balls from lock
+			else {
+				if (InLock == 1) {
+					if (Multiballs > 1) {                       // multiball already running?
+						AddBlinkLamp(35, 100);                    // start blinking of solar energy ramp
+						PB_OpenVisorFlag = false;
+						ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
+						ActivateSolenoid(0, 13);                  // start visor motor
+						PB_SolarValueTimer = ActivateTimer(8000, 0,PB_ReopenVisor);} // 8s to score the solar value
+					else {                                      // multiball not yet running
+						PB_GiveBall(1);}}                         // give second ball
+				else {                                        // both balls in lock
+					if (Multiballs == 1) {                      // multiball not yet running?
+						Multiballs = 2;                           // start multiball
+						ActivateTimer(1000, 0, PB_ClearOutLock);  // eject first ball
+						PB_ClearOutLock(0);}                      // eject second ball
+					else {
+						PB_ClearOutLock(1);}}}}}}                 // eject 1 ball and close visor
 
 void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar value ramp was not hit in time
   PB_SolarValueTimer = 0;
@@ -1018,7 +1030,7 @@ void PB_ClearOutLock(byte CloseVisor) {
   if (SolenoidStatus(13)) {                           // visor motor on?
     ActivateTimer(1100, CloseVisor, PB_ClearOutLock);} // come back later
   else {
-    if (Switch[47]) {                                 // visor is open but not moving
+    if (Switch[47]) {                                 // visor is open
       if (Switch[25]) {                               // left eye?
         ActA_BankSol(0, 7);}                          // eject it
       else {
@@ -1061,10 +1073,10 @@ void PB_AdvancePlanet() {
     PB_Planet[Player] = 10;}                          // set it back to the sun
   else {
     if  (PB_Planet[Player] == 10) {                   //  10 = Sun
-      PB_AddExBall();}
+      Lamp[51] = true;}																// light special
     else {
       if (PB_Planet[Player] == game_settings[PB_ReachPlanet]) { // target planet reached
-        PB_AddExBall();
+      	Lamp[51] = true;															// light special
         RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);} // stop blinking
       Lamp[PB_Planet[Player]+18] = true;}}}
 
@@ -1147,6 +1159,8 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
       if (PB_ChestLightsTimer) {                      // stop the chest light animation
         KillTimer(PB_ChestLightsTimer);
         PB_ChestLightsTimer = 0;}
+      for (i=0; i<5; i++) {                         // turn off blinking row / column
+        RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
       PB_ClearChest();                                // turn off chest lamps
       if (!PB_ChestMode) {
         PB_Chest_Status[Player] = PB_Chest_Status[Player] + 100;} // indicate that the visor has been open
@@ -1199,8 +1213,10 @@ void PB_BallEnd2() {
 		ActivateTimer(2000, 0, PB_AfterExBallRelease);
 		ActivateTimer(1000, AppByte, PB_NewBall);}
 	else {                                        	// Player has no extra balls
-		if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
-			Switch_Pressed = DummyProcess;              // Switches do nothing
+		Lamp[51] = false;
+		if (false) {
+//		if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
+//			Switch_Pressed = DummyProcess;              // Switches do nothing
 			// CheckHighScore(Player);
 		}
 		else {
