@@ -9,7 +9,7 @@ const int DispColumns = 16;                           // Number of columns of th
  // Disp Test Pattern const byte DispPattern[4] = {134,69,42,25};
 
 const byte AlphaUpper[118] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
-  63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,0,0,136,0,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < > and fill bytes
+  63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,136,0,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
   126,4,15,21,57,0,15,17,121,4,120,4,59,4,118,4,0,17,23,0,112,136,49,0,54,10,54,130,63,0, // Pattern A B C D E F G H I J K L M N O
   124,4,63,128,124,132,107,4,8,17,55,0,48,40,54,160,0,170,0,26,9,40}; // Pattern P Q R S T U V W X Y Z
 
@@ -19,7 +19,7 @@ const byte AlphaLower[118] = {0,0,0,0,0,0,0,0,182,35,0,0,0,0,0,0,0,0,0,0,2,247,2
   94,2,252,4,94,6,182,2,16,33,236,0,68,80,204,20,0,212,0,224,48,80}; // Pattern P Q R S T U V W X Y Z
 
 const byte NumLower[118] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // Blank and fill bytes for lower row numeric displays
-	  252,0,136,0,122,0,186,0,142,0,182,0,246,0,152,0,254,0,190,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 and fill bytes
+	  252,0,136,0,122,0,186,0,142,0,182,0,246,0,152,0,254,0,190,0,0,0,0,0,0,0,72,0,0,0,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 = and fill bytes
 	  222,0,230,0,116,0,234,0,118,0,86,0,246,0,206,0,68,0,232,0,206,0,100,0,194,0,194,0,226,0, // Pattern A B C D E F G H I J K L M N O
 	  94,0,252,0,66,0,182,0,84,0,236,0,236,0,236,0,206,0,78,0,122,0}; // Pattern P Q R S T U V W X Y Z
 
@@ -229,7 +229,7 @@ void setup() {
 	digitalWrite(Blanking, LOW);                        // and activate the blanking
 	digitalWrite(VolumePin, HIGH);                      // set volume to 0
 	pinMode(UpDown, INPUT);                          		// initialize Up/Down pin
-	Serial.begin(9600);
+	Serial.begin(115200);
 	SPI.begin();
 	REG_PIOC_PER = 871363582;                           // set required Port C pins to controlled In/Out
 	REG_PIOC_PUDR = 871363582;                          // disable Pull-ups
@@ -927,16 +927,18 @@ void DisplayScore (byte Position, unsigned int Score) {
 			ByteBuffer2 = 32+2*ByteBuffer2;           			// determine the corresponding display pattern
 			if (Position < 3) {                       			// depending on the player number show it in the upper display row
 				if ((i==3) || (i==6)) {
-					*(DisplayUpper+ByteBuffer+12-2*i) = 128 | DispPattern1[ByteBuffer2];} // add a comma if necessary
+					*(DisplayUpper+ByteBuffer+12-2*i) = 128 | DispPattern1[ByteBuffer2];
+					*(DisplayUpper+ByteBuffer+13-2*i) = 64 | DispPattern1[ByteBuffer2+1];} // add a comma if necessary
 				else {
-					*(DisplayUpper+ByteBuffer+12-2*i) = DispPattern1[ByteBuffer2];}
-				*(DisplayUpper+ByteBuffer+13-2*i) = DispPattern1[ByteBuffer2+1];}
+					*(DisplayUpper+ByteBuffer+12-2*i) = DispPattern1[ByteBuffer2];
+					*(DisplayUpper+ByteBuffer+13-2*i) = DispPattern1[ByteBuffer2+1];}}
 			else {                                    			// the same for the lower display row
 				if ((i==3) || (i==6)) {
-					*(DisplayLower+ByteBuffer+12-2*i) = 1 | DispPattern2[ByteBuffer2];}
+					*(DisplayLower+ByteBuffer+12-2*i) = 1 | DispPattern2[ByteBuffer2];
+					*(DisplayLower+ByteBuffer+13-2*i) = 8 | DispPattern2[ByteBuffer2+1];}
 				else {
-					*(DisplayLower+ByteBuffer+12-2*i) = DispPattern2[ByteBuffer2];}
-				*(DisplayLower+ByteBuffer+13-2*i) = DispPattern2[ByteBuffer2+1];} //
+					*(DisplayLower+ByteBuffer+12-2*i) = DispPattern2[ByteBuffer2];
+					*(DisplayLower+ByteBuffer+13-2*i) = DispPattern2[ByteBuffer2+1];}} //
 			i++;}}
 	else {                                        			// if the points are 0
 		if (Position < 3) {
