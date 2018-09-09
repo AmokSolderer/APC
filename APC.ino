@@ -962,16 +962,18 @@ void ShowNumber(byte Position, unsigned int Number) {
 			Buffer = 32+2*Buffer;
 			if (Position < 16) {
 				if ((i==3) || (i==6)) {
-					*(DisplayUpper2+2*(Position-i)) = 128 | DispPattern1[Buffer];}
+					*(DisplayUpper2+2*(Position-i)) = 128 | DispPattern1[Buffer];
+					*(DisplayUpper2+1+2*(Position-i)) = 64 | DispPattern1[Buffer+1];}
 				else {
-					*(DisplayUpper2+2*(Position-i)) = DispPattern1[Buffer];}
-				*(DisplayUpper2+2*(Position-i)+1) = DispPattern1[Buffer+1];}
+					*(DisplayUpper2+2*(Position-i)) = DispPattern1[Buffer];
+				  *(DisplayUpper2+2*(Position-i)+1) = DispPattern1[Buffer+1];}}
 			else {
 				if ((i==3) || (i==6)) {
-					*(DisplayLower2+2*(Position-16-i)) = 1 | DispPattern2[Buffer];}
+					*(DisplayLower2+2*(Position-16-i)) = 1 | DispPattern2[Buffer];
+					*(DisplayLower2+1+2*(Position-16-i)) = 8 | DispPattern2[Buffer+1];}
 				else {
-					*(DisplayLower2+2*(Position-16-i)) = DispPattern2[Buffer];}
-				*(DisplayLower2+2*(Position-16-i)+1) = DispPattern2[Buffer+1];}
+					*(DisplayLower2+2*(Position-16-i)) = DispPattern2[Buffer];
+				  *(DisplayLower2+2*(Position-16-i)+1) = DispPattern2[Buffer+1];}}
 			i++;}}
 	else {
 		if (Position < 14) {

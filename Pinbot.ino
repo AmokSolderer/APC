@@ -532,9 +532,9 @@ void PB_ClearOuthole(byte Event) {
     if (!BlockOuthole) {															// outhole blocked?
       BlockOuthole = true;														// block outhole until this ball has been processed
       ActA_BankSol(30, 1);                         		// put ball in trunk
-      ActivateTimer(2000, 0, PB_BallEnd);}}
+      ActivateTimer(2000, 0, PB_BallEnd);}
     else {
-      ActivateTimer(2000, 0, PB_ClearOuthole);}}			// come back in 2s if outhole is blocked
+      ActivateTimer(2000, 0, PB_ClearOuthole);}}}			// come back in 2s if outhole is blocked
 
 void PB_GameMain(byte Switch) {
 	switch(Switch) {
@@ -585,6 +585,54 @@ void PB_GameMain(byte Switch) {
 		Serial.println((unsigned int)&ShowMessage);
 		Serial.print("PB_CountBonus = ");
 		Serial.println((unsigned int)&PB_CountBonus);
+    Serial.print("PB_AfterExBallRelease = ");
+    Serial.println((unsigned int)&PB_AfterExBallRelease);
+    Serial.print("PB_BallEnd = ");
+    Serial.println((unsigned int)&PB_BallEnd);
+    Serial.print("ReleaseSolenoid = ");
+    Serial.println((unsigned int)&ReleaseSolenoid);  
+    Serial.print("ActC_BankSol2 = ");
+    Serial.println((unsigned int)&ActC_BankSol2);
+    Serial.print("PB_ResetAC_Relay = ");
+    Serial.println((unsigned int)&PB_ResetAC_Relay);
+    Serial.print("ShowLampPatterns = ");
+    Serial.println((unsigned int)&ShowLampPatterns);
+    Serial.print("StrobeLights = ");
+    Serial.println((unsigned int)&StrobeLights);
+    Serial.print("SelectSettings = ");
+    Serial.println((unsigned int)&SelectSettings);       
+    Serial.print("PB_OpenVisor = ");
+    Serial.println((unsigned int)&PB_OpenVisor);
+    Serial.print("PB_CloseVisor = ");
+    Serial.println((unsigned int)&PB_CloseVisor);
+    Serial.print("PB_StartChestPattern = ");
+    Serial.println((unsigned int)&PB_StartChestPattern);
+    Serial.print("PB_CheckReleasedBall = ");
+    Serial.println((unsigned int)&PB_CheckReleasedBall);
+    Serial.print("PB_ClearOuthole = ");
+    Serial.println((unsigned int)&PB_ClearOuthole);
+    Serial.print("PB_NewBall = ");
+    Serial.println((unsigned int)&PB_NewBall);
+    Serial.print("ShowAllPoints = ");
+    Serial.println((unsigned int)&ShowAllPoints);
+    Serial.print("PB_HandleLock = ");
+    Serial.println((unsigned int)&PB_HandleLock);
+    Serial.print("PB_ClearEjectHole = ");
+    Serial.println((unsigned int)&PB_ClearEjectHole);
+    Serial.print("PB_HandleDropTargets = ");
+    Serial.println((unsigned int)&PB_HandleDropTargets);
+    Serial.print("PB_FlSeqPlayer = ");
+    Serial.println((unsigned int)&PB_FlSeqPlayer);
+    Serial.print("PB_ReopenVisor = ");
+    Serial.println((unsigned int)&PB_ReopenVisor);
+    Serial.print("PB_ClearOutLock = ");
+    Serial.println((unsigned int)&PB_ClearOutLock);
+    Serial.print("DelaySolenoid = ");
+    Serial.println((unsigned int)&DelaySolenoid);
+    Serial.print("PB_EnergyOff = ");
+    Serial.println((unsigned int)&PB_EnergyOff);
+    Serial.print("PB_ResetDropTargets = ");
+    Serial.println((unsigned int)&PB_ResetDropTargets);
 		c=0;
 		i=1;
 		while (c<ActiveTimers) {													// list all active timers
@@ -717,7 +765,7 @@ void PB_GameMain(byte Switch) {
       if (PB_EjectMode[Player] < 5) {
 		    Points[Player] += 2000;
         ShowPoints(Player);
-		    ActivateTimer(1000, 3, ClearEjectHole);}
+		    ActivateTimer(1000, 3, PB_ClearEjectHole);}
       else {
         if (PB_EjectMode[Player] == 9) {
           RemoveBlinkLamp(15);
@@ -733,7 +781,7 @@ void PB_GameMain(byte Switch) {
           PB_EjectMode[Player] = PB_EjectMode[Player] - 4;
           if (PB_EjectMode[Player] == 4) {
             PB_AddExBall();}}
-        ActivateTimer(1000, 3, ClearEjectHole);}}
+        ActivateTimer(1000, 3, PB_ClearEjectHole);}}
     break;
   case 39:                                            // solar ramp exit
     uint16_t Buffer;
@@ -885,7 +933,7 @@ void PB_AddBonus(byte BonusToAdd) {
       KillTimer(ShowMessageTimer);}                   // kill it      
     ShowMessageTimer = ActivateTimer(2000, 0, ShowMessage);}}
     
-void ClearEjectHole(byte Solenoid) {                   // activate solenoid after delay time
+void PB_ClearEjectHole(byte Solenoid) {                   // activate solenoid after delay time
   PB_EjectIgnore = false;
   ActA_BankSol(0, Solenoid);}
 
