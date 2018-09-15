@@ -458,8 +458,8 @@ void TC7_Handler() {                                  // interrupt routine - run
 		else {
 			SolBuffer[c] = SolBuffer[c] & (255-(1<<SolNumber));}
 		REG_PIOC_SODR = SolBuffer[c]<<1;
-		REG_PIOC_SODR = i;
-		SolChange = false;}                           		// reset flag
+		SolChange = false;																// reset flag
+		REG_PIOC_SODR = i;}                           		// trigger latch
 
   REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
 
