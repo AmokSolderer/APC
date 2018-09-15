@@ -376,21 +376,22 @@ void TC7_Handler() {                                  // interrupt routine - run
 			while (ChangedSw[SwitchStack][c] && (c<30)) {		// look for a free slot
 				c++;}
 			ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}
-	SwDrv++;                                  					// next switch driver
 	SwDrvMask = SwDrvMask<<1;                  					// and the corresponding select pattern
 	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals except Sel5 and the data bus
-	if (SwDrv < 8) {
+	if (SwDrv < 7) {
 		REG_PIOC_SODR = AllData - SwDrvMask;           		// put select pattern on data bus
+		SwDrv++;                                  				// next switch driver
 		REG_PIOC_SODR = 32768;}                        		// use Sel12
 	else {
-		if (SwDrv == 8) {
+		if (SwDrv == 7) {
 			REG_PIOC_SODR = AllData;
+			SwDrv++;                                  			// next switch driver
 			REG_PIOC_SODR = 32768;                        	// use Sel12
 			REG_PIOC_CODR = 16384;}                       	// enable Sel13
 		else {
-			SwDrv = 0;
 			SwDrvMask = 2;
 			REG_PIOC_SODR = AllData - SwDrvMask;          	// put select pattern on data bus
+			SwDrv = 0;
 			REG_PIOC_SODR = 32768+16384;}}                	// use Sel12 and disable Sel13
 
 	// Display
@@ -486,8 +487,8 @@ void TC7_Handler() {                                  // interrupt routine - run
       REG_PIOC_SODR = 33554432;                       // use Sel1
       REG_PIOC_CODR = AllSelects + AllData;           // clear all select signals and the data bus
       REG_PIOC_SODR = LampColMask;
-      REG_PIOC_SODR = 268435456;                      // use Sel0
-      LampWait = 1; }                                 // restart lamp waiting counter
+      LampWait = 1;                                  	// restart lamp waiting counter
+      REG_PIOC_SODR = 268435456;}                     // use Sel0
     else {
       if (APC_settings[DimInserts]) {                 // if inserts have to be dimmed
         REG_PIOC_CODR = AllSelects + AllData;         // clear all select signals and the data bus
