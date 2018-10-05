@@ -50,8 +50,8 @@ public:
     dacc_set_timing(m_dac, 0x08, 0, DACC_MR_STARTUP_1024);
 
     // Flexible channel selection with tags
-    //dacc_enable_flexible_selection(dac);
-    dacc_set_channel_selection(m_dac, 0);
+    dacc_enable_flexible_selection(m_dac);
+    //dacc_set_channel_selection(m_dac, 0);
 
     // Set up analog current
     dacc_set_analog_control(m_dac,
@@ -61,7 +61,7 @@ public:
 
     // Enable output channels
     dacc_enable_channel(m_dac, 0);
-    //dacc_enable_channel(dac, 1);
+    dacc_enable_channel(m_dac, 1);
 
     // Configure Timer Counter to trigger DAC
     // --------------------------------------
@@ -191,10 +191,11 @@ public:
   uint32_t *last;
   uint32_t *volatile running;
   uint32_t *volatile next;
+  void        enqueue();
 
 private:
   static void onTransmitEnd(void *me);
-  void        enqueue();
+  //void        enqueue();
   uint32_t   *cook(const uint32_t *buffer, size_t size);
 
   CDAC       *m_dac;
@@ -243,11 +244,11 @@ void CSound::end() {
 size_t CSound::write(const uint32_t *data, size_t size) {
   //const uint32_t TAG = 0x10000000;
   //Serial.println(size);
-  size_t i;
-  for (i = 0; i < size; i++) {
-    *next = data[i]; //| TAG;
-    next++;}
-  enqueue();
+//  size_t i;
+//  for (i = 0; i < size; i++) {
+//    *next = data[i]; //| TAG;
+//    next++;}
+//  enqueue();
 //
 //    if (next == half || next == last) {
 //      enqueue();
@@ -255,7 +256,7 @@ size_t CSound::write(const uint32_t *data, size_t size) {
 //        ;
 //    }
 //  }
-  return i;
+  //return i;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

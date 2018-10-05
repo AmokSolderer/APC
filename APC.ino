@@ -1,4 +1,5 @@
-#include <SD.h>
+#include <SdFat.h>
+SdFat SD;
 #include <SPI.h>
 #include "Arduino.h"
 #include "Sound.h"
@@ -53,8 +54,6 @@ byte ChangedSw[2][30];                                // two stacks of switches 
 byte SwEvents[2];                                     // contains the number of pending switch events in each stack
 bool Switch[SwMax+3];                                 // stores the present status of all switches (Advance is 72, HighScoreRest is 71)
 bool SwHistory[SwMax+3];                              // stores the previous switch status
-//byte SwDebounce[SwMax+3] = {0,10,10,10,10,10,10,10,10,5,5,2,2,1,2,2,2,10,10,10,10,2,2,1,10,10,10,10,0,10,10,10,0,10,10,10,3,10,10,10,0,10,10,10,2,10,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,10,10,10,10,10,10,10,10,10}; // debounce value for all switches
-//byte SwCount[SwMax+3];                                // debounce counter for all switches
 int SwDrv = 0;                                        // switch driver being accessed at the moment
 const byte *DispRow1;                                  // determines which patterns are to be shown (2 lines with 16 chars each)
 const byte *DispRow2;
@@ -115,18 +114,31 @@ byte TimerArgument[64];
 void (*TimerEvent[64])(byte);                         // pointers to the procedures to be executed on the timer event
 void (*TimerBuffer)(byte);
 void (*Switch_Pressed)(byte);                         // Pointer to current behavior mode for activated switches
-void (*Switch_Released)(byte);                          // Pointer to current behavior mode for released switches
+void (*Switch_Released)(byte);                        // Pointer to current behavior mode for released switches
 char EnterIni[3];
-uint16_t *EmptyBuffer;																// to be used when no audio is played on this channel
+uint16_t *SoundBuffer;																// buffers sound data from SD to be processed by interrupt
 uint16_t *MusicBuffer;																// buffers music data from SD to be processed by interrupt
+uint16_t *Buffer16b;																	// 16bit pointer to the audio DAC buffer
+uint32_t *Buffer32b;																	// 32bit pointer to the audio DAC buffer
 byte MBP = 0;																					// Music Buffer Pointer - next block to write to inside of the music buffer
 byte MusicIRpos = 0;																	// next block of the music buffer to be read from the interrupt
 byte StopMusic = 0;																		// last music buffer block with music data
 bool StartMusic = false;															// music startup active -> filling music buffer
 bool PlayingMusic = false;														// StartMusic done -> continuously playing music
 File MusicFile;																				// file handle for the music file (SD)
+bool AfterMusicPending = false;												// indicates that there's an after music event to be executed
 void (*AfterMusic)() = 0;															// program to execute after music file has ended
-char *NextMusicName;
+char *NextMusicName;																	// points to the name of the next music file to be played (if any)
+byte SBP = 0;																					// Sound Buffer Pointer - next block to write to inside of the music buffer
+byte SoundIRpos = 0;																	// next block of the sound buffer to be read from the interrupt
+byte StopSound = 0;																		// last sound buffer block with sound data
+bool StartSound = false;															// sound startup active -> filling sound buffer
+bool PlayingSound = false;														// StartSound done -> continuously playing sound
+File SoundFile;																				// file handle for the sound file (SD)
+bool AfterSoundPending = false;												// indicates that there's an after sound event to be executed
+void (*AfterSound)() = 0;															// program to execute after sound file has ended
+bool SoundPrio = false;																// indicates which channel has to be processed first
+char *NextSoundName;
 const char TestSounds[2][15] = {{"Musik.bin"},0};
 void ExitSettings(bool change);
 void HandleTextSetting(bool change);
@@ -254,7 +266,7 @@ void setup() {
   REG_PIOC_CODR = AllSelects + AllData;               // clear all select signals and the data bus
   REG_PIOC_SODR = 4194304;                            // use Sel4  
   MusicBuffer = (uint16_t *) malloc(2048 * 2);
-  EmptyBuffer = (uint16_t *) malloc(128 * 2);
+  SoundBuffer = (uint16_t *) malloc(2048 * 2);
   for (i=1; i< SwMax+1; i++) {
   	Switch[i] = false;
   	SwHistory[i] = 0; }                               // initialize switch status
@@ -262,11 +274,13 @@ void setup() {
   	Lamp[i+1] = false; }
   for (i=0; i< 8; i++) {                              // initialize switch input pins
   	pinMode(54 + i, INPUT); }
-  for (i=0; i<128; i++) {															// fill empty buffer
-  	*(EmptyBuffer+i) = 2048;}
   g_Sound.begin(44100, 100);													// initialize sound
-  g_Sound.write(EmptyBuffer, 128);										// start with an empty buffer
-
+  Buffer32b = g_Sound.next;														// fill first part of audio DAC buffer with silence
+  for (i=0; i<64; i++) {
+  	*Buffer32b = 402655232;														// 2048 on both channels and the channel 2 tag
+  	Buffer32b++;}
+	g_Sound.next = Buffer32b;
+	g_Sound.enqueue();
   pmc_set_writeprotect(false);                        // enable writing to pmc registers
   pmc_enable_periph_clk(ID_TC7);                      // enable TC7
   TC_Configure(/* clock */TC2,/* channel */1, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK4);
@@ -282,26 +296,25 @@ void setup() {
   DispRow2 = DisplayLower;
   LampPattern = NoLamps;
   digitalWrite(Blanking, HIGH);                       // Release the blanking
-  if (SD.begin(52)) {                                 // look for an SD card
+  if (SD.begin(52, SD_SCK_MHZ(20))) {                 // look for an SD card and set max SPI clock to 20MHz
     WriteUpper("SD CARD FOUND ");
-    SPI.setClockDivider(4);
     SDfound = true;}
   else {
     WriteUpper(" NO SD  CARD  ");}
   Init_System();}
 
 void Init_System() {
-	if (SDfound) {
-		File Settings = SD.open(APC_set_file_name);
+	if (SDfound) {																			// SD card found?
+		File Settings = SD.open(APC_set_file_name);				// look for system settings
 		if (!Settings) {
-			WriteLower("NO SYS SETTNGS");
-			for(i=0;i<64;i++) {
+			WriteLower("NO SYS SETTNGS");										// if no system settings
+			for(i=0;i<64;i++) {															// use default settings
 				APC_settings[i] = APC_defaults[i];}}
-		else {
-			Settings.read(&APC_settings, sizeof APC_settings);}
+		else {																						// if system settings found
+			Settings.read(&APC_settings, sizeof APC_settings);} // read them
 		Settings.close();}
-	else {
-		for(i=0;i<64;i++) {
+	else {																							// no SD card?
+		for(i=0;i<64;i++) {																// use default settings
 			APC_settings[i] = APC_defaults[i];}}
 	delay(2000);
 	Init_System2(0);}
@@ -538,7 +551,7 @@ void TC7_Handler() {                                  // interrupt routine - run
   				REG_PIOC_SODR = Sel5;
   				if (LEDFlag) {
   					LEDFlag = false;
-  					REG_PIOC_CODR = Sel5;}                      // activate Sel5 falling edge
+  					REG_PIOC_CODR = Sel5;}                    // activate Sel5 falling edge
   				else {
   					LEDFlag = true;
   					REG_PIOC_SODR = Sel5;}}}}
@@ -546,76 +559,194 @@ void TC7_Handler() {                                  // interrupt routine - run
     
 	// Sound
 
-	if (g_Sound.next != g_Sound.running) {
-		if (PlayingMusic) {
-			g_Sound.write(MusicBuffer+MusicIRpos*128, 128);
-			MusicIRpos++;
-			if (MusicIRpos == 16) {
-				MusicIRpos = 0;}
-			if (StopMusic) {
-				if (MusicIRpos == MBP) {
-					PlayingMusic = false;
-					MBP = 0;
-					MusicIRpos = 0;
-					StopMusic = 0;
-					if (AfterMusic) {
-						AfterMusic();}}}}
-		else {
-			g_Sound.write(EmptyBuffer, 128);}}
+  if (g_Sound.next != g_Sound.running) {
+  	if (PlayingMusic) {
+  		if (PlayingSound) {															// playing music and sound
+  			Buffer16b = (uint16_t *) g_Sound.next;				// get address of the next DAC buffer part to be filled
+  			for (i=0; i<64; i++) {
+  				*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i);	// write channel 1
+  				Buffer16b++;
+  				*Buffer16b = *(SoundBuffer+SoundIRpos*128+2*i) | 4096;  // write channel 2
+  				Buffer16b++;}
+  			g_Sound.next = (uint32_t *) Buffer16b;				// write back the updated address
+  			g_Sound.enqueue();
+  			MusicIRpos++;																	// increase the IRQ read pointer for the music buffer
+  			if (MusicIRpos == 16) {												// last buffer block read?
+  				MusicIRpos = 0;}														// start over
+  			SoundIRpos++;																	// increase the IRQ read pointer for the sound buffer
+  			if (SoundIRpos == 16) {												// last buffer block read?
+  				SoundIRpos = 0;}														// start over
+  			if (StopMusic) {															// end of music file reached?
+  				if (MusicIRpos == MBP) {										// remaining music data played?
+  					PlayingMusic = false;											// stop playing music
+  					MBP = 0;																	// reset write pointer
+  					MusicIRpos = 0;														// reset read pointer
+  					StopMusic = 0;														// mark stop sequence as completed
+  					if (AfterMusic) {													// anything to do after the music?
+  						AfterMusicPending = true;}}}						// indicate now is the time to do so
+  			if (StopSound) {															// end of sound file reached?
+  				if (SoundIRpos == SBP) {										// remaining sound data played?
+  					PlayingSound = false;											// stop playing sound
+  					SBP = 0;																	// reset write pointer
+  					SoundIRpos = 0;														// reset read pointer
+  					StopSound = 0;														// mark stop sequence as completed
+  					if (AfterSound) {													// anything to do after the sound?
+  						AfterSoundPending = true;}}}}						// indicate now is the time to do so
+  		else {																					// playing music only
+  			Buffer16b = (uint16_t *) g_Sound.next;				// same as above but music only
+  			for (i=0; i<64; i++) {
+  				*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i);
+  				Buffer16b++;
+  				*Buffer16b = 6144;  												// 2048 | 4096
+  				Buffer16b++;}
+  			g_Sound.next = (uint32_t *) Buffer16b;
+  			g_Sound.enqueue();
+  			MusicIRpos++;
+  			if (MusicIRpos == 16) {
+  				MusicIRpos = 0;}
+  			if (StopMusic) {
+  				if (MusicIRpos == MBP) {
+  					PlayingMusic = false;
+  					MBP = 0;
+  					MusicIRpos = 0;
+  					StopMusic = 0;
+  					if (AfterMusic) {
+  						AfterMusicPending = true;}}}}}
+  	else {																						// not playing music
+  		if (PlayingSound) {															// playing sound only
+  			Buffer16b = (uint16_t *) g_Sound.next;				// same as above but sound only
+  			for (i=0; i<64; i++) {
+  				*Buffer16b = 2048;
+  				Buffer16b++;
+  				*Buffer16b = *(SoundBuffer+SoundIRpos*128+2*i) | 4096;
+  				Buffer16b++;}
+  			g_Sound.next = (uint32_t *) Buffer16b;
+  			g_Sound.enqueue();
+  			SoundIRpos++;
+  			if (SoundIRpos == 16) {
+  				SoundIRpos = 0;}
+  			if (StopSound) {
+  				if (SoundIRpos == SBP) {
+  					PlayingSound = false;
+  					SBP = 0;
+  					SoundIRpos = 0;
+  					StopSound = 0;
+  					if (AfterSound) {
+  						AfterSoundPending = true;}}}}
+  		else {																					// neither sound nor music
+  			Buffer32b = g_Sound.next;
+  			for (i=0; i<64; i++) {
+  				*Buffer32b = 402655232;											// 2048 on both channels and the channel tag
+  				Buffer32b++;}
+  			g_Sound.next = Buffer32b;
+  			g_Sound.enqueue();}}}
 }
 
 void loop() {
 
 	c = 0;                                  						// initialize counter
-  if (SwEvents[SwitchStack]) {                        // switch event pending?
-    SwitchStack = 1-SwitchStack;                      // switch to the other stack to avoid a conflict with the interrupt
-  	while (SwEvents[1-SwitchStack]) {									// as long as there are switch events to process
-  		if (ChangedSw[1-SwitchStack][c]) {							// pending switch event found?
-  			SwEvents[1-SwitchStack]--;										// decrease number of pending events
-  			i = ChangedSw[1-SwitchStack][c];							// buffer the switch number
-  			ChangedSw[1-SwitchStack][c] = 0;							// clear the event
-  			if (Switch[i]) {                              // process SET switches
-  				Switch_Pressed(i);}													// access the set switch handler
-  			else {																				// process released switches
-  				Switch_Released(i);}}												// access the released switch handler
-      if (c < 29) {                                   // number of pending events still in the allowed range?
-  		  c++;}																				  // increase counter
-      else {
-        ErrorHandler(21,0,c);}}}
+	if (SwEvents[SwitchStack]) {                        // switch event pending?
+		SwitchStack = 1-SwitchStack;                      // switch to the other stack to avoid a conflict with the interrupt
+		while (SwEvents[1-SwitchStack]) {									// as long as there are switch events to process
+			if (ChangedSw[1-SwitchStack][c]) {							// pending switch event found?
+				SwEvents[1-SwitchStack]--;										// decrease number of pending events
+				i = ChangedSw[1-SwitchStack][c];							// buffer the switch number
+				ChangedSw[1-SwitchStack][c] = 0;							// clear the event
+				if (Switch[i]) {                              // process SET switches
+					Switch_Pressed(i);}													// access the set switch handler
+				else {																				// process released switches
+					Switch_Released(i);}}												// access the released switch handler
+			if (c < 29) {                                   // number of pending events still in the allowed range?
+				c++;}																				  // increase counter
+			else {
+				ErrorHandler(21,0,c);}}}
 	c = 0;                                  						// initialize counter
-  if (TimerEvents[TimerStack]) {                      // timer event pending?
-    TimerStack = 1-TimerStack;                        // switch to the other stack to avoid a conflict with the interrupt
-    while (TimerEvents[1-TimerStack]) {               // as long as there are timer events to process
-      if (RunOutTimers[1-TimerStack][c]) {            // number of run out timer found?
-        TimerEvents[1-TimerStack]--;                  // decrease number of pending events
-        i = RunOutTimers[1-TimerStack][c];            // buffer the timer number
-        TimerBuffer = TimerEvent[i];                  // Buffer the event for this timer
-        if (!TimerBuffer) {                           // TimerEvent must be specified
-          ErrorHandler(20,0,c);}
-        RunOutTimers[1-TimerStack][c] = 0;            // delete the timer from the list
-        TimerEvent[i] = 0;                            // delete the event to show the timer as free
-        TimerBuffer(TimerArgument[i]);}               // call event procedure
-      c++;}}                                          // increase search counter
-	if (!StopMusic && (MBP != MusicIRpos)) {
-		if (MusicFile.available() > 255) {
-			MusicFile.read(MusicBuffer+MBP*128,2*128);
-			MBP++;
-			if (MBP == 16) {
-				MBP = 0;
-				if (!PlayingMusic) {
-					PlayingMusic = true;
-					StartMusic = false;}}}
+	if (TimerEvents[TimerStack]) {                      // timer event pending?
+		TimerStack = 1-TimerStack;                        // switch to the other stack to avoid a conflict with the interrupt
+		while (TimerEvents[1-TimerStack]) {               // as long as there are timer events to process
+			if (RunOutTimers[1-TimerStack][c]) {            // number of run out timer found?
+				TimerEvents[1-TimerStack]--;                  // decrease number of pending events
+				i = RunOutTimers[1-TimerStack][c];            // buffer the timer number
+				TimerBuffer = TimerEvent[i];                  // Buffer the event for this timer
+				if (!TimerBuffer) {                           // TimerEvent must be specified
+					ErrorHandler(20,0,c);}
+				RunOutTimers[1-TimerStack][c] = 0;            // delete the timer from the list
+				TimerEvent[i] = 0;                            // delete the event to show the timer as free
+				TimerBuffer(TimerArgument[i]);}               // call event procedure
+			c++;}}                                          // increase search counter
+	if (SoundPrio) {																		// which channel has to be processed first?
+		if (!StopSound && (SBP != SoundIRpos)) {					// still sound data to read?
+			ReadSound();}																		// read it
+		else {																						// no sound data?
+			if (AfterSoundPending) {												// is there an after sound event pending?
+				AfterSoundPending = false;										// reset the flag
+				if (AfterSound) {															// really?
+					AfterSound();}}															// call it
+			else {																					// no after sound event
+				if (!StopMusic && (MBP != MusicIRpos)) {			// proceed with music
+					ReadMusic();}
+				else {																				// no music data?
+					if (AfterMusicPending) {										// is there an after music event pending?
+						AfterMusicPending = false;								// reset the flag
+						if (AfterMusic) {													// really?
+							AfterMusic();}}}}}}											// call it
+	else {																							// same as above but with the priority on music
+		if (!StopMusic && (MBP != MusicIRpos)) {
+			ReadMusic();}
 		else {
-			byte Avail = MusicFile.available();
-			MusicFile.read(MusicBuffer+MBP*128,Avail);
-			for (i=0; i<128-Avail/2; i++) {
-				*(MusicBuffer+MBP*128+Avail/2+i) = 2048;}
-			MBP++;
-			if (MBP == 16) {
-				MBP = 0;}
-			StopMusic = MBP;
-			MusicFile.close();}}
-}
+			if (AfterMusicPending) {
+				AfterMusicPending = false;
+				if (AfterMusic) {
+					AfterMusic();}}
+			else {
+				if (!StopSound && (SBP != SoundIRpos)) {
+					ReadSound();}
+				if (AfterSoundPending) {
+					AfterSoundPending = false;
+					if (AfterSound) {
+						AfterSound();}}}}}}
+
+void ReadMusic() {																		// read music data from SD
+if (MusicFile.available() > 255) {										// enough data remaining in file to fill one block?
+	MusicFile.read(MusicBuffer+MBP*128,2*128);					// read one block
+	MBP++;																							// increase read pointer
+	if (MBP == 16) {																		// last block reached?
+		MBP = 0;																					// start over
+		if (!PlayingMusic) {															// not already playing?
+			PlayingMusic = true;														// start playing
+			StartMusic = false;}}}													// stop init phase
+else {																								// not enough data to fill one block
+	byte Avail = MusicFile.available();									// determine how much is left
+	MusicFile.read(MusicBuffer+MBP*128,Avail);					// read it
+	for (i=0; i<128-Avail/2; i++) {											// fill the rest with silence
+		*(MusicBuffer+MBP*128+Avail/2+i) = 2048;}
+	MBP++;																							// increase read pointer
+	if (MBP == 16) {																		// last block read?
+		MBP = 0;}																					// start over
+	StopMusic = MBP;																		// mark this block as being the last
+	MusicFile.close();}																	// close file
+SoundPrio = true;}																		// switch priority to sound
+
+void ReadSound() {																		// same as above but for the sound channel
+if (SoundFile.available() > 255) {
+	SoundFile.read(SoundBuffer+SBP*128,2*128);
+	SBP++;
+	if (SBP == 16) {
+		SBP = 0;
+		if (!PlayingSound) {
+			PlayingSound = true;
+			StartSound = false;}}}
+else {
+	byte Avail = SoundFile.available();
+	SoundFile.read(SoundBuffer+SBP*128,Avail);
+	for (i=0; i<128-Avail/2; i++) {
+		*(SoundBuffer+SBP*128+Avail/2+i) = 2048;}
+	SBP++;
+	if (SBP == 16) {
+		SBP = 0;}
+	StopSound = SBP;
+	SoundFile.close();}
+SoundPrio = false;}
 
 void SwitchPressed(int SwNumber) {
   Serial.print(" Switch pressed ");
@@ -629,18 +760,18 @@ void DummyProcess(byte Dummy) {;}
 
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
   byte i = 1;                                     		// reset counter
-  BlockTimers = true;
+  BlockTimers = true;																	// block IRQ timer handling to avoid interference
   while (TimerEvent[i]) {             		            // search for a free timer
     i++;}
   TimerArgument[i] = Argument;                    		// initialize it
   TimerEvent[i] = EventPointer;
   TimerValue[i] = Value;                          
   ActiveTimers++;                                 		// increase the number of active timers
-  BlockTimers = false;
+  BlockTimers = false;																// release the IRQ block
   return i;}                                      		// and return its number
 
 void KillAllTimers() {
-  BlockTimers = true;                                 // block the interrupt the prevent it from interfering
+  BlockTimers = true;                                 // block IRQ timer handling to avoid interference
   ActiveTimers = 0;
   TimerStack = 0;
   for (i=1; i<64; i++) {                          		// check all 64 timers
@@ -651,13 +782,13 @@ void KillAllTimers() {
     TimerEvents[x] = 0;
     for (i=0; i<30; i++) {
       RunOutTimers[x][i] = 0;}}
-  BlockTimers = false;}
+  BlockTimers = false;}																// release the IRQ block
 
 void KillTimer(byte TimerNo) {
 	bool FoundFlag = false;
   byte ToFind = 0;
   byte c = 0;
-	BlockTimers = true;                                 // block the interrupt the prevent it from interfering
+	BlockTimers = true;                                 // block IRQ timer handling to avoid interference
   for (byte x=0; x<2; x++) {                          // for both timer event stacks
     ToFind = TimerEvents[x];                          // determine the number of pending events in the current stack
     while (ToFind) {                                  // search for all of these
@@ -679,7 +810,7 @@ void KillTimer(byte TimerNo) {
 			ErrorHandler(11,TimerNo,(uint) TimerEvent[TimerNo]);}}
 	TimerValue[TimerNo] = 0;                        		// set counter to 0
 	TimerEvent[TimerNo] = 0;														// clear Timer Event
-	BlockTimers = false;}
+	BlockTimers = false;}																// release the IRQ block
 
 void WriteUpper(char* DisplayText) {              		// dont use columns 0 and 8 as they are reserved for the credit display
   for (i=0; i<7; i++) { 
@@ -1114,22 +1245,22 @@ void StrobeLights(byte State) {
   StrobeLightsTimer = ActivateTimer(30, State, StrobeLights);}
 
 void PlayMusic(char* Filename) {
-	if (!StartMusic && !PlayingMusic) {
-		MusicFile = SD.open(Filename);
+	if (!StartMusic && !PlayingMusic) {									// no music in play at the moment?
+		MusicFile = SD.open(Filename);										// open file
 		if (!MusicFile) {
 			Serial.println("error opening file");
 			while (true);}
 		//Serial.println("File opened");
-		MusicFile.read(MusicBuffer, 2*128);
-		StartMusic = true;
-		MBP++;}
-	else {
-		MusicFile.close();
-		MusicFile = SD.open(Filename);
+		MusicFile.read(MusicBuffer, 2*128);								// read first block
+		StartMusic = true;																// indicate the startup phase
+		MBP++;}																						// increase read pointer
+	else {																							// music already playing
+		MusicFile.close();																// close the old file
+		MusicFile = SD.open(Filename);										// open the new one
 		if (!MusicFile) {
 			Serial.println("error opening file");
 			while (true);}
-	  if (!PlayingMusic) {
+	  if (!PlayingMusic) {															// neglect old data if still in the startup phase
 			  MBP = 0;}}}
 
 void StopPlayingMusic() {
@@ -1143,6 +1274,37 @@ void PlayRandomMusic(byte Amount, char* List) {
 
 void PlayNextMusic() {
 	PlayMusic(NextMusicName);}
+
+void PlaySound(char* Filename) {
+	if (!StartSound && !PlayingSound) {
+		SoundFile = SD.open(Filename);
+		if (!SoundFile) {
+			Serial.println("error opening file");
+			while (true);}
+		//Serial.println("File opened");
+		SoundFile.read(SoundBuffer, 2*128);
+		StartSound = true;
+		SBP++;}
+	else {
+		SoundFile.close();
+		SoundFile = SD.open(Filename);
+		if (!SoundFile) {
+			Serial.println("error opening file");
+			while (true);}
+	  if (!PlayingSound) {
+			  SBP = 0;}}}
+
+void StopPlayingSound() {
+	if (StartSound || PlayingSound) {
+		SoundFile.close();
+		StopSound = SBP;}}
+
+void PlayRandomSound(byte Amount, char* List) {
+	Amount = random(Amount);
+	PlaySound(List+Amount*12);}
+
+void PlayNextSound() {
+	PlaySound(NextSoundName);}
 
 void Settings_Enter() {
   WriteUpper("   SETTINGS   ");                     	// Show Test Mode
