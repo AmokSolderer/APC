@@ -1457,7 +1457,7 @@ void PB_Testmode(byte Select) {
 			WriteUpper("PLAYING MUSIC ");
 			AfterMusic = PB_NextTestSound;
 			AppByte2 = 1;
-			PlayMusic((char*) TestSounds[0]);
+			PlayMusic(50, (char*) TestSounds[0]);
 			break;
 		case 72:
 	    AfterMusic = 0;
@@ -1607,6 +1607,6 @@ void PB_NextTestSound() {
   *(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
   *(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
   *(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
-	PlayMusic((char*) TestSounds[AppByte]);}
+	PlayMusic(50, (char*) TestSounds[AppByte]);}
 
 

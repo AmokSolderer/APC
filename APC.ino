@@ -59,17 +59,16 @@ const byte *DispRow1;                                  // determines which patte
 const byte *DispRow2;
 const byte *DispPattern1;
 const byte *DispPattern2;
-byte DisplayUpper[32];                                 // changeable display buffer
+byte DisplayUpper[32];                                // changeable display buffer
 byte DisplayLower[32];
-byte DisplayUpper2[32];                                // second changeable display buffer
+byte DisplayUpper2[32];                               // second changeable display buffer
 byte DisplayLower2[32];
 byte DispCol = 0;                                     // display column being illuminated at the moment
 const bool *LampPattern;                              // determines which lamp pattern is to be shown (for Lamps > 8)
 const bool *LampBuffer;
 byte StrobeLightsTimer = 0;
 bool Lamp[LampMax+1];                                 // changeable lamp status buffer
-byte LEDByteBuf = 0;																	// buffer for the second byte to be send to the LED exp board
-bool LEDFlag;																					// indicates that a second byte needs to be send to the LED exp board
+bool LEDFlag;																					// stores whether Sel5 has to be triggered by the rising or falling edge
 byte LEDCommandBytes = 0;															// number of command bytes to be send to the LED exp board
 byte LEDCount = 0;																		// points to the next command byte to be send to the LED exp board
 byte LEDCommand[20];																	// command bytes to be send to the LED exp board
@@ -94,7 +93,7 @@ bool SolChange = false;                               // Indicates that the stat
 byte SolNumber = 0;                                   // Determines which solenoid is to be changed ...
 bool SolState = false;                                // and what the desired state is
 byte SolDelayed[20];                                  // Queue for waiting solenoid requests
-bool C_BankActive = false;													// A/C relay currently doing C bank?
+bool C_BankActive = false;														// A/C relay currently doing C bank?
 byte A_BankWaitingNo = 0;															// amount of coils in A bank waiting list
 byte A_BankWaiting[10];																// list of waiting A bank coils
 unsigned int A_BankWaitDuration[10];									// duration values for waiting A bank coils
@@ -129,6 +128,7 @@ File MusicFile;																				// file handle for the music file (SD)
 bool AfterMusicPending = false;												// indicates that there's an after music event to be executed
 void (*AfterMusic)() = 0;															// program to execute after music file has ended
 char *NextMusicName;																	// points to the name of the next music file to be played (if any)
+byte MusicPriority = 0;																// stores the priority of the music file currently being played
 byte SBP = 0;																					// Sound Buffer Pointer - next block to write to inside of the music buffer
 byte SoundIRpos = 0;																	// next block of the sound buffer to be read from the interrupt
 byte StopSound = 0;																		// last sound buffer block with sound data
@@ -137,6 +137,7 @@ bool PlayingSound = false;														// StartSound done -> continuously playi
 File SoundFile;																				// file handle for the sound file (SD)
 bool AfterSoundPending = false;												// indicates that there's an after sound event to be executed
 void (*AfterSound)() = 0;															// program to execute after sound file has ended
+byte SoundPriority = 0;																// stores the priority of the sound file currently being played
 bool SoundPrio = false;																// indicates which channel has to be processed first
 char *NextSoundName;
 const char TestSounds[2][15] = {{"Musik.bin"},0};
@@ -1244,67 +1245,101 @@ void StrobeLights(byte State) {
     State = 1;}
   StrobeLightsTimer = ActivateTimer(30, State, StrobeLights);}
 
-void PlayMusic(char* Filename) {
+void PlayMusic(byte Priority, char* Filename) {
 	if (!StartMusic && !PlayingMusic) {									// no music in play at the moment?
 		MusicFile = SD.open(Filename);										// open file
 		if (!MusicFile) {
 			Serial.println("error opening file");
 			while (true);}
-		//Serial.println("File opened");
+		if (Priority > 99) {
+			MusicPriority = Priority -100;}
+		else {
+			MusicPriority = Priority;}
 		MusicFile.read(MusicBuffer, 2*128);								// read first block
 		StartMusic = true;																// indicate the startup phase
 		MBP++;}																						// increase read pointer
 	else {																							// music already playing
-		MusicFile.close();																// close the old file
-		MusicFile = SD.open(Filename);										// open the new one
-		if (!MusicFile) {
-			Serial.println("error opening file");
-			while (true);}
-	  if (!PlayingMusic) {															// neglect old data if still in the startup phase
-			  MBP = 0;}}}
+		if (Priority > 99) {															// Priority > 99 means new prio has to be larger (not equal) to play
+			Priority = Priority - 100;
+			if (Priority > MusicPriority) {
+				MusicPriority = Priority;
+				MusicFile.close();														// close the old file
+				MusicFile = SD.open(Filename);								// open the new one
+				if (!MusicFile) {
+					Serial.println("error opening file");
+					while (true);}
+				if (!PlayingMusic) {													// neglect old data if still in the startup phase
+					MBP = 0;}}}
+		else {
+			if (Priority >= MusicPriority) {
+				MusicPriority = Priority;
+				MusicFile.close();														// close the old file
+				MusicFile = SD.open(Filename);								// open the new one
+				if (!MusicFile) {
+					Serial.println("error opening file");
+					while (true);}
+				if (!PlayingMusic) {													// neglect old data if still in the startup phase
+					MBP = 0;}}}}}
 
 void StopPlayingMusic() {
 	if (StartMusic || PlayingMusic) {
 		MusicFile.close();
 		StopMusic = MBP;}}
 
-void PlayRandomMusic(byte Amount, char* List) {
+void PlayRandomMusic(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
-	PlayMusic(List+Amount*12);}
+	PlayMusic(Priority, List+Amount*12);}
 
-void PlayNextMusic() {
-	PlayMusic(NextMusicName);}
+void PlayNextMusic(byte Priority) {
+	PlayMusic(Priority, NextMusicName);}
 
-void PlaySound(char* Filename) {
-	if (!StartSound && !PlayingSound) {
-		SoundFile = SD.open(Filename);
+void PlaySound(byte Priority, char* Filename) {
+	if (!StartSound && !PlayingSound) {									// no sound in play at the moment?
+		SoundFile = SD.open(Filename);										// open file
 		if (!SoundFile) {
 			Serial.println("error opening file");
 			while (true);}
-		//Serial.println("File opened");
-		SoundFile.read(SoundBuffer, 2*128);
-		StartSound = true;
-		SBP++;}
-	else {
-		SoundFile.close();
-		SoundFile = SD.open(Filename);
-		if (!SoundFile) {
-			Serial.println("error opening file");
-			while (true);}
-	  if (!PlayingSound) {
-			  SBP = 0;}}}
+		if (Priority > 99) {
+			SoundPriority = Priority -100;}
+		else {
+			SoundPriority = Priority;}
+		SoundFile.read(SoundBuffer, 2*128);								// read first block
+		StartSound = true;																// indicate the startup phase
+		SBP++;}																						// increase read pointer
+	else {																							// music already playing
+		if (Priority > 99) {															// Priority > 99 means new prio has to be larger (not equal) to play
+			Priority = Priority - 100;
+			if (Priority > SoundPriority) {
+				SoundPriority = Priority;
+				SoundFile.close();														// close the old file
+				SoundFile = SD.open(Filename);								// open the new one
+				if (!SoundFile) {
+					Serial.println("error opening file");
+					while (true);}
+				if (!PlayingSound) {													// neglect old data if still in the startup phase
+					SBP = 0;}}}
+		else {
+			if (Priority >= SoundPriority) {
+				SoundPriority = Priority;
+				SoundFile.close();														// close the old file
+				SoundFile = SD.open(Filename);								// open the new one
+				if (!SoundFile) {
+					Serial.println("error opening file");
+					while (true);}
+				if (!PlayingSound) {													// neglect old data if still in the startup phase
+					SBP = 0;}}}}}
 
 void StopPlayingSound() {
 	if (StartSound || PlayingSound) {
 		SoundFile.close();
 		StopSound = SBP;}}
 
-void PlayRandomSound(byte Amount, char* List) {
+void PlayRandomSound(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
-	PlaySound(List+Amount*12);}
+	PlaySound(Priority, List+Amount*12);}
 
-void PlayNextSound() {
-	PlaySound(NextSoundName);}
+void PlayNextSound(byte Priority) {
+	PlaySound(Priority, NextSoundName);}
 
 void Settings_Enter() {
   WriteUpper("   SETTINGS   ");                     	// Show Test Mode
@@ -1467,4 +1502,4 @@ void HandleVolumeSetting(bool change) {
 	if (change) {
 		analogWrite(VolumePin,255-APC_settings[Volume]);}	// adjust PWM to volume setting
 	else {
-		PlayMusic("Musik.bin");}}
+		PlayMusic(50, "Musik.bin");}}

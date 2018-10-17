@@ -1589,7 +1589,7 @@ void SoundTest_Enter(byte Switch) {
       WriteLower("            01");
       Switch_Pressed = SoundTest;
       AfterMusic = NextTestSound;
-      PlayMusic((char*) TestSounds[AppByte]);}}
+      PlayMusic(50, (char*) TestSounds[AppByte]);}}
 
 void NextTestSound() {
   if (!digitalRead(UpDown)) {
@@ -1601,7 +1601,7 @@ void NextTestSound() {
   *(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
   *(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
   *(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
-	PlayMusic((char*) TestSounds[AppByte]);}
+	PlayMusic(50, (char*) TestSounds[AppByte]);}
 
 void SoundTest(byte Switch) {
 	if (Switch == 3) {
