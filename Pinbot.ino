@@ -259,7 +259,8 @@ void PB_AttractModeSW(byte Select) {
 			ActA_BankSol(0, 4);}														// reset it
 		if (!Switch[44]) {																// ramp in up state?
 			ActA_BankSol(0, 6);}														// put it down
-		PB_NewBall(2);                                    // release a new ball (2 expected balls in the trunk)
+		AfterSound = PB_GameStart;                      // release a new ball (2 expected balls in the trunk)
+		PlaySound(150, "BS_S06.bin");
 		PB_ChestMode = 1;
 		ActivateSolenoid(0, 23);                        	// enable flipper fingers
 		ActivateSolenoid(0, 24);
@@ -295,6 +296,12 @@ void PB_AttractModeSW(byte Select) {
 			Settings_Enter();}
 		break;
 	}}
+
+void PB_GameStart() {
+	PB_NewBall(2);
+	NextMusicName = "BS_M03.bin";
+	AfterMusic = PlayNextMusic;
+	PlayMusic(50, "BS_M02.bin");}
 
 void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are locked and release them
 	if (Switch[16]) {                                   // for the outhole
@@ -393,6 +400,7 @@ void PB_GiveBall(byte Balls) {
 void PB_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 20) {                                 // shooter lane switch released?
     Switch_Released = DummyProcess;
+    PlaySound(150, "BS_S05.bin");
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
@@ -1099,9 +1107,11 @@ void PB_HandleLock(byte State) {
 						ActivateSolenoid(0, 13);                  // start visor motor
 						PB_SolarValueTimer = ActivateTimer(8000, 0,PB_ReopenVisor);} // 8s to score the solar value
 					else {                                      // multiball not yet running
+						PlaySound(150, "BS_S02.bin");
 						PB_GiveBall(1);}}                         // give second ball
 				else {                                        // both balls in lock
 					if (Multiballs == 1) {                      // multiball not yet running?
+						PlayMusic(50, "BS_M04.bin");
 						Multiballs = 2;                           // start multiball
 						ActivateTimer(1000, 0, PB_ClearOutLock);  // eject first ball
 						PB_ClearOutLock(0);}                      // eject second ball
@@ -1159,6 +1169,7 @@ void PB_AdvancePlanet() {
   if (PB_Planet[Player] > 10) {                       // sun already reached before?
     PB_Planet[Player] = 10;}                          // set it back to the sun
   else {
+  	PlaySound(150, "BS_S07.bin");
     if  (PB_Planet[Player] == 10) {                   //  10 = Sun
       Lamp[51] = true;}																// light special
     else {
@@ -1223,6 +1234,7 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 	else {
 		if (Multiballs == 2) {														// multiball running?
 			Multiballs = 1;																	// turn it off
+			PlaySound(150, "BS_S04.bin");
 			if (AppByte == 2) {															// 2 balls detected in the trunk
 				ActivateTimer(1000, 0, PB_BallEnd);}					// come back and check again
 			else {
@@ -1312,6 +1324,8 @@ void PB_BallEnd2() {
 				else {																		// game end
 					ReleaseSolenoid(23);                  	// disable flipper fingers
 					ReleaseSolenoid(24);
+					StopPlayingMusic();
+					PlaySound(150, "BS_S10.bin");
 					//PB_CheckForLockedBalls(0);
 					Lamp[3] = false;                      	// turn off Ball in Play lamp
 					GameDefinition.AttractMode();}}}}}

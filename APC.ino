@@ -173,7 +173,7 @@ const byte Volume = 4;                             		// Volume of the speaker
 const byte LEDsetting = 5;                            // Setting for the APC_LED_EXP board
 const byte DisplayType = 6;														// which display is used?
 
-char TxTGameSelect[3][15] = {{" BLACK KNIGHT "},{" FIRE   POWER "},{"    PINBOT    "}};
+char TxTGameSelect[3][15] = {{" BLACK KNIGHT "},{" JEDI  KNIGHT "},{"    PINBOT    "}};
 char TxTLEDSelect[3][15] = {{"   NO   LEDS  "},{"PLAYFLD ONLY  "},{"PLAYFLDBACKBOX"}};
 char TxTDisplaySelect[5][15] = {{"4 ALPHA+CREDIT"},{" SYS11 PINBOT "},{" SYS11  F-14  "},{" SYS11  BK2K  "},{" SYS11   TAXI "}};
 struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTGameSelect[0][0],0,2},
@@ -325,6 +325,7 @@ void Init_System2(byte State) {
 	case 0:
 		BK_init();
 		break;
+
 	case 2:
 		PB_init();
 		break;
@@ -477,6 +478,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 		REG_PIOC_SODR = i;}                           		// trigger latch
 
   REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
+  REG_PIOC_CODR = AllSelects + AllData;           		// clear all select signals and the data bus
 
   // Lamps
 
@@ -485,7 +487,6 @@ void TC7_Handler() {                                  // interrupt routine - run
   		LampCol++;                                      // prepare for next lamp column
   		LampColMask = LampColMask<<1;
   		c = 2;                                          // clear buffer
-  		REG_PIOC_CODR = AllSelects + AllData;           // clear all select signals and the data bus
   		if (LampCol == 8){                              // max column reached?
   			LampCol = 0;
   			LampColMask = 2;
@@ -909,7 +910,7 @@ void ShowMessage(byte Seconds) {                      // switch to the second di
   if (Seconds) {                                      // time <> 0?
     if (ShowMessageTimer) {                           // timer already running?
       KillTimer(ShowMessageTimer);}                   // kill it
-    SwitchDisplay(0);                                 // switch to DispRow2
+    SwitchDisplay(0);                                 // switch to DispUpper2 and DispLower2
     ShowMessageTimer =  ActivateTimer(Seconds*1000, 0, ShowMessage);} // and start timer to come back
   else {                                              // no time specified means the routine called itself
     ShowMessageTimer = 0;                             // indicate that timer is not running any more
@@ -1109,7 +1110,7 @@ void ShowNumber(byte Position, unsigned int Number) {
 			*(DisplayLower2+2*Position-14) = DispPattern2[32]; // just show 0
 			*(DisplayLower2+2*Position-13) = DispPattern2[33];}}}
 
-void ShowAllPoints(byte Event) {                  		// just a dummy event to access it via timer
+void ShowAllPoints(byte Dummy) {                  		// just a dummy event to access it via timer
   WriteUpper("              ");                   		// erase display
   WriteLower("              ");
   for (i=1; i<=NoPlayers; i++) {                  		// display the points of all active players
@@ -1219,7 +1220,7 @@ void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3
   DisplayScore(4, Number3);
   while (1) {}}
 
-void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns
+void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being zero
   IntBuffer = (PatPointer+Step)->Duration;            // buffer the duration for the current pattern
   if (StrobeLightsTimer) {
     LampBuffer = ((PatPointer+Step)->Pattern)-8;}     // show the pattern
@@ -1246,40 +1247,41 @@ void StrobeLights(byte State) {
   StrobeLightsTimer = ActivateTimer(30, State, StrobeLights);}
 
 void PlayMusic(byte Priority, char* Filename) {
-	if (!StartMusic && !PlayingMusic) {									// no music in play at the moment?
-		MusicFile = SD.open(Filename);										// open file
-		if (!MusicFile) {
-			Serial.println("error opening file");
-			while (true);}
-		if (Priority > 99) {
-			MusicPriority = Priority -100;}
-		else {
-			MusicPriority = Priority;}
-		MusicFile.read(MusicBuffer, 2*128);								// read first block
-		StartMusic = true;																// indicate the startup phase
-		MBP++;}																						// increase read pointer
-	else {																							// music already playing
-		if (Priority > 99) {															// Priority > 99 means new prio has to be larger (not equal) to play
-			Priority = Priority - 100;
-			if (Priority > MusicPriority) {
-				MusicPriority = Priority;
-				MusicFile.close();														// close the old file
-				MusicFile = SD.open(Filename);								// open the new one
-				if (!MusicFile) {
-					Serial.println("error opening file");
-					while (true);}
-				if (!PlayingMusic) {													// neglect old data if still in the startup phase
-					MBP = 0;}}}
-		else {
-			if (Priority >= MusicPriority) {
-				MusicPriority = Priority;
-				MusicFile.close();														// close the old file
-				MusicFile = SD.open(Filename);								// open the new one
-				if (!MusicFile) {
-					Serial.println("error opening file");
-					while (true);}
-				if (!PlayingMusic) {													// neglect old data if still in the startup phase
-					MBP = 0;}}}}}
+	if (!StartMusic) {
+		if (!PlayingMusic) {															// no music in play at the moment?
+			MusicFile = SD.open(Filename);									// open file
+			if (!MusicFile) {
+				Serial.println("error opening file");
+				while (true);}
+			if (Priority > 99) {
+				MusicPriority = Priority -100;}
+			else {
+				MusicPriority = Priority;}
+			MusicFile.read(MusicBuffer, 2*128);							// read first block
+			StartMusic = true;															// indicate the startup phase
+			MBP++;}																					// increase read pointer
+		else {																						// music already playing
+			if (Priority > 99) {														// Priority > 99 means new prio has to be larger (not equal) to play
+				Priority = Priority - 100;
+				if (Priority > MusicPriority) {
+					MusicPriority = Priority;
+					MusicFile.close();													// close the old file
+					MusicFile = SD.open(Filename);							// open the new one
+					if (!MusicFile) {
+						Serial.println("error opening file");
+						while (true);}
+					if (!PlayingMusic) {												// neglect old data if still in the startup phase
+						MBP = 0;}}}
+			else {
+				if (Priority >= MusicPriority) {
+					MusicPriority = Priority;
+					MusicFile.close();													// close the old file
+					MusicFile = SD.open(Filename);							// open the new one
+					if (!MusicFile) {
+						Serial.println("error opening file");
+						while (true);}
+					if (!PlayingMusic) {												// neglect old data if still in the startup phase
+						MBP = 0;}}}}}}
 
 void StopPlayingMusic() {
 	if (StartMusic || PlayingMusic) {
@@ -1290,44 +1292,45 @@ void PlayRandomMusic(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
 	PlayMusic(Priority, List+Amount*12);}
 
-void PlayNextMusic(byte Priority) {
-	PlayMusic(Priority, NextMusicName);}
+void PlayNextMusic() {
+	PlayMusic(50, NextMusicName);}
 
 void PlaySound(byte Priority, char* Filename) {
-	if (!StartSound && !PlayingSound) {									// no sound in play at the moment?
-		SoundFile = SD.open(Filename);										// open file
-		if (!SoundFile) {
-			Serial.println("error opening file");
-			while (true);}
-		if (Priority > 99) {
-			SoundPriority = Priority -100;}
-		else {
-			SoundPriority = Priority;}
-		SoundFile.read(SoundBuffer, 2*128);								// read first block
-		StartSound = true;																// indicate the startup phase
-		SBP++;}																						// increase read pointer
-	else {																							// music already playing
-		if (Priority > 99) {															// Priority > 99 means new prio has to be larger (not equal) to play
-			Priority = Priority - 100;
-			if (Priority > SoundPriority) {
-				SoundPriority = Priority;
-				SoundFile.close();														// close the old file
-				SoundFile = SD.open(Filename);								// open the new one
-				if (!SoundFile) {
-					Serial.println("error opening file");
-					while (true);}
-				if (!PlayingSound) {													// neglect old data if still in the startup phase
-					SBP = 0;}}}
-		else {
-			if (Priority >= SoundPriority) {
-				SoundPriority = Priority;
-				SoundFile.close();														// close the old file
-				SoundFile = SD.open(Filename);								// open the new one
-				if (!SoundFile) {
-					Serial.println("error opening file");
-					while (true);}
-				if (!PlayingSound) {													// neglect old data if still in the startup phase
-					SBP = 0;}}}}}
+	if (!StartSound) {
+		if (!PlayingSound) {															// no sound in play at the moment?
+			SoundFile = SD.open(Filename);									// open file
+			if (!SoundFile) {
+				Serial.println("error opening file");
+				while (true);}
+			if (Priority > 99) {
+				SoundPriority = Priority -100;}
+			else {
+				SoundPriority = Priority;}
+			SoundFile.read(SoundBuffer, 2*128);							// read first block
+			StartSound = true;															// indicate the startup phase
+			SBP++;}																					// increase read pointer
+		else {																						// music already playing
+			if (Priority > 99) {														// Priority > 99 means new prio has to be larger (not equal) to play
+				Priority = Priority - 100;
+				if (Priority > SoundPriority) {
+					SoundPriority = Priority;
+					SoundFile.close();													// close the old file
+					SoundFile = SD.open(Filename);							// open the new one
+					if (!SoundFile) {
+						Serial.println("error opening file");
+						while (true);}
+					if (!PlayingSound) {												// neglect old data if still in the startup phase
+						SBP = 0;}}}
+			else {
+				if (Priority >= SoundPriority) {
+					SoundPriority = Priority;
+					SoundFile.close();													// close the old file
+					SoundFile = SD.open(Filename);							// open the new one
+					if (!SoundFile) {
+						Serial.println("error opening file");
+						while (true);}
+					if (!PlayingSound) {												// neglect old data if still in the startup phase
+						SBP = 0;}}}}}}
 
 void StopPlayingSound() {
 	if (StartSound || PlayingSound) {
@@ -1338,8 +1341,8 @@ void PlayRandomSound(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
 	PlaySound(Priority, List+Amount*12);}
 
-void PlayNextSound(byte Priority) {
-	PlaySound(Priority, NextSoundName);}
+void PlayNextSound() {
+	PlaySound(50, NextSoundName);}
 
 void Settings_Enter() {
   WriteUpper("   SETTINGS   ");                     	// Show Test Mode
