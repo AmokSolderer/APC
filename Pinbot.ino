@@ -14,6 +14,7 @@ byte PB_SolarValueTimer = 0;                          // number of the timer for
 byte PB_DropTimer = 0;																// number of the drop target timer
 byte PB_ChestLightsTimer = 0;													// number of the timer controlling the chest lamp sequencing
 byte PB_DropLightsTimer = 0;                          // number of the timer controlling the drop target light sequencing
+byte PB_LampSweepActive = 0;                          // determines whether the backbox lamp sweep is active
 byte PB_SkillMultiplier = 0;													// Multiplier for the skill shot value
 byte PB_DropBlinkLamp = 0;														// number of the lamp currently blinking
 byte PB_LitChestLamps = 0;														// amount of lit chest lamps
@@ -24,13 +25,14 @@ byte PB_ExBallsLit[5];                                // no of lanes lit for ext
 byte PB_EjectMode[5];                                 // current mode of the eject hole
 byte PB_EnergyValue[5];                              	// energy value for current player (value = byte*2000)
 byte PB_LampsToLight = 2;															// number of lamps to light when chest is hit
-byte *PB_FlashSequence;                               // pointer to the current flash lamp sequence
 byte *PB_ChestPatterns;                               // pointer to the current chest lamp pattern
 uint16_t PB_ChestPatternCounter = 0;                  // counter for the current chest lamp pattern to be shown
 
-const unsigned int PB_SolTimes[32] = {50,20,30,70,50,200,30,30,100,100,999,999,0,0,100,100,50,100,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
+const unsigned int PB_SolTimes[32] = {50,20,30,70,50,200,30,30,0,0,0,0,0,0,100,100,50,0,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
 const byte PB_OpenVisorSeq[45] = {30,2,30,2,30,2,5,3,5,7,5,8,5,5,5,4,5,2,2,5,3,5,7,5,8,5,5,5,4,5,2,2,5,3,5,7,5,8,5,5,5,4,10,2,0};
+const byte PB_MultiballSeq[31] = {5,16,5,15,5,2,10,5,5,2,5,15,10,16,5,15,5,5,5,2,5,15,10,16,5,15,5,2,0,5,0};
+const byte PB_MultiballSeq2[29] = {10,2,20,5,10,2,10,15,20,16,10,15,10,2,20,5,10,2,10,15,20,16,10,15,10,2,10,5,0};
 const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 const byte PB_ExBallLamps[4] = {49, 50, 58, 57};                          
@@ -151,8 +153,10 @@ void PB_init() {
 	GameDefinition = PB_GameDefinition;}								// read the game specific settings and highscores
 
 void PB_AttractMode() {
+  AfterMusic = 0;
 	DispRow1 = DisplayUpper;
 	DispRow2 = DisplayLower;
+  digitalWrite(VolumePin,HIGH);
 	Switch_Pressed = PB_AttractModeSW;
 	Switch_Released = DummyProcess;
   AddBlinkLamp(1, 150);                               // blink Game Over lamp
@@ -230,6 +234,10 @@ void PB_AttractModeSW(byte Select) {
 	case 3:																							// credit button
 		RemoveBlinkLamp(1);																// stop the blinking of the game over lamp
     KillAllTimers();
+    if (APC_settings[Volume]) {                       // system set to digital volume control?
+      analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+    else {
+      digitalWrite(VolumePin,HIGH);}                  // turn off the digital volume control
     // StrobeLightsTimer = 0;
     ByteBuffer3 = 0;
 		for (i=0; i< LampMax+1; i++) {
@@ -259,7 +267,8 @@ void PB_AttractModeSW(byte Select) {
 			ActA_BankSol(0, 4);}														// reset it
 		if (!Switch[44]) {																// ramp in up state?
 			ActA_BankSol(0, 6);}														// put it down
-		AfterSound = PB_GameStart;                      // release a new ball (2 expected balls in the trunk)
+    ActivateSolenoid(0, 12);                          // turn off playfield GI
+		AfterSound = PB_GameStart;                        // release a new ball (2 expected balls in the trunk)
 		PlaySound(150, "BS_S06.bin");
 		PB_ChestMode = 1;
 		ActivateSolenoid(0, 23);                        	// enable flipper fingers
@@ -298,7 +307,9 @@ void PB_AttractModeSW(byte Select) {
 	}}
 
 void PB_GameStart() {
+  AfterSound = 0;
 	PB_NewBall(2);
+  ReleaseSolenoid(12);                                // turn playfield GI back on
 	NextMusicName = "BS_M03.bin";
 	AfterMusic = PlayNextMusic;
 	PlayMusic(50, "BS_M02.bin");}
@@ -400,7 +411,7 @@ void PB_GiveBall(byte Balls) {
 void PB_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 20) {                                 // shooter lane switch released?
     Switch_Released = DummyProcess;
-    PlaySound(150, "BS_S05.bin");
+    //PlaySound(150, "BS_S05.bin");
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
@@ -630,7 +641,7 @@ void PB_GameMain(byte Switch) {
     Serial.print("PB_HandleDropTargets = ");
     Serial.println((unsigned int)&PB_HandleDropTargets);
     Serial.print("PB_FlSeqPlayer = ");
-    Serial.println((unsigned int)&PB_FlSeqPlayer);
+    Serial.println((unsigned int)&FlSeqPlayer);
     Serial.print("PB_ReopenVisor = ");
     Serial.println((unsigned int)&PB_ReopenVisor);
     Serial.print("PB_ClearOutLock = ");
@@ -699,10 +710,11 @@ void PB_GameMain(byte Switch) {
     ActivateTimer(200, 0, PB_ClearOuthole);           // check again in 200ms
     break;
   case 19:                                            // advance planet
-    if (Lamp[18]) {
+    if (Lamp[51]) {                                   // special lit?
+      Lamp[51] = false;
+      PB_AddExBall();}
+    if (Lamp[18]) {                                   // advance planet lit?
       Lamp[18] = false;
-      if (Lamp[51]) {																	// special lit?
-      	PB_AddExBall();}
       PB_AddBonus(1);
       PB_AdvancePlanet();}
     break;
@@ -783,7 +795,7 @@ void PB_GameMain(byte Switch) {
         else {
           RemoveBlinkLamp(PB_EjectMode[Player] + 8);
           Lamp[PB_EjectMode[Player] + 8] = true;
-          PB_PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
+          PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
           Points[Player] += Multiballs * (PB_EjectMode[Player] - 4) * 25000;
           ShowPoints(Player);
           PB_EjectMode[Player] = PB_EjectMode[Player] - 4;
@@ -958,7 +970,7 @@ void PB_OpenVisorProc() {                   				// measures to open the visor
   PB_LitChestLamps = 0;                             // reset the counter
   PB_ResetPlayersChestLamps(Player);                // reset the stored lamps
   PB_ClearChest();                                  // turn off chest lamps
-  PB_PlayFlashSequence((byte*) PB_OpenVisorSeq);    // play flasher sequence
+  PlayFlashSequence((byte*) PB_OpenVisorSeq);    // play flasher sequence
   PatPointer = PB_OpenVisorPat;                     // set the pointer to the current series
   FlowRepeat = 1;                                   // set the repetitions
   PB_ChestPatterns = (byte*)PB_WalkingLines;
@@ -1066,22 +1078,7 @@ void PB_CountLitChestLamps() {												// count the lit chest lamps for the c
 void PB_ResetPlayersChestLamps(byte Player) {         // Reset the chest lamps for this player
   for (byte c=0; c<5; c++) {
     PB_ChestLamp[Player-1][c] = 0;}}
-
-void PB_PlayFlashSequence(byte* Sequence) {           // prepare for playing a flasher sequence
-  ActivateSolenoid(0, 14);                            // switch A/C relay to C
-  C_BankActive = true;                                // indicate that the C bank is active
-  PB_FlashSequence = Sequence;                        // set the PB_FlashSequence pointer to the current sequence
-  ActivateTimer(50, 0, PB_FlSeqPlayer);}              // start the sequence in 50ms when the A/C relay had some time to switch
-
-void PB_FlSeqPlayer(byte Step) {                      // play flasher sequence
-  if (PB_FlashSequence[Step]) {                       // if the next list entry is not zero
-    ActivateSolenoid(*(GameDefinition.SolTimes+PB_FlashSequence[Step+1]+23), PB_FlashSequence[Step+1]); // Activate the flasher with its standard activate time
-    ActivateTimer(PB_FlashSequence[Step]*10, Step+2, PB_FlSeqPlayer);} // increase the step counter and play the next list entry in duration*10ms
-  else {                                              // if the next list entry is zero
-    PB_FlashSequence = 0;                             // set the list pointer to zero
-    ReleaseSolenoid(14);                              // release the A/C relay
-    C_BankActive = false;}}                           // and indicate the C bank as not active
-    
+  
 void PB_HandleLock(byte State) {
 	if (!State) {                                       // routine didn't call itself
 		PB_IgnoreLock = false;
@@ -1111,12 +1108,59 @@ void PB_HandleLock(byte State) {
 						PB_GiveBall(1);}}                         // give second ball
 				else {                                        // both balls in lock
 					if (Multiballs == 1) {                      // multiball not yet running?
-						PlayMusic(50, "BS_M04.bin");
-						Multiballs = 2;                           // start multiball
-						ActivateTimer(1000, 0, PB_ClearOutLock);  // eject first ball
-						PB_ClearOutLock(0);}                      // eject second ball
+            ActivateSolenoid(0, 11);                  // turn off GI
+            ActivateSolenoid(0, 12);
+            //ActivateSolenoid(0, 14);
+            ActivateSolenoid(0, 9);
+            ActivateSolenoid(0, 10);
+            ActivateSolenoid(0, 18);
+            LampPattern = NoLamps;                    // Turn off all lamps
+            PB_LampSweepActive = 2;
+            PB_LampSweep(4);
+            AfterMusic = PB_Multiball;
+						PlayMusic(51, "BS_S03.bin");
+						Multiballs = 2;}                           // start multiball
 					else {
 						PB_ClearOutLock(1);}}}}}}                 // eject 1 ball and close visor
+
+void PB_Multiball() {
+  AfterMusic = PlayNextMusic;
+  PlayMusic(50, "BS_M04.bin");
+  ReleaseSolenoid(9);
+  ReleaseSolenoid(10);
+  ReleaseSolenoid(18);
+  ReleaseSolenoid(11);
+  ReleaseSolenoid(12);
+  //ReleaseSolenoid(14);
+  LampPattern = AllLamps;
+  PlayFlashSequence((byte*) PB_MultiballSeq);
+  ActivateTimer(1000, 0, PB_Multiball2); 
+  PB_ClearOutLock(0);}                                // eject first ball
+
+void PB_Multiball2(byte Dummy) {
+  ActivateSolenoid(0, 15);
+  ActivateTimer(50, 0,PB_Multiball3);}
+
+void PB_Multiball3(byte Dummy) {
+  LampPattern = Lamp;
+  PlayFlashSequence((byte*) PB_MultiballSeq2);
+  PB_ClearOutLock(0);}                                // eject second ball
+  
+void PB_LampSweep(byte Step) {
+  Lamp[Step] = false;
+  if (PB_LampSweepActive) {
+    if (PB_LampSweepActive > 1) {
+      Step++;
+      if (Step > 8) {
+        Step = 8;
+        PB_LampSweepActive = 1;}}
+    else {
+      Step--;
+      if (Step < 4) {
+        Step = 4;
+        PB_LampSweepActive = 2;}}
+    Lamp[Step] = true;
+    ActivateTimer(100, Step, PB_LampSweep);}}
 
 void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar value ramp was not hit in time
   PB_SolarValueTimer = 0;
@@ -1234,7 +1278,8 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 	else {
 		if (Multiballs == 2) {														// multiball running?
 			Multiballs = 1;																	// turn it off
-			PlaySound(150, "BS_S04.bin");
+      PB_LampSweepActive = 0;
+			PlayMusic(50, "BS_S04.bin");
 			if (AppByte == 2) {															// 2 balls detected in the trunk
 				ActivateTimer(1000, 0, PB_BallEnd);}					// come back and check again
 			else {
@@ -1324,11 +1369,12 @@ void PB_BallEnd2() {
 				else {																		// game end
 					ReleaseSolenoid(23);                  	// disable flipper fingers
 					ReleaseSolenoid(24);
-					StopPlayingMusic();
-					PlaySound(150, "BS_S10.bin");
+          LampPattern = NoLamps;                      // Turn off all lamps
+          AfterMusic = GameDefinition.AttractMode;
+					PlayMusic(50, "BS_S10.bin");
 					//PB_CheckForLockedBalls(0);
-					Lamp[3] = false;                      	// turn off Ball in Play lamp
-					GameDefinition.AttractMode();}}}}}
+					Lamp[3] = false;}}}}}                       // turn off Ball in Play lamp
+					
 
 void PB_ResetHighScores(bool change) {                // delete the high scores file
   if (change) {                                       // if the start button has been pressed
@@ -1571,7 +1617,7 @@ void PB_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 		*(DisplayLower+27) = DispPattern2[33 + 2 * ByteBuffer2];
 		*(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer];
 		*(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer];
-    if (Solenoid == 13 || Solenoid == 14) {						// is it the visor motor or the AC relay?
+    if (Solenoid == 11 || Solenoid == 12 || Solenoid == 13 || Solenoid == 14 || Solenoid == 9 || Solenoid == 10 || Solenoid == 18) {	// is it a relay or a #1251 flasher?
       ActivateSolenoid(999, Solenoid);}								// then the duration must be specified
     else {
 		  ActivateSolenoid(0, Solenoid);}                 // activate the solenoid

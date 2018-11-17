@@ -98,6 +98,7 @@ byte A_BankWaitingNo = 0;															// amount of coils in A bank waiting lis
 byte A_BankWaiting[10];																// list of waiting A bank coils
 unsigned int A_BankWaitDuration[10];									// duration values for waiting A bank coils
 unsigned int DurDelayed[20];                          // duration values for waiting solenoid requests
+byte *FlashSequence;                                  // pointer to the current flash lamp sequence
 byte SettingsRepeatTimer = 0;													// numberof the timer of the key repeat function in the settings function
 byte BlinkScoreTimer = 0;                             // number of the timer for the score blinking
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
@@ -345,20 +346,17 @@ void Init_System2(byte State) {
 		File Settings = SD.open(GameDefinition.GameSettingsFileName);
 		if (!Settings) {
 			WriteLower("NO GAMESETTNGS");
-     if (!State) {                                   // only initialize the settings in the boot up run
+     if (!State) {                                    // only initialize the settings in the boot up run
 			  for(i=0;i<64;i++) {
 				  game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
 		else {
 			Settings.read(&game_settings, sizeof game_settings);}
 		Settings.close();}
 	else {
-    if (!State) {                                    // only initialize the settings in the boot up run
+    if (!State) {                                     // only initialize the settings in the boot up run
 		  for(i=0;i<64;i++) {
 			  game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
-	if (APC_settings[Volume]) {													// system set to digital volume control?
-		analogWrite(VolumePin,255-APC_settings[Volume]);}	// adjust PWM to volume setting
-	else {
-		digitalWrite(VolumePin,HIGH);}										// turn off the digital volume control
+	digitalWrite(VolumePin,HIGH);										    // turn off the digital volume control
 	if (State) {
 		ActivateTimer(2000, 0, EnterAttractMode);}
 	else {
@@ -979,8 +977,6 @@ void ActA_BankSol(unsigned int Duration, byte Solenoid) {
 			ErrorHandler(20,0,Solenoid);}         					// show error 20
 		A_BankWaitDuration[i] = Duration;									// store duration value
 		A_BankWaiting[i] = Solenoid;                   		// insert the solenoid number
-		if (!A_BankWaitingNo) {														// the first waiting solenoid?
-			ActivateTimer(500, 0, ActA_BankLater);}					// then start timer
 		A_BankWaitingNo++;}}															// increase number of waiting coils
 
 void ActA_BankLater(byte Dummy) {
@@ -1009,7 +1005,9 @@ void ActC_BankSol2(byte Solenoid) {
 
 void PB_ResetAC_Relay(byte Dummy) {
 	C_BankActive = false;
-	ReleaseSolenoid(14);}
+	ReleaseSolenoid(14);
+  if (A_BankWaitingNo) {
+	  ActivateTimer(100, 0, ActA_BankLater);}}
 
 void ShowPoints(byte Player) {                    		// display the points of the selected player
   DisplayScore(Player, Points[Player]);}
@@ -1237,6 +1235,28 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
       return;}}                                       // otherwise just quit
   ByteBuffer3 = ActivateTimer(IntBuffer, Step, ShowLampPatterns);} // come back after the given duration
 
+void PlayFlashSequence(byte* Sequence) {              // prepare for playing a flasher sequence
+  ActivateSolenoid(0, 14);                            // switch A/C relay to C
+  C_BankActive = true;                                // indicate that the C bank is active
+  FlashSequence = Sequence;                           // set the FlashSequence pointer to the current sequence
+  ActivateTimer(50, 0, FlSeqPlayer);}                 // start the sequence in 50ms when the A/C relay had some time to switch
+
+void FlSeqPlayer(byte Step) {                         // play flasher sequence
+  if (FlashSequence[Step]) {                          // if the next list entry is not zero
+    byte Duration;
+    if (FlashSequence[Step+1] < 9) {
+      Duration = *(GameDefinition.SolTimes+FlashSequence[Step+1]+23);}
+    else {
+      Duration = *(GameDefinition.SolTimes+FlashSequence[Step+1]);}
+    ActivateSolenoid(Duration, FlashSequence[Step+1]); // Activate the flasher with its standard activate time
+    ActivateTimer(FlashSequence[Step]*10, Step+2, FlSeqPlayer);} // increase the step counter and play the next list entry in duration*10ms
+  else {                                              // if the next list entry is zero
+    FlashSequence = 0;                                // set the list pointer to zero
+    ReleaseSolenoid(14);                              // release the A/C relay
+    C_BankActive = false;                             // and indicate the C bank as not active
+  if (A_BankWaitingNo) {                              // any pending A bank solenoids?
+    ActivateTimer(100, 0, ActA_BankLater);}}}         // handle them when the relay has switched back to the A bank
+    
 void StrobeLights(byte State) {
   if (State) {
     LampPattern = LampBuffer;                         // show the pattern

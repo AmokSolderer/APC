@@ -200,6 +200,7 @@ void BK_init() {
 void BK_AttractMode() {                               // Attract Mode
   DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
+  digitalWrite(VolumePin,HIGH);
   LampPattern = NoLamps;
   Switch_Pressed = AttractModeSW;
   Switch_Released = DummyProcess;
@@ -315,6 +316,10 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 			RemoveBlinkLamp(6);
 			Switch_Pressed = DummyProcess;                  // Switches do nothing
 			KillAllTimers();                                // stop the lamp cycling
+    if (APC_settings[Volume]) {                         // system set to digital volume control?
+      analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+    else {
+      digitalWrite(VolumePin,HIGH);}                    // turn off the digital volume control
 			for (i=0; i< LampMax+1; i++) {
 				Lamp[i] = false;}
 			LampPattern = Lamp;
