@@ -218,10 +218,14 @@ void PB_AttractDisplayCycle(byte Event) {
     ActivateTimer(4000, Event, PB_AttractDisplayCycle);}
 
 void PB_AttractScroll(byte Dummy) {
+  UNUSED(Dummy);
+
   WriteUpper2("PINBOT        ");
   AddScrollUpper(1);}
 
 void PB_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
+  UNUSED(Event);
+
   PatPointer = PB_AttractFlow[AppByte2].FlowPat;      // set the pointer to the current series
   FlowRepeat = PB_AttractFlow[AppByte2].Repeat;       // set the repetitions
   AppByte2++;                                         // increase counter
@@ -315,6 +319,8 @@ void PB_GameStart() {
 	PlayMusic(50, "BS_M02.bin");}
 
 void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are locked and release them
+  UNUSED(Dummy);
+
 	if (Switch[16]) {                                   // for the outhole
 		ActA_BankSol(0, 1);}
 	if (Switch[38]) {                                   // for the single eject hole
@@ -541,12 +547,18 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
       			BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}}}}}} // come again in 1s if no switch is activated
 
 void PB_OpenVisor(byte Dummy) {
+  UNUSED(Dummy);
+
 	PB_OpenVisorFlag = true;}																	// set flag to stop visor motor when open
 
 void PB_CloseVisor(byte Dummy) {
+  UNUSED(Dummy);
+
 	PB_CloseVisorFlag = true;}																	// set flag to stop visor motor when closed
 
 void PB_ClearOuthole(byte Event) {
+  UNUSED(Event);
+
   if (Switch[16]) {                                   // outhole switch still active?
     if (!BlockOuthole) {															// outhole blocked?
       BlockOuthole = true;														// block outhole until this ball has been processed
@@ -958,6 +970,8 @@ void PB_ClearEjectHole(byte Solenoid) {                   // activate solenoid a
   ActA_BankSol(0, Solenoid);}
 
 void PB_StartChestPattern(byte Dummy) {
+  UNUSED(Dummy);
+
   PB_ChestPatternCounter = 0;
   LampPattern = Lamp;
   PB_ChestLightHandler(0);}
@@ -1138,10 +1152,14 @@ void PB_Multiball() {
   PB_ClearOutLock(0);}                                // eject first ball
 
 void PB_Multiball2(byte Dummy) {
+  UNUSED(Dummy);
+
   ActivateSolenoid(0, 15);
   ActivateTimer(50, 0,PB_Multiball3);}
 
 void PB_Multiball3(byte Dummy) {
+  UNUSED(Dummy);
+
   LampPattern = Lamp;
   PlayFlashSequence((byte*) PB_MultiballSeq2);
   PB_ClearOutLock(0);}                                // eject second ball
@@ -1163,6 +1181,8 @@ void PB_LampSweep(byte Step) {
     ActivateTimer(100, Step, PB_LampSweep);}}
 
 void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar value ramp was not hit in time
+  UNUSED(Dummy);
+
   PB_SolarValueTimer = 0;
   RemoveBlinkLamp(35);
   PB_ClearOutLock(0);}
@@ -1223,6 +1243,8 @@ void PB_AdvancePlanet() {
       Lamp[PB_Planet[Player]+18] = true;}}}
 
 void PB_ResetDropTargets(byte Dummy) {
+  UNUSED(Dummy);
+
 	RemoveBlinkLamp(17);																// stop drop target timer lamp
   PB_DropBlinkLamp = 41;
   PB_DropTimer = 0;
@@ -1230,6 +1252,8 @@ void PB_ResetDropTargets(byte Dummy) {
 	ActA_BankSol(0, 4);}																// reset drop targets
 
 void PB_EnergyOff(byte Dummy) {
+  UNUSED(Dummy);
+
 	if (PB_EnergyActive) {
 		RemoveBlinkLamp(34);															// stop blinking of energy lamp
 		PB_EnergyActive = false;													// energy value off
@@ -1668,5 +1692,3 @@ void PB_NextTestSound() {
   *(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
   *(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
 	PlayMusic(50, (char*) TestSounds[AppByte]);}
-
-
