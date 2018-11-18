@@ -55,7 +55,7 @@ byte SwEvents[2];                                     // contains the number of 
 bool Switch[SwMax+3];                                 // stores the present status of all switches (Advance is 72, HighScoreRest is 71)
 bool SwHistory[SwMax+3];                              // stores the previous switch status
 int SwDrv = 0;                                        // switch driver being accessed at the moment
-const byte *DispRow1;                                  // determines which patterns are to be shown (2 lines with 16 chars each)
+const byte *DispRow1;                                 // determines which patterns are to be shown (2 lines with 16 chars each)
 const byte *DispRow2;
 const byte *DispPattern1;
 const byte *DispPattern2;
@@ -99,7 +99,7 @@ byte A_BankWaiting[10];																// list of waiting A bank coils
 unsigned int A_BankWaitDuration[10];									// duration values for waiting A bank coils
 unsigned int DurDelayed[20];                          // duration values for waiting solenoid requests
 byte *FlashSequence;                                  // pointer to the current flash lamp sequence
-byte SettingsRepeatTimer = 0;													// numberof the timer of the key repeat function in the settings function
+byte SettingsRepeatTimer = 0;													// number of the timer of the key repeat function in the settings function
 byte BlinkScoreTimer = 0;                             // number of the timer for the score blinking
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte CheckReleaseTimer = 0;														// number of the timer for the ball release check
@@ -149,7 +149,7 @@ void HandleBoolSetting(bool change);
 void RestoreDefaults(bool change);
 void HandleVolumeSetting(bool change);
 
-struct SettingTopic {
+struct SettingTopic {																	// one topic of a list of settings
 	char Text[15];																			// display text
 	void (*EventPointer)(bool);													// Pointer to the subroutine to process this topic
 	char *TxTpointer;																		// if text setting -> pointer to a text array
@@ -177,7 +177,7 @@ const byte DisplayType = 6;														// which display is used?
 char TxTGameSelect[3][15] = {{" BLACK KNIGHT "},{" JEDI  KNIGHT "},{"    PINBOT    "}};
 char TxTLEDSelect[3][15] = {{"   NO   LEDS  "},{"PLAYFLD ONLY  "},{"PLAYFLDBACKBOX"}};
 char TxTDisplaySelect[5][15] = {{"4 ALPHA+CREDIT"},{" SYS11 PINBOT "},{" SYS11  F-14  "},{" SYS11  BK2K  "},{" SYS11   TAXI "}};
-struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTGameSelect[0][0],0,2},
+struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTGameSelect[0][0],0,2}, // the APC settings menu
       {" NO OF  BALLS ",HandleNumSetting,0,1,5},
 		  {"  FREE  GAME  ",HandleBoolSetting,0,0,0},
 		  {"  DIM  INSERTS",HandleBoolSetting,0,0,0},
@@ -187,7 +187,7 @@ struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTG
 		  {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		  {"  EXIT SETTNGS",ExitSettings,0,0,0},
       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
-struct GameDef {
+struct GameDef {																			// use this structure to define a game
 	struct SettingTopic *GameSettingsList;							// points to the settings definition of the current game
 	byte *GameDefaultsPointer;													// points to the default settings of the selected game
 	char *GameSettingsFileName;													// points to the name of the settings file for the selected game
@@ -196,8 +196,8 @@ struct GameDef {
 	const unsigned int *SolTimes;												// Default activation times of solenoids
 };
 
-struct GameDef GameDefinition;
-struct SettingTopic *SettingsList;
+struct GameDef GameDefinition;												// invoke a game definition structure
+struct SettingTopic *SettingsList;										// points to the current settings menu list
 
 															// game variables
 
@@ -856,22 +856,22 @@ void ScrollUpper(byte Step) {													// call with Step = 1 and the text bei
 		ActivateTimer(50, Step, ScrollUpper);}}						// come back
 
 void AddScrollUpper(byte Step) {											// call with Step = 1 and the text being in DisplayUpper2
-	if (Step > 8) {
-		for (i=0; i<2*(Step-9);i++) {
-			DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];}
-		DisplayUpper[14] = DisplayUpper[18];
+	if (Step > 8) {																			// scroll into the left display?
+		for (i=0; i<2*(Step-9);i++) {											// for all characters in the left display that have to be scrolled
+			DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];}	// scroll them
+		DisplayUpper[14] = DisplayUpper[18];							// get the leftmost character of the right display
 		DisplayUpper[15] = DisplayUpper[19];
-		for (i=0; i<12; i++) {
+		for (i=0; i<12; i++) {														// scroll the right display by 6 characters
 			DisplayUpper[18+i] = DisplayUpper[20+i];}}
-	else {
+	else {																							// scroll only the right display
 		for (i=0; i<2*(Step-1); i++) {
 			DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];}}
-	DisplayUpper[30] = DisplayUpper2[2*Step];
+	DisplayUpper[30] = DisplayUpper2[2*Step];						// fill the rightmost character of the right display
 	DisplayUpper[31] = DisplayUpper2[2*Step+1];
 	Step++;
   if (Step == 8) {																		// skip position 9 (belongs to the credit display
     Step++;}
-  if (!DisplayUpper[32-(2*Step)] && !DisplayUpper[33-(2*Step)] && Step < 14) {
+  if (!DisplayUpper[32-(2*Step)] && !DisplayUpper[33-(2*Step)] && Step < 14) {	// stop when reaching anything else but blanks or after 14 characters
   	ActivateTimer(50, Step, AddScrollUpper);}}
 
 void ScrollLower(byte Step) {													// call with Step = 1 and the text being in DisplayLower2
@@ -1194,11 +1194,11 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
               BlinkTimers--;}                         // decrease the number of blink timers
             break;}}                                  // and end the search        
         y++;                                          // increase the counter for the list of this blink timer
-        if (y > 65) {                                 // max 64 lamps existing (starting from 1)
+        if (y > 64) {                                 // max 64 lamps existing (starting from 1)
           ErrorHandler(7,BlinkTimer[x],LampNo);}}}    // show error 7
     x++;                                              // increase the counter for the list of active blink timers
-    if (x > 65) {                                     // max 64 blink timers possible (starting from 1)
-      ErrorHandler(8,BlinkTimer[x],LampNo);}}}        // show error 8
+    if (x > 64) {                                     // max 64 blink timers possible (starting from 1)
+      ErrorHandler(8,0,LampNo);}}}        						// show error 8
      
 void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3) {
   
@@ -1315,6 +1315,12 @@ void PlayRandomMusic(byte Priority, byte Amount, char* List) {
 void PlayNextMusic() {
 	PlayMusic(50, NextMusicName);}
 
+void FadeOutMusic(byte Speed) {
+ 	analogWrite(VolumePin, 255-ByteBuffer3);
+	if (ByteBuffer3) {
+		ByteBuffer3--;
+		ActivateTimer(Speed, Speed, FadeOutMusic);}}
+
 void PlaySound(byte Priority, char* Filename) {
 	if (!StartSound) {
 		if (!PlayingSound) {															// no sound in play at the moment?
@@ -1375,25 +1381,25 @@ void Settings_Enter() {
 
 void SelectSettings(byte Switch) {										// select system or game settings
 	switch (Switch) {
-		case 0:
+		case 0:																						// for the initial call
 		  WriteUpper(" SYSTEMSETTNGS");
 		  WriteLower("              ");
 		  break;
-		case 3:
-			if (AppByte) {
-				SettingsPointer = game_settings;
-				SettingsList = GameDefinition.GameSettingsList;
-				SettingsFileName = GameDefinition.GameSettingsFileName;
+		case 3:																						// start button
+			if (AppByte) {																	// game settings selected
+				SettingsPointer = game_settings;							// set pointer to the stored game setting values
+				SettingsList = GameDefinition.GameSettingsList;	// set pointer to the list of menu topics
+				SettingsFileName = GameDefinition.GameSettingsFileName;	// set the file name of the game settings
 				AppByte = 0;}
-			else {
-				SettingsPointer = APC_settings;
-				SettingsList = APC_setList;
-				SettingsFileName = (char*)APC_set_file_name;}
-			Switch_Pressed = SelSetting;
-			SelSetting(0);
+			else {																					// system settings selected
+				SettingsPointer = APC_settings;								// set pointer to the stored system setting values
+				SettingsList = APC_setList;										// set pointer to the list of menu topics
+				SettingsFileName = (char*)APC_set_file_name;}	// set the file name of the game settings
+			Switch_Pressed = SelSetting;										// set SelSetting to be the switch handler
+			SelSetting(0);																	// and initialize it first
 			break;
-		case 72:
-			if (AppByte) {
+		case 72:																					// advance button
+			if (AppByte) {																	// switch between game and system settings
 			  WriteUpper(" SYSTEMSETTNGS");
 			  WriteLower("              ");
 			  AppByte = 0;}
@@ -1462,11 +1468,11 @@ void HandleBoolSetting(bool change) {									// handling method for boolean set
 void RestoreDefaults(bool change) {										// restore the default settings
 	if (change) {																				// if the start button has been pressed
 		AppByte2 = 1;																			// set the change indicator
-		if (SettingsPointer == APC_settings) {
-			for(i=0;i<64;i++) {
+		if (SettingsPointer == APC_settings) {						// system settings mode?
+			for(i=0;i<64;i++) {															// change all settings to their default values
 				*(SettingsPointer+i) = APC_defaults[i];}}
-		else {
-			for(i=0;i<64;i++) {															// and change all settings to their default values
+		else {																						// game settings mode
+			for(i=0;i<64;i++) {															// change all settings to their default values
 				*(SettingsPointer+i) = *(GameDefinition.GameDefaultsPointer+i);}}
     WriteLower("SETTNGS DONE  ");}
 	else {
@@ -1526,3 +1532,24 @@ void HandleVolumeSetting(bool change) {
 		analogWrite(VolumePin,255-APC_settings[Volume]);}	// adjust PWM to volume setting
 	else {
 		PlayMusic(50, "Musik.bin");}}
+
+byte HandleHighScores(unsigned int Score) {
+	byte Position = 0;
+	while (HallOfFame.Scores[Position] > Score) {  	// check to which position of the highscore list it belongs
+		Position++;}
+	for (i=3; i>Position; i--) {                   	// move all lower highscores down
+		HallOfFame.Scores[i] = HallOfFame.Scores[i-1];}
+	for (i=9; i>Position*3; i--) {
+		HallOfFame.Initials[i+2] = HallOfFame.Initials[i-1];}
+	HallOfFame.Scores[Position] = Score;           	// and include the new highscore to the list
+	for (i=0; i<3; i++) {
+		HallOfFame.Initials[Position*3+i] = EnterIni[i];} // copy initials
+	if (SDfound) {
+		SD.remove(GameDefinition.HighScoresFileName);
+		File HighScore = SD.open(GameDefinition.HighScoresFileName,FILE_WRITE);  // open the highscore file on the SD card
+		HighScore.write((byte*) &HallOfFame, sizeof HallOfFame); // and write the HallOfFame structure
+		HighScore.close();}
+	else {
+		WriteUpper("  NO   SD CARD");
+		delay(2000);}
+	return Position;}
