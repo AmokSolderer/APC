@@ -241,7 +241,7 @@ void CSound::end() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-size_t CSound::write(const uint32_t *data, size_t size) {
+//size_t CSound::write(const uint32_t *data, size_t size) {
   //const uint32_t TAG = 0x10000000;
   //Serial.println(size);
 //  size_t i;
@@ -257,7 +257,7 @@ size_t CSound::write(const uint32_t *data, size_t size) {
 //    }
 //  }
   //return i;
-}
+//}
 
 ///////////////////////////////////////////////////////////////////////////////
 
