@@ -812,28 +812,28 @@ void KillTimer(byte TimerNo) {
 	TimerEvent[TimerNo] = 0;														// clear Timer Event
 	BlockTimers = false;}																// release the IRQ block
 
-void WriteUpper(char* DisplayText) {              		// dont use columns 0 and 8 as they are reserved for the credit display
+void WriteUpper(const char* DisplayText) {              		// dont use columns 0 and 8 as they are reserved for the credit display
   for (i=0; i<7; i++) { 
     *(DisplayUpper+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
     *(DisplayUpper+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
     *(DisplayUpper+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
     *(DisplayUpper+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}
 
-void WriteLower(char* DisplayText) {
+void WriteLower(const char* DisplayText) {
   for (i=0; i<7; i++) { 
     *(DisplayLower+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
     *(DisplayLower+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
     *(DisplayLower+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
     *(DisplayLower+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}
 
-void WriteUpper2(char* DisplayText) {
+void WriteUpper2(const char* DisplayText) {
   for (i=0; i<7; i++) { 
     *(DisplayUpper2+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
     *(DisplayUpper2+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
     *(DisplayUpper2+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
     *(DisplayUpper2+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}
 
-void WriteLower2(char* DisplayText) {
+void WriteLower2(const char* DisplayText) {
   for (i=0; i<7; i++) { 
     *(DisplayLower2+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
     *(DisplayLower2+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
@@ -1266,7 +1266,7 @@ void StrobeLights(byte State) {
     State = 1;}
   StrobeLightsTimer = ActivateTimer(30, State, StrobeLights);}
 
-void PlayMusic(byte Priority, char* Filename) {
+void PlayMusic(byte Priority, const char* Filename) {
 	if (!StartMusic) {
 		if (!PlayingMusic) {															// no music in play at the moment?
 			MusicFile = SD.open(Filename);									// open file
@@ -1315,7 +1315,7 @@ void PlayRandomMusic(byte Priority, byte Amount, char* List) {
 void PlayNextMusic() {
 	PlayMusic(50, NextMusicName);}
 
-void PlaySound(byte Priority, char* Filename) {
+void PlaySound(byte Priority, const char* Filename) {
 	if (!StartSound) {
 		if (!PlayingSound) {															// no sound in play at the moment?
 			SoundFile = SD.open(Filename);									// open file
