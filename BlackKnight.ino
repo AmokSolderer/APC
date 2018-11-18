@@ -39,7 +39,7 @@ struct SettingTopic BK_setList[5] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
 			{" RESET  HIGH  ",ResetHighScores,0,0,0},
       {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
       {"  EXIT SETTNGS",ExitSettings,0,0,0},
-      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+      {"",NULL,0,0,0}};
 
                               	 // Duration080910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364
 const struct LampPat AttractPat1[52] = {{30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -211,6 +211,8 @@ void BK_AttractMode() {                               // Attract Mode
   AttractDisplayCycle(0);}
 
 void CheckForLockedBalls(byte Event) {                // check if balls are locked and release them
+  UNUSED(Event);
+
   if (Switch[20]) {                                   // for the outhole
     ActivateSolenoid(0, 1);}
   if (Switch[24]) {                                   // for the lower eject hole
@@ -219,6 +221,8 @@ void CheckForLockedBalls(byte Event) {                // check if balls are lock
     ActivateSolenoid(0, 7);}}
 
 void AttractLampCycle(byte Event) {                   // play multiple lamp pattern series
+  UNUSED(Event);
+
   PatPointer = AttractFlow[AppByte2].FlowPat;         // set the pointer to the current series
   FlowRepeat = AttractFlow[AppByte2].Repeat;          // set the repetitions
   if (AppByte2 == 2) {
@@ -233,6 +237,8 @@ void AttractLampCycle(byte Event) {                   // play multiple lamp patt
   ShowLampPatterns(0);}                               // call the player
 
 void AttractScroll(byte Dummy) {
+  UNUSED(Dummy);
+
   WriteUpper2("SPEZIAL       ");
   AddScrollUpper(1);}
 
@@ -527,6 +533,8 @@ void CheckReleasedBall(byte Balls) {                  // ball release watchdog
   CheckReleaseTimer = ActivateTimer(5000, Balls, CheckReleasedBall);}
 
 void TimedRightMagna(byte dummy) {										// runs every second as long as button is pressed
+  UNUSED(dummy);
+
 	if (Switch[9] && RightMagna[Player]) {							// button still pressed and magna seconds left?
 		RightMagna[Player]--;															// reduce magna save seconds
 		AddBlinkLamp(9, 150*RightMagna[Player]);					// adjust blinking rhythm of lamp
@@ -539,6 +547,8 @@ void TimedRightMagna(byte dummy) {										// runs every second as long as butt
 		TimedRightMagnaTimer = 0;}}
 
 void TimedLeftMagna(byte dummy) {											// runs every second as long as button is pressed
+  UNUSED(dummy);
+
 	if (Switch[10] && LeftMagna[Player]) {							// button still pressed and magna seconds left?
 		LeftMagna[Player]--;															// reduce magna save seconds
 		AddBlinkLamp(10, 150*LeftMagna[Player]);					// adjust blinking rhythm of lamp
@@ -784,6 +794,8 @@ void GameMain(byte Event) {                           // game switch events
 }}
 
 void ClearOuthole(byte Event) {
+  UNUSED(Event);
+
   if (Switch[20]) {                                   // outhole switch still active?
     if (!BlockOuthole) {															// outhole blocked?
       BlockOuthole = true;														// block outhole until this ball has been processed
@@ -1075,6 +1087,8 @@ void EnterInitials(byte Event) {
 		break;}}
 
 void AfterExBallRelease(byte Event) {
+  UNUSED(Event);
+
   if (Switch[45]) {                                   // ball still in the shooting lane?
     ActivateTimer(2000, Event, AfterExBallRelease);}  // come back in2s
   else {                                              // ball has been shot
@@ -1085,6 +1099,8 @@ void AfterExBallRelease(byte Event) {
       Lamp[47] = true;}}}
 
 void HandleLock(byte Event) {
+  UNUSED(Event);
+
   AppBool = false;
   AppByte = 0;
   for (i=0; i<3; i++) {                               // count balls in lock
@@ -1221,6 +1237,8 @@ void StartMultiball() {
   ActivateTimer(3100, 0, ClearLocks);}                // clear out balls after that
 
 void ClearLocks(byte Event) {
+  UNUSED(Event);
+
   AppByte = 0;
   for (i=0; i<3; i++) {                               // count balls in lock
     if (Switch[41+i]) {
@@ -1296,6 +1314,8 @@ void ShowBonus() {                                    // set lamps on bonus mete
       Lamp[BonusLamps[i]] = false;}}}                 // otherwise turn it off
 
 void EndRightMagna(byte Event) {
+  UNUSED(Event);
+
   RightAfterMagna = true;
   AddBlinkLamp(15, 150);
   if (!RightMagna[Player]) {
@@ -1303,10 +1323,14 @@ void EndRightMagna(byte Event) {
   ActivateTimer(2010, 0, ResetRightAfterMagna);}      // for 2 seconds after magna time
 
 void ResetRightAfterMagna(byte Event) {
+  UNUSED(Event);
+
   RemoveBlinkLamp(15);
   RightAfterMagna = false;}
 
 void EndLeftMagna(byte Event) {
+  UNUSED(Event);
+
   LeftAfterMagna = true;
   AddBlinkLamp(16, 150);
   if (!LeftMagna[Player]) {
@@ -1314,14 +1338,20 @@ void EndLeftMagna(byte Event) {
   ActivateTimer(2010, 0, ResetLeftAfterMagna);}       // for 2 seconds after magna time
 
 void ResetLeftAfterMagna(byte Event) {
+  UNUSED(Event);
+
   RemoveBlinkLamp(16);
   LeftAfterMagna = false;}
 
 void ResetRightMystery(byte Event) {
+  UNUSED(Event);
+
   RemoveBlinkLamp(13);                                // stop the blinking of the mystery lamp
   RightMysteryTimer = 0;}                             // delete the right mystery timer number
 
 void ResetLeftMystery(byte Event) {
+  UNUSED(Event);
+
   RemoveBlinkLamp(14);                                // stop the blinking of the mystery lamp
   LeftMysteryTimer = 0;}                              // delete the left mystery timer number
 
@@ -1384,6 +1414,8 @@ void TestMode_Enter() {
     ActivateTimer(1000, 0, DisplayTest_Enter);}}      // Wait 1 second and proceed to Display Test
 
 void DisplayTest_Enter(byte Event) {
+  UNUSED(Event);
+
   Switch_Pressed = DisplayTest_EnterSw;                         // Switch functions
   WriteUpper("DISPLAY TEST  ");}                    	// Show 'Display Test'
 
@@ -1479,6 +1511,8 @@ void SolenoidsTest(byte Event) {
     Switch_Pressed = Solenoids_Enter;}}
 
 void FireSolenoids(byte Event) {                      // cycle all solenoids
+  UNUSED(Event);
+
   ConvertToBCD(AppByte2);                             // convert the actual solenoid number
   *(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
   *(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
@@ -1516,6 +1550,8 @@ void SingleLamp(byte Event) {
     Switch_Pressed = SingleLamp_Enter;}}
 
 void ShowLamp(byte Event) {                           // cycle all solenoids
+  UNUSED(Event);
+
   if (!digitalRead(UpDown)) {
     ConvertToBCD(AppByte2);                           // convert the actual solenoid number
     *(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
@@ -1553,6 +1589,8 @@ void ModeAllLamps(byte Event) {
     Switch_Pressed = AllLamps_Enter;}}
 
 void ShowAllLamps(byte Event) {                       // Flash all lamps
+  UNUSED(Event);
+
   if (AppByte2) {                                     // if all lamps are on
     LampPattern = NoLamps;                            // turn them off
     AppByte2 = 0;}
@@ -1596,4 +1634,3 @@ void SoundTest(byte Switch) {
 		WriteUpper(" SOUND  TEST  ");
     Switch_Pressed = SoundTest_Enter;
     AppByte = 0;}}
-

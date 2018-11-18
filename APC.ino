@@ -128,7 +128,7 @@ bool PlayingMusic = false;														// StartMusic done -> continuously playi
 File MusicFile;																				// file handle for the music file (SD)
 bool AfterMusicPending = false;												// indicates that there's an after music event to be executed
 void (*AfterMusic)() = 0;															// program to execute after music file has ended
-char *NextMusicName;																	// points to the name of the next music file to be played (if any)
+const char *NextMusicName;														// points to the name of the next music file to be played (if any)
 byte MusicPriority = 0;																// stores the priority of the music file currently being played
 byte SBP = 0;																					// Sound Buffer Pointer - next block to write to inside of the music buffer
 byte SoundIRpos = 0;																	// next block of the sound buffer to be read from the interrupt
@@ -177,7 +177,9 @@ const byte DisplayType = 6;														// which display is used?
 char TxTGameSelect[3][15] = {{" BLACK KNIGHT "},{" JEDI  KNIGHT "},{"    PINBOT    "}};
 char TxTLEDSelect[3][15] = {{"   NO   LEDS  "},{"PLAYFLD ONLY  "},{"PLAYFLDBACKBOX"}};
 char TxTDisplaySelect[5][15] = {{"4 ALPHA+CREDIT"},{" SYS11 PINBOT "},{" SYS11  F-14  "},{" SYS11  BK2K  "},{" SYS11   TAXI "}};
-struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTGameSelect[0][0],0,2}, // the APC settings menu
+
+struct SettingTopic APC_setList[10] = {
+      {" ACTIVE GAME  ",HandleTextSetting,&TxTGameSelect[0][0],0,2},
       {" NO OF  BALLS ",HandleNumSetting,0,1,5},
 		  {"  FREE  GAME  ",HandleBoolSetting,0,0,0},
 		  {"  DIM  INSERTS",HandleBoolSetting,0,0,0},
@@ -186,12 +188,13 @@ struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTG
 			{"DISPLAY TYPE  ",HandleTextSetting,&TxTDisplaySelect[0][0],0,4},
 		  {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		  {"  EXIT SETTNGS",ExitSettings,0,0,0},
-      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
-struct GameDef {																			// use this structure to define a game
+      {"",NULL,0,0,0}};
+
+struct GameDef {
 	struct SettingTopic *GameSettingsList;							// points to the settings definition of the current game
 	byte *GameDefaultsPointer;													// points to the default settings of the selected game
-	char *GameSettingsFileName;													// points to the name of the settings file for the selected game
-	char *HighScoresFileName;														// contains the name of the high scores file for the selected game
+	const char *GameSettingsFileName;													// points to the name of the settings file for the selected game
+	const char *HighScoresFileName;														// contains the name of the high scores file for the selected game
 	void (*AttractMode)();															// Pointer to Attract mode of current game
 	const unsigned int *SolTimes;												// Default activation times of solenoids
 };
@@ -224,7 +227,7 @@ bool AppBool = false;                                 // general purpose applica
 byte APC_settings[64];																// system settings to be stored on the SD
 byte game_settings[64];																// game settings to be stored on the SD
 byte *SettingsPointer;																// points to the settings being changed
-char *SettingsFileName;																// points to the settings file currently being edited
+const char *SettingsFileName;																// points to the settings file currently being edited
 
 const int UpDown = 53;                                // arduino pin connected to the auto/up - manual/Down button
 const int Blanking = 22;                              // arduino pin to control the blanking signal
@@ -364,7 +367,9 @@ void Init_System2(byte State) {
 		EnterAttractMode(0);}}
 
 void EnterAttractMode(byte Event) {                   // Enter the attract mode from a timer
-  GameDefinition.AttractMode();}
+    UNUSED(Event);
+    
+    GameDefinition.AttractMode();}
 
 void TC7_Handler() {                                  // interrupt routine - runs every ms
 	TC_GetStatus(TC2, 1);                               // clear status
@@ -756,7 +761,9 @@ void SwitchReleased(int SwNumber) {
   Serial.print(" Switch released ");
   Serial.println(SwNumber); }
 
-void DummyProcess(byte Dummy) {;}
+void DummyProcess(byte Dummy) {
+    UNUSED(Dummy);
+}
 
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
   byte i = 1;                                     		// reset counter
@@ -812,28 +819,28 @@ void KillTimer(byte TimerNo) {
 	TimerEvent[TimerNo] = 0;														// clear Timer Event
 	BlockTimers = false;}																// release the IRQ block
 
-void WriteUpper(char* DisplayText) {              		// dont use columns 0 and 8 as they are reserved for the credit display
+void WriteUpper(const char* DisplayText) {              		// dont use columns 0 and 8 as they are reserved for the credit display
   for (i=0; i<7; i++) { 
     *(DisplayUpper+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
     *(DisplayUpper+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
     *(DisplayUpper+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
     *(DisplayUpper+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}
 
-void WriteLower(char* DisplayText) {
+void WriteLower(const char* DisplayText) {
   for (i=0; i<7; i++) { 
     *(DisplayLower+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
     *(DisplayLower+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
     *(DisplayLower+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
     *(DisplayLower+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}
 
-void WriteUpper2(char* DisplayText) {
+void WriteUpper2(const char* DisplayText) {
   for (i=0; i<7; i++) { 
     *(DisplayUpper2+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
     *(DisplayUpper2+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
     *(DisplayUpper2+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
     *(DisplayUpper2+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}
 
-void WriteLower2(char* DisplayText) {
+void WriteLower2(const char* DisplayText) {
   for (i=0; i<7; i++) { 
     *(DisplayLower2+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
     *(DisplayLower2+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
@@ -980,6 +987,8 @@ void ActA_BankSol(unsigned int Duration, byte Solenoid) {
 		A_BankWaitingNo++;}}															// increase number of waiting coils
 
 void ActA_BankLater(byte Dummy) {
+  UNUSED(Dummy);
+
 	if (!C_BankActive) {																// C bank still in use?
 		i = 0;
 		while (!A_BankWaiting[i]) {                     	// look for a used slot in the list of solenoids to be processed later
@@ -1004,6 +1013,8 @@ void ActC_BankSol2(byte Solenoid) {
 	ActivateSolenoid(*(GameDefinition.SolTimes+Solenoid+23), Solenoid);}
 
 void PB_ResetAC_Relay(byte Dummy) {
+  UNUSED(Dummy);
+
 	C_BankActive = false;
 	ReleaseSolenoid(14);
   if (A_BankWaitingNo) {
@@ -1109,6 +1120,8 @@ void ShowNumber(byte Position, unsigned int Number) {
 			*(DisplayLower2+2*Position-13) = DispPattern2[33];}}}
 
 void ShowAllPoints(byte Dummy) {                  		// just a dummy event to access it via timer
+  UNUSED(Dummy);
+
   WriteUpper("              ");                   		// erase display
   WriteLower("              ");
   for (i=1; i<=NoPlayers; i++) {                  		// display the points of all active players
@@ -1266,7 +1279,7 @@ void StrobeLights(byte State) {
     State = 1;}
   StrobeLightsTimer = ActivateTimer(30, State, StrobeLights);}
 
-void PlayMusic(byte Priority, char* Filename) {
+void PlayMusic(byte Priority, const char* Filename) {
 	if (!StartMusic) {
 		if (!PlayingMusic) {															// no music in play at the moment?
 			MusicFile = SD.open(Filename);									// open file
@@ -1321,7 +1334,7 @@ void FadeOutMusic(byte Speed) {
 		ByteBuffer3--;
 		ActivateTimer(Speed, Speed, FadeOutMusic);}}
 
-void PlaySound(byte Priority, char* Filename) {
+void PlaySound(byte Priority, const char* Filename) {
 	if (!StartSound) {
 		if (!PlayingSound) {															// no sound in play at the moment?
 			SoundFile = SD.open(Filename);									// open file

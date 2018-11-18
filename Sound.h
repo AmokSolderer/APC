@@ -15,6 +15,7 @@
 #define SOUND_INCLUDED
 
 #include "Print.h"
+#define UNUSED(x) (void)(x)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -181,7 +182,10 @@ public:
 
   void     end    ();
 
-  size_t   write(      uint8_t   c                ) { return 0; /* not implemented */ };
+  size_t   write(uint8_t c) { 
+    UNUSED(c); 
+    return 0; /* not implemented */ 
+  };
   size_t   write(const uint16_t  *data, size_t size) { return write(reinterpret_cast<const uint32_t*>(data), size/2) * 2; };
   size_t   write(const uint32_t *data, size_t size);
 
@@ -214,6 +218,7 @@ void CSound::onTransmitEnd(void *_me) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void CSound::begin(uint32_t sampleRate, uint32_t msPreBuffer) {
+  UNUSED(msPreBuffer);
   // Allocate a buffer to keep msPreBuffer milliseconds of audio
   bufferSize = 128;
 //  if (bufferSize < 1024)
@@ -241,7 +246,7 @@ void CSound::end() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-size_t CSound::write(const uint32_t *data, size_t size) {
+//size_t CSound::write(const uint32_t *data, size_t size) {
   //const uint32_t TAG = 0x10000000;
   //Serial.println(size);
 //  size_t i;
@@ -257,7 +262,7 @@ size_t CSound::write(const uint32_t *data, size_t size) {
 //    }
 //  }
   //return i;
-}
+//}
 
 ///////////////////////////////////////////////////////////////////////////////
 
