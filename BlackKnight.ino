@@ -1049,7 +1049,7 @@ void EnterInitials(byte Event) {
 		KillTimer(ByteBuffer2);
 		ByteBuffer++;
 		if (ByteBuffer > 2) {
-			HandleHighScores(Points[Player]);
+			ByteBuffer2 = HandleHighScores(Points[Player]);
 			WriteUpper(" HIGH   SCORE ");
 			WriteLower("TABLE  POS    ");
 			*(DisplayLower+28) = DispPattern2[32 + 2 * (ByteBuffer2+1)];
@@ -1085,27 +1085,6 @@ void EnterInitials(byte Event) {
 		KillTimer(ByteBuffer2);
 		BlinkInitial(0);
 		break;}}
-
-void HandleHighScores(unsigned int Score) {
-	ByteBuffer2 = 0;
-	while (HallOfFame.Scores[ByteBuffer2] > Score) {  	// check to which position of the highscore list it belongs
-		ByteBuffer2++;}
-	for (i=3; i>ByteBuffer2; i--) {                   	// move all lower highscores down
-		HallOfFame.Scores[i] = HallOfFame.Scores[i-1];}
-	for (i=9; i>ByteBuffer2*3; i--) {
-		HallOfFame.Initials[i+2] = HallOfFame.Initials[i-1];}
-	HallOfFame.Scores[ByteBuffer2] = Score;           	// and include the new highscore to the list
-	for (i=0; i<3; i++) {
-		HallOfFame.Initials[ByteBuffer2*3+i] = EnterIni[i];} // copy initials
-	if (SDfound) {
-		SD.remove(GameDefinition.HighScoresFileName);
-		File HighScore = SD.open(GameDefinition.HighScoresFileName,FILE_WRITE);  // open the highscore file on the SD card
-		HighScore.write((byte*) &HallOfFame, sizeof HallOfFame); // and write the HallOfFame structure
-		HighScore.close();}
-	else {
-		WriteUpper("  NO   SD CARD");
-		delay(2000);}
-}
 
 void AfterExBallRelease(byte Event) {
   UNUSED(Event);

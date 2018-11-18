@@ -37,9 +37,10 @@ const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 const byte PB_ExBallLamps[4] = {49, 50, 58, 57};                          
 
-struct SettingTopic PB_setList[7] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
+struct SettingTopic PB_setList[8] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
 		{" REACH PLANET ",HandleNumSetting,0,1,9},
 		{" ENERGY TIMER ",HandleNumSetting,0,1,90},
+		{"MULTBALVOLUME ",PB_HandleVolumeSetting,0,0,30},
     {" RESET  HIGH  ",PB_ResetHighScores,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
@@ -131,6 +132,7 @@ const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
 const byte PB_DropTime = 0;														// drop target down time setting
 const byte PB_ReachPlanet = 1;												// target planet setting
 const byte PB_EnergyTimer = 2;												// energy timer setting
+const byte PB_MultiballVolume = 3;										// volume increase for the multiball
 
 const byte PB_defaults[64] = {5,6,15,0,0,0,0,0,		 		// game default settings
 											  			0,0,0,0,0,0,0,0,
@@ -279,7 +281,7 @@ void PB_AttractModeSW(byte Select) {
 		ActivateSolenoid(0, 24);
 		break;
 	case 8:																							// high score reset
-		digitalWrite(Blanking, LOW);                     // invoke the blanking
+		digitalWrite(Blanking, LOW);                     	// invoke the blanking
 		break;
 	case 46:
 		if (PB_CloseVisorFlag) {
@@ -417,7 +419,7 @@ void PB_GiveBall(byte Balls) {
 void PB_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 20) {                                 // shooter lane switch released?
     Switch_Released = DummyProcess;
-    //PlaySound(150, "BS_S05.bin");
+    PlaySound(150, "BS_S05.bin");
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
@@ -548,17 +550,14 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
 
 void PB_OpenVisor(byte Dummy) {
   UNUSED(Dummy);
-
 	PB_OpenVisorFlag = true;}																	// set flag to stop visor motor when open
 
 void PB_CloseVisor(byte Dummy) {
   UNUSED(Dummy);
-
 	PB_CloseVisorFlag = true;}																	// set flag to stop visor motor when closed
 
 void PB_ClearOuthole(byte Event) {
   UNUSED(Event);
-
   if (Switch[16]) {                                   // outhole switch still active?
     if (!BlockOuthole) {															// outhole blocked?
       BlockOuthole = true;														// block outhole until this ball has been processed
@@ -843,6 +842,9 @@ void PB_GameMain(byte Switch) {
       WriteUpper2("SOLAR =       ");
       ShowNumber(15, Buffer*1000);}
     break;
+  case 40:																						// ramp entrance
+  	PlaySound(150, "BS_S11.bin");
+  	break;
   case 45:																						// score energy switch
 		if (PB_EnergyActive) {
 			Points[Player] += PB_EnergyValue[Player] * 2000;				// score energy value
@@ -976,22 +978,22 @@ void PB_StartChestPattern(byte Dummy) {
   LampPattern = Lamp;
   PB_ChestLightHandler(0);}
 
-void PB_OpenVisorProc() {                   				// measures to open the visor
-  PB_ChestMode = 0;                                 // indicate that the visor is open
-  PB_Chest_Status[Player]++;                        // increase the number of visor openings
-  if (PB_Chest_Status[Player] == 2) {								// visor opened two times?
+void PB_OpenVisorProc() {                   					// measures to open the visor
+  PB_ChestMode = 0;                                 	// indicate that the visor is open
+  PB_Chest_Status[Player]++;                        	// increase the number of visor openings
+  if (PB_Chest_Status[Player] == 2) {									// visor opened two times?
   	PB_AddExBall();}
-  PB_LitChestLamps = 0;                             // reset the counter
-  PB_ResetPlayersChestLamps(Player);                // reset the stored lamps
-  PB_ClearChest();                                  // turn off chest lamps
-  PlayFlashSequence((byte*) PB_OpenVisorSeq);    // play flasher sequence
-  PatPointer = PB_OpenVisorPat;                     // set the pointer to the current series
-  FlowRepeat = 1;                                   // set the repetitions
+  PB_LitChestLamps = 0;                             	// reset the counter
+  PB_ResetPlayersChestLamps(Player);                	// reset the stored lamps
+  PB_ClearChest();                                  	// turn off chest lamps
+  PlayFlashSequence((byte*) PB_OpenVisorSeq);    			// play flasher sequence
+  PatPointer = PB_OpenVisorPat;                     	// set the pointer to the current series
+  FlowRepeat = 1;                                   	// set the repetitions
   PB_ChestPatterns = (byte*)PB_WalkingLines;
   LampReturn = PB_StartChestPattern;
-  ShowLampPatterns(0);                              // start the player
+  ShowLampPatterns(0);                              	// start the player
   PB_CloseVisorFlag = false;
-  ActivateSolenoid(4000, 11);                       // turn the backbox GI off
+  ActivateSolenoid(4000, 11);                       	// turn the backbox GI off
   ActivateTimer(2000, 0, PB_OpenVisor);
   ActivateSolenoid(0, 13);}
   
@@ -1139,13 +1141,13 @@ void PB_HandleLock(byte State) {
 
 void PB_Multiball() {
   AfterMusic = PlayNextMusic;
+  if (APC_settings[Volume]) {
+  	analogWrite(VolumePin,255-APC_settings[Volume]-SettingsPointer[AppByte]);} // increase volume
   PlayMusic(50, "BS_M04.bin");
   ReleaseSolenoid(9);
   ReleaseSolenoid(10);
   ReleaseSolenoid(18);
-  ReleaseSolenoid(11);
   ReleaseSolenoid(12);
-  //ReleaseSolenoid(14);
   LampPattern = AllLamps;
   PlayFlashSequence((byte*) PB_MultiballSeq);
   ActivateTimer(1000, 0, PB_Multiball2); 
@@ -1302,7 +1304,10 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 	else {
 		if (Multiballs == 2) {														// multiball running?
 			Multiballs = 1;																	// turn it off
-      PB_LampSweepActive = 0;
+      PB_LampSweepActive = 0;													// turn off backbox lamp sweep
+      ReleaseSolenoid(11);														// turn backbox GI back on
+      if (APC_settings[Volume]) {
+      	analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
 			PlayMusic(50, "BS_S04.bin");
 			if (AppByte == 2) {															// 2 balls detected in the trunk
 				ActivateTimer(1000, 0, PB_BallEnd);}					// come back and check again
@@ -1366,39 +1371,152 @@ void PB_CountBonus(byte ClearDisplay) {
     PB_BallEnd2();}}
 
 void PB_BallEnd2() {
-	BlockOuthole = false;														// remove outhole block
-	if (ExBalls) {                                	// Player has extra balls
-		AddBlinkLamp(33, 250);                      	// Let the extra ball lamp blink
+	BlockOuthole = false;																// remove outhole block
+	if (ExBalls) {                                			// Player has extra balls
+		AddBlinkLamp(33, 250);                      			// Let the extra ball lamp blink
 		ExBalls--;
 		ActivateTimer(2000, 0, PB_AfterExBallRelease);
 		ActivateTimer(1000, AppByte, PB_NewBall);}
-	else {                                        	// Player has no extra balls
+	else {                                        			// Player has no extra balls
 		Lamp[51] = false;
-		if (false) {
-//		if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
-//			Switch_Pressed = DummyProcess;              // Switches do nothing
-			// CheckHighScore(Player);
-		}
+		if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
+			Switch_Pressed = DummyProcess;              // Switches do nothing
+			PB_Congrats(0);}
 		else {
-      if ((PB_EjectMode[Player] == 4) || (PB_EjectMode[Player] == 9)) { // eject hole mode maxed out?
-        PB_EjectMode[Player] = 0;}                // reset it for the next ball
-			if (Player < NoPlayers) {                 	// last player?
-				Player++;
-				ActivateTimer(1000, AppByte, PB_NewBall);}
-			else {
-				if (Ball < APC_settings[NofBalls]) {			// last ball?
-					Player = 1;															// not yet
-					Ball++;
-					ActivateTimer(1000, AppByte, PB_NewBall);}
-				else {																		// game end
-					ReleaseSolenoid(23);                  	// disable flipper fingers
-					ReleaseSolenoid(24);
-          LampPattern = NoLamps;                      // Turn off all lamps
-          AfterMusic = GameDefinition.AttractMode;
-					PlayMusic(50, "BS_S10.bin");
-					//PB_CheckForLockedBalls(0);
-					Lamp[3] = false;}}}}}                       // turn off Ball in Play lamp
+			if ((PB_EjectMode[Player] == 4) || (PB_EjectMode[Player] == 9)) { // eject hole mode maxed out?
+				PB_EjectMode[Player] = 0;}                		// reset it for the next ball
+			PB_BallEnd3(0);}}}
+
+void PB_BallEnd3(byte Dummy) {
+	LampPattern = Lamp;
+	if (Player < NoPlayers) {                 			// last player?
+		Player++;
+		ActivateTimer(1000, AppByte, PB_NewBall);}
+	else {
+		if (Ball < APC_settings[NofBalls]) {					// last ball?
+			Player = 1;																	// not yet
+			Ball++;
+			ActivateTimer(1000, AppByte, PB_NewBall);}
+		else {																				// game end
+			ReleaseSolenoid(23);                  			// disable flipper fingers
+			ReleaseSolenoid(24);
+			LampPattern = NoLamps;                      // Turn off all lamps
+			AfterMusic = GameDefinition.AttractMode;
+			PlayMusic(50, "BS_S10.bin");
+			//PB_CheckForLockedBalls(0);
+			Lamp[3] = false;}}}                       // turn off Ball in Play lamp
 					
+void PB_Congrats(byte Dummy) {                    		// show congratulations
+	LampPattern = NoLamps;
+	AfterMusic = 0;
+	PlayMusic(50, "BS_M01.bin");
+	WriteUpper("              ");
+	WriteLower("              ");
+	WriteUpper2(" GREAT        ");
+	ActivateTimer(50, 1, ScrollUpper);
+	ActivateTimer(900, 1, PB_ScrollCongrats);
+	ActivateTimer(1400, 1, PB_ScrollCongrats2);
+	ActivateTimer(2000, Player, PB_Congrats2);}
+
+void PB_ScrollCongrats(byte Dummy) {
+  WriteUpper2("  SCORE       ");
+  AddScrollUpper(1);}
+
+void PB_ScrollCongrats2(byte Dummy) {
+  WriteUpper2("       PLAYER ");
+	*(DisplayUpper2+30) = DispPattern2[32 + 2 * Player];
+	*(DisplayUpper2+31) = DispPattern2[33 + 2 * Player];
+  ScrollUpper(9);}
+
+void PB_Congrats2(byte Dummy) {
+	DisplayScore(3, Points[Player]);
+	DisplayScore(4, Points[Player]);
+	WriteUpper2(" ENTER        ");
+	ActivateTimer(50, 1, ScrollUpper);
+	ActivateTimer(900, 1, PB_ScrollCongrats3);
+	ActivateTimer(1400, 1, PB_ScrollCongrats4);
+	ActivateTimer(2000, 0, PB_EnterInitials);
+}
+
+void PB_ScrollCongrats3(byte Dummy) {
+  WriteUpper2("INITIALS      ");
+  AddScrollUpper(1);}
+
+void PB_ScrollCongrats4(byte Dummy) {
+  WriteUpper2("              ");
+  ScrollUpper(5);}
+
+void PB_EnterInitials(byte Switch) {
+	switch (Switch) {
+	case 0:
+		Switch_Pressed = PB_EnterInitials;
+		EnterIni[0] = 'A';
+		EnterIni[1] = 'A';
+		EnterIni[2] = 'A';
+		PB_BlinkInitial(0);
+		break;
+	case 3:                                           	// credit button
+		KillTimer(ByteBuffer2);
+		ByteBuffer++;
+		if (ByteBuffer > 2) {
+			AfterMusic = PB_EnterInitials2;
+			if (APC_settings[Volume]) {
+				ByteBuffer3 = APC_settings[Volume];
+				FadeOutMusic(100);}
+			else {
+				StopPlayingMusic();}}
+		else {
+			PB_BlinkInitial(0);}
+		break;
+	case 10:                                          	// left flipper button
+		if (EnterIni[ByteBuffer] == 65) {
+			EnterIni[ByteBuffer] = 57;}
+		else if (EnterIni[ByteBuffer] == 48) {
+			EnterIni[ByteBuffer] = 32;}
+		else if (EnterIni[ByteBuffer] == 32) {
+			EnterIni[ByteBuffer] = 90;}
+		else {
+			EnterIni[ByteBuffer]--;}
+		KillTimer(ByteBuffer2);
+		PB_BlinkInitial(0);
+		break;
+	case 11:                                           	// right flipper button
+		if (EnterIni[ByteBuffer] == 57) {
+			EnterIni[ByteBuffer] = 65;}
+		else if (EnterIni[ByteBuffer] == 90) {
+			EnterIni[ByteBuffer] = 32;}
+		else if (EnterIni[ByteBuffer] == 32) {
+			EnterIni[ByteBuffer] = 48;}
+		else {
+			EnterIni[ByteBuffer]++;}
+		KillTimer(ByteBuffer2);
+		PB_BlinkInitial(0);
+		break;}}
+
+void PB_BlinkInitial(byte State) {                       // blink actual character
+	if (State) {
+		*(DisplayUpper+20+4*ByteBuffer) = 0;              // show a blank
+		*(DisplayUpper+21+4*ByteBuffer) = 0;
+		State = 0;}
+	else {
+		for (i=0; i<3; i++) {
+			*(DisplayUpper+20+4*i) = DispPattern1[(EnterIni[i]-32)*2];
+			*(DisplayUpper+20+4*i+1) = DispPattern1[(EnterIni[i]-32)*2+1];}// restore the characters
+		State = 1;}
+	ByteBuffer2 = ActivateTimer(100+State*2000, State, PB_BlinkInitial);}  // and come back
+
+void PB_EnterInitials2() {
+	ByteBuffer2 = HandleHighScores(Points[Player]);
+	WriteUpper2(" HIGH   SCORE ");
+	ScrollUpper(1);
+	ActivateTimer(900, 1, PB_EnterInitials3);}
+
+void PB_EnterInitials3(byte Dummy) {
+	WriteUpper2("TABLE  POS    ");
+	*(DisplayUpper2+28) = DispPattern2[32 + 2 * (ByteBuffer2+1)];
+	*(DisplayUpper2+29) = DispPattern2[33 + 2 * (ByteBuffer2+1)];
+	ScrollUpper(1);
+	ActivateTimer(2000, 1, PB_BallEnd3);}
 
 void PB_ResetHighScores(bool change) {                // delete the high scores file
   if (change) {                                       // if the start button has been pressed
@@ -1411,6 +1529,13 @@ void PB_ResetHighScores(bool change) {                // delete the high scores 
       WriteLower(" SCORES NO SD ");}}
   else {
     WriteLower(" SCORES       ");}}              
+
+void PB_HandleVolumeSetting(bool change) {
+	HandleNumSetting(change);
+	if (change) {
+		analogWrite(VolumePin,255-APC_settings[Volume]-SettingsPointer[AppByte]);}	// adjust PWM to volume setting
+	else {
+		PlayMusic(50, "BS_M04.bin");}}
 
 void PB_Testmode(byte Select) {
 	Switch_Pressed = PB_Testmode;
