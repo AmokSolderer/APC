@@ -364,7 +364,9 @@ void Init_System2(byte State) {
 		EnterAttractMode(0);}}
 
 void EnterAttractMode(byte Event) {                   // Enter the attract mode from a timer
-  GameDefinition.AttractMode();}
+    UNUSED(Event);
+    
+    GameDefinition.AttractMode();}
 
 void TC7_Handler() {                                  // interrupt routine - runs every ms
 	TC_GetStatus(TC2, 1);                               // clear status
@@ -756,7 +758,9 @@ void SwitchReleased(int SwNumber) {
   Serial.print(" Switch released ");
   Serial.println(SwNumber); }
 
-void DummyProcess(byte Dummy) {;}
+void DummyProcess(byte Dummy) {
+    UNUSED(Dummy);
+}
 
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
   byte i = 1;                                     		// reset counter
@@ -980,6 +984,8 @@ void ActA_BankSol(unsigned int Duration, byte Solenoid) {
 		A_BankWaitingNo++;}}															// increase number of waiting coils
 
 void ActA_BankLater(byte Dummy) {
+  UNUSED(Dummy);
+
 	if (!C_BankActive) {																// C bank still in use?
 		i = 0;
 		while (!A_BankWaiting[i]) {                     	// look for a used slot in the list of solenoids to be processed later
@@ -1004,6 +1010,8 @@ void ActC_BankSol2(byte Solenoid) {
 	ActivateSolenoid(*(GameDefinition.SolTimes+Solenoid+23), Solenoid);}
 
 void PB_ResetAC_Relay(byte Dummy) {
+  UNUSED(Dummy);
+
 	C_BankActive = false;
 	ReleaseSolenoid(14);
   if (A_BankWaitingNo) {
@@ -1109,6 +1117,8 @@ void ShowNumber(byte Position, unsigned int Number) {
 			*(DisplayLower2+2*Position-13) = DispPattern2[33];}}}
 
 void ShowAllPoints(byte Dummy) {                  		// just a dummy event to access it via timer
+  UNUSED(Dummy);
+
   WriteUpper("              ");                   		// erase display
   WriteLower("              ");
   for (i=1; i<=NoPlayers; i++) {                  		// display the points of all active players
