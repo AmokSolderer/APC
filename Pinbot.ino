@@ -43,7 +43,7 @@ struct SettingTopic PB_setList[7] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20},
     {" RESET  HIGH  ",PB_ResetHighScores,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+    {"",NULL,0,0,0}};
 
 																	 //  DurationXX0910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364
 const struct LampPat PB_AttractPat1[5] = {{150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},

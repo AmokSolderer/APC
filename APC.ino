@@ -177,7 +177,8 @@ const byte DisplayType = 6;														// which display is used?
 char TxTGameSelect[3][15] = {{" BLACK KNIGHT "},{" JEDI  KNIGHT "},{"    PINBOT    "}};
 char TxTLEDSelect[3][15] = {{"   NO   LEDS  "},{"PLAYFLD ONLY  "},{"PLAYFLDBACKBOX"}};
 char TxTDisplaySelect[5][15] = {{"4 ALPHA+CREDIT"},{" SYS11 PINBOT "},{" SYS11  F-14  "},{" SYS11  BK2K  "},{" SYS11   TAXI "}};
-struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTGameSelect[0][0],0,2},
+struct SettingTopic APC_setList[10] = {
+      {" ACTIVE GAME  ",HandleTextSetting,&TxTGameSelect[0][0],0,2},
       {" NO OF  BALLS ",HandleNumSetting,0,1,5},
 		  {"  FREE  GAME  ",HandleBoolSetting,0,0,0},
 		  {"  DIM  INSERTS",HandleBoolSetting,0,0,0},
@@ -186,7 +187,8 @@ struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTG
 			{"DISPLAY TYPE  ",HandleTextSetting,&TxTDisplaySelect[0][0],0,4},
 		  {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		  {"  EXIT SETTNGS",ExitSettings,0,0,0},
-      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+      {"",NULL,0,0,0}};
+
 struct GameDef {
 	struct SettingTopic *GameSettingsList;							// points to the settings definition of the current game
 	byte *GameDefaultsPointer;													// points to the default settings of the selected game
