@@ -128,7 +128,7 @@ bool PlayingMusic = false;														// StartMusic done -> continuously playi
 File MusicFile;																				// file handle for the music file (SD)
 bool AfterMusicPending = false;												// indicates that there's an after music event to be executed
 void (*AfterMusic)() = 0;															// program to execute after music file has ended
-char *NextMusicName;																	// points to the name of the next music file to be played (if any)
+const char *NextMusicName;														// points to the name of the next music file to be played (if any)
 byte MusicPriority = 0;																// stores the priority of the music file currently being played
 byte SBP = 0;																					// Sound Buffer Pointer - next block to write to inside of the music buffer
 byte SoundIRpos = 0;																	// next block of the sound buffer to be read from the interrupt
@@ -190,8 +190,8 @@ struct SettingTopic APC_setList[10] = {{" ACTIVE GAME  ",HandleTextSetting,&TxTG
 struct GameDef {
 	struct SettingTopic *GameSettingsList;							// points to the settings definition of the current game
 	byte *GameDefaultsPointer;													// points to the default settings of the selected game
-	char *GameSettingsFileName;													// points to the name of the settings file for the selected game
-	char *HighScoresFileName;														// contains the name of the high scores file for the selected game
+	const char *GameSettingsFileName;													// points to the name of the settings file for the selected game
+	const char *HighScoresFileName;														// contains the name of the high scores file for the selected game
 	void (*AttractMode)();															// Pointer to Attract mode of current game
 	const unsigned int *SolTimes;												// Default activation times of solenoids
 };
@@ -224,7 +224,7 @@ bool AppBool = false;                                 // general purpose applica
 byte APC_settings[64];																// system settings to be stored on the SD
 byte game_settings[64];																// game settings to be stored on the SD
 byte *SettingsPointer;																// points to the settings being changed
-char *SettingsFileName;																// points to the settings file currently being edited
+const char *SettingsFileName;																// points to the settings file currently being edited
 
 const int UpDown = 53;                                // arduino pin connected to the auto/up - manual/Down button
 const int Blanking = 22;                              // arduino pin to control the blanking signal
