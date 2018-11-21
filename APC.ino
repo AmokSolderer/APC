@@ -988,7 +988,6 @@ void ActA_BankSol(unsigned int Duration, byte Solenoid) {
 
 void ActA_BankLater(byte Dummy) {
   UNUSED(Dummy);
-
 	if (!C_BankActive) {																// C bank still in use?
 		i = 0;
 		while (!A_BankWaiting[i]) {                     	// look for a used slot in the list of solenoids to be processed later
@@ -1014,7 +1013,6 @@ void ActC_BankSol2(byte Solenoid) {
 
 void PB_ResetAC_Relay(byte Dummy) {
   UNUSED(Dummy);
-
 	C_BankActive = false;
 	ReleaseSolenoid(14);
   if (A_BankWaitingNo) {
@@ -1121,7 +1119,6 @@ void ShowNumber(byte Position, unsigned int Number) {
 
 void ShowAllPoints(byte Dummy) {                  		// just a dummy event to access it via timer
   UNUSED(Dummy);
-
   WriteUpper("              ");                   		// erase display
   WriteLower("              ");
   for (i=1; i<=NoPlayers; i++) {                  		// display the points of all active players
@@ -1252,7 +1249,7 @@ void PlayFlashSequence(byte* Sequence) {              // prepare for playing a f
   ActivateSolenoid(0, 14);                            // switch A/C relay to C
   C_BankActive = true;                                // indicate that the C bank is active
   FlashSequence = Sequence;                           // set the FlashSequence pointer to the current sequence
-  ActivateTimer(50, 0, FlSeqPlayer);}                 // start the sequence in 50ms when the A/C relay had some time to switch
+  ActivateTimer(100, 0, FlSeqPlayer);}                // start the sequence in 50ms when the A/C relay had some time to switch
 
 void FlSeqPlayer(byte Step) {                         // play flasher sequence
   if (FlashSequence[Step]) {                          // if the next list entry is not zero
@@ -1332,7 +1329,9 @@ void FadeOutMusic(byte Speed) {
  	analogWrite(VolumePin, 255-ByteBuffer3);
 	if (ByteBuffer3) {
 		ByteBuffer3--;
-		ActivateTimer(Speed, Speed, FadeOutMusic);}}
+		ActivateTimer(Speed, Speed, FadeOutMusic);}
+  else {
+    StopPlayingMusic();}}
 
 void PlaySound(byte Priority, const char* Filename) {
 	if (!StartSound) {
@@ -1443,6 +1442,7 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 	switch (Switch) {
 		case 72:																					// Advance button pressed
 			StopPlayingMusic();
+      analogWrite(VolumePin, 255);
 			if (!digitalRead(UpDown)) {											// go forward or backward depending on UpDown switch
 				AppByte++;																		// show next setting
 				if (!SettingsList[AppByte].EventPointer) {		// end marker of settings list reached?
@@ -1541,10 +1541,9 @@ void HandleTextSetting(bool change) {									// handling method for text settin
 
 void HandleVolumeSetting(bool change) {
 	HandleNumSetting(change);
-	if (change) {
-		analogWrite(VolumePin,255-APC_settings[Volume]);}	// adjust PWM to volume setting
-	else {
-		PlayMusic(50, "Musik.bin");}}
+	if (!change) {
+		PlayMusic(50, "Musik.bin");}	
+  analogWrite(VolumePin,255-APC_settings[Volume]);}   // adjust PWM to volume setting
 
 byte HandleHighScores(unsigned int Score) {
 	byte Position = 0;

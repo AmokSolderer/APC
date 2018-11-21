@@ -534,7 +534,6 @@ void CheckReleasedBall(byte Balls) {                  // ball release watchdog
 
 void TimedRightMagna(byte dummy) {										// runs every second as long as button is pressed
   UNUSED(dummy);
-
 	if (Switch[9] && RightMagna[Player]) {							// button still pressed and magna seconds left?
 		RightMagna[Player]--;															// reduce magna save seconds
 		AddBlinkLamp(9, 150*RightMagna[Player]);					// adjust blinking rhythm of lamp
@@ -548,7 +547,6 @@ void TimedRightMagna(byte dummy) {										// runs every second as long as butt
 
 void TimedLeftMagna(byte dummy) {											// runs every second as long as button is pressed
   UNUSED(dummy);
-
 	if (Switch[10] && LeftMagna[Player]) {							// button still pressed and magna seconds left?
 		LeftMagna[Player]--;															// reduce magna save seconds
 		AddBlinkLamp(10, 150*LeftMagna[Player]);					// adjust blinking rhythm of lamp
