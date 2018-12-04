@@ -31,7 +31,7 @@ const unsigned int PB_SolTimes[32] = {50,20,30,70,50,200,30,30,0,0,0,0,0,0,100,1
 const byte PB_BallSearchCoils[9] = {3,4,5,17,19,22,6,20,21}; // coils to fire when the ball watchdog timer runs out
 const byte PB_OpenVisorSeq[45] = {26,30,26,30,26,30,27,5,31,5,32,5,29,5,29,5,26,5,29,2,29,3,29,7,29,8,29,5,29,4,26,2,27,5,31,5,32,5,29,5,28,5,26,10,0};
 const byte PB_MultiballSeq[69] = {16,5,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,7,0,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,5,15,10,8,0,0};
-const byte PB_ScoreEnergySeq[7] = {7,10,7,10,7,10,0};
+const byte PB_ScoreEnergySeq[7] = {31,10,31,10,31,10,0};
 const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
@@ -870,10 +870,6 @@ void PB_GameMain(byte Switch) {
       ShowPoints(Player);
       ActivateTimer(200, Switch, PB_HandleDropTargets);}
 		break;
-  case 54:
-  case 55:
-    ActC_BankSol(5);
-    break;
   case 56:                                            // standup targets
   case 59:
   case 60:
@@ -902,10 +898,12 @@ void PB_GameMain(byte Switch) {
 	case 68:																						// left slingshot
     PB_MoveExBallLamps(0);
 		ActivateSolenoid(0, 20);
+    ActC_BankSol(5);
 		break;
 	case 69:																						// right slingshot
     PB_MoveExBallLamps(1);
 		ActivateSolenoid(0, 21);
+    ActC_BankSol(5);
 		break;
   case 70:                                            // upper jet bumper
     ActivateSolenoid(0, 22);
@@ -1408,7 +1406,10 @@ void PB_BallEnd3(byte Dummy) {
 void PB_Congrats(byte Dummy) {                    		// show congratulations
 	UNUSED(Dummy);
 	LampPattern = NoLamps;
+  ActC_BankSol(1);
 	AfterMusic = 0;
+  if (APC_settings[Volume]) {
+   analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[PB_MultiballVolume]);} // increase volume
 	PlayMusic(50, "BS_M01.bin");
   ActivateSolenoid(0, 11);
   ActivateSolenoid(0, 12);

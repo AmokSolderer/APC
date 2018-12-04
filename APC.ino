@@ -1022,7 +1022,7 @@ void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
 				else {
 					ActivateSolenoid(0, 14);										// switch to C
 					C_BankActive = true;}												// signal it
-				ActivateTimer(500, 1, ActSolenoid);}					// wait 500ms for the relay to settle
+				ActivateTimer(50, 1, ActSolenoid);}					  // wait 500ms for the relay to settle
 			else {
 				if (SolWaiting[ActSolSlot][0] < 25) {
 					ActivateSolenoid(0, SolWaiting[ActSolSlot][0]);}
@@ -1041,7 +1041,7 @@ void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
 			ReleaseSolenoid(14);														// reset it
 			C_BankActive = false;
 			State = true;
-			ActivateTimer(500, 1, ActSolenoid);}
+			ActivateTimer(50, 1, ActSolenoid);}
 		else {																						// absolutely nothing to do
 			State = false;}}}																// set routing state to passive
 
