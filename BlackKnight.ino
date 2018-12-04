@@ -831,7 +831,7 @@ void BallEnd(byte Event) {
           InLock++;}}}
     WriteLower(" BALL   ERROR ");
     if (Switch[16]) {                                 // ball still in outhole?
-      ActA_BankSol(0, 1);                             // make the coil a bit stronger
+      ActivateSolenoid(0, 1);                         // make the coil a bit stronger
       ActivateTimer(2000, Event, BallEnd);}           // and come back in 2s
     else {
       if (Event < 11) {                               // have I been here already?

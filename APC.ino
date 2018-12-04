@@ -94,11 +94,10 @@ byte SolNumber = 0;                                   // Determines which soleno
 bool SolState = false;                                // and what the desired state is
 byte SolDelayed[20];                                  // Queue for waiting solenoid requests
 bool C_BankActive = false;														// A/C relay currently doing C bank?
-byte A_BankWaitingNo = 0;															// amount of coils in A bank waiting list
-byte A_BankWaiting[10];																// list of waiting A bank coils
-unsigned int A_BankWaitDuration[10];									// duration values for waiting A bank coils
+byte SolWaiting[64][2];																// list of waiting A/C solenoid requests
+byte ActSolSlot = 0;																	// currently processed slot in SolWaiting
+byte NextSolSlot = 0;																	// next free slot in SolWaiting
 unsigned int DurDelayed[20];                          // duration values for waiting solenoid requests
-byte *FlashSequence;                                  // pointer to the current flash lamp sequence
 byte SettingsRepeatTimer = 0;													// number of the timer of the key repeat function in the settings function
 byte BlinkScoreTimer = 0;                             // number of the timer for the score blinking
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
@@ -973,50 +972,78 @@ bool SolenoidStatus(byte Solenoid) {                  // determine the current s
   bool State = SolBuffer[Solenoid / 8] & (1<<(Solenoid % 8));
   return State;}
 
-void ActA_BankSol(unsigned int Duration, byte Solenoid) {
-	if (!C_BankActive) {
-		ActivateSolenoid(Duration, Solenoid);}
+void ActA_BankSol(byte Solenoid) {
+	if (!SolWaiting[NextSolSlot][0]) {
+		SolWaiting[NextSolSlot][0] = Solenoid;
+		SolWaiting[NextSolSlot][1] = 0;
+		//SolWaiting[NextSolSlot][1] = ((*(GameDefinition.SolTimes+Solenoid-1))/10)+2;
+		NextSolSlot++;
+		if (NextSolSlot > 63) {
+			NextSolSlot = 0;}
+		ActSolenoid(0);}
 	else {
-		i = 0;
-		while (A_BankWaiting[i]) {                     		// look for a free slot in the list of solenoids to be processed later
-			i++;}
-		if (i > 9) {																			// list full?
-			ErrorHandler(20,0,Solenoid);}         					// show error 20
-		A_BankWaitDuration[i] = Duration;									// store duration value
-		A_BankWaiting[i] = Solenoid;                   		// insert the solenoid number
-		A_BankWaitingNo++;}}															// increase number of waiting coils
-
-void ActA_BankLater(byte Dummy) {
-  UNUSED(Dummy);
-	if (!C_BankActive) {																// C bank still in use?
-		i = 0;
-		while (!A_BankWaiting[i]) {                     	// look for a used slot in the list of solenoids to be processed later
-			i++;}
-		if (i > 9) {																			// list empty?
-			ErrorHandler(21,0,0);}         									// show error 20
-		ActivateSolenoid(A_BankWaitDuration[i], A_BankWaiting[i]);
-		A_BankWaiting[i] = 0;															// delete list entry
-		A_BankWaitingNo--;																// reduce number of entries
-		if (A_BankWaitingNo)	{														// is there another entry?
-			ActivateTimer(25, 0, ActA_BankLater);}}					// then come back
-	else {
-		ActivateTimer(500, 0, ActA_BankLater);}}
+		ErrorHandler(28,0,Solenoid);}}
 
 void ActC_BankSol(byte Solenoid) {
-	ActivateSolenoid(0, 14);
-	C_BankActive = true;
-	ActivateTimer(50, Solenoid, ActC_BankSol2);
-	ActivateTimer(*(GameDefinition.SolTimes+Solenoid+23)+100, 0, PB_ResetAC_Relay);}
+	if (!SolWaiting[NextSolSlot][0]) {
+		SolWaiting[NextSolSlot][0] = Solenoid+24;
+		SolWaiting[NextSolSlot][1] = 0;
+		NextSolSlot++;
+		if (NextSolSlot > 63) {
+			NextSolSlot = 0;}
+		ActSolenoid(0);}
+	else {
+		ErrorHandler(29,0,Solenoid);}}
 
-void ActC_BankSol2(byte Solenoid) {
-	ActivateSolenoid(*(GameDefinition.SolTimes+Solenoid+23), Solenoid);}
+void PlayFlashSequence(byte* Sequence) {              // prepare for playing a flasher sequence
+	byte x = 0;
+	while (Sequence[x]) {
+		if (!SolWaiting[NextSolSlot][0]) {
+			SolWaiting[NextSolSlot][0] = Sequence[x];
+			x++;
+			SolWaiting[NextSolSlot][1] = Sequence[x];
+			x++;
+			NextSolSlot++;
+			if (NextSolSlot > 63) {
+				NextSolSlot = 0;}}
+		else {
+			ErrorHandler(30,0,0);
+			break;}}
+	ActSolenoid(0);}
 
-void PB_ResetAC_Relay(byte Dummy) {
-  UNUSED(Dummy);
-	C_BankActive = false;
-	ReleaseSolenoid(14);
-  if (A_BankWaitingNo) {
-	  ActivateTimer(100, 0, ActA_BankLater);}}
+void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
+	static bool State;
+	if (GivenState || !State) {													// accept new calls (Givenstate = 0) only when not already running (State = 0)
+		if (ActSolSlot != NextSolSlot) {									// any solenoid waiting?
+			if (((SolWaiting[ActSolSlot][0] < 9) && C_BankActive) || ((SolWaiting[ActSolSlot][0] > 24) && !C_BankActive)) { // wrong relay state?
+				if (C_BankActive) {
+					ReleaseSolenoid(14);												// switch to A
+					C_BankActive = false;}											// signal it
+				else {
+					ActivateSolenoid(0, 14);										// switch to C
+					C_BankActive = true;}												// signal it
+				ActivateTimer(500, 1, ActSolenoid);}					// wait 500ms for the relay to settle
+			else {
+				if (SolWaiting[ActSolSlot][0] < 25) {
+					ActivateSolenoid(0, SolWaiting[ActSolSlot][0]);}
+				else {
+					ActivateSolenoid(*(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1), SolWaiting[ActSolSlot][0]-24);}
+				if (SolWaiting[ActSolSlot][1]) {
+					ActivateTimer(SolWaiting[ActSolSlot][1]*10, 1, ActSolenoid);}	// call the timer
+				else {
+					ActivateTimer(*(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1, 1, ActSolenoid);}
+				SolWaiting[ActSolSlot][0] = 0;								// mark current slot as free
+				ActSolSlot++;																	// increase slot number
+				if (ActSolSlot > 63) {												// array end reached?
+					ActSolSlot = 0;}}														// start from zero
+			State = true;}																	// set routing state to active
+		else if (C_BankActive){														// nothing more to do any relay still active?
+			ReleaseSolenoid(14);														// reset it
+			C_BankActive = false;
+			State = true;
+			ActivateTimer(500, 1, ActSolenoid);}
+		else {																						// absolutely nothing to do
+			State = false;}}}																// set routing state to passive
 
 void ShowPoints(byte Player) {                    		// display the points of the selected player
   DisplayScore(Player, Points[Player]);}
@@ -1160,13 +1187,13 @@ void AddBlinkLamp(byte Lamp, unsigned int Period) {
 					break;}}                                    // and end the search
 			x++;                                            // or continue searching
 			if (x > 65) {                                   // max 64 blink timers possible (starting from 1)
-				ErrorHandler(4,BlinkTimer[x],Lamp);}}         // show error 4
+				ErrorHandler(4,0,Lamp);}}         						// show error 4
 		x = 0;
 		if (Flag) {                                       // has a timer with the same period been found?
 			while (BlinkingLamps[b][x]) {                   // search for a free lamp slot
 				x++;
 				if (x > 65) {                                 // max 64 blink timers possible (starting from 1)
-					ErrorHandler(5,BlinkingLamps[b][x],Lamp);}} // show error 5
+					ErrorHandler(5,0,Lamp);}} 									// show error 5
 			BlinkingLamps[b][x] = Lamp;                     // add the lamp to blink
 			BlinkingNo[b]++;}                               // and increase the number of lamps to be controlled by this timer
 		else {                                            // if no matching timer has been found
@@ -1212,9 +1239,9 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
      
 void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3) {
   
-  WriteUpper("ERROR         ");                       // Show Error Message
-  WriteLower("              ");
-  LampPattern = NoLamps;                              // Turn off all lamps
+  WriteUpper2("ERROR         ");                       // Show Error Message
+  WriteLower2("              ");
+  //LampPattern = NoLamps;                              // Turn off all lamps
   Serial.print("Error = ");
   Serial.println(Error);
   Serial.print("Number2 = ");
@@ -1223,10 +1250,10 @@ void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3
   Serial.println(Number3);  
   //ReleaseAllSolenoids();
   //KillAllTimers();
-  DisplayScore(2, Error);
-  DisplayScore(3, Number2);
-  DisplayScore(4, Number3);
-  while (1) {}}
+  ShowNumber(15, Error);
+  ShowNumber(23, Number2);
+  ShowNumber(31, Number3);
+  SwitchDisplay(0);}
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being zero
   IntBuffer = (PatPointer+Step)->Duration;            // buffer the duration for the current pattern
@@ -1245,28 +1272,6 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
       return;}}                                       // otherwise just quit
   ByteBuffer3 = ActivateTimer(IntBuffer, Step, ShowLampPatterns);} // come back after the given duration
 
-void PlayFlashSequence(byte* Sequence) {              // prepare for playing a flasher sequence
-  ActivateSolenoid(0, 14);                            // switch A/C relay to C
-  C_BankActive = true;                                // indicate that the C bank is active
-  FlashSequence = Sequence;                           // set the FlashSequence pointer to the current sequence
-  ActivateTimer(100, 0, FlSeqPlayer);}                // start the sequence in 50ms when the A/C relay had some time to switch
-
-void FlSeqPlayer(byte Step) {                         // play flasher sequence
-  if (FlashSequence[Step]) {                          // if the next list entry is not zero
-    byte Duration;
-    if (FlashSequence[Step+1] < 9) {
-      Duration = *(GameDefinition.SolTimes+FlashSequence[Step+1]+23);}
-    else {
-      Duration = *(GameDefinition.SolTimes+FlashSequence[Step+1]);}
-    ActivateSolenoid(Duration, FlashSequence[Step+1]); // Activate the flasher with its standard activate time
-    ActivateTimer(FlashSequence[Step]*10, Step+2, FlSeqPlayer);} // increase the step counter and play the next list entry in duration*10ms
-  else {                                              // if the next list entry is zero
-    FlashSequence = 0;                                // set the list pointer to zero
-    ReleaseSolenoid(14);                              // release the A/C relay
-    C_BankActive = false;                             // and indicate the C bank as not active
-  if (A_BankWaitingNo) {                              // any pending A bank solenoids?
-    ActivateTimer(100, 0, ActA_BankLater);}}}         // handle them when the relay has switched back to the A bank
-    
 void StrobeLights(byte State) {
   if (State) {
     LampPattern = LampBuffer;                         // show the pattern
