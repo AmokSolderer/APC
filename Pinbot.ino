@@ -171,9 +171,10 @@ void PB_AttractDisplayCycle(byte Event) {
   PB_CheckForLockedBalls(0);
   switch (Event) {
     case 0:
-      WriteUpper2("THE APC       ");
+      //WriteUpper2("THE APC       ");
+      WriteUpper2(" BATTLESTAR   ");
       ActivateTimer(50, 1, ScrollUpper);
-      ActivateTimer(900, 1, PB_AttractScroll);
+      ActivateTimer(2000, 1, PB_AttractScroll);
       WriteLower2("              ");
       ActivateTimer(1400, 1, ScrollLower);
       if (NoPlayers) {																// was there a previous game?
@@ -221,9 +222,10 @@ void PB_AttractDisplayCycle(byte Event) {
 
 void PB_AttractScroll(byte Dummy) {
   UNUSED(Dummy);
-
-  WriteUpper2("PINBOT        ");
-  AddScrollUpper(1);}
+  //WriteUpper2("PINBOT        ");
+  WriteUpper2("  GALACTICA   ");
+  //AddScrollUpper(1);
+  ScrollUpper(1);}
 
 void PB_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
   UNUSED(Event);
@@ -246,6 +248,7 @@ void PB_AttractModeSW(byte Select) {
       digitalWrite(VolumePin,HIGH);}                  // turn off the digital volume control
     // StrobeLightsTimer = 0;
     ByteBuffer3 = 0;
+    Switch_Pressed = AddPlayerSW;
 		for (i=0; i< LampMax+1; i++) {
 			Lamp[i] = false;}
 		LampPattern = Lamp;
@@ -320,9 +323,12 @@ void PB_GameStart() {
 	AfterMusic = PlayGameMusic;
 	PlayMusic(50, "BS_M02.bin");}
 
+void AddPlayerSW(byte Switch) {
+  if (Switch == 3) {
+    PB_AddPlayer();}}
+
 void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are locked and release them
   UNUSED(Dummy);
-
 	if (Switch[16]) {                                   // for the outhole
 		ActA_BankSol(1);}
 	if (Switch[38]) {                                   // for the single eject hole
@@ -349,6 +355,7 @@ void PB_AddPlayer() {
     
 void PB_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
 	ShowAllPoints(0);
+  Bonus = 1;
 	BonusMultiplier = 1;                                // reset bonus multiplier
 	for (i=0; i<4; i++) {                               // turn off the corresponding lamps
 		Lamp[9+i] = false;}
@@ -366,6 +373,7 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 		if (!Switch[47]) {                                // visor not already open?
 			PB_OpenVisorFlag = true;
 			ActivateSolenoid(0, 13);}                       // open visor
+    PB_EyeBlink(1);
 		PB_ChestPatterns = (byte*)PB_WalkingLines;        // set chest lamps pattern
 		PB_ChestLightsTimer = ActivateTimer(500, 0, PB_StartChestPattern);} // start player
 	else {
@@ -383,6 +391,11 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 		PB_LampsToLight = 1;}                             // TODO change according to difficulty setting
 	else {
 		PB_LampsToLight = 2;}
+  for (i=0; i<4; i++) {                               // restore extra ball lamps
+    if (i<PB_ExBallsLit[Player]){
+      Lamp[PB_ExBallLamps[i]] = true;}
+    else {
+      Lamp[PB_ExBallLamps[i]] = false;}}
 	if (PB_EjectMode[Player] < 5) {
 		for (i=0; i<PB_EjectMode[Player]; i++) {
 			Lamp[13+i] = true;}}
@@ -394,6 +407,11 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 	PB_CycleDropLights(1);															// start the blinking drop target lights
 	if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {	// target planet not reached yet?
 		AddBlinkLamp(18+game_settings[PB_ReachPlanet],100);}		// let target planet blink
+  for (i=0; i<9; i++) {                               // update planets
+    if (PB_Planet[Player] > i) {
+      Lamp[PB_Planet[Player]+19] = true;}
+    else {
+      Lamp[PB_Planet[Player]+19] = false;}}
 	PB_GiveBall(Balls);}
 
 void PB_GiveBall(byte Balls) {
@@ -576,7 +594,8 @@ void PB_GameMain(byte Switch) {
     ActivateTimer(3000, 0, ShowAllPoints);
     break;
   case 3:
-    PB_AddPlayer();
+    if (Ball == 1) {
+      PB_AddPlayer();}
     break;
   case 4:
   case 5:
@@ -737,8 +756,8 @@ void PB_GameMain(byte Switch) {
         }}
       PB_SkillShot = true;}                           // the first shot is a skill shot  
     break;
-	case 25:
-	case 26:
+	case 25:                                            // left eye
+	case 26:                                            // right eye
     if (!PB_IgnoreLock) {
       PB_IgnoreLock = true;
       PB_AddBonus(1);
@@ -818,6 +837,7 @@ void PB_GameMain(byte Switch) {
       RemoveBlinkLamp(35);
       Points[Player] += PB_SolarValue * 1000;
       ShowPoints(Player);
+      ActivateTimer(2000,1,PB_EyeBlink);
       Buffer = PB_SolarValue;
       PB_SolarValue = 100;
       PB_ClearOutLock(0);}
@@ -964,9 +984,7 @@ void PB_AddBonus(byte BonusToAdd) {
       WriteUpper2("BONUS =       ");
       ShowNumber(15, Bonus*1000);
       DispRow1 = DisplayUpper2;}
-    if (ShowMessageTimer) {                           // timer already running?
-      KillTimer(ShowMessageTimer);}                   // kill it      
-    ShowMessageTimer = ActivateTimer(2000, 0, ShowMessage);}}
+    ShowMessage(2);}}
     
 void PB_ClearEjectHole(byte Solenoid) {                   // activate solenoid after delay time
   PB_EjectIgnore = false;
@@ -995,8 +1013,31 @@ void PB_OpenVisorProc() {                   					// measures to open the visor
   PB_CloseVisorFlag = false;
   ActivateSolenoid(4000, 11);                       	// turn the backbox GI off
   ActivateTimer(2000, 0, PB_OpenVisor);
+  ActivateTimer(3000, 1, PB_EyeBlink);
   ActivateSolenoid(0, 13);}
-  
+
+void PB_EyeBlink(byte State) {
+  static byte Timer = 0;
+  if ((State > 1) || ((State == 1) && !Timer)) {
+    if (State == 2) {
+      ReleaseSolenoid (10);
+      if (!Switch[25]) {
+        ActivateSolenoid(0, 18);}
+      State = 3;}
+    else {
+      ReleaseSolenoid (18);
+      if (!Switch[26]) {
+        ActivateSolenoid(0, 10);}
+      State = 2;}
+    Timer = ActivateTimer(500, State, PB_EyeBlink);}
+  else {
+    if (!State) {
+      if (Timer) {
+        KillTimer(Timer);
+        Timer = 0;}
+      ReleaseSolenoid (10);
+      ReleaseSolenoid (18);}}}
+    
 void PB_ChestLightHandler(byte State) {               // handle chest lights timer
   if (State) {                                        // is there an animation for a row / column hit running?
     if (State < 6) {                                  // turn on phase
@@ -1099,7 +1140,7 @@ void PB_HandleLock(byte State) {
 	if (!State) {                                       // routine didn't call itself
 		PB_IgnoreLock = false;
 		InLock++;}
-	c = 0;
+	byte c = 0;
 	if (Switch[25]) {                                   // count locked balls
 		c++;}
 	if (Switch[26]) {
@@ -1116,6 +1157,7 @@ void PB_HandleLock(byte State) {
 					if (Multiballs > 1) {                       // multiball already running?
 						AddBlinkLamp(35, 100);                    // start blinking of solar energy ramp
 						PB_OpenVisorFlag = false;
+            PB_EyeBlink(0);
 						ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
 						ActivateSolenoid(0, 13);                  // start visor motor
 						PB_SolarValueTimer = ActivateTimer(8000, 0,PB_ReopenVisor);} // 8s to score the solar value
@@ -1124,6 +1166,7 @@ void PB_HandleLock(byte State) {
 						PB_GiveBall(1);}}                         // give second ball
 				else {                                        // both balls in lock
 					if (Multiballs == 1) {                      // multiball not yet running?
+            PB_EyeBlink(0);
             ActivateSolenoid(0, 11);                  // turn off GI
             ActivateSolenoid(0, 12);
             //ActivateSolenoid(0, 14);
@@ -1159,6 +1202,7 @@ void PB_Multiball() {
 
 void PB_Multiball2(byte Dummy) {
   UNUSED(Dummy);
+  PB_EyeBlink(1);
   LampPattern = Lamp;}
   
 void PB_LampSweep(byte Step) {
@@ -1179,6 +1223,7 @@ void PB_LampSweep(byte Step) {
 
 void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar value ramp was not hit in time
   UNUSED(Dummy);
+  ActivateTimer(1000,1,PB_EyeBlink);
   PB_SolarValueTimer = 0;
   RemoveBlinkLamp(35);
   PB_ClearOutLock(0);}
@@ -1298,6 +1343,7 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 				Event = 0;
 				PB_ClearOuthole(0);}}}
 	else {
+    PB_EyeBlink(0);
 		if (Multiballs == 2) {														// multiball running?
 			Multiballs = 1;																	// turn it off
       PB_LampSweepActive = 0;													// turn off backbox lamp sweep
@@ -1407,7 +1453,7 @@ void PB_Congrats(byte Dummy) {                    		// show congratulations
 	UNUSED(Dummy);
 	LampPattern = NoLamps;
   ActC_BankSol(1);
-	AfterMusic = 0;
+	AfterMusic = PB_EnterInitials2;
   if (APC_settings[Volume]) {
    analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[PB_MultiballVolume]);} // increase volume
 	PlayMusic(50, "BS_M01.bin");
@@ -1417,10 +1463,12 @@ void PB_Congrats(byte Dummy) {                    		// show congratulations
   PB_LampSweep(4);
 	WriteUpper("              ");
 	WriteLower("              ");
+  DisplayScore(3, Points[Player]);
+  DisplayScore(4, Points[Player]);
 	WriteUpper2(" GREAT        ");
 	ActivateTimer(50, 1, ScrollUpper);
 	ActivateTimer(1400, 1, PB_ScrollCongrats);
-	ActivateTimer(3000, 1, PB_ScrollCongrats2);
+	//ActivateTimer(3000, 1, PB_ScrollCongrats2);
 	ActivateTimer(5000, Player, PB_Congrats2);}
 
 void PB_ScrollCongrats(byte Dummy) {
@@ -1428,34 +1476,32 @@ void PB_ScrollCongrats(byte Dummy) {
   WriteUpper2("  SCORE       ");
   AddScrollUpper(1);}
 
-void PB_ScrollCongrats2(byte Dummy) {
-	UNUSED(Dummy);
-  WriteUpper2("       PLAYER ");
-	*(DisplayUpper2+30) = DispPattern1[32 + 2 * Player];
-	*(DisplayUpper2+31) = DispPattern1[33 + 2 * Player];
-  ScrollUpper(9);}
-
 void PB_Congrats2(byte Dummy) {
 	UNUSED(Dummy);
-	DisplayScore(3, Points[Player]);
-	DisplayScore(4, Points[Player]);
-	WriteUpper2(" ENTER        ");
+	WriteUpper2("ENTER         ");
 	ActivateTimer(50, 1, ScrollUpper);
-	ActivateTimer(1400, 1, PB_ScrollCongrats3);
-	ActivateTimer(3000, 1, PB_ScrollCongrats4);
-  ByteBuffer = 0;
-	ActivateTimer(4000, 0, PB_EnterInitials);
-}
+	ActivateTimer(1400, 1, PB_ScrollCongrats2);
+	ActivateTimer(3000, 1, PB_ScrollCongrats3);
+  ActivateTimer(4000, 1, PB_ScrollCongrats4);
+  ByteBuffer = 0;}
 
-void PB_ScrollCongrats3(byte Dummy) {
+void PB_ScrollCongrats2(byte Dummy) {
 	UNUSED(Dummy);
   WriteUpper2("INITIALS      ");
   AddScrollUpper(1);}
 
+void PB_ScrollCongrats3(byte Dummy) {
+  UNUSED(Dummy);
+  WriteUpper2(" PLAYER       ");
+  *(DisplayUpper2+29) = DispPattern1[32 + 2 * Player];
+  *(DisplayUpper2+30) = DispPattern1[33 + 2 * Player];
+  AddScrollUpper(1);}
+  
 void PB_ScrollCongrats4(byte Dummy) {
 	UNUSED(Dummy);
   WriteUpper2("              ");
-  ScrollUpper(10);}
+  ScrollUpper(9);
+  ActivateTimer(2000, 0, PB_EnterInitials);}
 
 void PB_EnterInitials(byte Switch) {
 	switch (Switch) {
@@ -1470,7 +1516,6 @@ void PB_EnterInitials(byte Switch) {
 		KillTimer(ByteBuffer2);
 		ByteBuffer++;
 		if (ByteBuffer > 2) {
-			AfterMusic = PB_EnterInitials2;
 			if (APC_settings[Volume]) {
 				ByteBuffer3 = APC_settings[Volume];
 				FadeOutMusic(100);}
@@ -1511,16 +1556,21 @@ void PB_BlinkInitial(byte State) {                       // blink actual charact
 		State = 0;}
 	else {
 		for (i=0; i<3; i++) {
-			*(DisplayUpper+22+4*i) = DispPattern1[(EnterIni[i]-32)*2];
+			*(DisplayUpper+21+4*i) = DispPattern1[(EnterIni[i]-32)*2];
 			*(DisplayUpper+22+4*i+1) = DispPattern1[(EnterIni[i]-32)*2+1];}// restore the characters
 		State = 1;}
 	ByteBuffer2 = ActivateTimer(100+State*2000, State, PB_BlinkInitial);}  // and come back
 
 void PB_EnterInitials2() {
-	ByteBuffer2 = HandleHighScores(Points[Player]);
-	WriteUpper2(" HIGH   SCORE ");
-	ScrollUpper(1);
-	ActivateTimer(2000, 1, PB_EnterInitials3);}
+  if (APC_settings[Volume]) {
+    analogWrite(VolumePin, 255);}
+  if (ByteBuffer > 2) {
+	  ByteBuffer2 = HandleHighScores(Points[Player]);
+	  WriteUpper2(" HIGH   SCORE ");
+	  ScrollUpper(1);
+	  ActivateTimer(2000, 1, PB_EnterInitials3);}
+	else {
+	  PB_BallEnd3(1);}}
 
 void PB_EnterInitials3(byte Dummy) {
 	UNUSED(Dummy);

@@ -20,7 +20,7 @@ const byte AlphaLower[118] = {0,0,0,0,0,0,0,0,182,35,0,0,0,0,0,0,0,0,0,0,2,247,2
   94,2,252,4,94,6,182,2,16,33,236,0,68,80,204,20,0,212,0,224,48,80}; // Pattern P Q R S T U V W X Y Z
 
 const byte NumLower[118] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // Blank and fill bytes for lower row numeric displays
-	  252,0,136,0,122,0,186,0,142,0,182,0,246,0,152,0,254,0,190,0,0,0,0,0,0,0,72,0,0,0,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 = and fill bytes
+	  252,0,136,0,122,0,186,0,142,0,182,0,246,0,152,0,254,0,190,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 = and fill bytes
 	  222,0,230,0,116,0,234,0,118,0,86,0,246,0,206,0,68,0,232,0,206,0,100,0,194,0,194,0,226,0, // Pattern A B C D E F G H I J K L M N O
 	  94,0,252,0,66,0,182,0,84,0,236,0,236,0,236,0,206,0,78,0,122,0}; // Pattern P Q R S T U V W X Y Z
 
@@ -936,7 +936,10 @@ void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
   else {                                        			// if a change request is already pending
     i = 0;
     while (SolDelayed[i]) {                     			// look for a free slot in the list of solenoids to be processed later
-      i++;}
+      i++;
+      if (i > 20) {
+        ErrorHandler(31,Solenoid,Duration);
+        break;}}
     SolDelayed[i] = Solenoid;                   			// insert the solenoid number
     DurDelayed[i] = Duration;                   			// and its duration into the list
     ActivateTimer(25, Solenoid, ActivateLater);}}			// and try again later
