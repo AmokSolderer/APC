@@ -1069,11 +1069,10 @@ void BlinkScore(byte State) {													// State = 0 -> stop blinking / State 
 			else {
 				for (i=0; i<14; i++) {
 					*(DisplayLower+Buffer+i) = 0;}}
-			State = 3;}
+			Timer = ActivateTimer(300, 3, BlinkScore);}
 		else {																						// turn off score display
 			ShowPoints(Player);
-			State = 2;}
-		Timer = ActivateTimer(2000, State, BlinkScore);}
+			Timer = ActivateTimer(2000, 2, BlinkScore);}}
 	else {
 		if (!State) {
 			if (Timer) {
