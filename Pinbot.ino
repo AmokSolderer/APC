@@ -229,7 +229,6 @@ void PB_AttractScroll(byte Dummy) {
 
 void PB_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
 	UNUSED(Event);
-
 	PatPointer = PB_AttractFlow[AppByte2].FlowPat;      // set the pointer to the current series
 	FlowRepeat = PB_AttractFlow[AppByte2].Repeat;       // set the repetitions
 	AppByte2++;                                         // increase counter
@@ -931,9 +930,7 @@ void PB_GameMain(byte Switch) {
 			WriteLower2("              ");
 			ShowNumber(31, PB_EnergyValue[Player] * 2000);
 			ShowMessage(3);}
-		break;
-	}
-}
+		break;}}
 
 void PB_MoveExBallLamps(byte Direction) {
 	if (PB_ExBallsLit[Player]) {
@@ -1013,7 +1010,7 @@ void PB_OpenVisorProc() {                   					// measures to open the visor
 	ActivateTimer(3000, 1, PB_EyeBlink);
 	ActivateSolenoid(0, 13);}
 
-void PB_EyeBlink(byte State) {
+void PB_EyeBlink(byte State) {												// Blink lock flashers
 	static byte Timer = 0;
 	if ((State > 1) || ((State == 1) && !Timer)) {
 		if (State == 2) {
@@ -1220,7 +1217,8 @@ void PB_LampSweep(byte Step) {
 
 void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar value ramp was not hit in time
 	UNUSED(Dummy);
-	ActivateTimer(1000,1,PB_EyeBlink);
+	if (Multiballs == 2) {
+		PB_EyeBlink(1);}
 	PB_SolarValueTimer = 0;
 	RemoveBlinkLamp(35);
 	PB_ClearOutLock(0);}
@@ -1477,7 +1475,7 @@ void PB_Congrats2(byte Dummy) {
 	ActivateTimer(50, 1, ScrollUpper);
 	ActivateTimer(1400, 1, PB_ScrollCongrats2);
 	ActivateTimer(3000, 1, PB_ScrollCongrats3);
-	ActivateTimer(4000, 1, PB_ScrollCongrats4);
+	ActivateTimer(6000, 1, PB_ScrollCongrats4);
 	ByteBuffer = 0;}
 
 void PB_ScrollCongrats2(byte Dummy) {
@@ -1488,8 +1486,8 @@ void PB_ScrollCongrats2(byte Dummy) {
 void PB_ScrollCongrats3(byte Dummy) {
 	UNUSED(Dummy);
 	WriteUpper2(" PLAYER       ");
-	*(DisplayUpper2+29) = DispPattern1[32 + 2 * Player];
-	*(DisplayUpper2+30) = DispPattern1[33 + 2 * Player];
+	*(DisplayUpper2+30) = DispPattern1[32 + 2 * Player];
+	*(DisplayUpper2+31) = DispPattern1[33 + 2 * Player];
 	AddScrollUpper(1);}
 
 void PB_ScrollCongrats4(byte Dummy) {
@@ -1551,8 +1549,8 @@ void PB_BlinkInitial(byte State) {                    // blink actual character
 		State = 0;}
 	else {
 		for (i=0; i<3; i++) {
-			*(DisplayUpper+21+4*i) = DispPattern1[(EnterIni[i]-32)*2];
-			*(DisplayUpper+22+4*i+1) = DispPattern1[(EnterIni[i]-32)*2+1];}// restore the characters
+			*(DisplayUpper+22+4*i) = DispPattern1[(EnterIni[i]-32)*2];
+			*(DisplayUpper+23+4*i+1) = DispPattern1[(EnterIni[i]-32)*2+1];}// restore the characters
 		State = 1;}
 	ByteBuffer2 = ActivateTimer(100+State*2000, State, PB_BlinkInitial);}  // and come back
 

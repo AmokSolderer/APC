@@ -1051,7 +1051,7 @@ void ShowPoints(byte Player) {                    		// display the points of the
 
 void BlinkScore(byte State) {													// State = 0 -> stop blinking / State = 0 -> start blinking
 	static byte Timer = 0;
-	byte Buffer;
+	byte Buffer = 0;
 	if ((State > 1) || ((State == 1) && !Timer)) {
 		switch (Player) {
 		case 1:                                           // for the players 1 and 3
@@ -1249,7 +1249,6 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
 			ErrorHandler(8,0,LampNo);}}}        						// show error 8
 
 void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3) {
-
 	WriteUpper2("ERROR         ");                      // Show Error Message
 	WriteLower2("              ");
 	//LampPattern = NoLamps;                             // Turn off all lamps
@@ -1265,6 +1264,14 @@ void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3
 	ShowNumber(23, Number2);
 	ShowNumber(31, Number3);
 	SwitchDisplay(0);}
+
+void ShowFileNotFound(String Filename) {							// show file not found message
+	Filename.toUpperCase();															// convert filename to upper case characters
+	char NameBuffer[14];																// create a temporary buffer
+	Filename.toCharArray(NameBuffer, 14);								// fill buffer with filename
+	WriteUpper2(NameBuffer);														// write filename to message buffer
+	WriteLower2(" NOT    FOUND ");
+	ShowMessage(5);}																		// switch to message buffer for 5 seconds
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being zero
 	IntBuffer = (PatPointer+Step)->Duration;            // buffer the duration for the current pattern
@@ -1297,15 +1304,15 @@ void PlayMusic(byte Priority, const char* Filename) {
 		if (!PlayingMusic) {															// no music in play at the moment?
 			MusicFile = SD.open(Filename);									// open file
 			if (!MusicFile) {
-				Serial.println("error opening file");
-				while (true);}
-			if (Priority > 99) {
-				MusicPriority = Priority -100;}
+				ShowFileNotFound(Filename);}
 			else {
-				MusicPriority = Priority;}
-			MusicFile.read(MusicBuffer, 2*128);							// read first block
-			StartMusic = true;															// indicate the startup phase
-			MBP++;}																					// increase read pointer
+				if (Priority > 99) {
+					MusicPriority = Priority -100;}
+				else {
+					MusicPriority = Priority;}
+				MusicFile.read(MusicBuffer, 2*128);						// read first block
+				StartMusic = true;														// indicate the startup phase
+				MBP++;}}																			// increase read pointer
 		else {																						// music already playing
 			if (Priority > 99) {														// Priority > 99 means new prio has to be larger (not equal) to play
 				Priority = Priority - 100;
@@ -1314,20 +1321,20 @@ void PlayMusic(byte Priority, const char* Filename) {
 					MusicFile.close();													// close the old file
 					MusicFile = SD.open(Filename);							// open the new one
 					if (!MusicFile) {
-						Serial.println("error opening file");
-						while (true);}
-					if (!PlayingMusic) {												// neglect old data if still in the startup phase
-						MBP = 0;}}}
+						ShowFileNotFound(Filename);}
+					else {
+						if (!PlayingMusic) {											// neglect old data if still in the startup phase
+							MBP = 0;}}}}
 			else {
 				if (Priority >= MusicPriority) {
 					MusicPriority = Priority;
 					MusicFile.close();													// close the old file
 					MusicFile = SD.open(Filename);							// open the new one
 					if (!MusicFile) {
-						Serial.println("error opening file");
-						while (true);}
-					if (!PlayingMusic) {												// neglect old data if still in the startup phase
-						MBP = 0;}}}}}}
+						ShowFileNotFound(Filename);}
+					else {
+						if (!PlayingMusic) {											// neglect old data if still in the startup phase
+							MBP = 0;}}}}}}}
 
 void StopPlayingMusic() {
 	if (StartMusic || PlayingMusic) {
@@ -1354,15 +1361,15 @@ void PlaySound(byte Priority, const char* Filename) {
 		if (!PlayingSound) {															// no sound in play at the moment?
 			SoundFile = SD.open(Filename);									// open file
 			if (!SoundFile) {
-				Serial.println("error opening file");
-				while (true);}
-			if (Priority > 99) {
-				SoundPriority = Priority -100;}
+				ShowFileNotFound(Filename);}
 			else {
-				SoundPriority = Priority;}
-			SoundFile.read(SoundBuffer, 2*128);							// read first block
-			StartSound = true;															// indicate the startup phase
-			SBP++;}																					// increase read pointer
+				if (Priority > 99) {
+					SoundPriority = Priority -100;}
+				else {
+					SoundPriority = Priority;}
+				SoundFile.read(SoundBuffer, 2*128);						// read first block
+				StartSound = true;														// indicate the startup phase
+				SBP++;}}																			// increase read pointer
 		else {																						// music already playing
 			if (Priority > 99) {														// Priority > 99 means new prio has to be larger (not equal) to play
 				Priority = Priority - 100;
@@ -1371,20 +1378,20 @@ void PlaySound(byte Priority, const char* Filename) {
 					SoundFile.close();													// close the old file
 					SoundFile = SD.open(Filename);							// open the new one
 					if (!SoundFile) {
-						Serial.println("error opening file");
-						while (true);}
-					if (!PlayingSound) {												// neglect old data if still in the startup phase
-						SBP = 0;}}}
+						ShowFileNotFound(Filename);}
+					else {
+						if (!PlayingSound) {											// neglect old data if still in the startup phase
+						SBP = 0;}}}}
 			else {
 				if (Priority >= SoundPriority) {
 					SoundPriority = Priority;
 					SoundFile.close();													// close the old file
 					SoundFile = SD.open(Filename);							// open the new one
 					if (!SoundFile) {
-						Serial.println("error opening file");
-						while (true);}
-					if (!PlayingSound) {												// neglect old data if still in the startup phase
-						SBP = 0;}}}}}}
+						ShowFileNotFound(Filename);}
+					else {
+						if (!PlayingSound) {											// neglect old data if still in the startup phase
+							SBP = 0;}}}}}}}
 
 void StopPlayingSound() {
 	if (StartSound || PlayingSound) {
