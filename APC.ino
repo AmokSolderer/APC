@@ -1258,8 +1258,8 @@ void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3
 	Serial.println(Number2);
 	Serial.print("Number3 = ");
 	Serial.println(Number3);
+  //KillAllTimers();
 	//ReleaseAllSolenoids();
-	//KillAllTimers();
 	ShowNumber(15, Error);
 	ShowNumber(23, Number2);
 	ShowNumber(31, Number3);

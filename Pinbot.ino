@@ -1473,28 +1473,22 @@ void PB_Congrats2(byte Dummy) {
 	UNUSED(Dummy);
 	WriteUpper2("ENTER         ");
 	ActivateTimer(50, 1, ScrollUpper);
-	ActivateTimer(1400, 1, PB_ScrollCongrats2);
-	ActivateTimer(3000, 1, PB_ScrollCongrats3);
-	ActivateTimer(6000, 1, PB_ScrollCongrats4);
-	ByteBuffer = 0;}
+	ActivateTimer(1400, 1, PB_ScrollCongrats2);}
 
 void PB_ScrollCongrats2(byte Dummy) {
 	UNUSED(Dummy);
-	WriteUpper2("INITIALS      ");
-	AddScrollUpper(1);}
+	WriteUpper2(" INITIALS     ");
+	AddScrollUpper(1);
+	ActivateTimer(3000, 1, PB_ScrollCongrats3);}
 
 void PB_ScrollCongrats3(byte Dummy) {
 	UNUSED(Dummy);
-	WriteUpper2(" PLAYER       ");
-	*(DisplayUpper2+30) = DispPattern1[32 + 2 * Player];
-	*(DisplayUpper2+31) = DispPattern1[33 + 2 * Player];
-	AddScrollUpper(1);}
-
-void PB_ScrollCongrats4(byte Dummy) {
-	UNUSED(Dummy);
-	WriteUpper2("              ");
-	ScrollUpper(9);
-	ActivateTimer(2000, 0, PB_EnterInitials);}
+	WriteUpper2("PLAYER        ");
+	*(DisplayUpper2+14) = DispPattern1[32 + 2 * Player];
+	*(DisplayUpper2+15) = DispPattern1[33 + 2 * Player];
+	ScrollUpper(1);
+	ActivateTimer(2000, 0, PB_EnterInitials);
+  ByteBuffer = 0;}
 
 void PB_EnterInitials(byte Switch) {
 	switch (Switch) {
@@ -1544,13 +1538,13 @@ void PB_EnterInitials(byte Switch) {
 
 void PB_BlinkInitial(byte State) {                    // blink actual character
 	if (State) {
-		*(DisplayUpper+22+4*ByteBuffer) = 0;              // show a blank
-		*(DisplayUpper+23+4*ByteBuffer) = 0;
+		*(DisplayUpper+20+4*ByteBuffer) = 0;              // show a blank
+		*(DisplayUpper+21+4*ByteBuffer) = 0;
 		State = 0;}
 	else {
 		for (i=0; i<3; i++) {
-			*(DisplayUpper+22+4*i) = DispPattern1[(EnterIni[i]-32)*2];
-			*(DisplayUpper+23+4*i+1) = DispPattern1[(EnterIni[i]-32)*2+1];}// restore the characters
+			*(DisplayUpper+20+4*i) = DispPattern1[(EnterIni[i]-32)*2];
+			*(DisplayUpper+21+4*i) = DispPattern1[(EnterIni[i]-32)*2+1];}// restore the characters
 		State = 1;}
 	ByteBuffer2 = ActivateTimer(100+State*2000, State, PB_BlinkInitial);}  // and come back
 
