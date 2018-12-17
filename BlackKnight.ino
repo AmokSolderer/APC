@@ -9,8 +9,6 @@ bool LastChanceActive = false;                        // give a last chance ball
 bool LastChanceOver = false;                          // did the player already have a last chance?
 byte RightMysteryTimer = 0;                           // number of the timer for the right mystery (if active)
 byte LeftMysteryTimer = 0;                            // number of the timer for the left mystery (if active)
-byte LockLightsTimer = 0;                             // number of the timer for the lock chase light
-byte CurrentLockLight = 0;                            // number of the lock light being illuminated at the moment
 byte TimedRightMagnaTimer = 0;												// number of the timer for the right timed magna save
 byte TimedLeftMagnaTimer = 0;													// number of the timer for the left timed magna save
 byte BonusToAdd = 0;																	// bonus points to be added by AddBonus()
@@ -302,7 +300,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 		StrobeLightsTimer = 0;
 		RightMysteryTimer = 0;
 		LeftMysteryTimer = 0;
-		LockLightsTimer = 0;
+		LockChaseLight(0);
 		BlinkScore(0);
 		BallWatchdogTimer = 0;
 		TimedRightMagnaTimer = 0;
@@ -372,8 +370,7 @@ void NewBall(byte Balls) {                            // release ball (Event = e
 	ShowBonus();
 	*(DisplayUpper+16) = LeftCredit[32 + 2 * Ball]; 	// show current ball in left credit
 	//*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
-	if (!LockLightsTimer) {
-		LockLightsTimer = ActivateTimer(1000, 40, LockChaseLight);}
+	LockChaseLight(1);
 	BlinkScore(1);																			// start score blinking
 	Lamp[36] = true;                                  	// bumper light on
 	for (i=0; i<4; i++) {                             	// restore the drop target lamps of the current player
@@ -499,6 +496,7 @@ byte CountBallsInTrunk() {
 	return Balls;}
 
 void CheckReleasedBall(byte Balls) {                  // ball release watchdog
+	CheckReleaseTimer = 0;
 	BlinkScore(0); 																			// stop blinking to show messages
 	WriteUpper("WAITINGFORBALL");                       // indicate a problem
 	WriteLower("              ");
@@ -518,7 +516,7 @@ void CheckReleasedBall(byte Balls) {                  // ball release watchdog
 			WriteLower(" TRUNK  ERROR ");
 			Balls = 10;}
 		else {
-			if (AppByte > Balls) {													// more balls in trunk than expected
+			if ((AppByte > Balls) || !AppByte) {						// more balls in trunk than expected or none at all
 				WriteUpper("              ");
 				WriteLower("              ");
 				ShowAllPoints(0);
@@ -773,7 +771,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 72:                                            // test mode button pressed?
 		NoPlayers = 0;                                    // abort game
 		ReleaseAllSolenoids();
-		LockLightsTimer = 0;
+		LockChaseLight(0);
 		BlinkScore(0);
 		RightMysteryTimer = 0;
 		LeftMysteryTimer = 0;
@@ -802,7 +800,7 @@ void ClearOuthole(byte Event) {
 				LockedBalls[Player]--;                        // decrease number of locked balls
 				if (LockedBalls[Player]) {                    // if player had two locked balls
 					RemoveBlinkLamp(40);                        // remove the blinking lock arrow
-					LockLightsTimer = ActivateTimer(1000, 40, LockChaseLight);}} // and restart the chase light
+					LockChaseLight(1);}} // and restart the chase light
 			// ActivateTimer(1000, InLock, LastChanceLock);}
 			else {
 				ActivateTimer(2000, 0, BallEnd);}}
@@ -864,11 +862,8 @@ void BallEnd(byte Event) {
 			else {
 				LockedBalls[Player] = 0;
 				Lamp[24] = false;                             // unlight lower lock
-				if (LockLightsTimer) {
-					KillTimer(LockLightsTimer);
-					LockLightsTimer = 0;}
-				else {
-					RemoveBlinkLamp(40);}
+				LockChaseLight(0);
+				RemoveBlinkLamp(40);
 				BlinkScore(0);																// stop score blinking
 				LastChance = false;                           // deactivate last chance
 				Lamp[11] = false;
@@ -1213,7 +1208,7 @@ void StartMultiball() {
 		Multiballs = 3;
 		AddBlinkLamp(32, 500);                            // let triple points lamp blink
 		RemoveBlinkLamp(40);                              // turn off the blinking of the first lock arrow
-		LockLightsTimer = ActivateTimer(1000, 40, LockChaseLight);}
+		LockChaseLight(1);}
 	else {
 		Multiballs = 2;
 		AddBlinkLamp(28, 500);}                           // let double points lamp blink
@@ -1302,7 +1297,6 @@ void ShowBonus() {                                    // set lamps on bonus mete
 
 void EndRightMagna(byte Event) {
 	UNUSED(Event);
-
 	RightAfterMagna = true;
 	AddBlinkLamp(15, 150);
 	if (!RightMagna[Player]) {
@@ -1311,13 +1305,11 @@ void EndRightMagna(byte Event) {
 
 void ResetRightAfterMagna(byte Event) {
 	UNUSED(Event);
-
 	RemoveBlinkLamp(15);
 	RightAfterMagna = false;}
 
 void EndLeftMagna(byte Event) {
 	UNUSED(Event);
-
 	LeftAfterMagna = true;
 	AddBlinkLamp(16, 150);
 	if (!LeftMagna[Player]) {
@@ -1332,45 +1324,52 @@ void ResetLeftAfterMagna(byte Event) {
 
 void ResetRightMystery(byte Event) {
 	UNUSED(Event);
-
 	RemoveBlinkLamp(13);                                // stop the blinking of the mystery lamp
 	RightMysteryTimer = 0;}                             // delete the right mystery timer number
 
 void ResetLeftMystery(byte Event) {
 	UNUSED(Event);
-
 	RemoveBlinkLamp(14);                                // stop the blinking of the mystery lamp
 	LeftMysteryTimer = 0;}                              // delete the left mystery timer number
 
 void LockChaseLight(byte ChaseLamp) {                 // controls the chase light pointing to the upper lock
-	LockLightsTimer = 0;
-	AppByte = LockedBalls[Player];
+	static byte Timer = 0;
 	switch (ChaseLamp) {                                // illuminate ChaseLamp
+	case 0:
+		if (Timer) {
+			KillTimer(Timer);
+			Timer = 0;}
+		break;
+	case 1:
+		if (!Timer) {
+			Timer = ActivateTimer(10, 40, LockChaseLight);}
+		break;
 	case 40:                                          	// is it the first lamp?
-		if (!AppByte) {                                 	// is there no locked ball?
+		if (!LockedBalls[Player]) {                       // is there no locked ball?
 			Lamp[42] = false;}                            	// turn off the last lamp
 		Lamp[21] = false;                               	// the middle lamp can always be switched off
-		if (AppByte == 2) {                             	// are there two locked balls?
+		if (LockedBalls[Player] == 2) {                   // are there two locked balls?
+			Timer = 0;
 			Lamp[42] = true;                              	// turn on the last two lock lamps
 			Lamp[21] = true;
 			AddBlinkLamp(40, 500);}                       	// and let the first one blink
 		else {                                          	// otherwise
 			Lamp[40] = true;                              	// turn the first lamp on
-			LockLightsTimer = ActivateTimer(1000, 21, LockChaseLight);} // and come back in one second to process lamp 21
+			Timer = ActivateTimer(1000, 21, LockChaseLight);} // and come back in one second to process lamp 21
 		break;
 	case 21:                                          	// is it the middle lamp?
 		Lamp[40] = false;                               	// turn off the first
 		Lamp[21] = true;                                	// turn on the middle
-		if (AppByte) {                                  	// is there a locked ball?
+		if (LockedBalls[Player]) {                        // is there a locked ball?
 			Lamp[42] = true;                              	// turn the last lamp on
-			LockLightsTimer = ActivateTimer(1000, 40, LockChaseLight);} // and come back in one second to process lamp 40
+			Timer = ActivateTimer(1000, 40, LockChaseLight);} // and come back in one second to process lamp 40
 		else {                                          	// no locked ball?
-			LockLightsTimer = ActivateTimer(1000, 42, LockChaseLight);} // come back in one second to process lamp 42
+			Timer = ActivateTimer(1000, 42, LockChaseLight);} // come back in one second to process lamp 42
 		break;
 	case 42:                                          	// is it the last lamp?
 		Lamp[21] = false;                               	// turn off the middle lamp
 		Lamp[42] = true;                                	// turn on the last lamp
-		LockLightsTimer = ActivateTimer(1000, 40, LockChaseLight); // and come back in one second to process lamp 40
+		Timer = ActivateTimer(1000, 40, LockChaseLight); 	// and come back in one second to process lamp 40
 		break;}}
 
 void ResetHighScores(bool change) {										// delete the high scores file
