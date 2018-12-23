@@ -407,9 +407,9 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 		AddBlinkLamp(18+game_settings[PB_ReachPlanet],100);}		// let target planet blink
 	for (i=0; i<9; i++) {                               // update planets
 		if (PB_Planet[Player] > i) {
-			Lamp[PB_Planet[Player]+19] = true;}
+			Lamp[19+i] = true;}
 		else {
-			Lamp[PB_Planet[Player]+19] = false;}}
+			Lamp[19+i] = false;}}
 	PB_GiveBall(Balls);}
 
 void PB_GiveBall(byte Balls) {
@@ -484,6 +484,7 @@ void PB_BallReleaseCheck(byte Switch) {               // handle switches during 
 	PB_GameMain(Switch);}
 
 void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
+	CheckReleaseTimer = 0;
 	BlinkScore(0);																			// stop score blinking
 	WriteUpper("WAITINGFORBALL");                       // indicate a problem
 	WriteLower("              ");
@@ -493,17 +494,17 @@ void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
 		ShowAllPoints(0);
 		BlinkScore(1);																		// turn on score blinking
 		ActA_BankSol(2);}
-	AppByte = PB_CountBallsInTrunk();
-	if (AppByte == Balls) {                             // expected number of balls in trunk
+	byte c = PB_CountBallsInTrunk();
+	if (c == Balls) {                             // expected number of balls in trunk
 		WriteUpper("  BALL MISSING");
 		if (Switch[16]) {                                 // outhole switch still active?
 			ActA_BankSol(1);}}															// shove the ball into the trunk
 	else {																							//
-		if (AppByte == 5) {																// balls not settled
+		if (c == 5) {																// balls not settled
 			WriteLower(" TRUNK  ERROR ");
 			Balls = 10;}
 		else {
-			if (AppByte > Balls) {													// more balls in trunk than expected
+			if ((c > Balls) || !c) {						// more balls in trunk than expected or none at all
 				WriteUpper("              ");
 				WriteLower("              ");
 				ShowAllPoints(0);
@@ -529,22 +530,22 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
 		if (Switch[20]) {																	// if ball is waiting to be launched
 			BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}	// restart watchdog
 		else {  																					// if ball is really missing
-			AppByte = PB_CountBallsInTrunk();								// recount all balls
-			if (AppByte == 5) {                             // balls have not settled yet
+			byte c = PB_CountBallsInTrunk();								// recount all balls
+			if (c == 5) {                             // balls have not settled yet
 				WriteUpper("  BALL  STUCK ");
 				BallWatchdogTimer = ActivateTimer(1000, 0, PB_SearchBall);} // and try again in 1s
 			else {
-				if (AppByte == 2) {														// found 2 balls in trunk?
+				if (c == 2) {														// found 2 balls in trunk?
 					if (BlockOuthole) {													// is the outhole blocked
 						PB_BallEnd(0);}														// then it was probably a ball loss gone wrong
 					else {
 						ActivateTimer(1000, 2, PB_NewBall);}}			// otherwise try it with a new ball
 				else {
-					AppByte2 = 0;
+					byte c2 = 0;
 					for (i=0; i<2; i++) {                       // count balls in lock
 						if (Switch[25+i]) {
-							AppByte2++;}}
-					if (AppByte2 > InLock) {										// more locked balls found than expected?
+							c2++;}}
+					if (c2 > InLock) {										// more locked balls found than expected?
 						PB_HandleLock(0);													// lock them
 						BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
 					else {
@@ -581,6 +582,8 @@ void PB_ClearOuthole(byte Event) {
 			ActivateTimer(2000, 0, PB_ClearOuthole);}}}			// come back in 2s if outhole is blocked
 
 void PB_GameMain(byte Switch) {
+	byte c=0;
+	byte i=0;
 	switch(Switch) {
 	case 1:
 	case 2:
@@ -1635,13 +1638,12 @@ void PB_Testmode(byte Select) {
 					AppByte2 = 1;
 					break;}
 			default:																				// all other switches
-				ConvertToBCD(Select);                         // convert the switch number to BCD
 				for (i=1; i<24; i++) {                        // move all characters in the lower display row 4 chars to the left
 					DisplayLower[i] = DisplayLower[i+8];}
-				*(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and insert the two result digits to the right of the row
-				*(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-				*(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-				*(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];}
+				*(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
+				*(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
+				*(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
+				*(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}
 			break;
 			case 2:																								// solenoid test
 				switch(Select) {															// switch events
@@ -1779,11 +1781,10 @@ void PB_Testmode(byte Select) {
 
 void PB_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
 	if (!digitalRead(UpDown)) {
-		ConvertToBCD(CurrentLamp);                        // convert the actual solenoid number
-		*(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
-		*(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-		*(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-		*(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
+		*(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
+		*(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
+		*(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
+		*(DisplayLower+29) = DispPattern2[33 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
 		Lamp[CurrentLamp] = true;                         // turn on lamp
 		if (CurrentLamp > 1) {                            // and turn off the previous one
 			Lamp[CurrentLamp-1] = false;}
@@ -1812,11 +1813,11 @@ void PB_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 			AppBool = false;
 			Solenoid++;}}
 	else {																							// if A bank solenoid
-		ConvertToBCD(Solenoid);                           // convert the actual solenoid number
-		*(DisplayLower+26) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
-		*(DisplayLower+27) = DispPattern2[33 + 2 * ByteBuffer2];
-		*(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer];
-		*(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer];
+		*(DisplayLower+28) = DispPattern2[32 + 2 * (Solenoid % 10)]; // show the actual solenoid number
+		*(DisplayLower+29) = DispPattern2[33 + 2 * (Solenoid % 10)];
+		*(DisplayLower+26) = DispPattern2[32 + 2 * (Solenoid - (Solenoid % 10)) / 10];
+		*(DisplayLower+27) = DispPattern2[33 + 2 * (Solenoid - (Solenoid % 10)) / 10];
+
 		if (Solenoid == 11 || Solenoid == 12 || Solenoid == 13 || Solenoid == 14 || Solenoid == 9 || Solenoid == 10 || Solenoid == 18) {	// is it a relay or a #1251 flasher?
 			ActivateSolenoid(999, Solenoid);}								// then the duration must be specified
 		else {
@@ -1862,9 +1863,8 @@ void PB_NextTestSound() {
 		AppByte++;}
 	if (!TestSounds[AppByte][0]) {
 		AppByte = 0;}
-	ConvertToBCD(AppByte+1);                           	// convert the actual solenoid number
-	*(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
-	*(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-	*(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-	*(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
+	*(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte+1) % 10)]; // show the actual solenoid number
+	*(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte+1) % 10)];
+	*(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
+	*(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
 	PlayMusic(50, (char*) TestSounds[AppByte]);}

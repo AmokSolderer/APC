@@ -373,12 +373,12 @@ void NewBall(byte Balls) {                            // release ball (Event = e
 	LockChaseLight(1);
 	BlinkScore(1);																			// start score blinking
 	Lamp[36] = true;                                  	// bumper light on
-	for (i=0; i<4; i++) {                             	// restore the drop target lamps of the current player
-		for (AppByte=0; AppByte < 3; AppByte++) {       	// for all drop target banks
-			if (DropHits[(4*(Player-1))+i] > AppByte) {
-				Lamp[DropTargets[i]+AppByte] = true;}
+	for (byte i=0; i<4; i++) {                          // restore the drop target lamps of the current player
+		for (byte c=0; c < 3; c++) {       								// for all drop target banks
+			if (DropHits[(4*(Player-1))+i] > c) {
+				Lamp[DropTargets[i]+c] = true;}
 			else {
-				Lamp[DropTargets[i]+AppByte] = false;}}}
+				Lamp[DropTargets[i]+c] = false;}}}
 	if (LowerExBall[Player]) {                        	// restore extra ball lamps
 		Lamp[23] = true;}
 	else {
@@ -458,24 +458,24 @@ void SearchBall(byte Counter) {												// ball watchdog timer has run out
 		if (Switch[45]) {																	// if ball is waiting to be launched
 			BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}	// restart watchdog
 		else {  																					// if ball is really missing
-			AppByte = CountBallsInTrunk();									// recount all balls
-			if (AppByte == 3) {															// found 3 balls in trunk?
+			byte c = CountBallsInTrunk();									// recount all balls
+			if (c == 3) {															// found 3 balls in trunk?
 				if (BlockOuthole) {														// is the outhole blocked
 					BallEnd(0);}																// then it was probably a ball loss gone wrong
 				else {
 					ActivateTimer(1000, 3, NewBall);}}					// otherwise try it with a new ball
 			else {
-				AppByte2 = 0;
+				byte c2 = 0;
 				for (i=0; i<3; i++) {                         // count balls in lock
 					if (Switch[41+i]) {
-						if (AppByte2 < i) {
-							AppByte = 5;}                           // set warning flag
-						AppByte2++;}}
-				if (AppByte == 5) {														// balls have not settled yet
+						if (c2 < i) {
+							c = 5;}                           // set warning flag
+						c2++;}}
+				if (c == 5) {														// balls have not settled yet
 					WriteUpper("  BALL  STUCK ");
 					BallWatchdogTimer = ActivateTimer(1000, 0, SearchBall);} // and try again in 1s
 				else {
-					if (AppByte2 > InLock) {										// more locked balls found than expected?
+					if (c2 > InLock) {										// more locked balls found than expected?
 						HandleLock(0);														// lock them
 						BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}
 					else {
@@ -506,17 +506,17 @@ void CheckReleasedBall(byte Balls) {                  // ball release watchdog
 		ShowAllPoints(0);
 		BlinkScore(1);
 		ActivateSolenoid(0, 6);}
-	AppByte = CountBallsInTrunk();
-	if (AppByte == Balls) {                             // expected number of balls in trunk
+	byte c = CountBallsInTrunk();
+	if (c == Balls) {                             // expected number of balls in trunk
 		WriteUpper("  BALL MISSING");
 		if (Switch[20]) {                                 // outhole switch still active?
 			ActivateSolenoid(0, 1);}}												// shove the ball into the trunk
 	else {																							//
-		if (AppByte == 5) {																// balls not settled
+		if (c == 5) {																// balls not settled
 			WriteLower(" TRUNK  ERROR ");
 			Balls = 10;}
 		else {
-			if ((AppByte > Balls) || !AppByte) {						// more balls in trunk than expected or none at all
+			if ((c > Balls) || !c) {						// more balls in trunk than expected or none at all
 				WriteUpper("              ");
 				WriteLower("              ");
 				ShowAllPoints(0);
@@ -1084,12 +1084,12 @@ void AfterExBallRelease(byte Event) {
 void HandleLock(byte Event) {
 	UNUSED(Event);
 	AppBool = false;
-	AppByte = 0;
+	byte LockCount = 0;
 	for (i=0; i<3; i++) {                               // count balls in lock
 		if (Switch[41+i]) {
-			if (AppByte < i) {
+			if (LockCount < i) {
 				AppBool = true;}                              // set warning flag
-			AppByte++;}}
+			LockCount++;}}
 	if (AppBool) {
 		ActivateTimer(1000, 0, HandleLock);}              // try again in 1s
 	else {
@@ -1097,7 +1097,7 @@ void HandleLock(byte Event) {
 	if (Multiballs > 1) {                             	// multiball running
 		ClearLocks(0);}                                 	// eject balls
 	else {                                            	// no multiball running
-		if (AppByte > InLock) {                           // more than before?
+		if (LockCount > InLock) {                           // more than before?
 			Points[Player] += 5000;
 			ShowPoints(Player);
 			InLock++;
@@ -1164,13 +1164,13 @@ void HandleDropTargets(byte Event) {
 						Lamp[23] = true;                          // turn on the lower extra ball lamp
 						LowerExBall[Player] = true;}}                     // and enable the lower extra ball
 				else {                                        // if the player didn't get an extra ball yet
-					for (AppByte=0 ; AppByte < 2; AppByte++) {
-						if ((DropHits[(Player-1)*4+AppByte*2] == 3) && (DropHits[(Player-1)*4+AppByte*2+1] == 3)) {
+					for (byte i=0 ; i < 2; i++) {
+						if ((DropHits[(Player-1)*4+i*2] == 3) && (DropHits[(Player-1)*4+i*2+1] == 3)) {
 							for (i=0; i<2; i++) {                   // for all drop target banks
-								DropHits[(Player-1)*4+AppByte*2+i] = 0; // clear their hits
-								Lamp[DropTargets[AppByte*2+i]] = false; // and their arrow lamps
-								Lamp[DropTargets[AppByte*2+i]+1] = false;
-								Lamp[DropTargets[AppByte*2+i]+2] = false;}
+								DropHits[(Player-1)*4+i*2+i] = 0; // clear their hits
+								Lamp[DropTargets[i*2+i]] = false; // and their arrow lamps
+								Lamp[DropTargets[i*2+i]+1] = false;
+								Lamp[DropTargets[i*2+i]+2] = false;}
 							Lamp[41] = true;                        // turn on the upper extra ball lamp
 							PlayersExBalls[Player] = true;
 							UpperExBall[Player] = true;}}}}}}
@@ -1220,14 +1220,13 @@ void StartMultiball() {
 
 void ClearLocks(byte Event) {
 	UNUSED(Event);
-
-	AppByte = 0;
-	for (i=0; i<3; i++) {                               // count balls in lock
+	byte Count = 0;
+	for (byte i=0; i<3; i++) {                          // count balls in lock
 		if (Switch[41+i]) {
-			AppByte++;}}
-	if (AppByte) {                                      // balls in lock?
+			Count++;}}
+	if (Count) {                                      	// balls in lock?
 		ActivateSolenoid(0, 7);
-		AppByte--;
+		Count--;
 		InLock = 0;
 		ActivateTimer(1000, 0, ClearLocks);}}
 
@@ -1281,16 +1280,17 @@ void SetBonusLight(byte Step) {
 		ActivateTimer(50, Step, ClearBonusLight);}}
 
 void ShowBonus() {                                    // set lamps on bonus meter
+	byte Count;
 	if (Bonus < 50) {                                   // max bonus of 49K allowed
-		AppByte = Bonus;}
+		Count = Bonus;}
 	else {
-		AppByte = 49;}
+		Count = 49;}
 	for (i=0; i<13; i++) {                              // for all 13 lamps of the bonus meter
-		if (AppByte >= BonusValues[i]) {                  // bonus larger or equal than the value of the actual lamp?
+		if (Count >= BonusValues[i]) {                  	// bonus larger or equal than the value of the actual lamp?
 			if (i < 4) {
-				AppByte -= BonusValues[i];}                   // reduce bonus accordingly
+				Count -= BonusValues[i];}                   	// reduce bonus accordingly
 			else {
-				AppByte -= 1;}
+				Count -= 1;}
 			Lamp[BonusLamps[i]] = true;}                    // and turn the lamp on
 		else {
 			Lamp[BonusLamps[i]] = false;}}}                 // otherwise turn it off
@@ -1318,7 +1318,6 @@ void EndLeftMagna(byte Event) {
 
 void ResetLeftAfterMagna(byte Event) {
 	UNUSED(Event);
-
 	RemoveBlinkLamp(16);
 	LeftAfterMagna = false;}
 
@@ -1401,7 +1400,6 @@ void TestMode_Enter() {
 
 void DisplayTest_Enter(byte Event) {
 	UNUSED(Event);
-
 	Switch_Pressed = DisplayTest_EnterSw;                         // Switch functions
 	WriteUpper("DISPLAY TEST  ");}                    	// Show 'Display Test'
 
@@ -1468,13 +1466,12 @@ void SwitchEdges(byte Event) {
 		WriteUpper(" SWITCHEDGES  ");
 		WriteLower("              ");}
 	else {
-		ConvertToBCD(Event);                              // convert the switch number to BCD
 		for (i=1; i<24; i++) {                            // move all characters in the lower display row 4 chars to the left
 			DisplayLower[i] = DisplayLower[i+8];}
-		*(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and insert the two result digits to the right of the row
-		*(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-		*(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-		*(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];}}
+		*(DisplayLower+30) = DispPattern2[32 + 2 * (Event % 10)]; // and insert the switch number to the right of the row
+		*(DisplayLower+31) = DispPattern2[33 + 2 * (Event % 10)];
+		*(DisplayLower+28) = DispPattern2[32 + 2 * (Event - (Event % 10)) / 10];
+		*(DisplayLower+29) = DispPattern2[33 + 2 * (Event - (Event % 10)) / 10];}}
 
 void Solenoids_Enter(byte Event) {
 	switch (Event) {
@@ -1498,12 +1495,10 @@ void SolenoidsTest(byte Event) {
 
 void FireSolenoids(byte Event) {                      // cycle all solenoids
 	UNUSED(Event);
-
-	ConvertToBCD(AppByte2);                             // convert the actual solenoid number
-	*(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
-	*(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-	*(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-	*(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
+	*(DisplayLower+30) = DispPattern2[32 + 2 * (AppByte2 % 10)]; // and show the actual solenoid number
+	*(DisplayLower+31) = DispPattern2[33 + 2 * (AppByte2 % 10)];
+	*(DisplayLower+28) = DispPattern2[32 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
+	*(DisplayLower+29) = DispPattern2[33 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
 	ActivateSolenoid(0, AppByte2);                     	// activate the solenoid for 50ms
 	if (!digitalRead(UpDown)) {
 		AppByte2++;                                       // increase the solenoid counter
@@ -1537,13 +1532,11 @@ void SingleLamp(byte Event) {
 
 void ShowLamp(byte Event) {                           // cycle all solenoids
 	UNUSED(Event);
-
 	if (!digitalRead(UpDown)) {
-		ConvertToBCD(AppByte2);                           // convert the actual solenoid number
-		*(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
-		*(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-		*(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-		*(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
+		*(DisplayLower+30) = DispPattern2[32 + 2 * (AppByte2 % 10)]; // and show the actual solenoid number
+		*(DisplayLower+31) = DispPattern2[33 + 2 * (AppByte2 % 10)];
+		*(DisplayLower+28) = DispPattern2[32 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
+		*(DisplayLower+29) = DispPattern2[33 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
 		Lamp[AppByte2] = true;                            // turn on lamp
 		if (AppByte2 > 1) {                               // and turn off the previous one
 			Lamp[AppByte2-1] = false;}
@@ -1603,11 +1596,10 @@ void NextTestSound() {
 		AppByte++;}
 	if (!TestSounds[AppByte][0]) {
 		AppByte = 0;}
-	ConvertToBCD(AppByte+1);                           	// convert the actual solenoid number
-	*(DisplayLower+28) = DispPattern2[32 + 2 * ByteBuffer2]; // and show it
-	*(DisplayLower+29) = DispPattern2[33 + 2 * ByteBuffer2];
-	*(DisplayLower+30) = DispPattern2[32 + 2 * ByteBuffer];
-	*(DisplayLower+31) = DispPattern2[33 + 2 * ByteBuffer];
+	*(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte+1) % 10)]; // and show the next sound number
+	*(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte+1) % 10)];
+	*(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
+	*(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
 	PlayMusic(50, (char*) TestSounds[AppByte]);}
 
 void SoundTest(byte Switch) {

@@ -41,7 +41,6 @@ const bool AllLamps[LampMax+1] = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 // system variables
 
 unsigned int IntBuffer;                               // general purpose buffer
-unsigned int IntBuffer2;                              // general purpose buffer
 byte ByteBuffer = 0;                                  // general purpose buffer
 byte ByteBuffer2 = 0;                                 // general purpose buffer
 byte ByteBuffer3 = 0;                                 // general purpose buffer
@@ -918,9 +917,9 @@ void ShowMessage(byte Seconds) {                      // switch to the second di
 		ShowMessageTimer = 0;                             // indicate that timer is not running any more
 		SwitchDisplay(1);}}                               // switch back to DispRow1
 
-void ConvertToBCD(int Number) {
-	ByteBuffer = Number % 10;
-	ByteBuffer2 = (Number-ByteBuffer)/10;}
+//void ConvertToBCD(int Number) {
+//	ByteBuffer = Number % 10;
+//	ByteBuffer2 = (Number-ByteBuffer)/10;}
 
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
 	if (!SolChange) {                               		// change request for another solenoid pending?
@@ -1083,46 +1082,48 @@ void BlinkScore(byte State) {													// State = 0 -> stop blinking / State 
 
 void DisplayScore (byte Position, unsigned int Score) {
 	byte i=0;                                       		// use a private counter
+	byte Buffer1 = 0;
+	byte Buffer2 = 0;
 	switch (Position) {
 	case 1:                                       			// for the players 1 and 3
 	case 3:
-		ByteBuffer = 2;                             			// start in column 1
+		Buffer1 = 2;                             			// start in column 1
 		break;
 	case 2:                                       			// for the players 2 and 4
 	case 4:
-		ByteBuffer = 18;                            			// start in column 9
+		Buffer1 = 18;                            			// start in column 9
 		break;}
 	if (Score) {                                  			// if the score is not 0
 		while (Score && i<7) {                      			// for all 7 display digits
-			ByteBuffer2 = Score % 10;                 			// extract the least significant digit
-			Score = (Score-ByteBuffer2) / 10;         			// prepare for the next digit
-			ByteBuffer2 = 32+2*ByteBuffer2;           			// determine the corresponding display pattern
+			Buffer2 = Score % 10;                 			// extract the least significant digit
+			Score = (Score-Buffer2) / 10;         			// prepare for the next digit
+			Buffer2 = 32+2*Buffer2;           			// determine the corresponding display pattern
 			if (Position < 3) {                       			// depending on the player number show it in the upper display row
 				if ((i==3) || (i==6)) {
-					*(DisplayUpper+ByteBuffer+12-2*i) = 128 | DispPattern1[ByteBuffer2];
-					*(DisplayUpper+ByteBuffer+13-2*i) = 64 | DispPattern1[ByteBuffer2+1];} // add a comma if necessary
+					*(DisplayUpper+Buffer1+12-2*i) = 128 | DispPattern1[Buffer2];
+					*(DisplayUpper+Buffer1+13-2*i) = 64 | DispPattern1[Buffer2+1];} // add a comma if necessary
 				else {
-					*(DisplayUpper+ByteBuffer+12-2*i) = DispPattern1[ByteBuffer2];
-					*(DisplayUpper+ByteBuffer+13-2*i) = DispPattern1[ByteBuffer2+1];}}
+					*(DisplayUpper+Buffer1+12-2*i) = DispPattern1[Buffer2];
+					*(DisplayUpper+Buffer1+13-2*i) = DispPattern1[Buffer2+1];}}
 			else {                                    			// the same for the lower display row
 				if ((i==3) || (i==6)) {
-					*(DisplayLower+ByteBuffer+12-2*i) = 1 | DispPattern2[ByteBuffer2];
-					*(DisplayLower+ByteBuffer+13-2*i) = 8 | DispPattern2[ByteBuffer2+1];}
+					*(DisplayLower+Buffer1+12-2*i) = 1 | DispPattern2[Buffer2];
+					*(DisplayLower+Buffer1+13-2*i) = 8 | DispPattern2[Buffer2+1];}
 				else {
-					*(DisplayLower+ByteBuffer+12-2*i) = DispPattern2[ByteBuffer2];
-					*(DisplayLower+ByteBuffer+13-2*i) = DispPattern2[ByteBuffer2+1];}} //
+					*(DisplayLower+Buffer1+12-2*i) = DispPattern2[Buffer2];
+					*(DisplayLower+Buffer1+13-2*i) = DispPattern2[Buffer2+1];}} //
 			i++;}}
 	else {                                        			// if the points are 0
 		if (Position < 3) {
-			*(DisplayUpper+ByteBuffer+12) = DispPattern1[32]; // just show two 0s
-			*(DisplayUpper+ByteBuffer+13) = DispPattern1[33];
-			*(DisplayUpper+ByteBuffer+10) = DispPattern1[32];
-			*(DisplayUpper+ByteBuffer+11) = DispPattern1[33];}
+			*(DisplayUpper+Buffer1+12) = DispPattern1[32]; // just show two 0s
+			*(DisplayUpper+Buffer1+13) = DispPattern1[33];
+			*(DisplayUpper+Buffer1+10) = DispPattern1[32];
+			*(DisplayUpper+Buffer1+11) = DispPattern1[33];}
 		else {
-			*(DisplayLower+ByteBuffer+12) = DispPattern2[32]; // just show two 0s
-			*(DisplayLower+ByteBuffer+13) = DispPattern2[33];
-			*(DisplayLower+ByteBuffer+10) = DispPattern2[32];
-			*(DisplayLower+ByteBuffer+11) = DispPattern2[33];}}}
+			*(DisplayLower+Buffer1+12) = DispPattern2[32]; // just show two 0s
+			*(DisplayLower+Buffer1+13) = DispPattern2[33];
+			*(DisplayLower+Buffer1+10) = DispPattern2[32];
+			*(DisplayLower+Buffer1+11) = DispPattern2[33];}}}
 
 void ShowNumber(byte Position, unsigned int Number) {
 	byte Buffer = 0;
@@ -1159,7 +1160,7 @@ void ShowAllPoints(byte Dummy) {                  		// just a dummy event to acc
 	UNUSED(Dummy);
 	WriteUpper("              ");                   		// erase display
 	WriteLower("              ");
-	for (i=1; i<=NoPlayers; i++) {                  		// display the points of all active players
+	for (byte i=1; i<=NoPlayers; i++) {                 // display the points of all active players
 		ShowPoints(i);}}
 
 void SwitchDisplay(byte Event) {                      // switch between different display buffers
@@ -1171,14 +1172,14 @@ void SwitchDisplay(byte Event) {                      // switch between differen
 		DispRow2 = DisplayLower2;}}
 
 void BlinkLamps(byte BlTimer) {
-	ByteBuffer = 0;
-	for (i=0; i<BlinkingNo[BlTimer]; i++) {             // for all lamps controlled by this blink timer
-		while (!BlinkingLamps[BlTimer][ByteBuffer]) {     // skip unused lamp slots
-			ByteBuffer++;
-			if (ByteBuffer > 65) {                          // max 64 blink timers possible (starting from 1)
+	byte c = 0;
+	for (byte i=0; i<BlinkingNo[BlTimer]; i++) {        // for all lamps controlled by this blink timer
+		while (!BlinkingLamps[BlTimer][c]) {     					// skip unused lamp slots
+			c++;
+			if (c > 65) {                          					// max 64 blink timers possible (starting from 1)
 				ErrorHandler(3,BlTimer,BlinkingNo[BlTimer]);}}// show error 3
-		Lamp[BlinkingLamps[BlTimer][ByteBuffer]] = BlinkState[BlTimer]; // toggle the state of the lamps
-		ByteBuffer++;}
+		Lamp[BlinkingLamps[BlTimer][c]] = BlinkState[BlTimer]; // toggle the state of the lamps
+		c++;}
 	BlinkState[BlTimer] = !BlinkState[BlTimer];         // invert the target state for the next run
 	BlinkTimer[BlTimer] = ActivateTimer(BlinkPeriod[BlTimer], BlTimer, BlinkLamps);} // and start a new timer
 
@@ -1274,7 +1275,7 @@ void ShowFileNotFound(String Filename) {							// show file not found message
 	ShowMessage(5);}																		// switch to message buffer for 5 seconds
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being zero
-	IntBuffer = (PatPointer+Step)->Duration;            // buffer the duration for the current pattern
+	unsigned int Buffer = (PatPointer+Step)->Duration;  // buffer the duration for the current pattern
 	if (StrobeLightsTimer) {
 		LampBuffer = ((PatPointer+Step)->Pattern)-8;}     // show the pattern
 	else {
@@ -1288,7 +1289,7 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
 			if (LampReturn) {                               // is a return pointer given?
 				LampReturn(0);}                               // call the procedure
 			return;}}                                       // otherwise just quit
-	ByteBuffer3 = ActivateTimer(IntBuffer, Step, ShowLampPatterns);} // come back after the given duration
+	ByteBuffer3 = ActivateTimer(Buffer, Step, ShowLampPatterns);} // come back after the given duration
 
 void StrobeLights(byte State) {
 	if (State) {
@@ -1477,9 +1478,8 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 			AppByte--;}																			// and go one back to reach the last settings entry
 		/* no break */
 	case 0:																							// show the current setting
-		ConvertToBCD(AppByte+1);                        	// convert the actual settings number +1
-		*(DisplayUpper) = LeftCredit[32 + 2 * ByteBuffer2]; // and show it
-		*(DisplayUpper+16) = LeftCredit[32 + 2 * ByteBuffer];
+		*(DisplayUpper+16) = LeftCredit[32 + 2 * ((AppByte+1) % 10)]; // show the actual settings number +1
+		*(DisplayUpper) = LeftCredit[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
 		WriteUpper( SettingsList[AppByte].Text);					// show the text
 		SettingsList[AppByte].EventPointer(false);				// call the corresponding method and indicate no changes
 		break;
