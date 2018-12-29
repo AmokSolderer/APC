@@ -8,6 +8,7 @@ bool PB_EnergyActive = false;													// score energy active?
 bool PB_SkillShot = false;														// is the skill shot active?
 bool PB_EjectIgnore = false;                          // ignore the hole switch while the ball is in the hole
 bool PB_IgnoreLock = false;                           // ignore the lock switches to cope with switch bouncing
+byte PB_BallSave = 0;																	// prevent immediate outlane drains 0=inactive 1=active 2=triggered
 byte PB_ChestMode = 0;																// current status of the chest and visor
 uint16_t PB_SolarValue = 100;                         // current solar value / 1000
 byte PB_SolarValueTimer = 0;                          // number of the timer for the solar value shot
@@ -37,10 +38,11 @@ const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39
 const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
 const char PB_GameMusic[6][12] = {{"BS_M03.bin"},{"BS_M05.bin"},{"BS_M06.bin"},{"BS_M07.bin"},{"BS_M08.bin"},{"BS_M09.bin"}};
 
-struct SettingTopic PB_setList[8] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
+struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
 		{" REACH PLANET ",HandleNumSetting,0,1,9},
 		{" ENERGY TIMER ",HandleNumSetting,0,1,90},
 		{"MULTBALVOLUME ",PB_HandleVolumeSetting,0,0,30},
+		{"  BALL  SAVER ",HandleBoolSetting,0,0,0},
     {" RESET  HIGH  ",PB_ResetHighScores,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
@@ -133,6 +135,7 @@ const byte PB_DropTime = 0;														// drop target down time setting
 const byte PB_ReachPlanet = 1;												// target planet setting
 const byte PB_EnergyTimer = 2;												// energy timer setting
 const byte PB_MultiballVolume = 3;										// volume increase for the multiball
+const byte PB_BallSaver = 4;													// ball saver for the outlanes
 
 const byte PB_defaults[64] = {5,6,15,0,0,0,0,0,		 		// game default settings
 											  			0,0,0,0,0,0,0,0,
@@ -422,6 +425,8 @@ void PB_GiveBall(byte Balls) {
 	WriteLower2("              ");
 	ShowNumber(15, PB_SkillMultiplier);               	// show multiplier
 	ShowMessage(3);
+	if (game_settings[PB_BallSaver]) {									// activate ball saver if enabled
+		PB_BallSave = 1;}
 	PB_SkillShot = true;                                // the first shot is a skill shot
 	if (!Switch[20]) {																	// ball not yet in shooter lane?
 		Switch_Released = DummyProcess;
@@ -448,25 +453,25 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
 			ActA_BankSol(6);}																// drop ramp
 		if (PB_SkillShot) {																// is this a skill shot?
 			if (Switch != 20) {															// no bouncing of the shooter lane switch?
-				PB_SkillShot = false;}												// the next shot is not a skill shot any more
-			byte c = 0;
-			switch (Switch) {																// was a skill shot target hit
-			case 22:
-				c = 20;
-				break;
-			case 23:
-				c = 100;
-				break;
-			case 24:
-				c = 5;
-				break;}
-			WriteUpper2(" VORTEX   X   ");
-			WriteLower2("              ");
-			ShowNumber(31, c * PB_SkillMultiplier * 1000);  // show skill shot points
-			ShowNumber(15, PB_SkillMultiplier);             // and multiplier
-			ShowMessage(3);
-			Points[Player] += c * 1000 * PB_SkillMultiplier;
-			ShowPoints(Player);}
+				PB_SkillShot = false;													// the next shot is not a skill shot any more
+				byte c = 0;
+				switch (Switch) {															// was a skill shot target hit
+				case 22:
+					c = 20;
+					break;
+				case 23:
+					c = 100;
+					break;
+				case 24:
+					c = 5;
+					break;}
+				WriteUpper2(" VORTEX   X   ");
+				WriteLower2("              ");
+				ShowNumber(31, c * PB_SkillMultiplier * 1000);// show skill shot points
+				ShowNumber(15, PB_SkillMultiplier);           // and multiplier
+				ShowMessage(3);
+				Points[Player] += c * 1000 * PB_SkillMultiplier;
+				ShowPoints(Player);}}
 		BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
 	PB_GameMain(Switch);}                               // process current switch
 
@@ -691,16 +696,22 @@ void PB_GameMain(byte Switch) {
 		break;
 	case 10:                                            // left lane change
 		PB_MoveExBallLamps(0);
+		PB_BallSave = 0;																	// ball saver is off when flippers are used
 		break;
 	case 11:                                            // right lane change
 		PB_MoveExBallLamps(1);
+		PB_BallSave = 0;																	// ball saver is off when flippers are used
 		break;
 	case 12:                                            // left outlane
-		PB_AddBonus(3);
-		if (Lamp[49]) {
-			Lamp[49] = false;
-			PB_ExBallsLit[Player]--;
-			PB_GiveExBall();}
+		if (PB_BallSave) {
+			PB_BallSave = 2;																// trigger the ball saver
+			AddBlinkLamp(33, 250);}
+		else {
+			PB_AddBonus(3);
+			if (Lamp[49]) {
+				Lamp[49] = false;
+				PB_ExBallsLit[Player]--;
+				PB_GiveExBall();}}
 		break;
 	case 13:                                            // left inlane
 		PB_AddBonus(1);
@@ -724,11 +735,15 @@ void PB_GameMain(byte Switch) {
 			PB_EjectMode[Player] = PB_EjectMode[Player] + 5;}
 		break;
 	case 15:                                            // right outlane
-		PB_AddBonus(3);
-		if (Lamp[57]) {
-			Lamp[57] = false;
-			PB_ExBallsLit[Player]--;
-			PB_GiveExBall();}
+		if (PB_BallSave) {
+			PB_BallSave = 2;																// trigger the ball saver
+			AddBlinkLamp(33, 250);}
+		else {
+			PB_AddBonus(3);
+			if (Lamp[57]) {
+				Lamp[57] = false;
+				PB_ExBallsLit[Player]--;
+				PB_GiveExBall();}}
 		break;
 	case 16:                                            // outhole
 		ActivateTimer(200, 0, PB_ClearOuthole);           // check again in 200ms
@@ -1322,7 +1337,7 @@ void PB_PlayGameMusic() {
 
 void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 	AppByte = PB_CountBallsInTrunk();
-	if ((AppByte == 5)||(AppByte < 3-Multiballs-InLock)) {
+	if ((AppByte == 5)||(AppByte < 3-Multiballs-InLock)) {	// something's wrong in the trunk
 		InLock = 0;
 		if (Multiballs == 1) {
 			for (i=0; i<2; i++) {                         	// check how many balls are on the ball ramp
@@ -1340,7 +1355,7 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 				BlockOuthole = false;
 				Event = 0;
 				PB_ClearOuthole(0);}}}
-	else {
+	else {																							// amount of balls in trunk as expected
 		PB_EyeBlink(0);
 		if (Multiballs == 2) {														// multiball running?
 			Multiballs = 1;																	// turn it off
@@ -1360,7 +1375,7 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 				PB_ClearChest();                              // turn off chest lamps
 				PB_ChestLightHandler(0);
 				BlockOuthole = false;}}												// remove outhole block
-		else {
+		else {																						// no multiball running
 			LockedBalls[Player] = 0;
 			BlinkScore(0);																	// stop score blinking
 			PB_CycleDropLights(0);                          // stop the blinking drop target lights
@@ -1383,12 +1398,16 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 					RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
 			for (i=0; i<4; i++) {                           // turn off all eject mode lamps
 				Lamp[13+i] = false;}
-			WriteUpper("BONUS      X  ");
-			WriteLower("      =       ");
-			IntBuffer = Bonus * BonusMultiplier;
-			DisplayScore(2, BonusMultiplier);
-			DisplayScore(4, IntBuffer * 1000);
-			ActivateTimer(2000, 1, PB_CountBonus);}}}
+			if (PB_BallSave == 2) {													// ball saver has been triggered
+				ActivateTimer(2000, 0, PB_AfterExBallRelease);
+				ActivateTimer(1000, AppByte, PB_NewBall);}
+			else {																					// no ball saver
+				WriteUpper("BONUS      X  ");
+				WriteLower("      =       ");
+				IntBuffer = Bonus * BonusMultiplier;
+				DisplayScore(2, BonusMultiplier);
+				DisplayScore(4, IntBuffer * 1000);
+				ActivateTimer(2000, 1, PB_CountBonus);}}}}
 
 void PB_CountBonus(byte ClearDisplay) {
 	if (ClearDisplay) {

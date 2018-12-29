@@ -1153,8 +1153,8 @@ void ShowNumber(byte Position, unsigned int Number) {
 			*(DisplayUpper2+2*Position) = DispPattern1[32];    // just show 0
 			*(DisplayUpper2+2*Position+1) = DispPattern1[33];}
 		else {
-			*(DisplayLower2+2*Position-14) = DispPattern2[32]; // just show 0
-			*(DisplayLower2+2*Position-13) = DispPattern2[33];}}}
+			*(DisplayLower2+2*(Position-16)) = DispPattern2[32]; // just show 0
+			*(DisplayLower2+2*(Position-16)+1) = DispPattern2[33];}}}
 
 void ShowAllPoints(byte Dummy) {                  		// just a dummy event to access it via timer
 	UNUSED(Dummy);
