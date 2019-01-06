@@ -62,16 +62,12 @@ byte DisplayUpper[32];                                // changeable display buff
 byte DisplayLower[32];
 byte DisplayUpper2[32];                               // second changeable display buffer
 byte DisplayLower2[32];
-byte DispCol = 0;                                     // display column being illuminated at the moment
 const bool *LampPattern;                              // determines which lamp pattern is to be shown (for Lamps > 8)
 const bool *LampBuffer;
 byte StrobeLightsTimer = 0;
 bool Lamp[LampMax+1];                                 // changeable lamp status buffer
-bool LEDFlag;																					// stores whether Sel5 has to be triggered by the rising or falling edge
 byte LEDCommandBytes = 0;															// number of command bytes to be send to the LED exp board
-byte LEDCount = 0;																		// points to the next command byte to be send to the LED exp board
 byte LEDCommand[20];																	// command bytes to be send to the LED exp board
-byte LampCol = 0;                                     // lamp column being illuminated at the moment
 byte LampWait = 1;                                    // counter for lamp waiting time until next column is applied
 const struct LampPat *PatPointer;                     // Pointer to the lamp flow to be shown
 struct LampPat {                                      // a lamp pattern sequence played by ShowLampPatterns
@@ -225,7 +221,6 @@ byte APC_settings[64];																// system settings to be stored on the SD
 byte game_settings[64];																// game settings to be stored on the SD
 byte *SettingsPointer;																// points to the settings being changed
 const char *SettingsFileName;																// points to the settings file currently being edited
-
 const int UpDown = 53;                                // arduino pin connected to the auto/up - manual/Down button
 const int Blanking = 22;                              // arduino pin to control the blanking signal
 const byte VolumePin = 13;														// arduino pin to control the sound volume
@@ -234,7 +229,6 @@ const unsigned long AllSelects = 871346688;           // mask for all port C pin
 const unsigned long Sel5 = 2097152;										// mask for the Sel5 select signal
 const unsigned long AllData = 510;
 uint16_t SwDrvMask = 2;                               // mask for switch row select
-uint16_t LampColMask = 2;                             // mask for lamp column select
 byte SolBuffer[3];                                    // stores the state of the solenoid latches
 
 void setup() {
@@ -365,11 +359,15 @@ void Init_System2(byte State) {
 
 void EnterAttractMode(byte Event) {                   // Enter the attract mode from a timer
 	UNUSED(Event);
-
 	GameDefinition.AttractMode();}
 
 void TC7_Handler() {                                  // interrupt routine - runs every ms
 	TC_GetStatus(TC2, 1);                               // clear status
+	static byte DispCol = 0;                            // display column being illuminated at the moment
+	static byte LampCol = 0;                            // lamp column being illuminated at the moment
+	static uint16_t LampColMask = 2;                    // mask for lamp column select
+	static bool LEDFlag;																// stores whether Sel5 has to be triggered by the rising or falling edge
+	static byte LEDCount = 0;														// points to the next command byte to be send to the LED exp board
 	int i;                                              // general purpose counter
 	int buff;
 	uint16_t c;
@@ -478,7 +476,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 		REG_PIOC_SODR = i;}                           		// trigger latch
 
 	REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
-	REG_PIOC_CODR = AllSelects + AllData;           		// clear all select signals and the data bus
+	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals and the data bus
 
 	// Lamps
 
@@ -532,7 +530,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 				LEDFlag = true;
 				REG_PIOC_SODR = Sel5;}}                       // activate Sel5 rising edge
 		else {                                            // the lamp matrix is already sent
-			if (LampCol < 13) {                             // still time to send a command?
+			if ((LampCol < 13) || LEDCount) {               // still time to send a command or command still running?
 				if (LEDCommandBytes) {                        // are there any pending LED commands?
 					REG_PIOC_CODR = AllData;
 					REG_PIOC_SODR = (LEDCommand[LEDCount])<<1;  // send the first byte
@@ -546,11 +544,10 @@ void TC7_Handler() {                                  // interrupt routine - run
 					else {
 						LEDFlag = true;
 						REG_PIOC_SODR = Sel5;}}}
-			else {                                          // this must be LampCol 36
+			else {                                          // LampCol > 13
 				if (LampCol == 17) {
 					REG_PIOC_CODR = AllData;
 					REG_PIOC_SODR = 170<<1;                     // time to sync
-					REG_PIOC_SODR = Sel5;
 					if (LEDFlag) {
 						LEDFlag = false;
 						REG_PIOC_CODR = Sel5;}                    // activate Sel5 falling edge
