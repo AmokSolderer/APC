@@ -500,16 +500,16 @@ void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
 		BlinkScore(1);																		// turn on score blinking
 		ActA_BankSol(2);}
 	byte c = PB_CountBallsInTrunk();
-	if (c == Balls) {                             // expected number of balls in trunk
+	if (c == Balls) {                             			// expected number of balls in trunk
 		WriteUpper("  BALL MISSING");
 		if (Switch[16]) {                                 // outhole switch still active?
 			ActA_BankSol(1);}}															// shove the ball into the trunk
 	else {																							//
-		if (c == 5) {																// balls not settled
+		if (c == 5) {																			// balls not settled
 			WriteLower(" TRUNK  ERROR ");
 			Balls = 10;}
 		else {
-			if ((c > Balls) || !c) {						// more balls in trunk than expected or none at all
+			if ((c > Balls) || !c) {												// more balls in trunk than expected or none at all
 				WriteUpper("              ");
 				WriteLower("              ");
 				ShowAllPoints(0);
@@ -536,11 +536,11 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
 			BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}	// restart watchdog
 		else {  																					// if ball is really missing
 			byte c = PB_CountBallsInTrunk();								// recount all balls
-			if (c == 5) {                             // balls have not settled yet
+			if (c == 5) {                             			// balls have not settled yet
 				WriteUpper("  BALL  STUCK ");
 				BallWatchdogTimer = ActivateTimer(1000, 0, PB_SearchBall);} // and try again in 1s
 			else {
-				if (c == 2) {														// found 2 balls in trunk?
+				if (c == 2) {																	// found 2 balls in trunk?
 					if (BlockOuthole) {													// is the outhole blocked
 						PB_BallEnd(0);}														// then it was probably a ball loss gone wrong
 					else {
@@ -550,7 +550,7 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
 					for (i=0; i<2; i++) {                       // count balls in lock
 						if (Switch[25+i]) {
 							c2++;}}
-					if (c2 > InLock) {										// more locked balls found than expected?
+					if (c2 > InLock) {													// more locked balls found than expected?
 						PB_HandleLock(0);													// lock them
 						BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
 					else {
@@ -881,8 +881,8 @@ void PB_GameMain(byte Switch) {
 			WriteLower2("              ");
 			ShowNumber(31, PB_EnergyValue[Player]*2000);
 			PlayFlashSequence((byte*) PB_ScoreEnergySeq);
-			ShowMessage(3);
-			PB_EnergyOff(0);}
+			ShowMessage(3);}
+		PB_EnergyOff(0);
 		break;
 	case 46:
 		if (PB_CloseVisorFlag) {
@@ -1206,11 +1206,6 @@ void PB_Multiball() {
 	LampPattern = AllLamps;
 	PlayFlashSequence((byte*) PB_MultiballSeq);
 	ActivateTimer(1500, 0, PB_Multiball2);}
-
-//void PB_Multiball2(byte Dummy) {
-//  UNUSED(Dummy);
-//  ActivateSolenoid(0, 15);
-//  ActivateTimer(50, 0,PB_Multiball3);}
 
 void PB_Multiball2(byte Dummy) {
 	UNUSED(Dummy);
