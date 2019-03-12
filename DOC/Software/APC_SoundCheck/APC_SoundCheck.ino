@@ -1594,9 +1594,8 @@ byte HandleHighScores(unsigned int Score) {
 
  void SoundCheck(byte State) {
   if (State) {
-    PlaySound(50, "SOUND.bin");}
+    PlaySound(50, "Sound.bin");}
   else {
     //analogWrite(VolumePin, 255-40);
     PlayMusic(50, "Music.bin");}
   ActivateTimer(10000, 1, SoundCheck);}
-
