@@ -12,7 +12,7 @@ The APC is a controller for Williams pinball machines. It uses an Arduino Due an
 * Audio amplifier with two channels (to play music and sound effects simultaneously / can be changed to single channel stereo)
 * Hardware extensions interface (the pinout is compatible to the Sound Overlay Solenoid Board used in games like Whirlwind, but it is upgraded a bit to support all kind of self made hardware)
 
-To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards. That means you still need the power supply board and the interconnect boards used by several System 11 games.
+To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards, but you still need the power supply board and the interconnect boards used by several System 11 games.
 
 To see the APC in action take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
 
@@ -42,7 +42,7 @@ In the Pinbot I had to cut some cable ties and open up the wiring harness a bit 
 
 ### Software
 
-The software consists of two parts: the operating system APC.ino which controls the hardware and offers an application interface (API) for the game specific software to use. For an overview of the available API variables and commands please take a look at the
+The software consists of two parts: the operating system APC.ino and the game specific code. The former controls the hardware and offers an application interface (API) for the game specific software to use. For an overview of the available API variables and commands please take a look at the
 [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf).
 
 I have written game codes for my Black Knight and Pinbot. They are still not final, but good enough to have fun with and to use as a reference when writing own code. As a startup guide how to start writing game code I have written a short tutorial in the [wiki](https://github.com/AmokSolderer/APC/wiki) section.
@@ -59,7 +59,7 @@ However apart from writing new game code and generating sound samples the follow
 
 ## Why this page?
 
-Basically this is a private fun project for me and some friends and it was never meant to go public. However, after a while I realized that the APC offers much more potential than I could handle. In the end designing new rules, finding good sounds and putting it all in software with the necessary polish that makes for a great new game requires a completely different skill set than building a board and doing some programming. Therefore I decided to go public and see if there are people out there who might have a lot of great ideas and are just lacking a basis to work on.
+Basically this is a private fun project for me and some friends and it was never meant to go public. However, after a while I realized that the APC offers much more potential than I could handle. I've done the necessary basics, which is the hardware and the software to run it. Now it's time for people thinking about new games and adding some polish to the software. Therefore I hope to establish a small community of people who can do that and just need a base to start from.
  
 ## Feedback
 
