@@ -24,7 +24,7 @@ A short video with this setup can be found here :
 
 [Hardware extensions interface video](https://youtu.be/8BnVTpKq-2Y)
 
-The LED expansion board is a self made board to control WS2812 based LED-Strips with the APC. In this case it's used just as an example. For more information about this board please refer to the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware) in the WIKI.
+The LED expansion board is a self made board to control WS2812 based LED-Strips with the APC. In this case it's used just as an example. For more information about this board please refer to the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware).
 
 Basically the hardware extensions interface is an 8 bit bus with several enable signals which can be used for all kinds of additional hardware.
 
@@ -47,19 +47,21 @@ The software consists of two parts: the operating system APC.ino and the game sp
 
 I have written game codes for my Black Knight and Pinbot. They are still not final, but good enough to have fun with and to use as a reference when writing own code. As a startup guide how to start writing game code I have written a short tutorial in the [wiki](https://github.com/AmokSolderer/APC/wiki) section.
 
+Please note that I have equipped my Black Knight with a [special kind of display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha) and the APC currently does not support the original displays. This is not because it would be difficult to make them work (it is quite easy), but with numbers only one would have to implement a new menu system, remove the 'Enter Initials' and so on. Additionally it would be quite cumbersome to debug some game software without the display being able to show letters. Therfore I recommend to use an early System11 display which has at least one row with alphanumeric displays (or build my System7Alpha).
+
 ### To Do
 
 My next step is to put the APC in a Rollergames. This will require three cables to be extended a bit, since the auxiliary boards of this System11c machine makes the wiring quite inflexible and these three cable are just too short.
 
-However apart from writing new game code and generating sound samples the following software improvements are pending:
+However apart from writing new game code and generating sound samples the following software improvements come to my mind:
 
 * Implementation of a better error handler
-* Support for more displays (The displays of the Rollergames require some changes to the software)
+* Support for more displays - The 2x16 display of the System11c games requires some changes to the software. The numbers only display of the System6 and 7 machines are not supported at the moment, but mainly because I don't like them (I want a highscore list). I'm just not sure how to handle menus and so on - may be use the serial monitor of the Arduino IDE to show them on a PC or add a bluetooth module to the APC and do the settings with an APP on your smartphone...
 * Support for PinMame to run the original Eprom Software on a PC and use the APC just as an interface to the machine. With this, the APC could also be used as a replacement for old boards.
 
 ## Why this page?
 
-Basically this is a private fun project for me and some friends and it was never meant to go public. However, after a while I realized that the APC offers much more potential than I could handle. I've done the necessary basics, which is the hardware and the software to run it. Now it's time for people thinking about new games and adding some polish to the software. Therefore I hope to establish a small community of people who can do that and just need a base to start from.
+Basically this is a private fun project for me and some friends and it was never meant to go public. However, after a while I realized that the APC offers much more potential than I could handle as some kind of 'one man army'. I've done the necessary basics, which is the hardware and the software to run it, but I don't think I'm the right guy to invent new rules or add the right amount of polish to the game software that makes for a great game. And I'm definitely not the right guy to dig into the PinMame code and write some kind of driver to make it control the APC which could then be used as a general cheap and simple replacement board (which would be quite cool though). Therefore I hope to establish a small community of people who can do that and just need a base to start from.
  
 ## Feedback
 
