@@ -14,6 +14,8 @@ The APC is a controller for Williams pinball machines. It uses an Arduino Due an
 
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards, but you still need the power supply board and the interconnect boards used by several System 11 games.
 
+However, at the moment the APC cannot run the original Williams EPROM software. For this, someone has to write an interface to PinMame and this someone is definitely not me. Instead this board is meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an API providing the necessary commands to make this a lot easier, but you still have to programm the game specific part by yourself.
+
 To see the APC in action take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
 
 The following picture shows the APC 2.0 in a Black Knight with the LED Expansion board connected to the hardware extensions interface.
