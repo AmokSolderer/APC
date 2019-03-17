@@ -51,7 +51,7 @@ Please note that I have equipped my Black Knight with a [special kind of display
 
 ### To Do
 
-My next step is to put the APC in a Rollergames. This will require three cables to be extended a bit, since the auxiliary boards of this System11c machine makes the wiring quite inflexible and these three cable are just too short.
+I have just put the APC in a Rollergames. This requires three cables to be extended a bit, since the auxiliary boards of this System11c machine makes the wiring quite inflexible and these three cable are just too short (see the Preparation section in the Wiki for details). For the hardware this is no big deal, but the display will require some adaption in the software.
 
 However apart from writing new game code and generating sound samples the following software improvements come to my mind:
 

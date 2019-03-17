@@ -174,8 +174,7 @@ void PB_AttractDisplayCycle(byte Event) {
 	PB_CheckForLockedBalls(0);
 	switch (Event) {
 	case 0:
-		//WriteUpper2("THE APC       ");
-		WriteUpper2(" BATTLESTAR   ");
+		WriteUpper2("THE APC       ");
 		ActivateTimer(50, 1, ScrollUpper);
 		ActivateTimer(2000, 1, PB_AttractScroll);
 		WriteLower2("              ");
@@ -225,10 +224,8 @@ void PB_AttractDisplayCycle(byte Event) {
 
 void PB_AttractScroll(byte Dummy) {
 	UNUSED(Dummy);
-	//WriteUpper2("PINBOT        ");
-	WriteUpper2("  GALACTICA   ");
-	//AddScrollUpper(1);
-	ScrollUpper(1);}
+	WriteUpper2("PINBOT        ");
+	AddScrollUpper(1);}
 
 void PB_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
 	UNUSED(Event);
