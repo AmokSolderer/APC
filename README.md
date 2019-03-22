@@ -2,7 +2,7 @@
 ![APC 2.0](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC.JPG)
 ## Overview
 
-The APC is a controller for Williams pinball machines. It uses an Arduino Due and contains all the circuitry required to run a Williams pinball machine from System 6 to System 11c (and the compatible Data East machines):
+The APC is a freely programmable controller for Williams pinball machines. It uses an Arduino Due and contains all the circuitry required to run a Williams pinball machine from System 6 to System 11c (and the compatible Data East machines):
 
 * Display interface for all corresponding display types
 * 24 Solenoid drivers
@@ -12,7 +12,7 @@ The APC is a controller for Williams pinball machines. It uses an Arduino Due an
 * Audio amplifier with two channels (to play music and sound effects simultaneously / can be changed to single channel stereo)
 * Hardware extensions interface (the pinout is compatible to the Sound Overlay Solenoid Board used in games like Whirlwind, but it is upgraded a bit to support all kind of self made hardware)
 
-To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards, but you still need the power supply board and the interconnect boards used by several System 11 games.
+To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards, at a price of well below 100€ per board. A more detailed calculation of the costs can be found in the [APC wiki](https://github.com/AmokSolderer/APC/wiki/Home).
 
 However, at the moment the APC cannot run the original Williams EPROM software. For this, someone has to write an interface to PinMame and this someone is definitely not me. Instead this board is meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an API providing the necessary commands to make this a lot easier, but you still have to programm the game specific part by yourself.
 
@@ -69,7 +69,7 @@ Basically this is a private fun project for me and some friends and it was never
 
 Feedback is very important for me, because if there is none I must assume that nobody is interested in this project and that I can stop to bother with additional documentation or selecting a board manufacturer. And albeit I have tried my best to help you to become familiar with this project, there will be questions and I am willing to do some support. Like I said, it's a hobby so don't expect 24/7 availability, but I'll do my best to help.
 
-**So if you're interested please leave a post in the Arduino Forum (link coming soon).**
+**So if you're interested please leave some feedback in the [Flippertreff forum (german)](https://www.flippertreff.de/start/forum/topic/11356-arduino-pinball-controller/) or in the Pinside Form (english) - (link coming soon).**
 
 ## How to get a board?
 
