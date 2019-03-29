@@ -293,6 +293,9 @@ void AttractDisplayCycle(byte Event) {
 
 void AttractModeSW(byte Event) {                      // Attract Mode switch behaviour
 	switch (Event) {
+  case 8:                                             // high score reset
+    digitalWrite(Blanking, LOW);                      // invoke the blanking
+    break;
 	case 20:                                            // outhole
 		ActivateTimer(200, 0, CheckForLockedBalls);       // check again in 200ms
 		break;
