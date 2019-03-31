@@ -90,6 +90,7 @@ bool SolState = false;                                // and what the desired st
 byte SolDelayed[20];                                  // Queue for waiting solenoid requests
 bool C_BankActive = false;														// A/C relay currently doing C bank?
 byte SolWaiting[64][2];																// list of waiting A/C solenoid requests
+byte ACselectRelay = 0;																// solenoid number of the A/C select relay
 byte ActSolSlot = 0;																	// currently processed slot in SolWaiting
 byte NextSolSlot = 0;																	// next free slot in SolWaiting
 unsigned int DurDelayed[20];                          // duration values for waiting solenoid requests
@@ -134,7 +135,7 @@ void (*AfterSound)() = 0;															// program to execute after sound file h
 byte SoundPriority = 0;																// stores the priority of the sound file currently being played
 bool SoundPrio = false;																// indicates which channel has to be processed first
 char *NextSoundName;
-const char TestSounds[2][15] = {{"Musik.bin"},0};
+const char TestSounds[3][15] = {{"MUSIK.BIN"},{"SOUND.BIN"},0};
 void ExitSettings(bool change);
 void HandleTextSetting(bool change);
 void HandleNumSetting(bool change);
@@ -167,7 +168,7 @@ const byte Volume = 4;                             		// Volume of the speaker
 const byte LEDsetting = 5;                            // Setting for the APC_LED_EXP board
 const byte DisplayType = 6;														// which display is used?
 
-char TxTGameSelect[3][15] = {{" BLACK KNIGHT "},{" JEDI  KNIGHT "},{"    PINBOT    "}};
+char TxTGameSelect[3][15] = {{" BASE  CODE   "},{" BLACK KNIGHT "},{"    PINBOT    "}};
 char TxTLEDSelect[3][15] = {{"   NO   LEDS  "},{"PLAYFLD ONLY  "},{"PLAYFLDBACKBOX"}};
 char TxTDisplaySelect[5][15] = {{"4 ALPHA+CREDIT"},{" SYS11 PINBOT "},{" SYS11  F-14  "},{" SYS11  BK2K  "},{" SYS11   TAXI "}};
 
@@ -186,8 +187,8 @@ struct SettingTopic APC_setList[10] = {
 struct GameDef {
 	struct SettingTopic *GameSettingsList;							// points to the settings definition of the current game
 	byte *GameDefaultsPointer;													// points to the default settings of the selected game
-	const char *GameSettingsFileName;													// points to the name of the settings file for the selected game
-	const char *HighScoresFileName;														// contains the name of the high scores file for the selected game
+	const char *GameSettingsFileName;										// points to the name of the settings file for the selected game
+	const char *HighScoresFileName;											// contains the name of the high scores file for the selected game
 	void (*AttractMode)();															// Pointer to Attract mode of current game
 	const unsigned int *SolTimes;												// Default activation times of solenoids
 };
@@ -318,9 +319,11 @@ void Init_System() {
 void Init_System2(byte State) {
 	switch(APC_settings[ActiveGame]) {									// init calls for all valid games
 	case 0:
+		BC_init();
+		break;
+	case 1:
 		BK_init();
 		break;
-
 	case 2:
 		PB_init();
 		break;
@@ -993,7 +996,6 @@ void ActA_BankSol(byte Solenoid) {
 	if (!SolWaiting[NextSolSlot][0]) {
 		SolWaiting[NextSolSlot][0] = Solenoid;
 		SolWaiting[NextSolSlot][1] = 0;
-		//SolWaiting[NextSolSlot][1] = ((*(GameDefinition.SolTimes+Solenoid-1))/10)+2;
 		NextSolSlot++;
 		if (NextSolSlot > 63) {
 			NextSolSlot = 0;}
@@ -1032,12 +1034,12 @@ void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
 	static byte State = 0;
 	if (GivenState || !State) {													// accept new calls (Givenstate = 0) only when not already running (State = 0)
 		if (ActSolSlot != NextSolSlot) {									// any solenoid waiting?
-			if (((SolWaiting[ActSolSlot][0] < 9) && C_BankActive) || ((SolWaiting[ActSolSlot][0] > 24) && !C_BankActive)) { // wrong relay state?
+			if (ACselectRelay && (((SolWaiting[ActSolSlot][0] < 9) && C_BankActive) || ((SolWaiting[ActSolSlot][0] > 24) && !C_BankActive))) { // wrong relay state?
 				if (C_BankActive) {
-					ReleaseSolenoid(14);												// switch to A
+					ReleaseSolenoid(ACselectRelay);							// switch to A
 					C_BankActive = false;}											// signal it
 				else {
-					ActivateSolenoid(0, 14);										// switch to C
+					ActivateSolenoid(0, ACselectRelay);					// switch to C
 					C_BankActive = true;}												// signal it
 				ActivateTimer(50, 1, ActSolenoid);}					  // wait 500ms for the relay to settle
 			else {
@@ -1055,7 +1057,7 @@ void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
 					ActSolSlot = 0;}}														// start from zero
 			State = 1;}																			// set routing state to active
 		else if (C_BankActive){														// nothing more to do any relay still active?
-			ReleaseSolenoid(14);														// reset it
+			ReleaseSolenoid(ACselectRelay);									// reset it
 			C_BankActive = false;
 			State = 1;
 			ActivateTimer(50, 1, ActSolenoid);}
@@ -1582,7 +1584,7 @@ void HandleTextSetting(bool change) {									// handling method for text settin
 void HandleVolumeSetting(bool change) {
 	HandleNumSetting(change);
 	if (!change) {
-		PlayMusic(50, "Musik.bin");}	
+		PlayMusic(50, "MUSIK.BIN");}
 	analogWrite(VolumePin,255-APC_settings[Volume]);}   // adjust PWM to volume setting
 
 byte HandleHighScores(unsigned int Score) {

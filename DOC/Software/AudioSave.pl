@@ -5,7 +5,7 @@ $buf2 = 0;
 
 open(FH, "< Data.wav");
 binmode(FH);
-open(FOUT, "> Data.bin");
+open(FOUT, "> Data.BIN");
 binmode(FOUT);
 
 for (my $i = 0; $i < 44; $i++) {

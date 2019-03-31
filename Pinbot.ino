@@ -36,7 +36,8 @@ const byte PB_ScoreEnergySeq[7] = {31,10,31,10,31,10,0};
 const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
-const char PB_GameMusic[6][12] = {{"BS_M03.bin"},{"BS_M05.bin"},{"BS_M06.bin"},{"BS_M07.bin"},{"BS_M08.bin"},{"BS_M09.bin"}};
+const char PB_GameMusic[6][12] = {{"BS_M03.BIN"},{"BS_M05.BIN"},{"BS_M06.BIN"},{"BS_M07.BIN"},{"BS_M08.BIN"},{"BS_M09.BIN"}};
+byte PB_ACselectRelay = 14;														// solenoid number of the A/C select relay
 
 struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
 		{" REACH PLANET ",HandleNumSetting,0,1,9},
@@ -165,8 +166,9 @@ const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
                                    15,0b10000,0b01100,0b00110,0b00000,0b00000,
                                    15,0b10000,0b01000,0b00100,0b00010,0b00001,
                                    15,0b10000,0b01000,0b01000,0b00100,0b00100,
-                                   15,0b10000,0b10000,0b10000,0b10000,0b10000,0};                                   
+                                   15,0b10000,0b10000,0b10000,0b10000,0b10000,0};
 
+																											// offsets of settings in the settings array
 const byte PB_DropTime = 0;														// drop target down time setting
 const byte PB_ReachPlanet = 1;												// target planet setting
 const byte PB_EnergyTimer = 2;												// energy timer setting
@@ -182,7 +184,7 @@ const byte PB_defaults[64] = {5,6,15,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0};
 
-const struct GameDef PB_GameDefinition = {
+struct GameDef PB_GameDefinition = {
 		PB_setList,																				// GameSettingsList
 		(byte*)PB_defaults,																// GameDefaultsPointer
 		"PB_SET.APC",																			// GameSettingsFileName
@@ -191,6 +193,7 @@ const struct GameDef PB_GameDefinition = {
 		PB_SolTimes};																			// Default activation times of solenoids
 
 void PB_init() {
+	ACselectRelay = PB_ACselectRelay;										// assign the number of the A/C select relay
 	GameDefinition = PB_GameDefinition;}								// read the game specific settings and highscores
 
 void PB_AttractMode() {
@@ -316,7 +319,7 @@ void PB_AttractModeSW(byte Select) {
 			ActA_BankSol(6);}																// put it down
 		ActivateSolenoid(0, 12);                          // turn off playfield GI
 		AfterSound = PB_GameStart;                        // release a new ball (2 expected balls in the trunk)
-		PlaySound(150, "BS_S06.bin");
+		PlaySound(150, "BS_S06.BIN");
 		PB_ChestMode = 1;
 		ActivateSolenoid(0, 23);                        	// enable flipper fingers
 		ActivateSolenoid(0, 24);
@@ -357,9 +360,9 @@ void PB_GameStart() {
 	AfterSound = 0;
 	PB_NewBall(2);
 	ReleaseSolenoid(12);                                // turn playfield GI back on
-	NextMusicName = "BS_M03.bin";
+	NextMusicName = "BS_M03.BIN";
 	AfterMusic = PB_PlayGameMusic;
-	PlayMusic(50, "BS_M02.bin");}
+	PlayMusic(50, "BS_M02.BIN");}
 
 void AddPlayerSW(byte Switch) {
 	if (Switch == 3) {
@@ -476,7 +479,7 @@ void PB_GiveBall(byte Balls) {
 void PB_CheckShooterLaneSwitch(byte Switch) {
 	if (Switch == 20) {                                 // shooter lane switch released?
 		Switch_Released = DummyProcess;
-		PlaySound(150, "BS_S05.bin");
+		PlaySound(150, "BS_S05.BIN");
 		if (!BallWatchdogTimer) {
 			BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
@@ -908,7 +911,7 @@ void PB_GameMain(byte Switch) {
 			ShowNumber(15, Buffer*1000);}
 		break;
 	case 40:																						// ramp entrance
-		PlaySound(150, "BS_S11.bin");
+		PlaySound(150, "BS_S11.BIN");
 		break;
 	case 45:																						// score energy switch
 		if (PB_EnergyActive) {
@@ -1210,7 +1213,7 @@ void PB_HandleLock(byte State) {
 						ActivateSolenoid(0, 13);                  // start visor motor
 						PB_SolarValueTimer = ActivateTimer(8000, 0,PB_ReopenVisor);} // 8s to score the solar value
 					else {                                      // multiball not yet running
-						PlaySound(150, "BS_S02.bin");
+						PlaySound(150, "BS_S02.BIN");
 						PB_GiveBall(1);}}                         // give second ball
 				else {                                        // both balls in lock
 					if (Multiballs == 1) {                      // multiball not yet running?
@@ -1225,7 +1228,7 @@ void PB_HandleLock(byte State) {
 						PB_LampSweepActive = 2;
 						PB_LampSweep(4);
 						AfterMusic = PB_Multiball;
-						PlayMusic(51, "BS_S03.bin");
+						PlayMusic(51, "BS_S03.BIN");
 						Multiballs = 2;}                          // start multiball
 					else {
 						PB_ClearOutLock(1);}}}}}}                 // eject 1 ball and close visor
@@ -1234,7 +1237,7 @@ void PB_Multiball() {
 	AfterMusic = PB_PlayGameMusic;
 	if (APC_settings[Volume]) {
 		analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[PB_MultiballVolume]);} // increase volume
-	PlayMusic(50, "BS_M04.bin");
+	PlayMusic(50, "BS_M04.BIN");
 	ReleaseSolenoid(9);
 	ReleaseSolenoid(10);
 	ReleaseSolenoid(18);
@@ -1318,7 +1321,7 @@ void PB_AdvancePlanet() {
 	if (PB_Planet[Player] > 10) {                       // sun already reached before?
 		PB_Planet[Player] = 10;}                          // set it back to the sun
 	else {
-		PlaySound(150, "BS_S07.bin");
+		PlaySound(150, "BS_S07.BIN");
 		if  (PB_Planet[Player] == 10) {                   //  10 = Sun
 			Lamp[51] = true;}																// light special
 		else {
@@ -1394,7 +1397,7 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 			ReleaseSolenoid(11);														// turn backbox GI back on
 			if (APC_settings[Volume]) {
 				analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
-			PlayMusic(50, "BS_S04.bin");
+			PlayMusic(50, "BS_S04.BIN");
 			if (AppByte == 2) {															// 2 balls detected in the trunk
 				ActivateTimer(1000, 0, PB_BallEnd);}					// come back and check again
 			else {
@@ -1492,7 +1495,7 @@ void PB_BallEnd3(byte Dummy) {
 			ReleaseSolenoid(24);
 			LampPattern = NoLamps;                      		// Turn off all lamps
 			AfterMusic = GameDefinition.AttractMode;
-			PlayMusic(50, "BS_S10.bin");
+			PlayMusic(50, "BS_S10.BIN");
 			//PB_CheckForLockedBalls(0);
 			Lamp[3] = false;}}}                       			// turn off Ball in Play lamp
 
@@ -1503,7 +1506,7 @@ void PB_Congrats(byte Dummy) {                    		// show congratulations
 	AfterMusic = PB_EnterInitials2;
 	if (APC_settings[Volume]) {
 		analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[PB_MultiballVolume]);} // increase volume
-	PlayMusic(50, "BS_M01.bin");
+	PlayMusic(50, "BS_M01.BIN");
 	ActivateSolenoid(0, 11);
 	ActivateSolenoid(0, 12);
 	PB_LampSweepActive = 2;
@@ -1639,7 +1642,7 @@ void PB_ResetHighScores(bool change) {                // delete the high scores 
 void PB_HandleVolumeSetting(bool change) {
 	HandleNumSetting(change);
 	if (!change) {
-		PlayMusic(50, "BS_M04.bin");}
+		PlayMusic(50, "BS_M04.BIN");}
 	analogWrite(VolumePin,255-APC_settings[Volume]-SettingsPointer[AppByte]);}  // adjust PWM to volume setting
 
 void PB_Testmode(byte Select) {

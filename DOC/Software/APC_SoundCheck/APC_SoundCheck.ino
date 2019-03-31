@@ -291,7 +291,7 @@ void setup() {
 	DispRow1 = DisplayUpper;
 	DispRow2 = DisplayLower;
 	LampPattern = NoLamps;
-	digitalWrite(Blanking, HIGH);                       // Release the blanking
+	//digitalWrite(Blanking, HIGH);                       // Release the blanking
 	if (SD.begin(52, SD_SCK_MHZ(20))) {                 // look for an SD card and set max SPI clock to 20MHz
 		WriteUpper("SD CARD FOUND ");
     Serial.println("SD card found");
@@ -1594,8 +1594,8 @@ byte HandleHighScores(unsigned int Score) {
 
  void SoundCheck(byte State) {
   if (State) {
-    PlaySound(50, "Sound.bin");}
+    PlaySound(50, "SOUND.BIN");}
   else {
     //analogWrite(VolumePin, 255-40);
-    PlayMusic(50, "Music.bin");}
+    PlayMusic(50, "MUSIC.BIN");}
   ActivateTimer(10000, 1, SoundCheck);}

@@ -2,7 +2,7 @@
 ![APC 2.0](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC.JPG)
 ## Overview
 
-The APC is a freely programmable controller for Williams pinball machines. It uses an Arduino Due and contains all the circuitry required to run a Williams pinball machine from System 6 to System 11c (and the compatible Data East machines):
+The APC is a freely programmable controller for Williams pinball machines. It uses an Arduino Due and contains all the circuitry required to run a Williams pinball machine from System 3 to System 11c (and the compatible Data East machines):
 
 * Display interface for all corresponding display types
 * 24 Solenoid drivers
@@ -36,11 +36,15 @@ Basically the hardware extensions interface is an 8 bit bus with several enable 
 
 The APC hardware status is mature. I have version 2.0 in use for more than a year now without anything to complain about. Beginning of march 2019 I built a version 2.1 board which spared some components and had some slight layout changes. The version in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware) is 2.2 which has just one capacitor changed to SMD and the corresponding line removed.
 
-I have tested the APC in a Black Knight (System 7) and a Pinbot (System 11a), but I checked the connector pinouts and it should work with System 6, System 9 and the compatible Data East machines also.
+I have tested the APC in a Black Knight (System 7), a Pinbot (System 11a) and a Rollergames (System 11c), but I checked the connector pinouts and it should work with System 3,4,6 and 9 as well as the compatible Data East machines also.
 
-In the Pinbot I had to cut some cable ties and open up the wiring harness a bit in order to make the cable connectors reach their corresponding counterparts on the board. This is necessary as the APC is much smaller than the original circuit boards and the location of the connectors differs from System6 to System11.
+In the Pinbot I had to cut some cable ties and open up the wiring harness a bit in order to make the cable connectors reach their corresponding counterparts on the board. This is necessary as the APC is much smaller than the original circuit boards and the location of the connectors differs from System to System.
 
 ![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
+
+System 3 and 4 need a simple cable adapter as their connector 1J4 differs from the rest.
+
+Later System11 machines with an auxiliary power and interconnect board need 3 cable extensions, see the preparation section in [the wiki](https://github.com/AmokSolderer/APC/wiki) for details.
 
 ### Software
 
@@ -53,13 +57,14 @@ Please note that I have equipped my Black Knight with a [special kind of display
 
 ### To Do
 
-I have just put the APC in a Rollergames. This requires three cables to be extended a bit, since the auxiliary boards of this System11c machine makes the wiring quite inflexible and these three cable are just too short (see the Preparation section in the Wiki for details). For the hardware this is no big deal, but the display will require some adaption in the software.
+I have just put the APC in a Rollergames. This required three cables to be extended a bit, since the auxiliary boards of this System11c machine makes the wiring quite inflexible and these three cable are just too short (see the Preparation section in the Wiki for details). For the hardware this is no big deal, but the display will require some adaption in the software. To make this work I just started a Base Code which provides basic pinball funtionality and should work in all machines with only small adaptions.
 
 However apart from writing new game code and generating sound samples the following software improvements come to my mind:
 
+* Write a Base Code that can be used as a base for all game codes. The Base Code should contain all procedures that are more or less the same for every game and it should support the various display types. (This work has been started)
+* Add a mode for the APC being controlled by a PC via USB. This would enable PinMame or the Mission Pinball Framework to use the APC. With PinMame, the APC could also be used as a replacement for old boards and the MPF could ease the design of homebrew games. (coming next)
 * Implementation of a better error handler
-* Support for more displays - The 2x16 display of the System11c games requires some changes to the software. The numbers only display of the System6 and 7 machines are not supported at the moment, but mainly because I don't like them (I want a highscore list). I'm just not sure how to handle menus and so on - may be use the serial monitor of the Arduino IDE to show them on a PC or add a bluetooth module to the APC and do the settings with an APP on your smartphone...
-* Support for PinMame to run the original Eprom Software on a PC and use the APC just as an interface to the machine. With this, the APC could also be used as a replacement for old boards.
+* Support for more displays - The 2x16 display of the System11c will be supported in the Base Code. The numbers only display of the System6 and 7 machines are not supported at the moment, but mainly because I don't like them (I want a highscore list). I'm just not sure how to handle menus and so on - may be use the serial monitor of the Arduino IDE to show them on a PC or add a bluetooth module to the APC and do the settings with an APP on your smartphone...
 
 ## Why this page?
 

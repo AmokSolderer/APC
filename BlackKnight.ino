@@ -22,6 +22,10 @@ byte DropHits[16];                                    // counts how often the ta
 bool DropWait[5];																			// indicates that a waiting time for this drop target bank is active before it it being processed
 const byte BallSearchCoils[11] = {1,8,10,9,2,3,4,5,7,19,15}; // coils to fire when the ball watchdog timer runs out
 const unsigned int BK_SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,5,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
+
+																											// offsets of settings in the settings array
+const byte TimedMagna = 0;                            // Timed Magna saves?
+
 const byte BK_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 											  			0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0,
@@ -30,8 +34,6 @@ const byte BK_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0};
-
-const byte TimedMagna = 0;                            // Timed Magna saves?
 
 struct SettingTopic BK_setList[5] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
 			{" RESET  HIGH  ",ResetHighScores,0,0,0},
@@ -183,8 +185,9 @@ const byte FirstMultLamp = 61;
 const byte DropTargets[4] = {25, 29, 33, 37};
 const byte DropSolenoid = 2;
 const byte DropLamp = 17;
+const byte BK_ACselectRelay = 0;											// no A/C select relay
 
-const struct GameDef BK_GameDefinition = {
+struct GameDef BK_GameDefinition = {
 	BK_setList,																					// GameSettingsList
 	(byte*)BK_defaults,																	// GameDefaultsPointer
 	"BK_SET.BIN",																				// GameSettingsFileName
@@ -193,6 +196,7 @@ const struct GameDef BK_GameDefinition = {
 	BK_SolTimes};																				// Default activation times of solenoids
 
 void BK_init() {
+	ACselectRelay = BK_ACselectRelay;										// assign the number of the A/C select relay
 	GameDefinition = BK_GameDefinition;}								// read the game specific settings and highscores
 
 void BK_AttractMode() {                               // Attract Mode
