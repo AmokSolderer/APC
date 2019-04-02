@@ -213,10 +213,10 @@ void PB_AttractDisplayCycle(byte Event) {
 	switch (Event) {
 	case 0:
 		WriteUpper2("THE APC       ");
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(2000, 1, PB_AttractScroll);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(2000, 0, PB_AttractScroll);
 		WriteLower2("              ");
-		ActivateTimer(1400, 1, ScrollLower);
+		ActivateTimer(1400, 0, ScrollLower);
 		if (NoPlayers) {																	// was there a previous game?
 			Event++;}																				// proceed to case 1 next time
 		else {																						// no previous games since power on
@@ -227,8 +227,8 @@ void PB_AttractDisplayCycle(byte Event) {
 		WriteLower2("              ");
 		for (i=1; i<=NoPlayers; i++) {                		// display the points of all active players
 			ShowNumber(8*i-1, Points[i]);}
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(900, 1, ScrollLower);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(900, 0, ScrollLower);
 		Event++;
 		break;
 	case 2:																							// Show highscores
@@ -241,8 +241,8 @@ void PB_AttractDisplayCycle(byte Event) {
 			*(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
 		ShowNumber(23, HallOfFame.Scores[0]);
 		ShowNumber(31, HallOfFame.Scores[1]);
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(900, 1, ScrollLower2);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(900, 0, ScrollLower2);
 		Event++;
 		break;
 	case 3:
@@ -255,15 +255,15 @@ void PB_AttractDisplayCycle(byte Event) {
 			*(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
 		ShowNumber(23, HallOfFame.Scores[2]);
 		ShowNumber(31, HallOfFame.Scores[3]);
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(900, 1, ScrollLower2);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(900, 0, ScrollLower2);
 		Event = 0;}
 	ActivateTimer(4000, Event, PB_AttractDisplayCycle);}
 
 void PB_AttractScroll(byte Dummy) {
 	UNUSED(Dummy);
 	WriteUpper2("PINBOT        ");
-	AddScrollUpper(1);}
+	AddScrollUpper(0);}
 
 void PB_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
   static byte State = 1;
@@ -1516,7 +1516,7 @@ void PB_Congrats(byte Dummy) {                    		// show congratulations
 	DisplayScore(3, Points[Player]);
 	DisplayScore(4, Points[Player]);
 	WriteUpper2(" GREAT        ");
-	ActivateTimer(50, 1, ScrollUpper);
+	ActivateTimer(50, 0, ScrollUpper);
 	ActivateTimer(1400, 1, PB_ScrollCongrats);
 	//ActivateTimer(3000, 1, PB_ScrollCongrats2);
 	ActivateTimer(5000, Player, PB_Congrats2);}
@@ -1524,18 +1524,18 @@ void PB_Congrats(byte Dummy) {                    		// show congratulations
 void PB_ScrollCongrats(byte Dummy) {
 	UNUSED(Dummy);
 	WriteUpper2("  SCORE       ");
-	AddScrollUpper(1);}
+	AddScrollUpper(0);}
 
 void PB_Congrats2(byte Dummy) {
 	UNUSED(Dummy);
 	WriteUpper2("ENTER         ");
-	ActivateTimer(50, 1, ScrollUpper);
+	ActivateTimer(50, 0, ScrollUpper);
 	ActivateTimer(1400, 1, PB_ScrollCongrats2);}
 
 void PB_ScrollCongrats2(byte Dummy) {
 	UNUSED(Dummy);
 	WriteUpper2(" INITIALS     ");
-	AddScrollUpper(1);
+	AddScrollUpper(0);
 	ActivateTimer(3000, 1, PB_ScrollCongrats3);}
 
 void PB_ScrollCongrats3(byte Dummy) {
@@ -1543,7 +1543,7 @@ void PB_ScrollCongrats3(byte Dummy) {
 	WriteUpper2("PLAYER        ");
 	*(DisplayUpper2+14) = DispPattern1[32 + 2 * Player];
 	*(DisplayUpper2+15) = DispPattern1[33 + 2 * Player];
-	ScrollUpper(1);
+	ScrollUpper(0);
 	ActivateTimer(2000, 0, PB_EnterInitials);
   ByteBuffer = 0;}
 
@@ -1611,7 +1611,7 @@ void PB_EnterInitials2() {
 	if (ByteBuffer > 2) {
 		ByteBuffer2 = HandleHighScores(Points[Player]);
 		WriteUpper2(" HIGH   SCORE ");
-		ScrollUpper(1);
+		ScrollUpper(0);
 		ActivateTimer(2000, 1, PB_EnterInitials3);}
 	else {
 		PB_BallEnd3(1);}}
@@ -1621,7 +1621,7 @@ void PB_EnterInitials3(byte Dummy) {
 	WriteUpper2("TABLE  POS    ");
 	*(DisplayUpper2+28) = DispPattern1[32 + 2 * (ByteBuffer2+1)];
 	*(DisplayUpper2+29) = DispPattern1[33 + 2 * (ByteBuffer2+1)];
-	ScrollUpper(1);
+	ScrollUpper(0);
 	ReleaseSolenoid(11);
 	ReleaseSolenoid(12);
 	PB_LampSweepActive = 0;

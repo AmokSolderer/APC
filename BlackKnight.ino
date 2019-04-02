@@ -239,17 +239,17 @@ void AttractLampCycle(byte Event) {                   // play multiple lamp patt
 void AttractScroll(byte Dummy) {
 	UNUSED(Dummy);
 	WriteUpper2("SPEZIAL       ");
-	AddScrollUpper(1);}
+	AddScrollUpper(0);}
 
 void AttractDisplayCycle(byte Event) {
 	CheckForLockedBalls(0);
 	switch (Event) {
 	case 0:
 		WriteUpper2(" FRANKS       ");
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(900, 1, AttractScroll);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(900, 0, AttractScroll);
 		WriteLower2(" BLACK KNIGHT ");
-		ActivateTimer(1400, 1, ScrollLower);
+		ActivateTimer(1400, 0, ScrollLower);
 		if (NoPlayers) {
 			Event++;}
 		else {
@@ -260,8 +260,8 @@ void AttractDisplayCycle(byte Event) {
 		WriteLower2("              ");
 		for (i=1; i<=NoPlayers; i++) {                  // display the points of all active players
 			ShowNumber(8*i-1, Points[i]);}
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(900, 1, ScrollLower);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(900, 0, ScrollLower);
 		Event++;
 		break;
 	case 2:																						// Show highscores
@@ -275,8 +275,8 @@ void AttractDisplayCycle(byte Event) {
 			*(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
 		ShowNumber(15, HallOfFame.Scores[0]);
 		ShowNumber(31, HallOfFame.Scores[1]);
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(900, 1, ScrollLower);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(900, 0, ScrollLower);
 		Event++;
 		break;
 	case 3:
@@ -290,8 +290,8 @@ void AttractDisplayCycle(byte Event) {
 			*(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
 		ShowNumber(15, HallOfFame.Scores[2]);
 		ShowNumber(31, HallOfFame.Scores[3]);
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(900, 1, ScrollLower);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(900, 0, ScrollLower);
 		Event = 0;}
 	ActivateTimer(4000, Event, AttractDisplayCycle);}
 

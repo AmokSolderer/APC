@@ -1,4 +1,4 @@
-// Base Code for APC based pinball machines - change all BC_ prefixes to match your game
+// Base Code for APC based pinball machines - change all BC_ prefixes and the following parameters to match your game
 
 const byte BC_OutholeSwitch = 9;											// number of the outhole switch
 const byte BC_BallThroughSwitches[3] = {13,12,11};		// ball through switches from the plunger lane to the outhole
@@ -9,6 +9,7 @@ const byte BC_ShooterLaneFeeder = 2;									// solenoid number of the shooter l
 const byte BC_InstalledBalls = 3;											// number of balls installed in the game
 const byte BC_SearchCoils[15] = {1,4,6,8,13,15,16,17,18,19,20,21,22,14,0}; // coils to fire when the ball watchdog timer runs out
 const unsigned int BC_SolTimes[32] = {30,30,50,50,50,50,30,1000,100,0,0,0,50,50,50,50,50,1000,50,50,50,999,0,0,100,100,100,100,100,100,100,100}; // Activation times for solenoids
+
 const byte BC_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0,
@@ -100,7 +101,7 @@ void BC_init() {
 void BC_AttractMode() {                               // Attract Mode
 	DispRow1 = DisplayUpper;
 	DispRow2 = DisplayLower;
-	digitalWrite(VolumePin,HIGH);
+	digitalWrite(VolumePin,HIGH);                       // set volume to zero
 	LampPattern = NoLamps;
 	Switch_Pressed = BC_AttractModeSW;
 	Switch_Released = DummyProcess;
@@ -122,27 +123,27 @@ void BC_AttractDisplayCycle(byte Step) {
 	BC_CheckForLockedBalls(0);
 	switch (Step) {
 	case 0:
-		WriteUpper2("APC BASE CODE ");
-		ActivateTimer(50, 1, ScrollUpper);
-		WriteLower2("              ");
-		ActivateTimer(1000, 1, ScrollLower);
-		if (NoPlayers) {																	// if there were nor games before skip the next step
+		WriteUpper2("APC BASE CODE   ");
+		ActivateTimer(50, 0, ScrollUpper);
+		WriteLower2("                ");
+		ActivateTimer(1000, 0, ScrollLower2);
+		if (NoPlayers) {																	// if there were no games before skip the next step
 			Step++;}
 		else {
 			Step = 2;}
 		break;
 	case 1:
-		WriteUpper2("              ");                   	// erase display
-		WriteLower2("              ");
+		WriteUpper2("                ");                  // erase display
+		WriteLower2("                ");
 		for (i=1; i<=NoPlayers; i++) {                  	// display the points of all active players
 			ShowNumber(8*i-1, Points[i]);}
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(900, 1, ScrollLower);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(900, 0, ScrollLower2);
 		Step++;
 		break;
 	case 2:																							// Show highscores
-		WriteUpper2("1>            ");
-		WriteLower2("2>            ");
+		WriteUpper2("1>              ");
+		WriteLower2("2>              ");
 		for (i=0; i<3; i++) {
 			*(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
 			*(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
@@ -150,13 +151,13 @@ void BC_AttractDisplayCycle(byte Step) {
 			*(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
 		ShowNumber(15, HallOfFame.Scores[0]);
 		ShowNumber(31, HallOfFame.Scores[1]);
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(900, 1, ScrollLower);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(900, 0, ScrollLower2);
 		Step++;
 		break;
 	case 3:
-		WriteUpper2("3>            ");
-		WriteLower2("4>            ");
+		WriteUpper2("3>              ");
+		WriteLower2("4>              ");
 		for (i=0; i<3; i++) {
 			*(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
 			*(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
@@ -164,8 +165,8 @@ void BC_AttractDisplayCycle(byte Step) {
 			*(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
 		ShowNumber(15, HallOfFame.Scores[2]);
 		ShowNumber(31, HallOfFame.Scores[3]);
-		ActivateTimer(50, 1, ScrollUpper);
-		ActivateTimer(900, 1, ScrollLower);
+		ActivateTimer(50, 0, ScrollUpper);
+		ActivateTimer(900, 0, ScrollLower2);
 		Step = 0;}
 	ActivateTimer(4000, Step, BC_AttractDisplayCycle);}
 
@@ -179,13 +180,25 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
 		break;
 	case 72:                                            // Service Mode
 		BlinkScore(0);
+    KillAllTimers();
 		BallWatchdogTimer = 0;
 		CheckReleaseTimer = 0;
-		BC_Testmode(0);
+    ByteBuffer3 = 0;
+    LampPattern = NoLamps;                            // Turn off all lamps
+    ReleaseAllSolenoids();
+    if (digitalRead(UpDown)) {
+      WriteUpper("  TEST  MODE    ");
+      WriteLower("                ");
+      AppByte = 0;
+      ActivateTimer(1000, 0, BC_Testmode);}
+    else {
+      Settings_Enter();}
 		break;
 	case 3:																							// start game
 		if (BC_CountBallsInTrunk() == BC_InstalledBalls || (BC_CountBallsInTrunk() == BC_InstalledBalls-1 && Switch[BC_PlungerLaneSwitch])) { // Ball missing?
 			Switch_Pressed = DummyProcess;                  // Switches do nothing
+      KillAllTimers();
+      ByteBuffer3 = 0;
 			if (APC_settings[Volume]) {                     // system set to digital volume control?
 				analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
 			else {
@@ -194,8 +207,8 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
 				Lamp[i] = false;}
 			LampPattern = Lamp;
 			NoPlayers = 0;
-			WriteUpper("              ");
-			WriteLower("              ");
+			WriteUpper("                ");
+			WriteLower("                ");
 			Ball = 1;
 			BC_AddPlayer();
 			Player = 1;
@@ -281,14 +294,14 @@ void BC_SearchBall(byte Counter) {										// ball watchdog timer has run out
 				byte c2 = 0;																	// counted balls in lock
 									// count balls in lock here with 5 being a warning when the switch states don't add up
 				if (c == 5) {																	// balls have not settled yet
-					WriteUpper("  LOCK  STUCK ");
+					WriteUpper("  LOCK  STUCK   ");
 					BallWatchdogTimer = ActivateTimer(1000, 0, BC_SearchBall);} // and try again in 1s
 				else {
 					if (c2 > InLock) {													// more locked balls found than expected?
 						BC_HandleLock(0);													// lock them
 						BallWatchdogTimer = ActivateTimer(30000, 0, BC_SearchBall);}
 					else {
-						WriteUpper("  BALL  SEARCH");
+						WriteUpper("  BALL  SEARCH  ");
 						ActivateSolenoid(0, BC_SearchCoils[Counter]); // fire coil to get ball free
 						Counter++;
 						if (!BC_SearchCoils[Counter]) {						// all coils fired?
@@ -307,27 +320,27 @@ byte BC_CountBallsInTrunk() {
 void BC_CheckReleasedBall(byte Balls) {               // ball release watchdog
 	CheckReleaseTimer = 0;
 	BlinkScore(0); 																			// stop blinking to show messages
-	WriteUpper("WAITINGFORBALL");                       // indicate a problem
-	WriteLower("              ");
+	WriteUpper("WAITINGFORBALL  ");                       // indicate a problem
+	WriteLower("                ");
 	if (Balls == 10) {																	// indicating a previous trunk error
-		WriteUpper("              ");
-		WriteLower("              ");
+		WriteUpper("                ");
+		WriteLower("                ");
 		ShowAllPoints(0);
 		BlinkScore(1);
 		ActA_BankSol(BC_ShooterLaneFeeder);}
 	byte c = BC_CountBallsInTrunk();
 	if (c == Balls) {                             			// expected number of balls in trunk
-		WriteUpper("  BALL MISSING");
+		WriteUpper("  BALL MISSING  ");
 		if (Switch[BC_OutholeSwitch]) {                   // outhole switch still active?
 			ActA_BankSol(BC_OutholeKicker);}}								// shove the ball into the trunk
 	else {																							//
 		if (c == 5) {																			// balls not settled
-			WriteLower(" TRUNK  ERROR ");
+			WriteLower(" TRUNK  ERROR   ");
 			Balls = 10;}
 		else {
 			if ((c > Balls) || !c) {												// more balls in trunk than expected or none at all
-				WriteUpper("              ");
-				WriteLower("              ");
+				WriteUpper("                ");
+				WriteLower("                ");
 				ShowAllPoints(0);
 				BlinkScore(1);
 				ActA_BankSol(BC_ShooterLaneFeeder);}}}        // release again
@@ -343,7 +356,7 @@ void BC_GameMain(byte Event) {                        // game switch events
 		ActivateTimer(200, 0, BC_ClearOuthole);           // check again in 200ms
 		break;
 	case 46:                                            // playfield tilt
-		WriteUpper(" TILT  WARNING");
+		WriteUpper(" TILT  WARNING  ");
 		ActivateTimer(3000, 0, ShowAllPoints);
 		break;
 	case 3:                                             // credit button
@@ -374,7 +387,7 @@ void BC_BallEnd(byte Event) {
 //			for (i=0; i<3; i++) {                         	// Count your locked balls here
 //				if (Switch[41+i]) {
 //					InLock++;}}}
-		WriteLower(" BALL   ERROR ");
+		WriteLower(" BALL   ERROR   ");
 		if (Switch[BC_OutholeSwitch]) {                   // ball still in outhole?
 			ActA_BankSol(BC_OutholeKicker);                 // make the coil a bit stronger
 			ActivateTimer(2000, Event, BC_BallEnd);}        // and come back in 2s
@@ -404,7 +417,7 @@ void BC_BallEnd(byte Event) {
 			break;
 		case 1:                                           // end of ball
 			if (BallsInTrunk + InLock != 3) {
-				WriteUpper(" COUNT  ERROR ");
+				WriteUpper(" COUNT  ERROR   ");
 				InLock = 0;
 //				for (i=0; i<3; i++) {                       // check how many balls are on the ball ramp
 //					if (Switch[41+i]) {
@@ -453,11 +466,11 @@ void BC_ResetHighScores(bool change) {								// delete the high scores file
 			SD.remove(GameDefinition.HighScoresFileName);
 			struct HighScores HScBuffer;										// create new high score table
 			HallOfFame = HScBuffer;													// copy it to the hall of fame
-			WriteLower(" SCORES DONE  ");}
+			WriteLower(" SCORES DONE    ");}
 		else {
-			WriteLower(" SCORES NO SD ");}}
+			WriteLower(" SCORES NO SD   ");}}
 	else {
-		WriteLower(" SCORES       ");}}
+		WriteLower(" SCORES         ");}}
 
 void BC_CheckHighScore(byte Player) {
 
@@ -475,8 +488,8 @@ void BC_Testmode(byte Select) {
 			*(DisplayLower+16) = 0;
 			*(DisplayUpper) = 0;
 			*(DisplayUpper+16) = 0;
-			WriteUpper("DISPLAY TEST  ");
-			WriteLower("              ");
+			WriteUpper("DISPLAY TEST    ");
+			WriteLower("                ");
 			AppByte2 = 0;
 			break;
 		case 3:																						// credit button
@@ -496,8 +509,8 @@ void BC_Testmode(byte Select) {
 			switch(Select) {																// switch events
 			case 0:																					// init (not triggered by switch)
 				AppByte2 = 0;
-				WriteUpper(" SWITCHEDGES  ");
-				WriteLower("              ");
+				WriteUpper(" SWITCH EDGES   ");
+				WriteLower("                ");
 				break;
 			case 72:																				// advance button
 				if (AppByte2) {
@@ -508,7 +521,7 @@ void BC_Testmode(byte Select) {
 				break;
 			case 3:																					// credit button
 				if (!AppByte2) {
-					WriteUpper(" LATESTEDGES  ");
+					WriteUpper(" LATEST EDGES   ");
 					AppByte2 = 1;
 					break;}
 			default:																				// all other switches
@@ -522,12 +535,12 @@ void BC_Testmode(byte Select) {
 			case 2:																					// solenoid test
 				switch(Select) {															// switch events
 				case 0:																				// init (not triggered by switch)
-					WriteUpper("  COIL  TEST  ");
-					WriteLower("              ");
+					WriteUpper("  COIL  TEST    ");
+					WriteLower("                ");
 					AppByte2 = 0;
 					break;
 				case 3:
-					WriteUpper(" FIRINGCOIL NO");
+					WriteUpper(" FIRINGCOIL NO  ");
 					AppBool = false;
 					AppByte2 = ActivateTimer(1000, 1, BC_FireSolenoids);
 					break;
@@ -542,15 +555,15 @@ void BC_Testmode(byte Select) {
 				case 3:																				// single lamp test
 					switch(Select) {														// switch events
 					case 0:																			// init (not triggered by switch)
-						WriteUpper(" SINGLE LAMP  ");
-						WriteLower("              ");
+						WriteUpper(" SINGLE LAMP    ");
+						WriteLower("                ");
 						AppByte2 = 0;
 						for (i=0; i<(LampMax+1); i++){            // erase lamp matrix
 							Lamp[i] = false;}
 						LampPattern = Lamp;                       // and show it
 						break;
 					case 3:
-						WriteUpper(" ACTUAL LAMP  ");
+						WriteUpper(" ACTUAL LAMP    ");
 						AppByte2 = ActivateTimer(1000, 1, BC_ShowLamp);
 						break;
 					case 72:
@@ -565,12 +578,12 @@ void BC_Testmode(byte Select) {
 					case 4:																			// all lamps test
 						switch(Select) {													// switch events
 						case 0:																		// init (not triggered by switch)
-							WriteUpper("  ALL   LAMPS ");
-							WriteLower("              ");
+							WriteUpper("  ALL   LAMPS   ");
+							WriteLower("                ");
 							AppByte2 = 0;
 							break;
 						case 3:
-							WriteUpper("FLASHNG LAMPS ");
+							WriteUpper("FLASHNG LAMPS   ");
 							AppByte2 = ActivateTimer(1000, 1, BC_ShowAllLamps);
 							break;
 						case 72:
@@ -585,73 +598,30 @@ void BC_Testmode(byte Select) {
 						case 5:																		// all music test
 							switch(Select) {												// switch events
 							case 0:																	// init (not triggered by switch)
-								WriteUpper(" MUSIC  TEST  ");
-								WriteLower("              ");
+								WriteUpper(" MUSIC  TEST    ");
+								WriteLower("                ");
 								AppByte2 = 0;
 								break;
 							case 3:
-								WriteUpper("PLAYING MUSIC ");
+								WriteUpper("PLAYING MUSIC   ");
+                if (APC_settings[Volume]) {           // system set to digital volume control?
+                  analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
 								AfterMusic = BC_NextTestSound;
 								AppByte2 = 1;
 								PlayMusic(50, (char*) TestSounds[0]);
 								break;
 							case 72:
 								AfterMusic = 0;
+                digitalWrite(VolumePin,HIGH);         // set volume to zero
 								StopPlayingMusic();
 								if (AppByte2) {
 									AppByte2 = 0;}
 								else {
-									AppByte++;}
+									GameDefinition.AttractMode();
+                  return;}
 								BC_Testmode(0);}
 							break;
-							case 6:																	// visor test
-								switch(Select) {											// switch events
-								case 0:																// init (not triggered by switch)
-									WriteUpper(" VISOR  TEST  ");
-									WriteLower("              ");
-									AppByte2 = 0;
-									AppBool = false;
-									break;
-								case 3:
-									AppByte2 = 1;
-									if (AppBool) {
-										if (Switch[46]) {
-											AppBool = false;
-											BC_Testmode(3);}
-										else {
-											WriteUpper("CLOSING VISOR ");
-											ActivateSolenoid(0, 13);}}
-									else {
-										if (Switch[47]) {
-											AppBool = true;
-											BC_Testmode(3);}
-										else {
-											WriteUpper("OPENING VISOR ");
-											ActivateSolenoid(0, 13);}}
-									break;
-								case 46:
-									if (AppBool) {
-										ReleaseSolenoid(13);
-										AppBool = false;
-										WriteUpper(" VISOR CLOSED ");}
-									break;
-								case 47:
-									if (!AppBool) {
-										ReleaseSolenoid(13);
-										AppBool = true;
-										WriteUpper(" VISOR  OPEN  ");}
-									break;
-								case 72:
-									ReleaseSolenoid(13);
-									if (AppByte2) {
-										AppByte2 = 0;}
-									else {
-										// AppByte++;}
-										GameDefinition.AttractMode();
-										return;}
-									BC_Testmode(0);
-									break;
-								}}}
+}}
 
 void BC_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
 	if (!digitalRead(UpDown)) {
@@ -720,7 +690,7 @@ void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
 			else {
 				CharNo = CharNo+2;}}                       		// otherwise show next character
 		for (i=0; i<16; i++) {                            // use for all alpha digits
-			if ((i==0) || (i==8)) {
+			if ((APC_settings[DisplayType] != 3) && ((i==0) || (i==8))) {
 				DisplayUpper[2*i] = LeftCredit[CharNo];
 				DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
 				DisplayLower[2*i] = RightCredit[CharNo];

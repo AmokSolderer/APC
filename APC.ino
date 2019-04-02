@@ -3,7 +3,7 @@ SdFat SD;
 #include <SPI.h>
 #include "Arduino.h"
 #include "Sound.h"
-
+                                                      // APC.ino is the operating system for the Arduino Pinball Controller
 const int SwMax = 72;                                 // number of existing switches (max. 72)
 const int LampMax = 64;                               // number of existing lamps (max. 64)
 const int DispColumns = 16;                           // Number of columns of the used display unit
@@ -30,7 +30,7 @@ const byte LeftCredit[118] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // Pattern P Q R S T U V W X Y Z
 
 const byte RightCredit[118] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // Blank and fill bytes for the right credit (numeric)
-		252,0,136,0,122,0,186,0,142,0,182,0,246,0,152,0,254,0,190,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 and fill bytes
+		252,2,136,0,122,2,186,2,142,2,182,2,246,2,152,0,254,2,190,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 and fill bytes
 		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // Pattern A B C D E F G H I J K L M N O
 		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // Pattern P Q R S T U V W X Y Z
 
@@ -135,7 +135,7 @@ void (*AfterSound)() = 0;															// program to execute after sound file h
 byte SoundPriority = 0;																// stores the priority of the sound file currently being played
 bool SoundPrio = false;																// indicates which channel has to be processed first
 char *NextSoundName;
-const char TestSounds[3][15] = {{"MUSIK.BIN"},{"SOUND.BIN"},0};
+const char TestSounds[3][15] = {{"MUSIC.BIN"},{"SOUND.BIN"},0};
 void ExitSettings(bool change);
 void HandleTextSetting(bool change);
 void HandleNumSetting(bool change);
@@ -144,14 +144,14 @@ void RestoreDefaults(bool change);
 void HandleVolumeSetting(bool change);
 
 struct SettingTopic {																	// one topic of a list of settings
-	char Text[15];																			// display text
+	char Text[17];																			// display text
 	void (*EventPointer)(bool);													// Pointer to the subroutine to process this topic
 	char *TxTpointer;																		// if text setting -> pointer to a text array
 	byte LowerLimit;																		// if num setting -> lower limit of selection value
 	byte UpperLimit;};																	// if text setting -> amount of text entries -1 / if num setting -> upper limit of selection value
 
 const char APC_set_file_name[13] = "APC_SET.BIN";
-const byte APC_defaults[64] =  {0,3,1,1,0,0,0,0,		 	// system default settings
+const byte APC_defaults[64] =  {0,3,1,0,0,0,0,0,		 	// system default settings
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
@@ -167,21 +167,23 @@ const byte DimInserts = 3;                            // Reduce lighting time of
 const byte Volume = 4;                             		// Volume of the speaker
 const byte LEDsetting = 5;                            // Setting for the APC_LED_EXP board
 const byte DisplayType = 6;														// which display is used?
+const byte DebugMode = 7;                             // debug mode enabled?
 
-char TxTGameSelect[3][15] = {{" BASE  CODE   "},{" BLACK KNIGHT "},{"    PINBOT    "}};
-char TxTLEDSelect[3][15] = {{"   NO   LEDS  "},{"PLAYFLD ONLY  "},{"PLAYFLDBACKBOX"}};
-char TxTDisplaySelect[5][15] = {{"4 ALPHA+CREDIT"},{" SYS11 PINBOT "},{" SYS11  F-14  "},{" SYS11  BK2K  "},{" SYS11   TAXI "}};
+char TxTGameSelect[3][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "}};
+char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
+char TxTDisplaySelect[5][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "}};
 
-struct SettingTopic APC_setList[10] = {
-		{" ACTIVE GAME  ",HandleTextSetting,&TxTGameSelect[0][0],0,2},
-		{" NO OF  BALLS ",HandleNumSetting,0,1,5},
-		{"  FREE  GAME  ",HandleBoolSetting,0,0,0},
-		{"  DIM  INSERTS",HandleBoolSetting,0,0,0},
-		{"SPEAKERVOLUME ",HandleVolumeSetting,0,0,255},
-		{"  LED   LAMPS ",HandleTextSetting,&TxTLEDSelect[0][0],0,2},
-		{"DISPLAY TYPE  ",HandleTextSetting,&TxTDisplaySelect[0][0],0,4},
-		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
-		{"  EXIT SETTNGS",ExitSettings,0,0,0},
+struct SettingTopic APC_setList[11] = {
+		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,2},
+		{" NO OF  BALLS   ",HandleNumSetting,0,1,5},
+		{"  FREE  GAME    ",HandleBoolSetting,0,0,0},
+		{"  DIM  INSERTS  ",HandleBoolSetting,0,0,0},
+		{"SPEAKER VOLUME  ",HandleVolumeSetting,0,0,255},
+		{"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,2},
+		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,4},
+    {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
+		{"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
+		{"  EXIT SETTNGS  ",ExitSettings,0,0,0},
 		{"",NULL,0,0,0}};
 
 struct GameDef {
@@ -294,17 +296,17 @@ void setup() {
 	LampPattern = NoLamps;
 	digitalWrite(Blanking, HIGH);                       // Release the blanking
 	if (SD.begin(52, SD_SCK_MHZ(20))) {                 // look for an SD card and set max SPI clock to 20MHz
-		WriteUpper("SD CARD FOUND ");
+		WriteUpper("SD CARD FOUND   ");
 		SDfound = true;}
 	else {
-		WriteUpper(" NO SD  CARD  ");}
+		WriteUpper(" NO SD  CARD    ");}
 	Init_System();}
 
 void Init_System() {
 	if (SDfound) {																			// SD card found?
 		File Settings = SD.open(APC_set_file_name);				// look for system settings
 		if (!Settings) {
-			WriteLower("NO SYS SETTNGS");										// if no system settings
+			WriteLower("NO SYS SETTNGS  ");										// if no system settings
 			for(i=0;i<64;i++) {															// use default settings
 				APC_settings[i] = APC_defaults[i];}}
 		else {																						// if system settings found
@@ -328,7 +330,7 @@ void Init_System2(byte State) {
 		PB_init();
 		break;
 	default:
-		WriteUpper("NO GAMESELECTD");
+		WriteUpper("NO GAMESELECTD  ");
 		while (true) {}
 	}
 	if ((APC_settings[DisplayType] == 1) || (APC_settings[DisplayType] == 2)) { // display with numerical lower row
@@ -336,13 +338,13 @@ void Init_System2(byte State) {
 	if (SDfound) {
 		File HighScore = SD.open(GameDefinition.HighScoresFileName);
 		if (!HighScore) {
-			WriteUpper("NO HIGHSCORES ");}
+			WriteUpper("NO HIGHSCORES   ");}
 		else {
 			HighScore.read(&HallOfFame, sizeof HallOfFame);}
 		HighScore.close();
 		File Settings = SD.open(GameDefinition.GameSettingsFileName);
 		if (!Settings) {
-			WriteLower("NO GAMESETTNGS");
+			WriteLower("NO GAMESETTNGS  ");
 			if (!State) {                                   // only initialize the settings in the boot up run
 				for(i=0;i<64;i++) {
 					game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
@@ -375,7 +377,8 @@ void TC7_Handler() {                                  // interrupt routine - run
 	int buff;
 	uint16_t c;
 
-	*(DisplayLower) = RightCredit[32 + 2 * ActiveTimers]; // debugging
+  if (APC_settings[DebugMode]) {
+	  *(DisplayLower) = RightCredit[32 + 2 * ActiveTimers];} // show the number of active timers
 
 	// Switches
 
@@ -835,50 +838,82 @@ void KillTimer(byte TimerNo) {
 	TimerEvent[TimerNo] = 0;														// clear Timer Event
 	BlockTimers = false;}																// release the IRQ block
 
-void WriteUpper(const char* DisplayText) {              		// dont use columns 0 and 8 as they are reserved for the credit display
-	for (i=0; i<7; i++) {
-		*(DisplayUpper+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
-		*(DisplayUpper+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
-		*(DisplayUpper+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
-		*(DisplayUpper+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}
+void WriteUpper(const char* DisplayText) {            
+	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+    for (i=0; i<16; i++) {                             
+      *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+      *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
+  else {                                              // dont use columns 0 and 8 as they are reserved for the credit display
+  	for (i=0; i<7; i++) {                             
+  		*(DisplayUpper+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+  		*(DisplayUpper+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
+  		*(DisplayUpper+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
+  		*(DisplayUpper+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
 
 void WriteLower(const char* DisplayText) {
-	for (i=0; i<7; i++) {
+  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+  for (i=0; i<16; i++) {
+    *(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
+    *(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
+  else {
+    for (i=0; i<7; i++) {
 		*(DisplayLower+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
 		*(DisplayLower+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
 		*(DisplayLower+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
-		*(DisplayLower+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}
+		*(DisplayLower+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
 
 void WriteUpper2(const char* DisplayText) {
-	for (i=0; i<7; i++) {
-		*(DisplayUpper2+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
-		*(DisplayUpper2+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
-		*(DisplayUpper2+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
-		*(DisplayUpper2+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}
+  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+    for (i=0; i<16; i++) {
+      *(DisplayUpper2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+      *(DisplayUpper2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
+  else {
+  	for (i=0; i<7; i++) {
+  		*(DisplayUpper2+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+  		*(DisplayUpper2+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
+  		*(DisplayUpper2+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
+  		*(DisplayUpper2+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
 
 void WriteLower2(const char* DisplayText) {
-	for (i=0; i<7; i++) {
-		*(DisplayLower2+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
-		*(DisplayLower2+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
-		*(DisplayLower2+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
-		*(DisplayLower2+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}
+  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+    for (i=0; i<16; i++) {
+      *(DisplayLower2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
+      *(DisplayLower2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
+  else {
+  	for (i=0; i<7; i++) {
+  		*(DisplayLower2+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
+  		*(DisplayLower2+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
+  		*(DisplayLower2+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
+  		*(DisplayLower2+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
 
-void ScrollUpper(byte Step) {													// call with Step = 1 and the text being in DisplayUpper2
-	for (i=2; i<14; i++) {															// scroll display 1
-		DisplayUpper[i] = DisplayUpper[i+2];}
-	DisplayUpper[14] = DisplayUpper[18];								// add put the leftmost char of the display 2 to the end
-	DisplayUpper[15] = DisplayUpper[19];
-	for (i=18; i<30; i++) {                         		// scroll display 2
-		DisplayUpper[i] = DisplayUpper[i+2];}
-	DisplayUpper[30] = DisplayUpper2[2*Step];						// add the corresponding char of DisplayUpper2
-	DisplayUpper[31] = DisplayUpper2[2*Step+1];
-	Step++;																							// increase step
-	if (Step == 8) {																		// skip position 9 (belongs to the credit display
-		Step++;}
+void ScrollUpper(byte Step) {													// call with Step = 0 and the text being in DisplayUpper2
+  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+    for (i=0; i<30; i++) {
+      DisplayUpper[i] = DisplayUpper[i+2];}
+    DisplayUpper[30] = DisplayUpper2[2*Step];         // add the corresponding char of DisplayUpper2
+    DisplayUpper[31] = DisplayUpper2[2*Step+1];
+    Step++;}                                          // increase step
+  else {                                              // dont use columns 0 and 8 as they are reserved for the credit display
+    if (!Step) {
+      Step++;}
+  	for (i=2; i<14; i++) {													  // scroll display 1
+  		DisplayUpper[i] = DisplayUpper[i+2];}
+  	DisplayUpper[14] = DisplayUpper[18];						  // add put the leftmost char of the display 2 to the end
+  	DisplayUpper[15] = DisplayUpper[19];
+  	for (i=18; i<30; i++) {                           // scroll display 2
+  		DisplayUpper[i] = DisplayUpper[i+2];}
+  	DisplayUpper[30] = DisplayUpper2[2*Step];					// add the corresponding char of DisplayUpper2
+  	DisplayUpper[31] = DisplayUpper2[2*Step+1];
+  	Step++;																						// increase step
+  	if (Step == 8) {																	// skip position 9 (belongs to the credit display
+  		Step++;}}
 	if (Step < 16) {																		// if its not already over
 		ActivateTimer(50, Step, ScrollUpper);}}						// come back
 
-void AddScrollUpper(byte Step) {											// call with Step = 1 and the text being in DisplayUpper2
+void AddScrollUpper(byte Step) {											// call with Step = 0 and the text being in DisplayUpper2
+                          // TODO add support for more displays
+  if (!Step) {
+    Step++;}
 	if (Step > 8) {																			// scroll into the left display?
 		for (i=0; i<2*(Step-9);i++) {											// for all characters in the left display that have to be scrolled
 			DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];}	// scroll them
@@ -897,7 +932,10 @@ void AddScrollUpper(byte Step) {											// call with Step = 1 and the text be
 	if (!DisplayUpper[32-(2*Step)] && !DisplayUpper[33-(2*Step)] && Step < 14) {	// stop when reaching anything else but blanks or after 14 characters
 		ActivateTimer(50, Step, AddScrollUpper);}}
 
-void ScrollLower(byte Step) {													// call with Step = 1 and the text being in DisplayLower2
+void ScrollLower(byte Step) {													// call with Step = 0 and the text being in DisplayLower2
+                        // TODO add support for more displays
+    if (!Step) {
+    Step++;}
 	if (Step < 8) {																			// do display 3 first
 		for (i=2; i<14; i++) {														// scroll display 3
 			DisplayLower[i] = DisplayLower[i+2];}
@@ -912,18 +950,27 @@ void ScrollLower(byte Step) {													// call with Step = 1 and the text bei
 	if (Step < 15) {																		// if its not already over
 		ActivateTimer(50, Step, ScrollLower);}}						// come back
 
-void ScrollLower2(byte Step) {												// call with Step = 1 and the text being in DisplayUpper2
-	for (i=2; i<14; i++) {															// scroll display 1
-		DisplayLower[i] = DisplayLower[i+2];}
-	DisplayLower[14] = DisplayLower[18];								// add put the leftmost char of the display 2 to the end
-	DisplayLower[15] = DisplayLower[19];
-	for (i=18; i<30; i++) {                         		// scroll display 2
-		DisplayLower[i] = DisplayLower[i+2];}
-	DisplayLower[30] = DisplayLower2[2*Step];						// add the corresponding char of DisplayLower2
-	DisplayLower[31] = DisplayLower2[2*Step+1];
-	Step++;																							// increase step
-	if (Step == 8) {																		// skip position 9 (belongs to the credit display
-		Step++;}
+void ScrollLower2(byte Step) {												// call with Step = 0 and the text being in DisplayUpper2
+  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+    for (i=0; i<30; i++) {
+      DisplayLower[i] = DisplayLower[i+2];}
+    DisplayLower[30] = DisplayLower2[2*Step];         // add the corresponding char of DisplayLower2
+    DisplayLower[31] = DisplayLower2[2*Step+1];
+    Step++;}                                          // increase step
+  else {
+    if (!Step) {
+      Step++;}
+  	for (i=2; i<14; i++) {														// scroll display 1
+  		DisplayLower[i] = DisplayLower[i+2];}
+  	DisplayLower[14] = DisplayLower[18];							// add put the leftmost char of the display 2 to the end
+  	DisplayLower[15] = DisplayLower[19];
+  	for (i=18; i<30; i++) {                         	// scroll display 2
+  		DisplayLower[i] = DisplayLower[i+2];}
+  	DisplayLower[30] = DisplayLower2[2*Step];					// add the corresponding char of DisplayLower2
+  	DisplayLower[31] = DisplayLower2[2*Step+1];
+  	Step++;																						// increase step
+  	if (Step == 8) {																	// skip position 9 (belongs to the credit display
+  		Step++;}}
 	if (Step < 16) {																		// if its not already over
 		ActivateTimer(50, Step, ScrollLower2);}}					// come back
 
@@ -1177,8 +1224,8 @@ void ShowNumber(byte Position, unsigned int Number) {
 
 void ShowAllPoints(byte Dummy) {                  		// just a dummy event to access it via timer
 	UNUSED(Dummy);
-	WriteUpper("              ");                   		// erase display
-	WriteLower("              ");
+	WriteUpper("                ");                   		// erase display
+	WriteLower("                ");
 	for (byte i=1; i<=NoPlayers; i++) {                 // display the points of all active players
 		ShowPoints(i);}}
 
@@ -1269,8 +1316,8 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
 			ErrorHandler(8,0,LampNo);}}}        						// show error 8
 
 void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3) {
-	WriteUpper2("ERROR         ");                      // Show Error Message
-	WriteLower2("              ");
+	WriteUpper2("ERROR           ");                      // Show Error Message
+	WriteLower2("                ");
 	//LampPattern = NoLamps;                             // Turn off all lamps
 	Serial.print("Error = ");
 	Serial.println(Error);
@@ -1290,7 +1337,7 @@ void ShowFileNotFound(String Filename) {							// show file not found message
 	char NameBuffer[14];																// create a temporary buffer
 	Filename.toCharArray(NameBuffer, 14);								// fill buffer with filename
 	WriteUpper2(NameBuffer);														// write filename to message buffer
-	WriteLower2(" NOT    FOUND ");
+	WriteLower2(" NOT    FOUND   ");
 	ShowMessage(5);}																		// switch to message buffer for 5 seconds
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being zero
@@ -1426,8 +1473,8 @@ void PlayNextSound() {
 	PlaySound(50, NextSoundName);}
 
 void Settings_Enter() {
-	WriteUpper("   SETTINGS   ");                     	// Show Test Mode
-	WriteLower("              ");
+	WriteUpper("   SETTINGS     ");                     // Show Test Mode
+	WriteLower("                ");
 	LampPattern = NoLamps;                              // Turn off all lamps
 	AppByte = 0;
 	AppByte2 = 0;
@@ -1437,8 +1484,8 @@ void Settings_Enter() {
 void SelectSettings(byte Switch) {										// select system or game settings
 	switch (Switch) {
 	case 0:																							// for the initial call
-		WriteUpper(" SYSTEMSETTNGS");
-		WriteLower("              ");
+		WriteUpper("SYSTEM SETTNGS  ");
+		WriteLower("                ");
 		break;
 	case 3:																							// start button
 		if (AppByte) {																		// game settings selected
@@ -1455,12 +1502,12 @@ void SelectSettings(byte Switch) {										// select system or game settings
 		break;
 	case 72:																						// advance button
 		if (AppByte) {																		// switch between game and system settings
-			WriteUpper(" SYSTEMSETTNGS");
-			WriteLower("              ");
+			WriteUpper("SYSTEM SETTNGS  ");
+			WriteLower("                ");
 			AppByte = 0;}
 		else {
-			WriteUpper("  GAME SETTNGS");
-			WriteLower("              ");
+			WriteUpper("  GAME SETTNGS  ");
+			WriteLower("                ");
 			AppByte = 1;}}}
 
 void RepeatSelectKey(byte Run) {											// Repeat the start button (No 3) if it is pressed permanently
@@ -1516,9 +1563,9 @@ void HandleBoolSetting(bool change) {									// handling method for boolean set
 		else {
 			SettingsPointer[AppByte] = 1;}}
 	if (SettingsPointer[AppByte]) {											// show the current state of the setting
-		WriteLower("           YES");}
+		WriteLower("           YES  ");}
 	else {
-		WriteLower("            NO");}}
+		WriteLower("            NO  ");}}
 
 void RestoreDefaults(bool change) {										// restore the default settings
 	if (change) {																				// if the start button has been pressed
@@ -1529,15 +1576,15 @@ void RestoreDefaults(bool change) {										// restore the default settings
 		else {																						// game settings mode
 			for(i=0;i<64;i++) {															// change all settings to their default values
 				*(SettingsPointer+i) = *(GameDefinition.GameDefaultsPointer+i);}}
-		WriteLower("SETTNGS DONE  ");}
+		WriteLower("SETTNGS DONE    ");}
 	else {
-		WriteLower("SETTNGS       ");}}
+		WriteLower("SETTNGS         ");}}
 
 void ExitSettings(bool change) {											// exit settings and save them if necessary
 	if (SettingsRepeatTimer) {													// kill key repeat timer for button 3
 		KillTimer(SettingsRepeatTimer);
 		SettingsRepeatTimer = 0;}
-	WriteLower("              ");
+	WriteLower("                ");
 	if (change) {																				// if the start button has been pressed
 		if (AppByte2) {																		// and the change indicator has been set
 			if (SDfound) {																	// check for the SD card
@@ -1545,11 +1592,11 @@ void ExitSettings(bool change) {											// exit settings and save them if nec
 				File HighScore = SD.open(SettingsFileName,FILE_WRITE);  // open the settings file on the SD card
 				HighScore.write((byte*) SettingsPointer, sizeof game_settings); // and write the settings array
 				HighScore.close();
-				WriteUpper("SETTNGS SAVED ");}
+				WriteUpper("SETTNGS SAVED   ");}
 			else {
-				WriteUpper("  NO   SD CARD");}}
+				WriteUpper("  NO   SD CARD  ");}}
 		else {																						// change indicator has not been set
-			WriteUpper("  NO   CHANGES");}
+			WriteUpper("  NO   CHANGES  ");}
 		*(DisplayUpper) = 0;															// clear leftmost credit displays
 		*(DisplayUpper+16) = 0;
 		Init_System2(1);}}																// and quit to Attract Mode
@@ -1563,7 +1610,7 @@ void HandleNumSetting(bool change) {									// handling method for numeric sett
 		else {																						// if the start button has not been pressed
 			if (SettingsPointer[AppByte] != SettingsList[AppByte].LowerLimit) { // lower numeric limit reached?
 				SettingsPointer[AppByte]--;}}}								// if limit not reached just decrease the numeric value
-	WriteLower("              ");
+	WriteLower("                ");
 	DisplayScore(4,SettingsPointer[AppByte]);}					// show the current value
 
 void HandleTextSetting(bool change) {									// handling method for text settings
@@ -1579,12 +1626,12 @@ void HandleTextSetting(bool change) {									// handling method for text settin
 				SettingsPointer[AppByte] = SettingsList[AppByte].UpperLimit;} // go to the last entry
 			else {
 				SettingsPointer[AppByte]--;}}}								// if limit not reached just choose the previous entry
-	WriteLower(SettingsList[AppByte].TxTpointer+15*SettingsPointer[AppByte]);} // show the current text element
+	WriteLower(SettingsList[AppByte].TxTpointer+17*SettingsPointer[AppByte]);} // show the current text element
 
 void HandleVolumeSetting(bool change) {
 	HandleNumSetting(change);
 	if (!change) {
-		PlayMusic(50, "MUSIK.BIN");}
+		PlayMusic(50, "MUSIC.BIN");}
 	analogWrite(VolumePin,255-APC_settings[Volume]);}   // adjust PWM to volume setting
 
 byte HandleHighScores(unsigned int Score) {
@@ -1604,6 +1651,6 @@ byte HandleHighScores(unsigned int Score) {
 		HighScore.write((byte*) &HallOfFame, sizeof HallOfFame); // and write the HallOfFame structure
 		HighScore.close();}
 	else {
-		WriteUpper("  NO   SD CARD");
+		WriteUpper("  NO   SD CARD  ");
 		delay(2000);}
 	return Position;}
