@@ -381,7 +381,7 @@ void BC_HandleLock(byte Balls) {
 
 void BC_BallEnd(byte Event) {
 	byte BallsInTrunk = BC_CountBallsInTrunk();
-	if ((BallsInTrunk == 5)||(BallsInTrunk < 4-Multiballs-InLock)) {
+	if ((BallsInTrunk == 5)||(BallsInTrunk < BC_InstalledBalls+1-Multiballs-InLock)) {
 		InLock = 0;
 //		if (Multiballs == 1) {
 //			for (i=0; i<3; i++) {                         	// Count your locked balls here
@@ -416,7 +416,7 @@ void BC_BallEnd(byte Event) {
 				BlockOuthole = false;}												// remove outhole block
 			break;
 		case 1:                                           // end of ball
-			if (BallsInTrunk + InLock != 3) {
+			if (BallsInTrunk + InLock != BC_InstalledBalls) {
 				WriteUpper(" COUNT  ERROR   ");
 				InLock = 0;
 //				for (i=0; i<3; i++) {                       // check how many balls are on the ball ramp
