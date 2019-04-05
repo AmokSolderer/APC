@@ -268,12 +268,12 @@ void BC_BallReleaseCheck(byte Switch) {               // handle switches during 
 				BallWatchdogTimer = ActivateTimer(30000, 0, BC_SearchBall);}}} // set switch mode to game
 	BC_GameMain(Switch);}                               // process current switch
 
-void BC_ResetBallWatchdog(byte Event) {               // handle switches during ball release
-	if (Event > 15) { 																	// edit this to be true only for playfield switches
+void BC_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
+	if (Switch > 15) { 																	// edit this to be true only for playfield switches
 		if (BallWatchdogTimer) {
 			KillTimer(BallWatchdogTimer);}                  // stop watchdog
 		BallWatchdogTimer = ActivateTimer(30000, 0, BC_SearchBall);}
-	BC_GameMain(Event);}                                // process current switch
+	BC_GameMain(Switch);}                               // process current switch
 
 void BC_SearchBall(byte Counter) {										// ball watchdog timer has run out
 	BallWatchdogTimer = 0;
