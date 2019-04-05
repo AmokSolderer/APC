@@ -14,7 +14,7 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards, at a price of well below 100€ per board. A more detailed calculation of the costs can be found in the [APC wiki](https://github.com/AmokSolderer/APC/wiki/Home).
 
-However, at the moment the APC cannot run the original Williams EPROM software. For this, someone has to write an interface to PinMame and this someone is definitely not me. Instead this board is meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an API providing the necessary commands to make this a lot easier, but you still have to programm the game specific part by yourself.
+However, at the moment the APC cannot run the original Williams EPROM software. For this, someone has to write an interface to PinMame and this someone is definitely not me. Instead this board is meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an API providing the necessary commands to make this a lot easier, but you still have to code the game specific part by yourself.
 
 To see the APC in action take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
 
@@ -42,8 +42,6 @@ In the Pinbot I had to cut some cable ties and open up the wiring harness a bit 
 
 ![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
 
-System 3 and 4 need a simple cable adapter as their connector 1J4 differs from the rest.
-
 Later System11 machines with an auxiliary power and interconnect board need 3 cable extensions, see the preparation section in [the wiki](https://github.com/AmokSolderer/APC/wiki) for details.
 
 ### Software
@@ -51,9 +49,9 @@ Later System11 machines with an auxiliary power and interconnect board need 3 ca
 The software consists of two parts: the operating system APC.ino and the game specific code. The former controls the hardware and offers an application interface (API) for the game specific software to use. For an overview of the available API variables and commands please take a look at the
 [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf).
 
-I have written game codes for my Black Knight and Pinbot. They are still not final, but good enough to have fun with and to use as a reference when writing own code. As a startup guide how to start writing game code I have written a short tutorial in the [wiki](https://github.com/AmokSolderer/APC/wiki) section.
+I have written game codes for my Black Knight and Pinbot. They are still not final, but good enough to have fun with and to use as a reference when writing own code. Additionally there's a Base Code which should serve as a starting point for you to do your own game. It contains the very basics of a pinball game and it can be easily adapted to your machine. As a startup guide how to start writing game code I have written a short tutorial in the [wiki](https://github.com/AmokSolderer/APC/wiki) section.
 
-Please note that I have equipped my Black Knight with a [special kind of display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha) and the APC currently does not support the original displays. This is not because it would be difficult to make them work (it is quite easy), but with numbers only one would have to implement a new menu system, remove the 'Enter Initials' and so on. Additionally it would be quite cumbersome to debug some game software without the display being able to show letters. Therfore I recommend to use an early System11 display which has at least one row with alphanumeric displays (or build my System7Alpha).
+Please note that I have equipped my Black Knight with a [special kind of display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha) and the APC currently does not support the original displays. This is not because it would be difficult to make them work (it is actually quite easy), but how to implement a menu system when your display can only show numbers? Additionally it would be quite cumbersome to debug some game software without the display being able to show letters. Therfore I recommend to use an early System11 display which has at least one row with alphanumeric displays (or build my System7Alpha).
 
 ### To Do
 
@@ -61,10 +59,9 @@ I have just put the APC in a Rollergames. This required three cables to be exten
 
 However apart from writing new game code and generating sound samples the following software improvements come to my mind:
 
-* Write a Base Code that can be used as a base for all game codes. The Base Code should contain all procedures that are more or less the same for every game and it should support the various display types. (This work has been started)
 * Add a mode for the APC being controlled by a PC via USB. This would enable PinMame or the Mission Pinball Framework to use the APC. With PinMame, the APC could also be used as a replacement for old boards and the MPF could ease the design of homebrew games. (coming next)
 * Implementation of a better error handler
-* Support for more displays - The 2x16 display of the System11c will be supported in the Base Code. The numbers only display of the System6 and 7 machines are not supported at the moment, but mainly because I don't like them (I want a highscore list). I'm just not sure how to handle menus and so on - may be use the serial monitor of the Arduino IDE to show them on a PC or add a bluetooth module to the APC and do the settings with an APP on your smartphone...
+* Think about how to implement the early displays, as the _numbers only_ displays of the System3 to 7 machines are not supported at the moment - mainly because I don't like them (I want a highscore list). I'm just not sure how to handle menus and so on - may be use the serial monitor of the Arduino IDE to show them on a PC or add a bluetooth module to the APC and do the settings with an APP on your smartphone...
 
 ## Why this page?
 
