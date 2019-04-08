@@ -109,8 +109,7 @@ void (*TimerEvent[64])(byte);                         // pointers to the procedu
 void (*TimerBuffer)(byte);
 void (*Switch_Pressed)(byte);                         // Pointer to current behavior mode for activated switches
 void (*Switch_Released)(byte);                        // Pointer to current behavior mode for released switches
-void (*SerialCommand)(byte);													// Pointer to the serial command handler (0 if serial command mode is off)
-byte SerialCommandPending = 0;												// Stores serial commands that could not be finished due to parameters not transmitted yet
+void (*SerialCommand)();															// Pointer to the serial command handler (0 if serial command mode is off)
 char EnterIni[3];
 uint16_t *SoundBuffer;																// buffers sound data from SD to be processed by interrupt
 uint16_t *MusicBuffer;																// buffers music data from SD to be processed by interrupt
@@ -735,10 +734,7 @@ void loop() {
 					if (AfterSound) {
 						AfterSound();}}}}}
 	if (SerialCommand && Serial.available()) {					// USB command mode
-		if (SerialCommandPending) {												// any unfinished business?
-			SerialCommand(SerialCommandPending);}						// finish it
-		else {
-			SerialCommand(Serial.read());}}}								// use the first received byte as a command
+		SerialCommand();}}																// use the first received byte as a command
 
 void ReadMusic() {																		// read music data from SD
 	if (MusicFile.available() > 255) {									// enough data remaining in file to fill one block?
