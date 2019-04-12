@@ -105,6 +105,10 @@ void USB_SerialCommand() {
 	if (USB_CommandLength[Command] == 255) {
 		c = Serial.available();
 		i = BufferPointer;
+		if (!c) {
+			BufferPointer = 0;
+			CommandPending = true;
+			return;}
 		do {
 			SerialBuffer[i] = Serial.read();
 			i++;}
@@ -195,13 +199,13 @@ void USB_SerialCommand() {
 				*(DisplayUpper) = LeftCredit[32 + 2 * SerialBuffer[i]];
 				break;
 			case 1:
-				*(DisplayLower) = RightCredit[32 + 2 * SerialBuffer[i]];
+				*(DisplayUpper+16) = LeftCredit[32 + 2 * SerialBuffer[i]];
 				break;
 			case 2:
-				*(DisplayUpper+18) = LeftCredit[32 + 2 * SerialBuffer[i]];
+				*(DisplayLower) = RightCredit[32 + 2 * SerialBuffer[i]];
 				break;
 			case 3:
-				*(DisplayLower+18) = RightCredit[32 + 2 * SerialBuffer[i]];
+				*(DisplayLower+16) = RightCredit[32 + 2 * SerialBuffer[i]];
 				break;}
 			i++;}
 		break;
@@ -227,20 +231,20 @@ void USB_SerialCommand() {
 				i++;}}
 		else {
 			while (SerialBuffer[i] && (i<8)) {
-				*(DisplayLower+2+2*i) = DispPattern2[(int)((SerialBuffer[i]-32)*2)];
-				*(DisplayLower+2+2*i+1) = DispPattern2[(int)((SerialBuffer[i]-32)*2)+1];
+				*(DisplayUpper+18+2*i) = DispPattern1[(int)((SerialBuffer[i]-32)*2)];
+				*(DisplayUpper+18+2*i+1) = DispPattern1[(int)((SerialBuffer[i]-32)*2)+1];
 				i++;}}
 		break;
 	case 33:																						// set display 3 to
 		i = 0;
 		while (SerialBuffer[i] && (i<8)) {
-			*(DisplayUpper+18+2*i) = DispPattern1[(int)((SerialBuffer[i]-32)*2)];
-			*(DisplayUpper+18+2*i+1) = DispPattern1[(int)((SerialBuffer[i]-32)*2)+1];
+			*(DisplayLower+2+2*i) = DispPattern2[(int)((SerialBuffer[i]-32)*2)];
+			*(DisplayLower+2+2*i+1) = DispPattern2[(int)((SerialBuffer[i]-32)*2)+1];
 			i++;}
 		break;
 	case 34:																						// set display 4 to
 		i = 0;
-		while (SerialBuffer[i] && (i<16)) {
+		while (SerialBuffer[i] && (i<8)) {
 			*(DisplayLower+18+2*i) = DispPattern2[(int)((SerialBuffer[i]-32)*2)];
 			*(DisplayLower+18+2*i+1) = DispPattern2[(int)((SerialBuffer[i]-32)*2)+1];
 			i++;}
