@@ -109,6 +109,7 @@ void (*TimerEvent[64])(byte);                         // pointers to the procedu
 void (*TimerBuffer)(byte);
 void (*Switch_Pressed)(byte);                         // Pointer to current behavior mode for activated switches
 void (*Switch_Released)(byte);                        // Pointer to current behavior mode for released switches
+void (*SerialCommand)();															// Pointer to the serial command handler (0 if serial command mode is off)
 char EnterIni[3];
 uint16_t *SoundBuffer;																// buffers sound data from SD to be processed by interrupt
 uint16_t *MusicBuffer;																// buffers music data from SD to be processed by interrupt
@@ -169,12 +170,12 @@ const byte LEDsetting = 5;                            // Setting for the APC_LED
 const byte DisplayType = 6;														// which display is used?
 const byte DebugMode = 7;                             // debug mode enabled?
 
-char TxTGameSelect[3][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "}};
+char TxTGameSelect[4][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "}};
 char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
 char TxTDisplaySelect[5][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "}};
 
 struct SettingTopic APC_setList[11] = {
-		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,2},
+		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,3},
 		{" NO OF  BALLS   ",HandleNumSetting,0,1,5},
 		{"  FREE  GAME    ",HandleBoolSetting,0,0,0},
 		{"  DIM  INSERTS  ",HandleBoolSetting,0,0,0},
@@ -223,7 +224,7 @@ bool AppBool = false;                                 // general purpose applica
 byte APC_settings[64];																// system settings to be stored on the SD
 byte game_settings[64];																// game settings to be stored on the SD
 byte *SettingsPointer;																// points to the settings being changed
-const char *SettingsFileName;																// points to the settings file currently being edited
+const char *SettingsFileName;													// points to the settings file currently being edited
 const int UpDown = 53;                                // arduino pin connected to the auto/up - manual/Down button
 const int Blanking = 22;                              // arduino pin to control the blanking signal
 const byte VolumePin = 13;														// arduino pin to control the sound volume
@@ -328,6 +329,9 @@ void Init_System2(byte State) {
 		break;
 	case 2:
 		PB_init();
+		break;
+	case 3:
+		USB_init();
 		break;
 	default:
 		WriteUpper("NO GAMESELECTD  ");
@@ -728,7 +732,9 @@ void loop() {
 				if (AfterSoundPending) {
 					AfterSoundPending = false;
 					if (AfterSound) {
-						AfterSound();}}}}}}
+						AfterSound();}}}}}
+	if (SerialCommand && Serial.available()) {					// USB command mode
+		SerialCommand();}}																// use the first received byte as a command
 
 void ReadMusic() {																		// read music data from SD
 	if (MusicFile.available() > 255) {									// enough data remaining in file to fill one block?
@@ -1036,7 +1042,7 @@ void ReleaseSolenoid(byte Solenoid) {
 		ActivateTimer(1, Solenoid, ReleaseSolenoid);}}		// try again later
 
 bool SolenoidStatus(byte Solenoid) {                  // determine the current state of a solenoid
-	bool State = SolBuffer[Solenoid / 8] & (1<<(Solenoid % 8));
+	bool State = SolBuffer[Solenoid / 8] & (1<<((Solenoid % 8)-1));
 	return State;}
 
 void ActA_BankSol(byte Solenoid) {
