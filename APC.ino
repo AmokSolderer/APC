@@ -1240,46 +1240,87 @@ void DisplayScore (byte Position, unsigned int Score) {
 	byte i=0;                                       		// use a private counter
 	byte Buffer1 = 0;
 	byte Buffer2 = 0;
-	switch (Position) {
-	case 1:                                       			// for the players 1 and 3
-	case 3:
-		Buffer1 = 2;                             			// start in column 1
+	switch (APC_settings[DisplayType]) {
+	case 0:																							// 4 Alpha + Credit type display
+	case 1:																							// Sys11 Pinbot type display
+	case 2:																							// Sys11 F-14 type display
+		switch (Position) {
+		case 1:                                       		// for the players 1 and 3
+		case 3:
+			Buffer1 = 2;                             				// start in column 1
+			break;
+		case 2:                                       		// for the players 2 and 4
+		case 4:
+			Buffer1 = 18;                            				// start in column 9
+			break;}
+		if (Score) {                                  		// if the score is not 0
+			while (Score && i<7) {                      		// for all 7 display digits
+				Buffer2 = Score % 10;                 				// extract the least significant digit
+				Score = (Score-Buffer2) / 10;         				// prepare for the next digit
+				Buffer2 = 32+2*Buffer2;           						// determine the corresponding display pattern
+				if (Position < 3) {                       		// depending on the player number show it in the upper display row
+					if ((i==3) || (i==6)) {
+						*(DisplayUpper+Buffer1+12-2*i) = 128 | DispPattern1[Buffer2];
+						*(DisplayUpper+Buffer1+13-2*i) = 64 | DispPattern1[Buffer2+1];} // add a comma if necessary
+					else {
+						*(DisplayUpper+Buffer1+12-2*i) = DispPattern1[Buffer2];
+						*(DisplayUpper+Buffer1+13-2*i) = DispPattern1[Buffer2+1];}}
+				else {                                    		// the same for the lower display row
+					if ((i==3) || (i==6)) {
+						*(DisplayLower+Buffer1+12-2*i) = 1 | DispPattern2[Buffer2];
+						*(DisplayLower+Buffer1+13-2*i) = 8 | DispPattern2[Buffer2+1];}
+					else {
+						*(DisplayLower+Buffer1+12-2*i) = DispPattern2[Buffer2];
+						*(DisplayLower+Buffer1+13-2*i) = DispPattern2[Buffer2+1];}} //
+				i++;}}
+		else {                                        		// if the points are 0
+			if (Position < 3) {
+				*(DisplayUpper+Buffer1+12) = DispPattern1[32]; // just show two 0s
+				*(DisplayUpper+Buffer1+13) = DispPattern1[33];
+				*(DisplayUpper+Buffer1+10) = DispPattern1[32];
+				*(DisplayUpper+Buffer1+11) = DispPattern1[33];}
+			else {
+				*(DisplayLower+Buffer1+12) = DispPattern2[32]; // just show two 0s
+				*(DisplayLower+Buffer1+13) = DispPattern2[33];
+				*(DisplayLower+Buffer1+10) = DispPattern2[32];
+				*(DisplayLower+Buffer1+11) = DispPattern2[33];}}
 		break;
-	case 2:                                       			// for the players 2 and 4
-	case 4:
-		Buffer1 = 18;                            			// start in column 9
-		break;}
-	if (Score) {                                  			// if the score is not 0
-		while (Score && i<7) {                      			// for all 7 display digits
-			Buffer2 = Score % 10;                 			// extract the least significant digit
-			Score = (Score-Buffer2) / 10;         			// prepare for the next digit
-			Buffer2 = 32+2*Buffer2;           			// determine the corresponding display pattern
-			if (Position < 3) {                       			// depending on the player number show it in the upper display row
-				if ((i==3) || (i==6)) {
-					*(DisplayUpper+Buffer1+12-2*i) = 128 | DispPattern1[Buffer2];
-					*(DisplayUpper+Buffer1+13-2*i) = 64 | DispPattern1[Buffer2+1];} // add a comma if necessary
+		case 3:																						// Sys11 BK2K type display
+		case 4:																						// Sys11 Taxi type display
+
+			break;
+		case 5:																						// Sys3 - 6 type display
+		case 6:																						// Sys7 - 9 type display
+			switch (Position) {
+			case 1:                                       		// for the players 1 and 3
+			case 3:
+				Buffer1 = 2;                             				// start in column 1
+				break;
+			case 2:                                       		// for the players 2 and 4
+			case 4:
+				Buffer1 = 18;                            				// start in column 9
+				break;}
+			if (Score) {                                  		// if the score is not 0
+				while (Score && i<7) {                      		// for all 7 display digits
+					Buffer2 = Score % 10;                 				// extract the least significant digit
+					Score = (Score-Buffer2) / 10;         				// prepare for the next digit
+					if (Position < 3) {                       		// depending on the player number show it in the upper display row
+						*(DisplayLower+Buffer1+12-2*i) = ConvertNumUpper(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
+						if ((i==3) || (i==6)) {
+						}} // add a comma if necessary
+					else {                                    		// the same for the lower display row
+						*(DisplayLower+Buffer1+12-2*i) = ConvertNumLower(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
+						if ((i==3) || (i==6)) {
+						}}
+					i++;}}
+			else {                                        		// if the points are 0 just show two 0s
+				if (Position < 3) {
+					*(DisplayLower+Buffer1+12) = ConvertNumUpper(0, (byte) *(DisplayLower+Buffer1+12));
+					*(DisplayLower+Buffer1+10) = ConvertNumUpper(0, (byte) *(DisplayLower+Buffer1+12));}
 				else {
-					*(DisplayUpper+Buffer1+12-2*i) = DispPattern1[Buffer2];
-					*(DisplayUpper+Buffer1+13-2*i) = DispPattern1[Buffer2+1];}}
-			else {                                    			// the same for the lower display row
-				if ((i==3) || (i==6)) {
-					*(DisplayLower+Buffer1+12-2*i) = 1 | DispPattern2[Buffer2];
-					*(DisplayLower+Buffer1+13-2*i) = 8 | DispPattern2[Buffer2+1];}
-				else {
-					*(DisplayLower+Buffer1+12-2*i) = DispPattern2[Buffer2];
-					*(DisplayLower+Buffer1+13-2*i) = DispPattern2[Buffer2+1];}} //
-			i++;}}
-	else {                                        			// if the points are 0
-		if (Position < 3) {
-			*(DisplayUpper+Buffer1+12) = DispPattern1[32]; // just show two 0s
-			*(DisplayUpper+Buffer1+13) = DispPattern1[33];
-			*(DisplayUpper+Buffer1+10) = DispPattern1[32];
-			*(DisplayUpper+Buffer1+11) = DispPattern1[33];}
-		else {
-			*(DisplayLower+Buffer1+12) = DispPattern2[32]; // just show two 0s
-			*(DisplayLower+Buffer1+13) = DispPattern2[33];
-			*(DisplayLower+Buffer1+10) = DispPattern2[32];
-			*(DisplayLower+Buffer1+11) = DispPattern2[33];}}}
+					*(DisplayLower+Buffer1+12) = ConvertNumLower(0, (byte) *(DisplayLower+Buffer1+12));
+					*(DisplayLower+Buffer1+10) = ConvertNumLower(0, (byte) *(DisplayLower+Buffer1+12));}}
+			break;}}
 
 void ShowNumber(byte Position, unsigned int Number) {
 	byte Buffer = 0;
@@ -1576,6 +1617,12 @@ void SelectSettings(byte Switch) {										// select system or game settings
 	case 0:																							// for the initial call
 		WriteUpper("SYSTEM SETTNGS  ");
 		WriteLower("                ");
+		byte CreditBuffer[4];
+		CreditBuffer[0] = 48;
+		CreditBuffer[1] = 49;
+		CreditBuffer[2] = 48;
+		CreditBuffer[3] = 48;
+		WritePlayerDisplay((char*) CreditBuffer, 0);
 		break;
 	case 3:																							// start button
 		if (AppByte) {																		// game settings selected
@@ -1594,10 +1641,24 @@ void SelectSettings(byte Switch) {										// select system or game settings
 		if (AppByte) {																		// switch between game and system settings
 			WriteUpper("SYSTEM SETTNGS  ");
 			WriteLower("                ");
+			if (APC_settings[DisplayType] != 3) {						// not a Sys11c display?
+				byte CreditBuffer[4];
+				CreditBuffer[0] = 48;
+				CreditBuffer[1] = 49;
+				CreditBuffer[2] = 48;
+				CreditBuffer[3] = 48;
+				WritePlayerDisplay((char*) CreditBuffer, 0);}
 			AppByte = 0;}
 		else {
 			WriteUpper("  GAME SETTNGS  ");
 			WriteLower("                ");
+			if (APC_settings[DisplayType] != 3) {						// not a Sys11c display?
+				byte CreditBuffer[4];
+				CreditBuffer[0] = 48;
+				CreditBuffer[1] = 50;
+				CreditBuffer[2] = 48;
+				CreditBuffer[3] = 48;
+				WritePlayerDisplay((char*) CreditBuffer, 0);}
 			AppByte = 1;}}}
 
 void RepeatSelectKey(byte Run) {											// Repeat the start button (No 3) if it is pressed permanently
@@ -1634,8 +1695,15 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 			AppByte--;}																			// and go one back to reach the last settings entry
 		/* no break */
 	case 0:																							// show the current setting
-		*(DisplayUpper+16) = LeftCredit[32 + 2 * ((AppByte+1) % 10)]; // show the actual settings number +1
-		*(DisplayUpper) = LeftCredit[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
+		if (APC_settings[DisplayType] != 3) {							// not a Sys11c display?
+			if (APC_settings[DisplayType] > 4) {						// numerical display?
+				*(DisplayLower) = ConvertNumLower((byte) ((AppByte+1) - ((AppByte+1) % 10)) / 10,(byte) *(DisplayLower));
+				*(DisplayLower+16) = ConvertNumLower((byte) ((AppByte+1) % 10),(byte) *(DisplayLower+16));}
+			else {
+				*(DisplayLower) = RightCredit[32+2*(((AppByte+1) - ((AppByte+1) % 10)) / 10)];
+				*(DisplayLower+1) = RightCredit[32+2*(((AppByte+1) - ((AppByte+1) % 10)) / 10)+1];
+				*(DisplayLower+16) = RightCredit[32+2*((AppByte+1) % 10)];
+				*(DisplayLower+17) = RightCredit[32+2*((AppByte+1) % 10)+1];}}
 		WriteUpper( SettingsList[AppByte].Text);					// show the text
 		SettingsList[AppByte].EventPointer(false);				// call the corresponding method and indicate no changes
 		break;
@@ -1653,9 +1721,15 @@ void HandleBoolSetting(bool change) {									// handling method for boolean set
 		else {
 			SettingsPointer[AppByte] = 1;}}
 	if (SettingsPointer[AppByte]) {											// show the current state of the setting
-		WriteLower("           YES  ");}
+		if (APC_settings[DisplayType] > 4) {							// not a Sys11c display?
+			WritePlayerDisplay((char*)"::::::1", 4);}
+		else {
+			WriteLower("           YES  ");}}
 	else {
-		WriteLower("            NO  ");}}
+		if (APC_settings[DisplayType] > 4) {							// not a Sys11c display?
+			WritePlayerDisplay((char*)"::::::0", 4);}
+		else {
+			WriteLower("            NO  ");}}}
 
 void RestoreDefaults(bool change) {										// restore the default settings
 	if (change) {																				// if the start button has been pressed
@@ -1716,7 +1790,11 @@ void HandleTextSetting(bool change) {									// handling method for text settin
 				SettingsPointer[AppByte] = SettingsList[AppByte].UpperLimit;} // go to the last entry
 			else {
 				SettingsPointer[AppByte]--;}}}								// if limit not reached just choose the previous entry
-	WriteLower(SettingsList[AppByte].TxTpointer+17*SettingsPointer[AppByte]);} // show the current text element
+	if (APC_settings[DisplayType] > 4) {								// numerical display?
+		WriteLower("                ");
+		DisplayScore(4,SettingsPointer[AppByte]);}
+	else {
+		WriteLower(SettingsList[AppByte].TxTpointer+17*SettingsPointer[AppByte]);}} // show the current text element
 
 void HandleVolumeSetting(bool change) {
 	HandleNumSetting(change);

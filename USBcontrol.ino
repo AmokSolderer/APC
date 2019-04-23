@@ -55,7 +55,11 @@ void USB_AttractMode() {                              // Attract Mode
 	Switch_Pressed = USB_SwitchHandler;
 	Switch_Released = USB_ReleasedSwitches;
 	WriteUpper("  USB  CONTROL  ");
-	WriteLower("                ");}
+	WriteLower("                ");
+	DisplayScore(1, 1234567);
+	DisplayScore(2, 1234567);
+	DisplayScore(3, 1234567);
+	DisplayScore(4, 1234567);}
 
 void USB_SwitchHandler(byte Switch) {
 	switch (Switch) {
@@ -165,11 +169,11 @@ void USB_SerialCommand() {
 			Lamp[SerialBuffer[0]] = false;}
 		break;
 	case 20:																						// get status of solenoid
-		if (SerialBuffer[0] < 24) {												// max 24 solenoids
+		if (SerialBuffer[0] < 25) {												// max 24 solenoids
 			Serial.write((byte) SolenoidStatus(SerialBuffer[0]));}
 		break;
 	case 21:																						// set solenoid # to on
-		if (SerialBuffer[0] < 24) {												// max 24 solenoids
+		if (SerialBuffer[0] < 25) {												// max 24 solenoids
 			if (!SolChange) {                               // change request for another solenoid pending?
 				SolNumber = SerialBuffer[0];                  // activate solenoid permanently
 				SolState = true;
@@ -186,97 +190,31 @@ void USB_SerialCommand() {
 				ActivateTimer(25, SerialBuffer[0], ActivateLater);}}	// and try again later
 		break;
 	case 22:																						// set solenoid # to off
-		if (SerialBuffer[0] < 24) {												// max 24 solenoids
+		if (SerialBuffer[0] < 25) {												// max 24 solenoids
 			ReleaseSolenoid(SerialBuffer[0]);}
 		break;
 	case 23:																						// pulse solenoid
-		if (SerialBuffer[0] < 24) {												// max 24 solenoids
+		if (SerialBuffer[0] < 25) {												// max 24 solenoids
 			ActivateSolenoid(0, SerialBuffer[0]);}
 		break;
 	case 24:																						// set solenoid pulse time
-		if (SerialBuffer[0] < 24) {												// max 24 solenoids
+		if (SerialBuffer[0] < 25) {												// max 24 solenoids
 			USB_SolTimes[SerialBuffer[0]-1] = SerialBuffer[1];}
 		break;
 	case 30:																						// set display 0 to (credit display)
 		WritePlayerDisplay((char*)SerialBuffer, 0);
-//		i = 0;
-//		while (SerialBuffer[i] && (i<4)) {
-//			switch (i) {
-//			case 0:
-//				*(DisplayUpper) = LeftCredit[32 + 2 * SerialBuffer[i]];
-//				break;
-//			case 1:
-//				*(DisplayUpper+16) = LeftCredit[32 + 2 * SerialBuffer[i]];
-//				break;
-//			case 2:
-//				*(DisplayLower) = RightCredit[32 + 2 * SerialBuffer[i]];
-//				break;
-//			case 3:
-//				*(DisplayLower+16) = RightCredit[32 + 2 * SerialBuffer[i]];
-//				break;}
-//			i++;}
 		break;
 	case 31:																						// set display 1 to
 		WritePlayerDisplay((char*)SerialBuffer, 1);
-
-//		i = 0;
-//		if (APC_settings[DisplayType] == 3) {             // 2x16 alphanumeric display (BK2K type)
-//			while (SerialBuffer[i] && (i<16)) {
-//				*(DisplayUpper+2*i) = DispPattern1[(int)((SerialBuffer[i]-32)*2)];
-//				*(DisplayUpper+2*i+1) = DispPattern1[(int)((SerialBuffer[i]-32)*2)+1];
-//				i++;}}
-//		else {
-//			if (APC_settings[DisplayType] > 4) {            // numbers only type display
-//				byte HighMask;
-//				byte LowMask;
-//				while (SerialBuffer[i] && (i<8)) {						// for all digits
-//					*(DisplayLower+2+2*i) &= B11110000;					// clear least significant nibble
-//					HighMask = B1000;														// prepare bitmasks
-//					LowMask = 1;
-//					for (c=0;c<4;c++) {													// for 4 bit
-//						if (SerialBuffer[i] & LowMask) {					// get bits from buffer
-//							*(DisplayLower+2+2*i) |= HighMask;			// apply the upside down to the display bus
-//							HighMask = HighMask >> 1;
-//							LowMask = LowMask << 1;}}
-//					i++;}}
-//			else {																					// Sys11 type display with credit
-//				while (SerialBuffer[i] && (i<8)) {
-//					*(DisplayUpper+2+2*i) = DispPattern1[(int)((SerialBuffer[i]-32)*2)];
-//					*(DisplayUpper+2+2*i+1) = DispPattern1[(int)((SerialBuffer[i]-32)*2)+1];
-//					i++;}}}
 		break;
 	case 32:																						// set display 2 to
 		WritePlayerDisplay((char*)SerialBuffer, 2);
-
-//		i = 0;
-//		if (APC_settings[DisplayType] == 3) {             // 2x16 alphanumeric display (BK2K type)
-//			while (SerialBuffer[i] && (i<16)) {
-//				*(DisplayLower+2*i) = DispPattern2[(int)((SerialBuffer[i]-32)*2)];
-//				*(DisplayLower+2*i+1) = DispPattern2[(int)((SerialBuffer[i]-32)*2)+1];
-//				i++;}}
-//		else {
-//			while (SerialBuffer[i] && (i<8)) {
-//				*(DisplayUpper+18+2*i) = DispPattern1[(int)((SerialBuffer[i]-32)*2)];
-//				*(DisplayUpper+18+2*i+1) = DispPattern1[(int)((SerialBuffer[i]-32)*2)+1];
-//				i++;}}
 		break;
 	case 33:																						// set display 3 to
 		WritePlayerDisplay((char*)SerialBuffer, 3);
-
-//		i = 0;
-//		while (SerialBuffer[i] && (i<8)) {
-//			*(DisplayLower+2+2*i) = DispPattern2[(int)((SerialBuffer[i]-32)*2)];
-//			*(DisplayLower+2+2*i+1) = DispPattern2[(int)((SerialBuffer[i]-32)*2)+1];
-//			i++;}
 		break;
 	case 34:																						// set display 4 to
 		WritePlayerDisplay((char*)SerialBuffer, 4);
-
-//		i = 0;
-//		while (SerialBuffer[i] && (i<8)) {
-//			*(DisplayLower+18+2*i) = DispPattern2[(int)((SerialBuffer[i]-32)*2)];
-//			*(DisplayLower+18+2*i+1) = DispPattern2[(int)((SerialBuffer[i]-32)*2)+1];
-//			i++;}
 		break;
 	case 40:																						// get status of switch #
 		if (SerialBuffer[0] < 65) {												// max 64 switches
