@@ -1292,28 +1292,28 @@ void DisplayScore (byte Position, unsigned int Score) {
 		case 5:																						// Sys3 - 6 type display
 		case 6:																						// Sys7 - 9 type display
 			switch (Position) {
-			case 1:                                       		// for the players 1 and 3
+			case 1:                                       	// for the players 1 and 3
 			case 3:
-				Buffer1 = 2;                             				// start in column 1
+				Buffer1 = 2;                             			// start in column 1
 				break;
-			case 2:                                       		// for the players 2 and 4
+			case 2:                                       	// for the players 2 and 4
 			case 4:
-				Buffer1 = 18;                            				// start in column 9
+				Buffer1 = 18;                            			// start in column 9
 				break;}
-			if (Score) {                                  		// if the score is not 0
-				while (Score && i<7) {                      		// for all 7 display digits
-					Buffer2 = Score % 10;                 				// extract the least significant digit
-					Score = (Score-Buffer2) / 10;         				// prepare for the next digit
-					if (Position < 3) {                       		// depending on the player number show it in the upper display row
+			if (Score) {                                  	// if the score is not 0
+				while (Score && i<7) {                      	// for all 7 display digits
+					Buffer2 = Score % 10;                 			// extract the least significant digit
+					Score = (Score-Buffer2) / 10;         			// prepare for the next digit
+					if (Position < 3) {                       	// depending on the player number show it in the upper display row
 						*(DisplayLower+Buffer1+12-2*i) = ConvertNumUpper(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
 						if ((i==3) || (i==6)) {
-						}} // add a comma if necessary
-					else {                                    		// the same for the lower display row
+							*(DisplayLower+Buffer1+13-2*i) = 128 | *(DisplayLower+Buffer1+13-2*i);}} // add a comma if necessary
+					else {                                    	// the same for the lower display row
 						*(DisplayLower+Buffer1+12-2*i) = ConvertNumLower(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
 						if ((i==3) || (i==6)) {
-						}}
+							*(DisplayLower+Buffer1+13-2*i) = 1 | *(DisplayLower+Buffer1+13-2*i);}}
 					i++;}}
-			else {                                        		// if the points are 0 just show two 0s
+			else {                                        	// if the points are 0 just show two 0s
 				if (Position < 3) {
 					*(DisplayLower+Buffer1+12) = ConvertNumUpper(0, (byte) *(DisplayLower+Buffer1+12));
 					*(DisplayLower+Buffer1+10) = ConvertNumUpper(0, (byte) *(DisplayLower+Buffer1+12));}
