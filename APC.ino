@@ -58,6 +58,8 @@ const byte *DispRow1;                                 // determines which patter
 const byte *DispRow2;
 const byte *DispPattern1;
 const byte *DispPattern2;
+const byte NumMaskUpper[5] = {184,64,4,2,1};						// Bitmasks for the upper row of numerical displays
+const byte NumMaskLower[5] = {71,16,8,128,32};				// Bitmasks for the lower row of numerical displays
 byte DisplayUpper[32];                                // changeable display buffer
 byte DisplayLower[32];
 byte DisplayUpper2[32];                               // second changeable display buffer
@@ -143,6 +145,7 @@ void HandleNumSetting(bool change);
 void HandleBoolSetting(bool change);
 void RestoreDefaults(bool change);
 void HandleVolumeSetting(bool change);
+void HandleDisplaySetting(bool change);
 
 struct SettingTopic {																	// one topic of a list of settings
 	char Text[17];																			// display text
@@ -152,7 +155,7 @@ struct SettingTopic {																	// one topic of a list of settings
 	byte UpperLimit;};																	// if text setting -> amount of text entries -1 / if num setting -> upper limit of selection value
 
 const char APC_set_file_name[13] = "APC_SET.BIN";
-const byte APC_defaults[64] =  {0,3,1,0,0,0,0,0,		 	// system default settings
+const byte APC_defaults[64] =  {0,0,3,1,0,0,0,0,		 	// system default settings
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
@@ -161,27 +164,27 @@ const byte APC_defaults[64] =  {0,3,1,0,0,0,0,0,		 	// system default settings
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0};
 
-const byte ActiveGame = 0;														// Select the active game
-const byte NofBalls = 1;															// Balls per game
-const byte FreeGame = 2;															// Free game mode?
-const byte DimInserts = 3;                            // Reduce lighting time of playfield lamps by 50%
-const byte Volume = 4;                             		// Volume of the speaker
-const byte LEDsetting = 5;                            // Setting for the APC_LED_EXP board
-const byte DisplayType = 6;														// which display is used?
+const byte DisplayType = 0;														// which display is used?
+const byte ActiveGame = 1;														// Select the active game
+const byte NofBalls = 2;															// Balls per game
+const byte FreeGame = 3;															// Free game mode?
+const byte DimInserts = 4;                            // Reduce lighting time of playfield lamps by 50%
+const byte Volume = 5;                             		// Volume of the speaker
+const byte LEDsetting = 6;                            // Setting for the APC_LED_EXP board
 const byte DebugMode = 7;                             // debug mode enabled?
 
 char TxTGameSelect[4][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "}};
 char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
-char TxTDisplaySelect[5][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "}};
+char TxTDisplaySelect[7][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{"123456123456    "},{"12345671234567  "}};
 
 struct SettingTopic APC_setList[11] = {
+		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,6},
 		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,3},
 		{" NO OF  BALLS   ",HandleNumSetting,0,1,5},
 		{"  FREE  GAME    ",HandleBoolSetting,0,0,0},
 		{"  DIM  INSERTS  ",HandleBoolSetting,0,0,0},
 		{"SPEAKER VOLUME  ",HandleVolumeSetting,0,0,255},
 		{"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,2},
-		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,4},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
 		{"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS  ",ExitSettings,0,0,0},
@@ -844,29 +847,110 @@ void KillTimer(byte TimerNo) {
 	TimerEvent[TimerNo] = 0;														// clear Timer Event
 	BlockTimers = false;}																// release the IRQ block
 
+byte ConvertNumUpper(byte Number, byte Pattern) {			// convert a number to be shown in the upper row of numerical displays
+	byte Mask = 1;
+	Pattern &= NumMaskUpper[0];													// clear all bits belonging to this digit
+	for (byte c=1;c<5;c++) {														// for 4 bit
+		if (Number & Mask) {															// check bits from number
+			Pattern |= NumMaskUpper[c];}										// apply the corresponding bitmask
+		Mask = Mask << 1;}
+	return Pattern;}
+
+byte ConvertNumLower(byte Number, byte Pattern) {			// convert a number to be shown in the lower row of numerical displays
+	byte Mask = 1;
+	Pattern &= NumMaskLower[0];													// clear all bits belonging to this digit
+	for (byte c=1;c<5;c++) {														// for 4 bit
+		if (Number & Mask) {															// check bits from number
+			Pattern |= NumMaskLower[c];}										// apply the corresponding bitmask
+		Mask = Mask << 1;}
+	return Pattern;}
+
+void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to player displays - credit is Player 0
+	if (APC_settings[DisplayType] > 4) {            		// numbers only type display
+		if (Player) {																			// player display?
+			if (Player < 3) {																// upper row?
+				Player--;
+				for (i=0;i<7;i++) {														// for all digits
+					*(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));}}
+			else {																					// lower row
+				Player = Player - 3;
+				for (i=0;i<7;i++) {														// for all digits
+					*(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));}}}
+		else {																						// credit display
+			*(DisplayLower) = ConvertNumUpper((byte) *(DisplayText)-48,(byte) *(DisplayLower));
+			*(DisplayLower+16) = ConvertNumUpper((byte) *(DisplayText+1)-48,(byte) *(DisplayLower+16));
+			*(DisplayLower) = ConvertNumLower((byte) *(DisplayText+2)-48,(byte) *(DisplayLower));
+			*(DisplayLower+16) = ConvertNumLower((byte) *(DisplayText+3)-48,(byte) *(DisplayLower+16));}}
+	else {                                            	// Sys11 display with credit
+		if (Player) {																			// player display?
+			if (Player < 3) {																// upper row?
+				Player--;
+				for (i=0;i<7;i++) {														// for all digits
+					*(DisplayUpper+2+16*Player+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+					*(DisplayUpper+3+16*Player+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
+			else {																					// lower row
+				Player = Player - 3;
+				for (i=0;i<7;i++) {														// for all digits
+					*(DisplayLower+2+16*Player+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
+					*(DisplayLower+3+16*Player+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}}
+		else {																						// credit display
+			*(DisplayUpper) = LeftCredit[(*(DisplayText)-32)*2];
+			*(DisplayUpper+1) = LeftCredit[((*(DisplayText)-32)*2)+1];
+			*(DisplayUpper+16) = LeftCredit[(*(DisplayText+1)-32)*2];
+			*(DisplayUpper+17) = LeftCredit[((*(DisplayText+1)-32)*2)+1];
+			*(DisplayLower) = RightCredit[(*(DisplayText+2)-32)*2];
+			*(DisplayLower+1) = RightCredit[((*(DisplayText+2)-32)*2)+1];
+			*(DisplayLower+16) = RightCredit[(*(DisplayText+3)-32)*2];
+			*(DisplayLower+17) = RightCredit[((*(DisplayText+3)-32)*2)+1];}}}
+
 void WriteUpper(const char* DisplayText) {            
 	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
-    for (i=0; i<16; i++) {                             
-      *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
-      *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
-  else {                                              // dont use columns 0 and 8 as they are reserved for the credit display
-  	for (i=0; i<7; i++) {                             
-  		*(DisplayUpper+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
-  		*(DisplayUpper+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
-  		*(DisplayUpper+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
-  		*(DisplayUpper+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
+		for (i=0; i<16; i++) {
+			*(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+			*(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
+	else {
+		if (APC_settings[DisplayType] > 4) {            	// numbers only type display
+			for (i=0;i<7;i++) {															// for all digits
+				*(DisplayLower+2+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+2*i));
+				*(DisplayLower+18+2*i) = ConvertNumUpper((byte) *(DisplayText+7+i)-48,(byte) *(DisplayLower+18+2*i));}}
+		else {                                            // Sys11 display with credit
+			for (i=0; i<7; i++) {
+				*(DisplayUpper+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+				*(DisplayUpper+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
+				*(DisplayUpper+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
+				*(DisplayUpper+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}}}
 
 void WriteLower(const char* DisplayText) {
-  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
-  for (i=0; i<16; i++) {
-    *(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
-    *(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
-  else {
-    for (i=0; i<7; i++) {
-		*(DisplayLower+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
-		*(DisplayLower+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
-		*(DisplayLower+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
-		*(DisplayLower+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
+	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+		for (i=0; i<16; i++) {
+			*(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
+			*(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
+	else {
+		if (APC_settings[DisplayType] > 4) {            	// numbers only type display
+			for (i=0;i<7;i++) {															// for all digits
+				*(DisplayLower+2+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+2*i));
+				*(DisplayLower+18+2*i) = ConvertNumLower((byte) *(DisplayText+7+i)-48,(byte) *(DisplayLower+18+2*i));}}
+		else {																						// Sys11 display with credit
+			for (i=0; i<7; i++) {
+				*(DisplayLower+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
+				*(DisplayLower+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
+				*(DisplayLower+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
+				*(DisplayLower+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}}}
+
+void HandleDisplaySetting(bool change) {
+	HandleTextSetting(change);
+	if (APC_settings[DisplayType] > 4) {            		// numbers only type display
+		byte HighMask;
+		byte LowMask;
+		for (i=0;i<7;i++) {																// for all digits
+			*(DisplayLower+2+2*i) &= B11110000;							// clear least significant nibble
+			HighMask = B1000;																// prepare bitmasks
+			LowMask = 1;
+			for (byte c=0;c<4;c++) {												// for 4 bit
+				if (i & LowMask) {														// get bits from buffer
+					*(DisplayLower+2+2*i) |= HighMask;					// apply the upside down to the display bus
+					HighMask = HighMask >> 1;
+					LowMask = LowMask << 1;}}}}}
 
 void WriteUpper2(const char* DisplayText) {
   if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
@@ -1151,51 +1235,112 @@ void BlinkScore(byte State) {													// State = 0 -> stop blinking / State 
 				Timer = 0;}
 			ShowPoints(Player);}}}
 
+void DisplayBCD (byte Position, byte* BCDnumber) {		// displays BCD values on numerical displays
+	if (Position) {																			// player display?
+		if (Position < 3) {																// upper row
+			Position--;
+			for(byte c=0; c<7; c++) {
+				*(DisplayLower+2+16*Position+2*c) = ConvertNumUpper(*(BCDnumber+c),(byte) *(DisplayLower+2+16*Position+2*c));
+				if (128 & *(BCDnumber+c)) {										// comma needed?
+					*(DisplayLower+3+16*Position+2*c) = 1 | *(DisplayLower+3+16*Position+2*c);}}}
+		else {																						// lower row
+			Position = Position - 3;
+			for(byte c=0; c<7; c++) {
+				*(DisplayLower+2+16*Position+2*c) = ConvertNumLower(*(BCDnumber+c),(byte) *(DisplayLower+2+16*Position+2*c));
+				if (128 & *(BCDnumber+c)) {
+					*(DisplayLower+3+16*Position+2*c) = 128 | *(DisplayLower+3+16*Position+2*c);}}}}
+	else {																							// credit display
+		*(DisplayLower) = ConvertNumUpper((byte) *BCDnumber,(byte) *(DisplayLower));
+		*(DisplayLower+16) = ConvertNumUpper((byte) *(BCDnumber+1),(byte) *(DisplayLower+16));
+		*(DisplayLower) = ConvertNumLower((byte) *(BCDnumber+2),(byte) *(DisplayLower));
+		*(DisplayLower+16) = ConvertNumLower((byte) *(BCDnumber+3),(byte) *(DisplayLower+16));}}
+
 
 void DisplayScore (byte Position, unsigned int Score) {
 	byte i=0;                                       		// use a private counter
 	byte Buffer1 = 0;
 	byte Buffer2 = 0;
-	switch (Position) {
-	case 1:                                       			// for the players 1 and 3
-	case 3:
-		Buffer1 = 2;                             			// start in column 1
+	switch (APC_settings[DisplayType]) {
+	case 0:																							// 4 Alpha + Credit type display
+	case 1:																							// Sys11 Pinbot type display
+	case 2:																							// Sys11 F-14 type display
+		switch (Position) {
+		case 1:                                       		// for the players 1 and 3
+		case 3:
+			Buffer1 = 2;                             				// start in column 1
+			break;
+		case 2:                                       		// for the players 2 and 4
+		case 4:
+			Buffer1 = 18;                            				// start in column 9
+			break;}
+		if (Score) {                                  		// if the score is not 0
+			while (Score && i<7) {                      		// for all 7 display digits
+				Buffer2 = Score % 10;                 				// extract the least significant digit
+				Score = (Score-Buffer2) / 10;         				// prepare for the next digit
+				Buffer2 = 32+2*Buffer2;           						// determine the corresponding display pattern
+				if (Position < 3) {                       		// depending on the player number show it in the upper display row
+					if ((i==3) || (i==6)) {
+						*(DisplayUpper+Buffer1+12-2*i) = 128 | DispPattern1[Buffer2];
+						*(DisplayUpper+Buffer1+13-2*i) = 64 | DispPattern1[Buffer2+1];} // add a comma if necessary
+					else {
+						*(DisplayUpper+Buffer1+12-2*i) = DispPattern1[Buffer2];
+						*(DisplayUpper+Buffer1+13-2*i) = DispPattern1[Buffer2+1];}}
+				else {                                    		// the same for the lower display row
+					if ((i==3) || (i==6)) {
+						*(DisplayLower+Buffer1+12-2*i) = 1 | DispPattern2[Buffer2];
+						*(DisplayLower+Buffer1+13-2*i) = 8 | DispPattern2[Buffer2+1];}
+					else {
+						*(DisplayLower+Buffer1+12-2*i) = DispPattern2[Buffer2];
+						*(DisplayLower+Buffer1+13-2*i) = DispPattern2[Buffer2+1];}} //
+				i++;}}
+		else {                                        		// if the points are 0
+			if (Position < 3) {
+				*(DisplayUpper+Buffer1+12) = DispPattern1[32]; // just show two 0s
+				*(DisplayUpper+Buffer1+13) = DispPattern1[33];
+				*(DisplayUpper+Buffer1+10) = DispPattern1[32];
+				*(DisplayUpper+Buffer1+11) = DispPattern1[33];}
+			else {
+				*(DisplayLower+Buffer1+12) = DispPattern2[32]; // just show two 0s
+				*(DisplayLower+Buffer1+13) = DispPattern2[33];
+				*(DisplayLower+Buffer1+10) = DispPattern2[32];
+				*(DisplayLower+Buffer1+11) = DispPattern2[33];}}
 		break;
-	case 2:                                       			// for the players 2 and 4
-	case 4:
-		Buffer1 = 18;                            			// start in column 9
-		break;}
-	if (Score) {                                  			// if the score is not 0
-		while (Score && i<7) {                      			// for all 7 display digits
-			Buffer2 = Score % 10;                 			// extract the least significant digit
-			Score = (Score-Buffer2) / 10;         			// prepare for the next digit
-			Buffer2 = 32+2*Buffer2;           			// determine the corresponding display pattern
-			if (Position < 3) {                       			// depending on the player number show it in the upper display row
-				if ((i==3) || (i==6)) {
-					*(DisplayUpper+Buffer1+12-2*i) = 128 | DispPattern1[Buffer2];
-					*(DisplayUpper+Buffer1+13-2*i) = 64 | DispPattern1[Buffer2+1];} // add a comma if necessary
+		case 3:																						// Sys11 BK2K type display
+		case 4:																						// Sys11 Taxi type display
+
+			break;
+		case 5:																						// Sys3 - 6 type display
+		case 6:																						// Sys7 - 9 type display
+			switch (Position) {
+			case 1:                                       	// for the players 1 and 3
+			case 3:
+				Buffer1 = 2;                             			// start in column 1
+				break;
+			case 2:                                       	// for the players 2 and 4
+			case 4:
+				Buffer1 = 18;                            			// start in column 9
+				break;}
+			if (Score) {                                  	// if the score is not 0
+				while (Score && i<7) {                      	// for all 7 display digits
+					Buffer2 = Score % 10;                 			// extract the least significant digit
+					Score = (Score-Buffer2) / 10;         			// prepare for the next digit
+					if (Position < 3) {                       	// depending on the player number show it in the upper display row
+						*(DisplayLower+Buffer1+12-2*i) = ConvertNumUpper(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
+						if ((i==3) || (i==6)) {
+							*(DisplayLower+Buffer1+13-2*i) = 1 | *(DisplayLower+Buffer1+13-2*i);}} // add a comma if necessary
+					else {                                    	// the same for the lower display row
+						*(DisplayLower+Buffer1+12-2*i) = ConvertNumLower(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
+						if ((i==3) || (i==6)) {
+							*(DisplayLower+Buffer1+13-2*i) = 128 | *(DisplayLower+Buffer1+13-2*i);}}
+					i++;}}
+			else {                                        	// if the points are 0 just show two 0s
+				if (Position < 3) {
+					*(DisplayLower+Buffer1+12) = ConvertNumUpper(0, (byte) *(DisplayLower+Buffer1+12));
+					*(DisplayLower+Buffer1+10) = ConvertNumUpper(0, (byte) *(DisplayLower+Buffer1+12));}
 				else {
-					*(DisplayUpper+Buffer1+12-2*i) = DispPattern1[Buffer2];
-					*(DisplayUpper+Buffer1+13-2*i) = DispPattern1[Buffer2+1];}}
-			else {                                    			// the same for the lower display row
-				if ((i==3) || (i==6)) {
-					*(DisplayLower+Buffer1+12-2*i) = 1 | DispPattern2[Buffer2];
-					*(DisplayLower+Buffer1+13-2*i) = 8 | DispPattern2[Buffer2+1];}
-				else {
-					*(DisplayLower+Buffer1+12-2*i) = DispPattern2[Buffer2];
-					*(DisplayLower+Buffer1+13-2*i) = DispPattern2[Buffer2+1];}} //
-			i++;}}
-	else {                                        			// if the points are 0
-		if (Position < 3) {
-			*(DisplayUpper+Buffer1+12) = DispPattern1[32]; // just show two 0s
-			*(DisplayUpper+Buffer1+13) = DispPattern1[33];
-			*(DisplayUpper+Buffer1+10) = DispPattern1[32];
-			*(DisplayUpper+Buffer1+11) = DispPattern1[33];}
-		else {
-			*(DisplayLower+Buffer1+12) = DispPattern2[32]; // just show two 0s
-			*(DisplayLower+Buffer1+13) = DispPattern2[33];
-			*(DisplayLower+Buffer1+10) = DispPattern2[32];
-			*(DisplayLower+Buffer1+11) = DispPattern2[33];}}}
+					*(DisplayLower+Buffer1+12) = ConvertNumLower(0, (byte) *(DisplayLower+Buffer1+12));
+					*(DisplayLower+Buffer1+10) = ConvertNumLower(0, (byte) *(DisplayLower+Buffer1+12));}}
+			break;}}
 
 void ShowNumber(byte Position, unsigned int Number) {
 	byte Buffer = 0;
@@ -1492,6 +1637,12 @@ void SelectSettings(byte Switch) {										// select system or game settings
 	case 0:																							// for the initial call
 		WriteUpper("SYSTEM SETTNGS  ");
 		WriteLower("                ");
+		byte CreditBuffer[4];
+		CreditBuffer[0] = 48;
+		CreditBuffer[1] = 49;
+		CreditBuffer[2] = 48;
+		CreditBuffer[3] = 48;
+		WritePlayerDisplay((char*) CreditBuffer, 0);
 		break;
 	case 3:																							// start button
 		if (AppByte) {																		// game settings selected
@@ -1510,10 +1661,24 @@ void SelectSettings(byte Switch) {										// select system or game settings
 		if (AppByte) {																		// switch between game and system settings
 			WriteUpper("SYSTEM SETTNGS  ");
 			WriteLower("                ");
+			if (APC_settings[DisplayType] != 3) {						// not a Sys11c display?
+				byte CreditBuffer[4];
+				CreditBuffer[0] = 48;
+				CreditBuffer[1] = 49;
+				CreditBuffer[2] = 48;
+				CreditBuffer[3] = 48;
+				WritePlayerDisplay((char*) CreditBuffer, 0);}
 			AppByte = 0;}
 		else {
 			WriteUpper("  GAME SETTNGS  ");
 			WriteLower("                ");
+			if (APC_settings[DisplayType] != 3) {						// not a Sys11c display?
+				byte CreditBuffer[4];
+				CreditBuffer[0] = 48;
+				CreditBuffer[1] = 50;
+				CreditBuffer[2] = 48;
+				CreditBuffer[3] = 48;
+				WritePlayerDisplay((char*) CreditBuffer, 0);}
 			AppByte = 1;}}}
 
 void RepeatSelectKey(byte Run) {											// Repeat the start button (No 3) if it is pressed permanently
@@ -1550,8 +1715,15 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 			AppByte--;}																			// and go one back to reach the last settings entry
 		/* no break */
 	case 0:																							// show the current setting
-		*(DisplayUpper+16) = LeftCredit[32 + 2 * ((AppByte+1) % 10)]; // show the actual settings number +1
-		*(DisplayUpper) = LeftCredit[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
+		if (APC_settings[DisplayType] != 3) {							// not a Sys11c display?
+			if (APC_settings[DisplayType] > 4) {						// numerical display?
+				*(DisplayLower) = ConvertNumLower((byte) ((AppByte+1) - ((AppByte+1) % 10)) / 10,(byte) *(DisplayLower));
+				*(DisplayLower+16) = ConvertNumLower((byte) ((AppByte+1) % 10),(byte) *(DisplayLower+16));}
+			else {
+				*(DisplayLower) = RightCredit[32+2*(((AppByte+1) - ((AppByte+1) % 10)) / 10)];
+				*(DisplayLower+1) = RightCredit[32+2*(((AppByte+1) - ((AppByte+1) % 10)) / 10)+1];
+				*(DisplayLower+16) = RightCredit[32+2*((AppByte+1) % 10)];
+				*(DisplayLower+17) = RightCredit[32+2*((AppByte+1) % 10)+1];}}
 		WriteUpper( SettingsList[AppByte].Text);					// show the text
 		SettingsList[AppByte].EventPointer(false);				// call the corresponding method and indicate no changes
 		break;
@@ -1569,9 +1741,15 @@ void HandleBoolSetting(bool change) {									// handling method for boolean set
 		else {
 			SettingsPointer[AppByte] = 1;}}
 	if (SettingsPointer[AppByte]) {											// show the current state of the setting
-		WriteLower("           YES  ");}
+		if (APC_settings[DisplayType] > 4) {							// not a Sys11c display?
+			WritePlayerDisplay((char*)"::::::1", 4);}
+		else {
+			WriteLower("           YES  ");}}
 	else {
-		WriteLower("            NO  ");}}
+		if (APC_settings[DisplayType] > 4) {							// not a Sys11c display?
+			WritePlayerDisplay((char*)"::::::0", 4);}
+		else {
+			WriteLower("            NO  ");}}}
 
 void RestoreDefaults(bool change) {										// restore the default settings
 	if (change) {																				// if the start button has been pressed
@@ -1632,7 +1810,11 @@ void HandleTextSetting(bool change) {									// handling method for text settin
 				SettingsPointer[AppByte] = SettingsList[AppByte].UpperLimit;} // go to the last entry
 			else {
 				SettingsPointer[AppByte]--;}}}								// if limit not reached just choose the previous entry
-	WriteLower(SettingsList[AppByte].TxTpointer+17*SettingsPointer[AppByte]);} // show the current text element
+	if (APC_settings[DisplayType] > 4) {								// numerical display?
+		WriteLower("                ");
+		DisplayScore(4,SettingsPointer[AppByte]);}
+	else {
+		WriteLower(SettingsList[AppByte].TxTpointer+17*SettingsPointer[AppByte]);}} // show the current text element
 
 void HandleVolumeSetting(bool change) {
 	HandleNumSetting(change);
