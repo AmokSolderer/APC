@@ -55,11 +55,7 @@ void USB_AttractMode() {                              // Attract Mode
 	Switch_Pressed = USB_SwitchHandler;
 	Switch_Released = USB_ReleasedSwitches;
 	WriteUpper("  USB  CONTROL  ");
-	WriteLower("                ");
-	DisplayScore(1, 1234567);
-	DisplayScore(2, 1234567);
-	DisplayScore(3, 1234567);
-	DisplayScore(4, 1234567);}
+	WriteLower("                ");}
 
 void USB_SwitchHandler(byte Switch) {
 	switch (Switch) {
@@ -202,19 +198,34 @@ void USB_SerialCommand() {
 			USB_SolTimes[SerialBuffer[0]-1] = SerialBuffer[1];}
 		break;
 	case 30:																						// set display 0 to (credit display)
-		WritePlayerDisplay((char*)SerialBuffer, 0);
+		if (APC_settings[DisplayType] > 4) {
+			DisplayBCD(0, SerialBuffer);}
+		else {
+			WritePlayerDisplay((char*)SerialBuffer, 0);}
 		break;
 	case 31:																						// set display 1 to
-		WritePlayerDisplay((char*)SerialBuffer, 1);
+		if (APC_settings[DisplayType] > 4) {
+			DisplayBCD(1, SerialBuffer);}
+		else {
+			WritePlayerDisplay((char*)SerialBuffer, 1);}
 		break;
 	case 32:																						// set display 2 to
-		WritePlayerDisplay((char*)SerialBuffer, 2);
+		if (APC_settings[DisplayType] > 4) {
+			DisplayBCD(2, SerialBuffer);}
+		else {
+			WritePlayerDisplay((char*)SerialBuffer, 2);}
 		break;
 	case 33:																						// set display 3 to
-		WritePlayerDisplay((char*)SerialBuffer, 3);
+		if (APC_settings[DisplayType] > 4) {
+			DisplayBCD(3, SerialBuffer);}
+		else {
+			WritePlayerDisplay((char*)SerialBuffer, 3);}
 		break;
 	case 34:																						// set display 4 to
-		WritePlayerDisplay((char*)SerialBuffer, 4);
+		if (APC_settings[DisplayType] > 4) {
+			DisplayBCD(4, SerialBuffer);}
+		else {
+			WritePlayerDisplay((char*)SerialBuffer, 4);}
 		break;
 	case 40:																						// get status of switch #
 		if (SerialBuffer[0] < 65) {												// max 64 switches

@@ -1235,6 +1235,26 @@ void BlinkScore(byte State) {													// State = 0 -> stop blinking / State 
 				Timer = 0;}
 			ShowPoints(Player);}}}
 
+void DisplayBCD (byte Position, byte* BCDnumber) {		// displays BCD values on numerical displays
+	if (Position) {																			// player display?
+		if (Position < 3) {																// upper row
+			Position--;
+			for(byte c=0; c<7; c++) {
+				*(DisplayLower+2+16*Position+2*c) = ConvertNumUpper(*(BCDnumber+c),(byte) *(DisplayLower+2+16*Position+2*c));
+				if (128 & *(BCDnumber+c)) {										// comma needed?
+					*(DisplayLower+3+16*Position+2*c) = 1 | *(DisplayLower+3+16*Position+2*c);}}}
+		else {																						// lower row
+			Position = Position - 3;
+			for(byte c=0; c<7; c++) {
+				*(DisplayLower+2+16*Position+2*c) = ConvertNumLower(*(BCDnumber+c),(byte) *(DisplayLower+2+16*Position+2*c));
+				if (128 & *(BCDnumber+c)) {
+					*(DisplayLower+3+16*Position+2*c) = 128 | *(DisplayLower+3+16*Position+2*c);}}}}
+	else {																							// credit display
+		*(DisplayLower) = ConvertNumUpper((byte) *BCDnumber,(byte) *(DisplayLower));
+		*(DisplayLower+16) = ConvertNumUpper((byte) *(BCDnumber+1),(byte) *(DisplayLower+16));
+		*(DisplayLower) = ConvertNumLower((byte) *(BCDnumber+2),(byte) *(DisplayLower));
+		*(DisplayLower+16) = ConvertNumLower((byte) *(BCDnumber+3),(byte) *(DisplayLower+16));}}
+
 
 void DisplayScore (byte Position, unsigned int Score) {
 	byte i=0;                                       		// use a private counter
@@ -1307,11 +1327,11 @@ void DisplayScore (byte Position, unsigned int Score) {
 					if (Position < 3) {                       	// depending on the player number show it in the upper display row
 						*(DisplayLower+Buffer1+12-2*i) = ConvertNumUpper(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
 						if ((i==3) || (i==6)) {
-							*(DisplayLower+Buffer1+13-2*i) = 128 | *(DisplayLower+Buffer1+13-2*i);}} // add a comma if necessary
+							*(DisplayLower+Buffer1+13-2*i) = 1 | *(DisplayLower+Buffer1+13-2*i);}} // add a comma if necessary
 					else {                                    	// the same for the lower display row
 						*(DisplayLower+Buffer1+12-2*i) = ConvertNumLower(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
 						if ((i==3) || (i==6)) {
-							*(DisplayLower+Buffer1+13-2*i) = 1 | *(DisplayLower+Buffer1+13-2*i);}}
+							*(DisplayLower+Buffer1+13-2*i) = 128 | *(DisplayLower+Buffer1+13-2*i);}}
 					i++;}}
 			else {                                        	// if the points are 0 just show two 0s
 				if (Position < 3) {
