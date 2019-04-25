@@ -14,7 +14,7 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards, at a price of well below 100€ per board. A more detailed calculation of the costs can be found in the [APC wiki](https://github.com/AmokSolderer/APC/wiki/Home).
 
-However, at the moment the APC cannot run the original Williams EPROM software. For this, someone has to write an interface to PinMame and this someone is definitely not me. Instead this board is meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an API providing the necessary commands to make this a lot easier, but you still have to code the game specific part by yourself.
+At the moment the APC cannot run the original Williams EPROM software, but we're working on a solution to conntect the APC via USB to PinMame. However, this board is mainly meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an API providing the necessary commands to make this a lot easier, but you still have to code the game specific part by yourself. But the new USB control mode is not only meant for PinMame, but also for the [Mission Pinball Framework](http://missionpinball.org/), which would be an alternative to coding.
 
 To see the APC in action take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
 
@@ -30,11 +30,11 @@ The LED expansion board is a self made board to control WS2812 based LED-Strips 
 
 Basically the hardware extensions interface is an 8 bit bus with several enable signals which can be used for all kinds of additional hardware.
 
-## Current Status (March 2019)
+## Current Status (April 2019)
 
 ### Hardware
 
-The APC hardware status is mature. I have version 2.0 in use for more than a year now without anything to complain about. Beginning of march 2019 I built a version 2.1 board which spared some components and had some slight layout changes. The version in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware) is 2.2 which has just one capacitor changed to SMD and the corresponding line removed.
+The APC hardware status is mature. I have version 2.0 in use for more than a year now without anything to complain about. Beginning of march 2019 I built a version 2.1 board which spared some components and had some slight layout changes. The version in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware) is 2.3 which has the Display Segments 1 connector enlarged to 12 pins to ease the use of System7 and System9 displays.
 
 I have tested the APC in a Black Knight (System 7), a Pinbot (System 11a) and a Rollergames (System 11c), but I checked the connector pinouts and it should work with System 3,4,6 and 9 as well as the compatible Data East machines also.
 
@@ -51,17 +51,16 @@ The software consists of two parts: the operating system APC.ino and the game sp
 
 I have written game codes for my Black Knight and Pinbot. They are still not final, but good enough to have fun with and to use as a reference when writing own code. Additionally there's a Base Code which should serve as a starting point for you to do your own game. It contains the very basics of a pinball game and it can be easily adapted to your machine. As a startup guide how to start writing game code I have written a short tutorial in the [wiki](https://github.com/AmokSolderer/APC/wiki) section.
 
-Please note that I have equipped my Black Knight with a [special kind of display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha) and the APC currently does not support the original displays. This is not because it would be difficult to make them work (it is actually quite easy), but how to implement a menu system when your display can only show numbers? Additionally it would be quite cumbersome to debug some game software without the display being able to show letters. Therfore I recommend to use an early System11 display which has at least one row with alphanumeric displays (or build my System7Alpha).
+Please note that I have equipped my Black Knight with a [special kind of display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha) and that advanced APC commands like scrolling are currently not usable with pre System11 displays. This is because I think that these displays are not suited for homebrew machines. If you do all the work needed to do your own game code, you'd for sure want to have a display with letters, otherwise you wouldn't be able to even have a decent high score list. Additionally it would be quite cumbersome to debug some game software without the display being able to show letters. Therfore I recommend to use an early System11 display which has at least one row with alphanumeric displays (or build my System7Alpha). However, the basic software support is implemented, which means you can use the old displays without any restrictions you just have to do a bit more coding to get all the features. And if you just want to use them with PinMame to replace your old boards these displays will work perfectly well as soon as the PinMame support is completely done.
+
+To make it easier to start doing your own game I did a Base Code which provides basic pinball funtionality and should work in all machines with only small adaptions.
 
 ### To Do
 
-I have just put the APC in a Rollergames. This required three cables to be extended a bit, since the auxiliary boards of this System11c machine makes the wiring quite inflexible and these three cable are just too short (see the Preparation section in the Wiki for details). For the hardware this is no big deal, but the display will require some adaption in the software. To make this work I just started a Base Code which provides basic pinball funtionality and should work in all machines with only small adaptions.
+Apart from writing new game code and generating sound samples the following software improvements come to my mind:
 
-However apart from writing new game code and generating sound samples the following software improvements come to my mind:
-
-* Add a mode for the APC being controlled by a PC via USB. This would enable PinMame or the Mission Pinball Framework to use the APC. With PinMame, the APC could also be used as a replacement for old boards and the MPF could ease the design of homebrew games. (coming next)
+* Add a mode for the APC being controlled by a PC via USB. This would enable PinMame or the Mission Pinball Framework to use the APC. With PinMame, the APC could also be used as a replacement for old boards and the MPF could ease the design of homebrew games. (USB mode is done, but just tested with a terminal programm. Tests with PinMame and MPF are next)
 * Implementation of a better error handler
-* Think about how to implement the early displays, as the _numbers only_ displays of the System3 to 7 machines are not supported at the moment - mainly because I don't like them (I want a highscore list). I'm just not sure how to handle menus and so on - may be use the serial monitor of the Arduino IDE to show them on a PC or add a bluetooth module to the APC and do the settings with an APP on your smartphone...
 
 ## Why this page?
 
