@@ -195,7 +195,7 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
       Settings_Enter();}
 		break;
 	case 3:																							// start game
-		if (BC_CountBallsInTrunk() == BC_InstalledBalls || (BC_CountBallsInTrunk() == BC_InstalledBalls-1 && Switch[BC_PlungerLaneSwitch])) { // Ball missing?
+		if (BC_CountBallsInTrunk() == BC_InstalledBalls || (BC_CountBallsInTrunk() == BC_InstalledBalls-1 && QuerySwitch(BC_PlungerLaneSwitch))) { // Ball missing?
 			Switch_Pressed = DummyProcess;                  // Switches do nothing
       KillAllTimers();
       ByteBuffer3 = 0;
@@ -232,7 +232,7 @@ void BC_AddPlayer() {
 
 void BC_CheckForLockedBalls(byte Event) {             // check if balls are locked and release them
 	UNUSED(Event);
-	if (Switch[BC_OutholeSwitch]) {                     // for the outhole
+	if (QuerySwitch(BC_OutholeSwitch)) {                     // for the outhole
 		ActA_BankSol(BC_OutholeKicker);}
 }																											// add the locks of your game here
 
@@ -242,7 +242,7 @@ void BC_NewBall(byte Balls) {                         // release ball (Event = e
 		*(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];} 	// show current ball in left credit
 	BlinkScore(1);																			// start score blinking
 	Switch_Released = BC_CheckShooterLaneSwitch;
-	if (!Switch[BC_PlungerLaneSwitch]) {
+	if (!QuerySwitch(BC_PlungerLaneSwitch)) {
 		ActA_BankSol(BC_ShooterLaneFeeder);               // release ball
 		Switch_Pressed = BC_BallReleaseCheck;             // set switch check to enter game
 		CheckReleaseTimer = ActivateTimer(5000, Balls-1, BC_CheckReleasedBall);} // start release watchdog
@@ -277,11 +277,11 @@ void BC_ResetBallWatchdog(byte Switch) {              // handle switches during 
 
 void BC_SearchBall(byte Counter) {										// ball watchdog timer has run out
 	BallWatchdogTimer = 0;
-	if (Switch[BC_OutholeSwitch]) {
+	if (QuerySwitch(BC_OutholeSwitch)) {
 		BlockOuthole = false;
 		ActivateTimer(1000, 0, BC_ClearOuthole);}
 	else {
-		if (Switch[BC_PlungerLaneSwitch]) {								// if ball is waiting to be launched
+		if (QuerySwitch(BC_PlungerLaneSwitch)) {					// if ball is waiting to be launched
 			BallWatchdogTimer = ActivateTimer(30000, 0, BC_SearchBall);}	// restart watchdog
 		else {  																					// if ball is really missing
 			byte c = BC_CountBallsInTrunk();								// recount all balls
@@ -311,7 +311,7 @@ void BC_SearchBall(byte Counter) {										// ball watchdog timer has run out
 byte BC_CountBallsInTrunk() {
 	byte Balls = 0;
 	for (i=0; i<BC_InstalledBalls; i++) {               // check how many balls are on the ball ramp
-		if (Switch[*(BC_BallThroughSwitches+i)]) {
+		if (QuerySwitch(*(BC_BallThroughSwitches+i))) {
 			if (Balls < i) {
 				return 5;}                                    // send warning
 			Balls++;}}
@@ -331,7 +331,7 @@ void BC_CheckReleasedBall(byte Balls) {               // ball release watchdog
 	byte c = BC_CountBallsInTrunk();
 	if (c == Balls) {                             			// expected number of balls in trunk
 		WriteUpper("  BALL MISSING  ");
-		if (Switch[BC_OutholeSwitch]) {                   // outhole switch still active?
+		if (QuerySwitch(BC_OutholeSwitch)) {                   // outhole switch still active?
 			ActA_BankSol(BC_OutholeKicker);}}								// shove the ball into the trunk
 	else {																							//
 		if (c == 5) {																			// balls not settled
@@ -367,7 +367,7 @@ void BC_GameMain(byte Event) {                        // game switch events
 
 void BC_ClearOuthole(byte Event) {
 	UNUSED(Event);
-	if (Switch[BC_OutholeSwitch]) {                     // outhole switch still active?
+	if (QuerySwitch(BC_OutholeSwitch)) {                     // outhole switch still active?
 		if (!BlockOuthole && !C_BankActive) {							// outhole blocked?
 			BlockOuthole = true;														// block outhole until this ball has been processed
 			ActivateSolenoid(30, BC_OutholeKicker);         // put ball in trunk
@@ -388,7 +388,7 @@ void BC_BallEnd(byte Event) {
 //				if (Switch[41+i]) {
 //					InLock++;}}}
 		WriteLower(" BALL   ERROR   ");
-		if (Switch[BC_OutholeSwitch]) {                   // ball still in outhole?
+		if (QuerySwitch(BC_OutholeSwitch)) {                   // ball still in outhole?
 			ActA_BankSol(BC_OutholeKicker);                 // make the coil a bit stronger
 			ActivateTimer(2000, Event, BC_BallEnd);}        // and come back in 2s
 		else {
