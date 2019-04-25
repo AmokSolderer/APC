@@ -51,8 +51,8 @@ bool SDfound = false;                                 // SD card present?
 byte SwitchStack = 0;                                 // determines which switch events stack is active
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
 byte SwEvents[2];                                     // contains the number of pending switch events in each stack
-bool Switch[SwMax+3];                                 // stores the present status of all switches (Advance is 72, HighScoreRest is 71)
-bool SwHistory[SwMax+3];                              // stores the previous switch status
+//bool Switch[SwMax+3];                                 // stores the present status of all switches (Advance is 72, HighScoreRest is 71)
+//bool SwHistory[SwMax+3];                              // stores the previous switch status
 uint32_t SwitchRows[10];															// stores the present status of all switch rows (0 means switch is active)
 uint32_t SwPrevious[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the previous status of all switch rows
 int SwDrv = 0;                                        // switch driver being accessed at the moment
@@ -803,7 +803,8 @@ void DummyProcess(byte Dummy) {
 }
 
 bool QuerySwitch(byte Switch) {												// return status of switch
-	return !(SwitchRows[(Switch - (Switch % 8))/8] & (Switch % 8));}
+	Switch--;																						// arrays start with 0
+	return !(SwitchRows[(Switch - (Switch % 8))/8] & SwitchMask[Switch % 8]);}
 
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
 	byte i = 1;                                     		// reset counter

@@ -89,7 +89,7 @@ void USB_ReleasedSwitches(byte Switch) {
 
 void USB_Testmode(byte Dummy) {												// enter system settings if advance button still pressed
 	UNUSED(Dummy);
-	if (Switch[72]) {
+	if (QuerySwitch(72)) {
 		SerialCommand = 0;
 		Settings_Enter();}
 	else {
@@ -229,7 +229,7 @@ void USB_SerialCommand() {
 		break;
 	case 40:																						// get status of switch #
 		if (SerialBuffer[0] < 65) {												// max 64 switches
-			if (Switch[SerialBuffer[0]]) {									// query state
+			if (QuerySwitch(SerialBuffer[0])) {							// query state
 				Serial.write((byte) 1);}
 			else {
 				Serial.write((byte) 0);}}

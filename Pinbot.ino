@@ -313,9 +313,9 @@ void PB_AttractModeSW(byte Select) {
 		Multiballs = 1;
 		Bonus = 1;
 		BonusMultiplier = 1;
-		if (Switch[49] || Switch[50] || Switch[51]) {			// any drop target down?
+		if (QuerySwitch(49) || QuerySwitch(50) || QuerySwitch(51)) {			// any drop target down?
 			ActA_BankSol(4);}																// reset it
-		if (!Switch[44]) {																// ramp in up state?
+		if (!QuerySwitch(44)) {														// ramp in up state?
 			ActA_BankSol(6);}																// put it down
 		ActivateSolenoid(0, 12);                          // turn off playfield GI
 		AfterSound = PB_GameStart;                        // release a new ball (2 expected balls in the trunk)
@@ -370,13 +370,13 @@ void AddPlayerSW(byte Switch) {
 
 void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are locked and release them
 	UNUSED(Dummy);
-	if (Switch[16]) {                                   // for the outhole
+	if (QuerySwitch(16)) {                              // for the outhole
 		ActA_BankSol(1);}
-	if (Switch[38]) {                                   // for the single eject hole
+	if (QuerySwitch(38)) {                              // for the single eject hole
 		ActA_BankSol(3);}
-	if (Switch[25] || Switch[26]) {                     // for the eyes
-		if (Switch[47]) {																	// visor is open
-			if (Switch[25]) {																// left eye
+	if (QuerySwitch(25) || QuerySwitch(26)) {           // for the eyes
+		if (QuerySwitch(47)) {														// visor is open
+			if (QuerySwitch(25)) {													// left eye
 				ActA_BankSol(7);}															// eject ball
 			else {																					// right eye
 				ActA_BankSol(8);}}														// eject ball
@@ -384,7 +384,7 @@ void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are lock
 			ActivateSolenoid(0, 13);												// activate visor motor
 			ActivateTimer(2000, 0, PB_OpenVisor);}}					// ignore the visor switch for 2 seconds
 	else {																							// no balls in lock
-		if (!Switch[46]) {																// visor not closed
+		if (!QuerySwitch(46)) {																// visor not closed
 			ActivateSolenoid(0, 13);												// activate visor motor
 			ActivateTimer(2000, 0, PB_CloseVisor);}}}				// ignore the visor switch for 2 seconds
 
@@ -410,14 +410,14 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 		PB_Chest_Status[Player] = PB_Chest_Status[Player] - 100; // use it as a counter for opened visors
 		PB_LampsToLight = 1;
 		PB_ChestMode = 0;                                 // indicate an open visor
-		if (!Switch[47]) {                                // visor not already open?
+		if (!QuerySwitch(47)) {                           // visor not already open?
 			PB_OpenVisorFlag = true;
 			ActivateSolenoid(0, 13);}                       // open visor
 		PB_EyeBlink(1);
 		PB_ChestPatterns = (byte*)PB_WalkingLines;        // set chest lamps pattern
 		PB_ChestLightsTimer = ActivateTimer(500, 0, PB_StartChestPattern);} // start player
 	else {
-		if (!Switch[46]) {                                // visor not already closed?
+		if (!QuerySwitch(46)) {                           // visor not already closed?
 			PB_CloseVisorFlag = true;
 			ActivateSolenoid(0, 13);}                       // close visor
 		if (PB_LitChestLamps) {                           // chest lamps lit?
@@ -467,7 +467,7 @@ void PB_GiveBall(byte Balls) {
 	if (game_settings[PB_BallSaver]) {									// activate ball saver if enabled
 		PB_BallSave = 1;}
 	PB_SkillShot = true;                                // the first shot is a skill shot
-	if (!Switch[20]) {																	// ball not yet in shooter lane?
+	if (!QuerySwitch(20)) {															// ball not yet in shooter lane?
 		Switch_Released = DummyProcess;
 		ActA_BankSol(2);                          				// release ball
 		Switch_Pressed = PB_BallReleaseCheck;             // set switch check to enter game
@@ -541,7 +541,7 @@ void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
 	byte c = PB_CountBallsInTrunk();
 	if (c == Balls) {                             			// expected number of balls in trunk
 		WriteUpper("  BALL MISSING");
-		if (Switch[16]) {                                 // outhole switch still active?
+		if (QuerySwitch(16)) {                            // outhole switch still active?
 			ActA_BankSol(1);}}															// shove the ball into the trunk
 	else {																							//
 		if (c == 5) {																			// balls not settled
@@ -559,7 +559,7 @@ void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
 byte PB_CountBallsInTrunk() {
 	byte Balls = 0;
 	for (i=0; i<2; i++) {                               // check how many balls are on the ball ramp
-		if (Switch[17+i]) {
+		if (QuerySwitch(17+i)) {
 			if (Balls < i) {
 				return 5;}                                    // send warning
 			Balls++;}}
@@ -567,11 +567,11 @@ byte PB_CountBallsInTrunk() {
 
 void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
 	BallWatchdogTimer = 0;
-	if (Switch[16]) {																		// ball in outhole?
+	if (QuerySwitch(16)) {															// ball in outhole?
 		BlockOuthole = false;
 		ActivateTimer(1000, 0, PB_ClearOuthole);}
 	else {
-		if (Switch[20]) {																	// if ball is waiting to be launched
+		if (QuerySwitch(20)) {														// if ball is waiting to be launched
 			BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}	// restart watchdog
 		else {  																					// if ball is really missing
 			byte c = PB_CountBallsInTrunk();								// recount all balls
@@ -587,7 +587,7 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
 				else {
 					byte c2 = 0;
 					for (i=0; i<2; i++) {                       // count balls in lock
-						if (Switch[25+i]) {
+						if (QuerySwitch(25+i)) {
 							c2++;}}
 					if (c2 > InLock) {													// more locked balls found than expected?
 						PB_HandleLock(0);													// lock them
@@ -602,7 +602,7 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
 						Counter++;
 						if (Counter == 9) {												// all coils fired?
 							Counter = 0;}														// start again
-						if (Switch[46] && !SolenoidStatus(13)) {	// visor closed and motor not active?
+						if (QuerySwitch(46) && !SolenoidStatus(13)) {	// visor closed and motor not active?
 							ActivateSolenoid(0, 13);								// open it enough to deactivate switch 46
 							ActivateTimer(2000, 0, PB_CloseVisor);}	// and prepare to close it again
 						BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}}}}}} // come again in 1s if no switch is activated
@@ -617,7 +617,7 @@ void PB_CloseVisor(byte Dummy) {
 
 void PB_ClearOuthole(byte Event) {
 	UNUSED(Event);
-	if (Switch[16]) {                                   // outhole switch still active?
+	if (QuerySwitch(16)) {                                   // outhole switch still active?
 		if (!BlockOuthole && !C_BankActive) {							// outhole blocked?
 			BlockOuthole = true;														// block outhole until this ball has been processed
 			ActivateSolenoid(30, 1);                        // put ball in trunk
@@ -1011,7 +1011,7 @@ void PB_AddExBall() {
 		Lamp[PB_ExBallLamps[c]] = true;}}
 
 void PB_AfterExBallRelease(byte Event) {
-	if (Switch[20]) {                                   // ball still in the shooting lane?
+	if (QuerySwitch(20)) {                                   // ball still in the shooting lane?
 		ActivateTimer(2000, Event, PB_AfterExBallRelease);}  // come back in2s
 	else {                                              // ball has been shot
 		RemoveBlinkLamp(33);
@@ -1072,12 +1072,12 @@ void PB_EyeBlink(byte State) {												// Blink lock flashers
 	if ((State > 1) || ((State == 1) && !Timer)) {
 		if (State == 2) {
 			ReleaseSolenoid (10);
-			if (!Switch[25]) {
+			if (!QuerySwitch(25)) {
 				ActivateSolenoid(0, 18);}
 			State = 3;}
 		else {
 			ReleaseSolenoid (18);
-			if (!Switch[26]) {
+			if (!QuerySwitch(26)) {
 				ActivateSolenoid(0, 10);}
 			State = 2;}
 		Timer = ActivateTimer(500, State, PB_EyeBlink);}
@@ -1192,9 +1192,9 @@ void PB_HandleLock(byte State) {
 		PB_IgnoreLock = false;
 		InLock++;}
 	byte c = 0;
-	if (Switch[25]) {                                   // count locked balls
+	if (QuerySwitch(25)) {                              // count locked balls
 		c++;}
-	if (Switch[26]) {
+	if (QuerySwitch(26)) {
 		c++;}
 	if (c != InLock) {                                  // not as expected?
 		InLock = c;                                       // take the new count value
@@ -1279,11 +1279,11 @@ void PB_ClearOutLock(byte CloseVisor) {
 	if (SolenoidStatus(13)) {                           // visor motor on?
 		ActivateTimer(1100, CloseVisor, PB_ClearOutLock);} // come back later
 	else {
-		if (Switch[47]) {                                 // visor is open
-			if (Switch[25]) {                               // left eye?
+		if (QuerySwitch(47)) {                            // visor is open
+			if (QuerySwitch(25)) {                          // left eye?
 				ActA_BankSol(7);}                          		// eject it
 			else {
-				if (Switch[26]) {                             // right eye
+				if (QuerySwitch(26)) {                        // right eye
 					ActA_BankSol(8);}}                       		// eject it
 			if (CloseVisor) {                               // closed visor requested?
 				ActivateTimer(1000, 13, DelaySolenoid);       // start visor motor in 1s
@@ -1295,7 +1295,7 @@ void PB_ClearOutLock(byte CloseVisor) {
 
 void PB_HandleDropTargets(byte Target) {
 	PB_DropWait = false;																// stop ignoring drop target switches
-	if (Switch[49] && Switch[50] && Switch[51]) {				// all targets down
+	if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {	// all targets down
 		if (PB_DropTimer) {																// any targets down before?
 			KillTimer(PB_DropTimer);												// turn off timer
 			PB_DropTimer = 0;
@@ -1375,10 +1375,10 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 		InLock = 0;
 		if (Multiballs == 1) {
 			for (i=0; i<2; i++) {                         	// check how many balls are on the ball ramp
-				if (Switch[25+i]) {
+				if (QuerySwitch(25+i)) {
 					InLock++;}}}
 		WriteLower(" BALL   ERROR ");
-		if (Switch[16]) {                                 // ball still in outhole?
+		if (QuerySwitch(16)) {                            // ball still in outhole?
 			ActA_BankSol(1);                             		// make the coil a bit stronger
 			ActivateTimer(2000, Event, PB_BallEnd);}        // and come back in 2s
 		else {
@@ -1795,14 +1795,14 @@ void PB_Testmode(byte Select) {
 								case 3:
 									AppByte2 = 1;
 									if (AppBool) {
-										if (Switch[46]) {
+										if (QuerySwitch(46)) {
 											AppBool = false;
 											PB_Testmode(3);}
 										else {
 											WriteUpper("CLOSING VISOR ");
 											ActivateSolenoid(0, 13);}}
 									else {
-										if (Switch[47]) {
+										if (QuerySwitch(47)) {
 											AppBool = true;
 											PB_Testmode(3);}
 										else {
