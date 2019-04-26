@@ -35,8 +35,8 @@ const byte RightCredit[118] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // Pattern P Q R S T U V W X Y Z
 
 const int LampPeriod = 2;                             // Lamp cycle period in ms
-const bool NoLamps[LampMax+1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-const bool AllLamps[LampMax+1] = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+const byte NoLamps[8] = {0,0,0,0,0,0,0,0};
+const byte AllLamps[8] = {255,255,255,255,255,255,255,255};
 
 // system variables
 
@@ -51,8 +51,6 @@ bool SDfound = false;                                 // SD card present?
 byte SwitchStack = 0;                                 // determines which switch events stack is active
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
 byte SwEvents[2];                                     // contains the number of pending switch events in each stack
-//bool Switch[SwMax+3];                                 // stores the present status of all switches (Advance is 72, HighScoreRest is 71)
-//bool SwHistory[SwMax+3];                              // stores the previous switch status
 uint32_t SwitchRows[10];															// stores the present status of all switch rows (0 means switch is active)
 uint32_t SwPrevious[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the previous status of all switch rows
 int SwDrv = 0;                                        // switch driver being accessed at the moment
@@ -66,17 +64,17 @@ byte DisplayUpper[32];                                // changeable display buff
 byte DisplayLower[32];
 byte DisplayUpper2[32];                               // second changeable display buffer
 byte DisplayLower2[32];
-const bool *LampPattern;                              // determines which lamp pattern is to be shown (for Lamps > 8)
-const bool *LampBuffer;
+const byte *LampPattern;                              // determines which lamp pattern is to be shown (for Lamps > 8)
+const byte *LampBuffer;
 byte StrobeLightsTimer = 0;
-bool Lamp[LampMax+1];                                 // changeable lamp status buffer
+byte LampColumns[8];																	// stores the status of all lamp columns
 byte LEDCommandBytes = 0;															// number of command bytes to be send to the LED exp board
 byte LEDCommand[20];																	// command bytes to be send to the LED exp board
 byte LampWait = 1;                                    // counter for lamp waiting time until next column is applied
 const struct LampPat *PatPointer;                     // Pointer to the lamp flow to be shown
 struct LampPat {                                      // a lamp pattern sequence played by ShowLampPatterns
 	uint16_t Duration;
-	bool Pattern[LampMax-7];};
+	byte Pattern[7];};
 struct LampFlow {                                     // defines a series of lamp patterns shown by AttractLampCycle
 	uint16_t Repeat;
 	const struct LampPat *FlowPat;};
@@ -275,8 +273,8 @@ void setup() {
 //	for (i=1; i< SwMax+1; i++) {
 //		Switch[i] = false;
 //		SwHistory[i] = 0; }                               // initialize switch status
-	for (i=0; i<LampMax; i++) {                         // initialize lamp status
-		Lamp[i+1] = false; }
+	for (i=0; i<8; i++) {                         // initialize lamp status
+		LampColumns[i+1] = 0; }
 	for (i=0; i< 8; i++) {                              // initialize switch input pins
 		pinMode(54 + i, INPUT); }
 	g_Sound.begin(44100, 100);													// initialize sound
@@ -299,7 +297,7 @@ void setup() {
 	DispPattern2 = AlphaLower;
 	DispRow1 = DisplayUpper;
 	DispRow2 = DisplayLower;
-	LampPattern = NoLamps;
+	//LampPattern = NoLamps;
 	digitalWrite(Blanking, HIGH);                       // Release the blanking
 	if (SD.begin(52, SD_SCK_MHZ(20))) {                 // look for an SD card and set max SPI clock to 20MHz
 		WriteUpper("SD CARD FOUND   ");
@@ -530,15 +528,10 @@ void TC7_Handler() {                                  // interrupt routine - run
 			if (LampCol == 8){                              // max column reached?
 				LampCol = 0;
 				LampColMask = 2;
-				for (i=0; i<8; i++) {                         // write select pattern to buffer
-					if (*(Lamp+i+1)) {
-						REG_PIOC_SODR = c;}
-					c = c<<1;}}
+				c = LampColumns[LampCol];}										// column 0 is always from LampColumns
 			else {
-				for (i=0; i<8; i++) {                         // write select pattern to buffer
-					if (*(LampPattern+LampCol*8+i+1)) {
-						REG_PIOC_SODR = c;}
-					c = c<<1;}}
+				c = *(LampPattern+LampCol);}									// columns > 0 are referenced via LampPattern
+			REG_PIOC_SODR = c<<1;														// write lamp pattern
 			REG_PIOC_SODR = 33554432;                       // use Sel1
 			REG_PIOC_CODR = AllSelects + AllData;           // clear all select signals and the data bus
 			REG_PIOC_SODR = LampColMask;
@@ -556,15 +549,10 @@ void TC7_Handler() {                                  // interrupt routine - run
 			REG_PIOC_CODR = AllData;
 			c = 2;
 			if (!LampCol){                                  // max column reached?
-				for (i=0; i<8; i++) {                         // write select pattern to buffer
-					if (*(Lamp+i+1)) {
-						REG_PIOC_SODR = c;}
-					c = c<<1;}}
+				c = LampColumns[LampCol];}
 			else {
-				for (i=0; i<8; i++) {                         // write select pattern to buffer
-					if (*(LampPattern+LampCol*8+i+1)) {
-						REG_PIOC_SODR = c;}
-					c = c<<1;}}
+				c = *(LampPattern+LampCol);}
+			REG_PIOC_SODR = c<<1;														// write lamp pattern
 			if (LEDFlag) {
 				LEDFlag = false;
 				REG_PIOC_CODR = Sel5;}                        // activate Sel5 falling edge
@@ -805,6 +793,18 @@ void DummyProcess(byte Dummy) {
 bool QuerySwitch(byte Switch) {												// return status of switch
 	Switch--;																						// arrays start with 0
 	return !(SwitchRows[(Switch - (Switch % 8))/8] & SwitchMask[Switch % 8]);}
+
+void TurnOnLamp(byte Lamp) {
+	Lamp--;
+	LampColumns[(Lamp - (Lamp % 8))/8] |= 1<<(Lamp % 8);}
+
+void TurnOffLamp(byte Lamp) {
+	Lamp--;
+	LampColumns[(Lamp - (Lamp % 8))/8] &= 255-(1<<(Lamp % 8));}
+
+bool QueryLamp(byte Lamp) {
+	Lamp--;
+	return LampColumns[(Lamp - (Lamp % 8))/8] & 1<<(Lamp % 8);}
 
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
 	byte i = 1;                                     		// reset counter
@@ -1408,7 +1408,10 @@ void BlinkLamps(byte BlTimer) {
 			c++;
 			if (c > 65) {                          					// max 64 blink timers possible (starting from 1)
 				ErrorHandler(3,BlTimer,BlinkingNo[BlTimer]);}}// show error 3
-		Lamp[BlinkingLamps[BlTimer][c]] = BlinkState[BlTimer]; // toggle the state of the lamps
+				if (BlinkState[BlTimer]) { 										// toggle the state of the lamps
+					TurnOnLamp(BlinkingLamps[BlTimer][c]);}
+				else {
+					TurnOffLamp(BlinkingLamps[BlTimer][c]);}
 		c++;}
 	BlinkState[BlTimer] = !BlinkState[BlTimer];         // invert the target state for the next run
 	BlinkTimer[BlTimer] = ActivateTimer(BlinkPeriod[BlTimer], BlTimer, BlinkLamps);} // and start a new timer
@@ -1465,7 +1468,7 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
 					b++;                                        // increase the number of active lamps found for this blink timer
 					if (BlinkingLamps[x][y] == LampNo) {        // is it the lamp to be removed?
 						BlinkingLamps[x][y] = 0;                  // delete it from the list
-						Lamp[LampNo] = false;                     // turn it off
+						TurnOffLamp(LampNo);                     	// turn it off
 						BlinkingNo[x]--;                          // decrease the number of lamps controlled by this timer
 						if (!BlinkingNo[x]) {                     // = 0?
 							KillTimer(BlinkTimer[x]);               // kill the timer
@@ -1507,9 +1510,9 @@ void ShowFileNotFound(String Filename) {							// show file not found message
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being zero
 	unsigned int Buffer = (PatPointer+Step)->Duration;  // buffer the duration for the current pattern
 	if (StrobeLightsTimer) {
-		LampBuffer = ((PatPointer+Step)->Pattern)-8;}     // show the pattern
+		LampBuffer = ((PatPointer+Step)->Pattern)-1;}     // show the pattern
 	else {
-		LampPattern = ((PatPointer+Step)->Pattern)-8;}    // show the pattern
+		LampPattern = ((PatPointer+Step)->Pattern)-1;}    // show the pattern
 	Step++;                                             // increase the pattern number
 	if (!((PatPointer+Step)->Duration)) {               // if the duration for the next pattern is 0
 		Step = 0;                                         // reset the pattern

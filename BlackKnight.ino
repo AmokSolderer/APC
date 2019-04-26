@@ -328,10 +328,10 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 				analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
 			else {
 				digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
-			for (i=0; i< LampMax+1; i++) {
-				Lamp[i] = false;}
-			LampPattern = Lamp;
-			Lamp[2] = true;                                 // turn on Ball in Play lamp
+			for (i=0; i< 8; i++) {
+				LampColumns[i] = 0;}
+			LampPattern = LampColumns;
+			TurnOnLamp(2);                                 	// turn on Ball in Play lamp
 			NoPlayers = 0;
 			WriteUpper("              ");
 			WriteLower("              ");
@@ -379,49 +379,49 @@ void NewBall(byte Balls) {                            // release ball (Event = e
 	//*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
 	LockChaseLight(1);
 	BlinkScore(1);																			// start score blinking
-	Lamp[36] = true;                                  	// bumper light on
+	TurnOnLamp(36);                                  		// bumper light on
 	for (byte i=0; i<4; i++) {                          // restore the drop target lamps of the current player
 		for (byte c=0; c < 3; c++) {       								// for all drop target banks
 			if (DropHits[(4*(Player-1))+i] > c) {
-				Lamp[DropTargets[i]+c] = true;}
+				TurnOnLamp(DropTargets[i]+c);}
 			else {
-				Lamp[DropTargets[i]+c] = false;}}}
+				TurnOffLamp(DropTargets[i]+c);}}}
 	if (LowerExBall[Player]) {                        	// restore extra ball lamps
-		Lamp[23] = true;}
+		TurnOnLamp(23);}
 	else {
-		Lamp[23] = false;}
+		TurnOffLamp(23);}
 	if (UpperExBall[Player]) {
-		Lamp[41] = true;}
+		TurnOnLamp(41);}
 	else {
-		Lamp[41] = false;}
+		TurnOffLamp(41);}
 	if (game_settings[TimedMagna]) {              			// if timed magna save mode
 		if (LeftMagna[Player]) {
 			if (LeftMagna[Player] == 5) {										// 5 seconds reached?
 				RemoveBlinkLamp(10);													// turn off blinking lamp
-				Lamp[10] = true;}															// and switch it on permanently
+				TurnOnLamp(10);}															// and switch it on permanently
 			else {
 				AddBlinkLamp(10, 150*LeftMagna[Player]);}}
 		else {
 			RemoveBlinkLamp(10);														// turn off blinking lamp
-			Lamp[10] = false;}															// and switch it off permanently
+			TurnOffLamp(10);}																// and switch it off permanently
 		if (RightMagna[Player]) {
 			if (RightMagna[Player] == 5) {									// 5 seconds reached?
 				RemoveBlinkLamp(9);														// turn off blinking lamp
-				Lamp[9] = true;}															// and switch it on permanently
+				TurnOnLamp(9);}																// and switch it on permanently
 			else {
 				AddBlinkLamp(9, 150*RightMagna[Player]);}}
 		else {
 			RemoveBlinkLamp(9);															// turn off blinking lamp
-			Lamp[9] = false;}}															// and switch it off permanently
+			TurnOffLamp(9);}}																// and switch it off permanently
 	else {
 		if (LeftMagna[Player]) {
-			Lamp[10] = true;}
+			TurnOnLamp(10);}
 		else {
-			Lamp[10] = false;}
+			TurnOffLamp(10);}
 		if (RightMagna[Player]) {
-			Lamp[9] = true;}
+			TurnOnLamp(9);}
 		else {
-			Lamp[9] = false;}}
+			TurnOffLamp(9);}}
 	Switch_Released = CheckShooterLaneSwitch;
 	if (!QuerySwitch(45)) {
 		ActivateSolenoid(0, 6);                          	// release ball
@@ -694,16 +694,16 @@ void GameMain(byte Event) {                           // game switch events
 			AddBlinkLamp(FirstMultLamp+BonusMultiplier-2, 250);
 			ActivateTimer(2000, FirstMultLamp+BonusMultiplier-2, SetBonusMultiplier);}
 		if (LowerExBall[Player]) {
-			Lamp[23] = false;
-			Lamp[47] = true;
-			Lamp[1] = true;
+			TurnOffLamp(23);
+			TurnOnLamp(47);
+			TurnOnLamp(1);
 			LowerExBall[Player] = false;
 			ExBalls++;}
 		break;
 	case 24:                                            // lower eject hole
 		Points[Player] += Multiballs * 5000;
 		ShowPoints(Player);
-		if (Lamp[24]) {                                   // lower lock lit?
+		if (QueryLamp(24)) {                              // lower lock lit?
 			LockedBalls[Player]++;
 			StartMultiball();}
 		else {
@@ -760,9 +760,9 @@ void GameMain(byte Event) {                           // game switch events
 		Points[Player] += Multiballs * 5000;
 		ShowPoints(Player);
 		if (UpperExBall[Player]) {
-			Lamp[41] = false;
-			Lamp[47] = true;
-			Lamp[1] = true;
+			TurnOffLamp(41);
+			TurnOnLamp(47);
+			TurnOnLamp(1);
 			UpperExBall[Player] = false;
 			ExBalls++;}
 		break;
@@ -798,7 +798,7 @@ void ClearOuthole(byte Event) {
 			ActivateSolenoid(20, 1);                        // put ball in trunk
 			if (LastChanceActive && InLock) {								// saved by last chance
 				BlockOuthole = false;													// remove outhole block
-				Lamp[24] = false;
+				TurnOffLamp(24);
 				RemoveBlinkLamp(11);                          // stop the blinking of the last chance lamps
 				RemoveBlinkLamp(12);
 				InLock--;                                     // decrease number of balls in lock
@@ -868,19 +868,15 @@ void BallEnd(byte Event) {
 				ActivateTimer(1000, 0, BallEnd);}
 			else {
 				LockedBalls[Player] = 0;
-				Lamp[24] = false;                             // unlight lower lock
+				TurnOffLamp(24);                             	// unlight lower lock
 				LockChaseLight(0);
 				RemoveBlinkLamp(40);
 				BlinkScore(0);																// stop score blinking
 				LastChance = false;                           // deactivate last chance
-				Lamp[11] = false;
-				Lamp[12] = false;
+				TurnOffLamp(11);
+				TurnOffLamp(12);
 				LastChanceOver = false;
 				LastChanceActive = false;
-				//        Lamp[FirstMultLamp] = false;
-				//        Lamp[FirstMultLamp+1] = false;
-				//        Lamp[FirstMultLamp+2] = false;
-				//        Lamp[FirstMultLamp+3] = false;
 				BonusToAdd = Bonus;
 				BonusCountTime = 20;
 				CountBonus(AppByte);}}}}
@@ -888,14 +884,14 @@ void BallEnd(byte Event) {
 void CountBonus(byte Balls) {
 	AppByte = Bonus % 10;
 	if (AppByte) {
-		Lamp[BonusLamp + AppByte - 1] = false;}
+		TurnOffLamp(BonusLamp + AppByte - 1);}
 	else {
 		AppByte = Bonus / 10;
-		Lamp[BonusLamp + 8 + AppByte] = false;
+		TurnOffLamp(BonusLamp + 8 + AppByte);
 		if (AppByte > 1) {
-			Lamp[BonusLamp + 7 + AppByte] = true;}
+			TurnOnLamp(BonusLamp + 7 + AppByte);}
 		for (i=48; i<57; i++) {
-			Lamp[i] = true;}}
+			TurnOnLamp(i);}}
 	Points[Player] += 1000;
 	ShowPoints(Player);
 	Bonus--;
@@ -905,7 +901,7 @@ void CountBonus(byte Balls) {
 		ActivateTimer(20+20*BonusCountTime, Balls, CountBonus);}
 	else {
 		if (BonusMultiplier > 1) {
-			Lamp[FirstMultLamp+BonusMultiplier-2] = false;
+			TurnOffLamp(FirstMultLamp+BonusMultiplier-2);
 			Bonus = BonusToAdd;
 			ShowBonus();
 			BonusMultiplier--;
@@ -947,7 +943,7 @@ void BallEnd2(byte Balls) {
 
 void BallEnd3(byte Balls) {
 	BlockOuthole = false;																// remove outhole block
-	Lamp[24] = false;                         					// lower lock lamp off
+	TurnOffLamp(24);                         						// lower lock lamp off
 	if (Player < NoPlayers) {                 					// last player?
 		Player++;
 		ActivateTimer(1000, Balls, NewBall);}
@@ -957,12 +953,12 @@ void BallEnd3(byte Balls) {
 			Ball++;
 			ActivateTimer(1000, Balls, NewBall);}
 		else {																						// game end
-			Lamp[36] = false;                     					// bumper light off
+			TurnOffLamp(36);                     						// bumper light off
 			ReleaseSolenoid(23);                  					// disable flipper fingers
 			ReleaseSolenoid(24);
 			//digitalWrite(SpcSolEnable, LOW);      				// disable special solenoids
 			CheckForLockedBalls(0);
-			Lamp[2] = false;                      					// turn off Ball in Play lamp
+			TurnOffLamp(2);                      						// turn off Ball in Play lamp
 			GameDefinition.AttractMode();}}}
 
 void CheckHighScore(byte Player) {                    // show congratulations
@@ -1045,7 +1041,7 @@ void EnterInitials(byte Event) {
 			WriteLower("TABLE  POS    ");
 			*(DisplayLower+28) = DispPattern2[32 + 2 * (ByteBuffer2+1)];
 			*(DisplayLower+29) = DispPattern2[33 + 2 * (ByteBuffer2+1)];
-			LampPattern = Lamp;
+			LampPattern = LampColumns;
 			ActivateSolenoid(0, 23);                      	// enable flipper fingers
 			ActivateSolenoid(0, 24);
 			ActivateTimer(2000, 0, BallEnd3);}
@@ -1085,8 +1081,8 @@ void AfterExBallRelease(byte Event) {
 		RemoveBlinkLamp(1);
 		RemoveBlinkLamp(47);
 		if (ExBalls) {                                    // player still has an extra balls
-			Lamp[1] = true;
-			Lamp[47] = true;}}}
+			TurnOnLamp(1);
+			TurnOnLamp(47);}}}
 
 void HandleLock(byte Event) {
 	UNUSED(Event);
@@ -1114,13 +1110,13 @@ void HandleLock(byte Event) {
 			else {                                          // less than 3 locked balls?
 				if ((Ball == APC_settings[NofBalls]) && !LastChanceOver) { // last ball and no last chance yet?
 					LastChance = true;                          // activate last chance
-					Lamp[11] = true;
-					Lamp[12] = true;}
+					TurnOnLamp(11);
+					TurnOnLamp(12);}
 				if (InLock > LockedBalls[Player]) {           // more balls in lock than player has?
 					InLock--;                                   // eject 1 ball
 					ActivateSolenoid(0, 7);}
 				else {
-					Lamp[24] = true;                            // light lower lock
+					TurnOnLamp(24);                            	// light lower lock
 					if (BallWatchdogTimer) {
 						KillTimer(BallWatchdogTimer);
 						BallWatchdogTimer = 0;}
@@ -1135,50 +1131,50 @@ void HandleDropTargets(byte Event) {
 		ResetDropTargets(Event);                          // and reset the targets
 		if ((Event==1) || (Event==3)) {                   // enable magna save if right target banks were hit
 			if (!game_settings[TimedMagna]) {								// timed magna feature off
-				Lamp[9] = true;
+				TurnOnLamp(9);
 				RightMagna[Player] = 1;}
 			else {																					// timed magna feature on
 				if (RightMagna[Player] < 5) {									// less than 5 magna seconds
 					RightMagna[Player]++;												// add one
 					if (RightMagna[Player] == 5) {							// 5 seconds reached?
 						RemoveBlinkLamp(9);												// turn off blinking lamp
-						Lamp[9] = true;}													// and switch it on permanently
+						TurnOnLamp(9);}														// and switch it on permanently
 					else {																			// 5 seconds not reached?
 						AddBlinkLamp(9, 150*RightMagna[Player]);}}}} // adapt blinking frequency
 		else {																						// enable magna save if left target banks were hit
 			if (!game_settings[TimedMagna]) {								// timed magna feature off
-				Lamp[10] = true;
+				TurnOnLamp(10);
 				LeftMagna[Player] = 1;}
 			else {																					// timed magna feature on
 				if (LeftMagna[Player] < 5) {									// less than 5 magna seconds
 					LeftMagna[Player]++;												// add one
 					if (LeftMagna[Player] == 5) {								// 5 seconds reached?
 						RemoveBlinkLamp(10);											// turn off blinking lamp
-						Lamp[10] = true;}													// and switch it on permanently
+						TurnOnLamp(10);}													// and switch it on permanently
 					else {																			// 5 seconds not reached?
 						AddBlinkLamp(10, 150*LeftMagna[Player]);}}}} // adapt blinking frequency
 		if (DropHits[(Player-1)*4+Event] < 3) {           // target bank cleared less than 3 times?
-			Lamp[DropTargets[Event]+DropHits[(Player-1)*4+Event]] = true; // turn on the appropriate arrow lamp
+			TurnOnLamp(DropTargets[Event]+DropHits[(Player-1)*4+Event]); // turn on the appropriate arrow lamp
 			DropHits[(Player-1)*4+Event]++;                 // and increase the counter for this target bank
 			if (DropHits[(Player-1)*4+Event] == 3) {        // target bank cleared 3 times?
 				if (PlayersExBalls[Player]) {                 // if the player did already get an extra ball
 					if ((DropHits[(Player-1)*4] == 3) && (DropHits[(Player-1)*4+1] == 3) && (DropHits[(Player-1)*4+2] == 3) && (DropHits[(Player-1)*4+3] == 3)) {
 						for (i=0; i<4; i++) {                     // for all drop target banks
 							DropHits[(Player-1)*4+i] = 0;           // clear their hits
-							Lamp[DropTargets[i]] = false;           // and their arrow lamps
-							Lamp[DropTargets[i]+1] = false;
-							Lamp[DropTargets[i]+2] = false;}
-						Lamp[23] = true;                          // turn on the lower extra ball lamp
+							TurnOffLamp(DropTargets[i]);           	// and their arrow lamps
+							TurnOffLamp(DropTargets[i]+1);
+							TurnOffLamp(DropTargets[i]+2);}
+						TurnOnLamp(23);                          	// turn on the lower extra ball lamp
 						LowerExBall[Player] = true;}}             // and enable the lower extra ball
 				else {                                        // if the player didn't get an extra ball yet
 					for (byte i=0 ; i < 2; i++) {
 						if ((DropHits[(Player-1)*4+i*2] == 3) && (DropHits[(Player-1)*4+i*2+1] == 3)) {
 							for (i=0; i<2; i++) {                   // for all drop target banks
 								DropHits[(Player-1)*4+i*2+i] = 0; 		// clear their hits
-								Lamp[DropTargets[i*2+i]] = false; 		// and their arrow lamps
-								Lamp[DropTargets[i*2+i]+1] = false;
-								Lamp[DropTargets[i*2+i]+2] = false;}
-							Lamp[41] = true;                        // turn on the upper extra ball lamp
+								TurnOffLamp(DropTargets[i*2+i]); 			// and their arrow lamps
+								TurnOffLamp(DropTargets[i*2+i]+1);
+								TurnOffLamp(DropTargets[i*2+i]+2);}
+							TurnOnLamp(41);                        	// turn on the upper extra ball lamp
 							PlayersExBalls[Player] = true;
 							UpperExBall[Player] = true;}}}}}}
 	else {                                              // not all targets cleared
@@ -1207,10 +1203,10 @@ void StartMultiball() {
 	DispRow1 = DisplayUpper2;
 	if (LastChance) {                                   // last chance avtive?
 		LastChance = false;                               // deactivate it
-		Lamp[11] = false;
-		Lamp[12] = false;}
+		TurnOffLamp(11);
+		TurnOffLamp(12);}
 	ActivateSolenoid(1000, 15);                         // ring the bell
-	Lamp[24] = false;                                   // unlight lower lock
+	TurnOffLamp(24);                                   	// unlight lower lock
 	if (LockedBalls[Player] == 3) {                     // 2 or 3 ball multiball?
 		Multiballs = 3;
 		AddBlinkLamp(32, 500);                            // let triple points lamp blink
@@ -1239,7 +1235,7 @@ void ClearLocks(byte Event) {
 
 void SetBonusMultiplier(byte Event) {                 // switch from blinking bonus multiplier lamp to permanent on
 	RemoveBlinkLamp(Event);
-	Lamp[Event] = true;}
+	TurnOnLamp(Event);}
 
 void AddBonus(byte BonusPts) {
 	byte OldBonusToAdd = BonusToAdd;
@@ -1258,30 +1254,30 @@ void ClearBonusLight(byte Step) {
 		Step = 0;}
 	if (Step == 9) {
 		for (i=BonusLamp; i<BonusLamp+9; i++) {
-			Lamp[i]  = false;}
+			TurnOffLamp(i);}
 		BonusToAdd--;}
 	else {
-		if (Lamp[BonusLamp+Step]) {
-			Lamp[BonusLamp+Step] = false;}
+		if (QueryLamp(BonusLamp+Step)) {
+			TurnOffLamp(BonusLamp+Step);}
 		else {
 			BonusToAdd--;}}
 	ActivateTimer(50, Step, SetBonusLight);}
 
 void SetBonusLight(byte Step) {
 	if (Step == 9) {
-		if (Lamp[BonusLamp+9] || Lamp[BonusLamp+10] || Lamp[BonusLamp+11] || Lamp[BonusLamp+12]) {
+		if (QueryLamp(BonusLamp+9) || QueryLamp(BonusLamp+10) || QueryLamp(BonusLamp+11) || QueryLamp(BonusLamp+12)) {
 			i = 0;
 			while (i < 3) {
-				if (Lamp[BonusLamp+9+i]) {
-					Lamp[BonusLamp+9+i] = false;
-					Lamp[BonusLamp+10+i] = true;
+				if (QueryLamp(BonusLamp+9+i)) {
+					TurnOffLamp(BonusLamp+9+i);
+					TurnOnLamp(BonusLamp+10+i);
 					i = 3;}
 				else {
 					i++;}}}
 		else {
-			Lamp[BonusLamp+9] = true;}}
+			TurnOnLamp(BonusLamp+9);}}
 	else {
-		Lamp[BonusLamp+Step] = true;}
+		TurnOnLamp(BonusLamp+Step);}
 	Step++;
 	if (BonusToAdd) {
 		ActivateTimer(50, Step, ClearBonusLight);}}
@@ -1298,9 +1294,9 @@ void ShowBonus() {                                    // set lamps on bonus mete
 				Count -= BonusValues[i];}                   	// reduce bonus accordingly
 			else {
 				Count -= 1;}
-			Lamp[BonusLamps[i]] = true;}                    // and turn the lamp on
+			TurnOnLamp(BonusLamps[i]);}                    // and turn the lamp on
 		else {
-			Lamp[BonusLamps[i]] = false;}}}                 // otherwise turn it off
+			TurnOffLamp(BonusLamps[i]);}}}                 // otherwise turn it off
 
 void EndRightMagna(byte Event) {
 	UNUSED(Event);
@@ -1352,29 +1348,29 @@ void LockChaseLight(byte ChaseLamp) {                 // controls the chase ligh
 		break;
 	case 40:                                          	// is it the first lamp?
 		if (!LockedBalls[Player]) {                       // is there no locked ball?
-			Lamp[42] = false;}                            	// turn off the last lamp
-		Lamp[21] = false;                               	// the middle lamp can always be switched off
+			TurnOffLamp(42);}                            		// turn off the last lamp
+		TurnOffLamp(21);                               		// the middle lamp can always be switched off
 		if (LockedBalls[Player] == 2) {                   // are there two locked balls?
 			Timer = 0;
-			Lamp[42] = true;                              	// turn on the last two lock lamps
-			Lamp[21] = true;
+			TurnOnLamp(42);                              		// turn on the last two lock lamps
+			TurnOnLamp(21);
 			AddBlinkLamp(40, 500);}                       	// and let the first one blink
 		else {                                          	// otherwise
-			Lamp[40] = true;                              	// turn the first lamp on
+			TurnOnLamp(40);                              		// turn the first lamp on
 			Timer = ActivateTimer(1000, 21, LockChaseLight);} // and come back in one second to process lamp 21
 		break;
 	case 21:                                          	// is it the middle lamp?
-		Lamp[40] = false;                               	// turn off the first
-		Lamp[21] = true;                                	// turn on the middle
+		TurnOffLamp(40);                               		// turn off the first
+		TurnOnLamp(21);                                		// turn on the middle
 		if (LockedBalls[Player]) {                        // is there a locked ball?
-			Lamp[42] = true;                              	// turn the last lamp on
+			TurnOnLamp(42);                              		// turn the last lamp on
 			Timer = ActivateTimer(1000, 40, LockChaseLight);} // and come back in one second to process lamp 40
 		else {                                          	// no locked ball?
 			Timer = ActivateTimer(1000, 42, LockChaseLight);} // come back in one second to process lamp 42
 		break;
 	case 42:                                          	// is it the last lamp?
-		Lamp[21] = false;                               	// turn off the middle lamp
-		Lamp[42] = true;                                	// turn on the last lamp
+		TurnOffLamp(21);                               		// turn off the middle lamp
+		TurnOnLamp(42);                                		// turn on the last lamp
 		Timer = ActivateTimer(1000, 40, LockChaseLight); 	// and come back in one second to process lamp 40
 		break;}}
 
@@ -1522,9 +1518,9 @@ void SingleLamp_Enter(byte Event) {
 	case 3:
 		WriteUpper(" ACTUAL LAMP  ");
 		WriteLower("              ");
-		for (i=0; i<(LampMax+1); i++){                  	// erase lamp matrix
-			Lamp[i] = false;}
-		LampPattern = Lamp;                             	// and show it
+		for (i=0; i<8; i++){                  						// erase lamp matrix
+			LampColumns[i] = 0;}
+		LampPattern = LampColumns;                        // and show it
 		Switch_Pressed = SingleLamp;
 		AppByte2 = 1;                                 		// start with lamp 1
 		AppByte = ActivateTimer(1000, 0, ShowLamp);}} 		// start after 1 second
@@ -1537,18 +1533,18 @@ void SingleLamp(byte Event) {
 		WriteLower("              ");
 		Switch_Pressed = SingleLamp_Enter;}}
 
-void ShowLamp(byte Event) {                           // cycle all solenoids
+void ShowLamp(byte Event) {                           // cycle all lamps
 	UNUSED(Event);
 	if (!digitalRead(UpDown)) {
 		*(DisplayLower+30) = DispPattern2[32 + 2 * (AppByte2 % 10)]; // and show the actual solenoid number
 		*(DisplayLower+31) = DispPattern2[33 + 2 * (AppByte2 % 10)];
 		*(DisplayLower+28) = DispPattern2[32 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
 		*(DisplayLower+29) = DispPattern2[33 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
-		Lamp[AppByte2] = true;                            // turn on lamp
+		TurnOnLamp(AppByte2);                            	// turn on lamp
 		if (AppByte2 > 1) {                               // and turn off the previous one
-			Lamp[AppByte2-1] = false;}
+			TurnOffLamp(AppByte2-1);}
 		else {
-			Lamp[LampMax] = false;}
+			TurnOffLamp(LampMax);}
 		AppByte2++;                                       // increase the lamp counter
 		if (AppByte2 == LampMax+1) {                      // maximum reached?
 			AppByte2 = 1;}}                                 // then start again

@@ -49,9 +49,9 @@ void USB_AttractMode() {                              // Attract Mode
 		analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
 	else {
 		digitalWrite(VolumePin,HIGH);}                		// turn off the digital volume control
-	for (i=0; i< LampMax+1; i++) {											// turn off all lamps
-		Lamp[i] = false;}
-	LampPattern = Lamp;
+	for (i=0; i<8; i++) {																// turn off all lamps
+		LampColumns[i] = 0;}
+	LampPattern = LampColumns;
 	Switch_Pressed = USB_SwitchHandler;
 	Switch_Released = USB_ReleasedSwitches;
 	WriteUpper("  USB  CONTROL  ");
@@ -152,17 +152,17 @@ void USB_SerialCommand() {
 		break;
 	case 10:																						// get status of lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
-			Serial.write((byte) Lamp[SerialBuffer[0]]);}
+			Serial.write((byte) QueryLamp(SerialBuffer[0]));}
 		else {
 			Serial.write((byte) 2);}
 		break;
 	case 11:																						// turn on lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
-			Lamp[SerialBuffer[0]] = true;}
+			TurnOnLamp(SerialBuffer[0]);}
 		break;
 	case 12:																						// turn off lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
-			Lamp[SerialBuffer[0]] = false;}
+			TurnOffLamp(SerialBuffer[0]);}
 		break;
 	case 20:																						// get status of solenoid
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids

@@ -290,10 +290,10 @@ void PB_AttractModeSW(byte Select) {
 		// StrobeLightsTimer = 0;
 		ByteBuffer3 = 0;
 		Switch_Pressed = AddPlayerSW;
-		for (i=0; i< LampMax+1; i++) {
-			Lamp[i] = false;}
-		LampPattern = Lamp;
-		Lamp[3] = true;                                 	// turn on Ball in Play lamp
+		for (i=0; i< 8; i++) {
+			LampColumns[i] = 0;}
+		LampPattern = LampColumns;
+		TurnOnLamp(3);                                 		// turn on Ball in Play lamp
 		NoPlayers = 0;
 		WriteUpper("              ");
 		WriteLower("              ");
@@ -399,7 +399,7 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 	Bonus = 1;
 	BonusMultiplier = 1;                                // reset bonus multiplier
 	for (i=0; i<4; i++) {                               // turn off the corresponding lamps
-		Lamp[9+i] = false;}
+		TurnOffLamp(9+i);}
 	PB_SkillMultiplier = 0;                             // reset skill shot multiplier
 	*(DisplayUpper+16) = LeftCredit[32 + 2 * Ball]; 		// show current ball in left credit
 	//*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
@@ -433,15 +433,15 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 		PB_LampsToLight = 2;}
 	for (i=0; i<4; i++) {                               // restore extra ball lamps
 		if (i<PB_ExBallsLit[Player]){
-			Lamp[PB_ExBallLamps[i]] = true;}
+			TurnOnLamp(PB_ExBallLamps[i]);}
 		else {
-			Lamp[PB_ExBallLamps[i]] = false;}}
+			TurnOffLamp(PB_ExBallLamps[i]);}}
 	if (PB_EjectMode[Player] < 5) {
 		for (i=0; i<PB_EjectMode[Player]; i++) {
-			Lamp[13+i] = true;}}
+			TurnOnLamp(13+i);}}
 	else {
 		for (i=0; i<(PB_EjectMode[Player]-5); i++) {
-			Lamp[13+i] = true;}
+			TurnOnLamp(13+i);}
 		AddBlinkLamp(PB_EjectMode[Player]+8, 100);}
 	PB_DropBlinkLamp = 41;
 	PB_CycleDropLights(1);															// start the blinking drop target lights
@@ -449,9 +449,9 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 		AddBlinkLamp(18+game_settings[PB_ReachPlanet],100);}		// let target planet blink
 	for (i=0; i<9; i++) {                               // update planets
 		if (PB_Planet[Player] > i) {
-			Lamp[19+i] = true;}
+			TurnOnLamp(19+i);}
 		else {
-			Lamp[19+i] = false;}}
+			TurnOffLamp(19+i);}}
 	PB_GiveBall(Balls);}
 
 void PB_GiveBall(byte Balls) {
@@ -617,7 +617,7 @@ void PB_CloseVisor(byte Dummy) {
 
 void PB_ClearOuthole(byte Event) {
 	UNUSED(Event);
-	if (QuerySwitch(16)) {                                   // outhole switch still active?
+	if (QuerySwitch(16)) {                              // outhole switch still active?
 		if (!BlockOuthole && !C_BankActive) {							// outhole blocked?
 			BlockOuthole = true;														// block outhole until this ball has been processed
 			ActivateSolenoid(30, 1);                        // put ball in trunk
@@ -747,23 +747,23 @@ void PB_GameMain(byte Switch) {
 			AddBlinkLamp(33, 250);}
 		else {
 			PB_AddBonus(3);
-			if (Lamp[49]) {
-				Lamp[49] = false;
+			if (QueryLamp(49)) {
+				TurnOffLamp(49);
 				PB_ExBallsLit[Player]--;
 				PB_GiveExBall();}}
 		break;
 	case 13:                                            // left inlane
 		PB_AddBonus(1);
-		Lamp[18] = true;
-		if (Lamp[50]) {
-			Lamp[50] = false;
+		TurnOnLamp(18);
+		if (QueryLamp(50)) {
+			TurnOffLamp(50);
 			PB_ExBallsLit[Player]--;
 			PB_GiveExBall();}
 		break;
 	case 14:                                            // right inlane
 		PB_AddBonus(1);
-		if (Lamp[58]) {
-			Lamp[58] = false;
+		if (QueryLamp(58)) {
+			TurnOffLamp(58);
 			PB_ExBallsLit[Player]--;
 			PB_GiveExBall();}
 		if (PB_EjectMode[Player] < 5) {
@@ -779,8 +779,8 @@ void PB_GameMain(byte Switch) {
 			AddBlinkLamp(33, 250);}
 		else {
 			PB_AddBonus(3);
-			if (Lamp[57]) {
-				Lamp[57] = false;
+			if (QueryLamp(57)) {
+				TurnOffLamp(57);
 				PB_ExBallsLit[Player]--;
 				PB_GiveExBall();}}
 		break;
@@ -788,11 +788,11 @@ void PB_GameMain(byte Switch) {
 		ActivateTimer(200, 0, PB_ClearOuthole);           // check again in 200ms
 		break;
 	case 19:                                            // advance planet
-		if (Lamp[51]) {                                   // special lit?
-			Lamp[51] = false;
+		if (QueryLamp(51)) {                              // special lit?
+			TurnOffLamp(51);
 			PB_AddExBall();}
-		if (Lamp[18]) {                                   // advance planet lit?
-			Lamp[18] = false;
+		if (QueryLamp(18)) {                              // advance planet lit?
+			TurnOffLamp(18);
 			PB_AddBonus(1);
 			PB_AdvancePlanet();}
 		break;
@@ -867,12 +867,12 @@ void PB_GameMain(byte Switch) {
 			else {
 				if (PB_EjectMode[Player] == 9) {
 					RemoveBlinkLamp(15);
-					Lamp[15] = true;
+					TurnOnLamp(15);
 					PB_EjectMode[Player] = 4;
 					Points[Player] += Multiballs * 75000;}
 				else {
 					RemoveBlinkLamp(PB_EjectMode[Player] + 8);
-					Lamp[PB_EjectMode[Player] + 8] = true;
+					TurnOnLamp(PB_EjectMode[Player] + 8);
 					PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
 					Points[Player] += Multiballs * (PB_EjectMode[Player] - 4) * 25000;
 					ShowPoints(Player);
@@ -896,7 +896,7 @@ void PB_GameMain(byte Switch) {
 			PB_ClearOutLock(0);}
 		else {                                            // solar ramp not lit
 			if (BonusMultiplier < 5) {                      // increase bonus multiplier
-				Lamp[8+BonusMultiplier] = true;               // turn on the corresponding lamp
+				TurnOnLamp(8+BonusMultiplier);               	// turn on the corresponding lamp
 				BonusMultiplier++;}
 			if (PB_SolarValue < 5000) {
 				PB_SolarValue += 50;
@@ -992,35 +992,47 @@ void PB_GameMain(byte Switch) {
 void PB_MoveExBallLamps(byte Direction) {
 	if (PB_ExBallsLit[Player]) {
 		if (Direction) {
-			Direction = Lamp[57];
+			Direction = QueryLamp(57);
 			for (byte c=0; c<3; c++) {
-				Lamp[PB_ExBallLamps[3-c]] = Lamp[PB_ExBallLamps[3-c-1]];}
-			Lamp[49] = Direction;}
+				if (QueryLamp(PB_ExBallLamps[3-c-1])) {
+					TurnOnLamp(PB_ExBallLamps[3-c]);}
+				else {
+					TurnOffLamp(PB_ExBallLamps[3-c]);}}
+			if (Direction) {
+				TurnOnLamp(49);}
+			else {
+				TurnOffLamp(49);}}
 		else {
-			Direction = Lamp[49];
+			Direction = QueryLamp(49);
 			for (byte c=0; c<3; c++) {
-				Lamp[PB_ExBallLamps[c]] = Lamp[PB_ExBallLamps[c+1]];}
-			Lamp[57] = Direction;}}}
+				if (QueryLamp(PB_ExBallLamps[c+1])) {
+					TurnOnLamp(PB_ExBallLamps[c]);}
+				else {
+					TurnOffLamp(PB_ExBallLamps[c]);}}
+			if (Direction) {
+				TurnOnLamp(57);}
+			else {
+				TurnOffLamp(57);}}}}
 
 void PB_AddExBall() {
 	if (PB_ExBallsLit[Player] < 4) {
 		PB_ExBallsLit[Player]++;
 		byte c = 0;
-		while (Lamp[PB_ExBallLamps[c]]) {
+		while (QueryLamp(PB_ExBallLamps[c])) {
 			c++;}
-		Lamp[PB_ExBallLamps[c]] = true;}}
+		TurnOnLamp(PB_ExBallLamps[c]);}}
 
 void PB_AfterExBallRelease(byte Event) {
-	if (QuerySwitch(20)) {                                   // ball still in the shooting lane?
+	if (QuerySwitch(20)) {                              // ball still in the shooting lane?
 		ActivateTimer(2000, Event, PB_AfterExBallRelease);}  // come back in2s
 	else {                                              // ball has been shot
 		RemoveBlinkLamp(33);
 		if (ExBalls) {                                    // player still has an extra balls
-			Lamp[33] = true;}}}
+			TurnOnLamp(33);}}}
 
 void PB_GiveExBall() {
 	ExBalls++;
-	Lamp[33] = true;}
+	TurnOnLamp(33);}
 
 void PB_AddBonus(byte BonusToAdd) {
 	if (Bonus < 99) {
@@ -1044,7 +1056,7 @@ void PB_ClearEjectHole(byte Solenoid) {               // activate solenoid after
 void PB_StartChestPattern(byte Dummy) {
 	UNUSED(Dummy);
 	PB_ChestPatternCounter = 0;
-	LampPattern = Lamp;
+	LampPattern = LampColumns;
 	PB_ChestLightHandler(0);}
 
 void PB_OpenVisorProc() {                   					// measures to open the visor
@@ -1092,9 +1104,9 @@ void PB_EyeBlink(byte State) {												// Blink lock flashers
 void PB_ChestLightHandler(byte State) {               // handle chest lights timer
 	if (State) {                                        // is there an animation for a row / column hit running?
 		if (State < 6) {                                  // turn on phase
-			Lamp[PB_ChestRows[AppByte][State-1]] = true;}
+			TurnOnLamp(PB_ChestRows[AppByte][State-1]);}
 		else {                                            // turn off phase
-			Lamp[PB_ChestRows[AppByte][State-6]] = false;}
+			TurnOffLamp(PB_ChestRows[AppByte][State-6]);}
 		State++;
 		if (State < 11) {                                 // not yet done
 			PB_ChestLightsTimer = ActivateTimer(100, State, PB_ChestLightHandler);} // come back with the current state set
@@ -1122,9 +1134,12 @@ void PB_ChestLightHandler(byte State) {               // handle chest lights tim
 				Buffer = PB_ChestPatterns[6*PB_ChestPatternCounter+x+1]; // buffer the current column
 				for (i=0; i<5; i++) {                         // for all rows
 					if (PB_ChestLamp[Player-1][x] & Mask) {     // if the lamp is stored
-						Lamp[28+8*x+i] = true;}                   // turn it on
+						TurnOnLamp(28+8*x+i);}                   	// turn it on
 					else {                                      // otherwise
-						Lamp[28+8*x+i] = Buffer & 1;}             // it is controlled by the pattern
+						if (Buffer & 1) {
+							TurnOnLamp(28+8*x+i);}
+						else {
+							TurnOffLamp(28+8*x+i);}}             		// it is controlled by the pattern
 					Mask = Mask<<1;                             // adjust the mask
 					Buffer = Buffer>>1;}}                       // and the buffer
 			PB_ChestPatternCounter++;
@@ -1135,7 +1150,7 @@ void PB_ClearChest() {                                // turn off chest lamps
 	byte y = 0;
 	for (x=0; x<5; x++) {
 		for (y=0; y<5; y++) {
-			Lamp[28+8*x+y] = false;}}}
+			TurnOffLamp(28+8*x+y);}}}
 
 void PB_SetChestLamps(byte Switch) {                  // add the lamps for the hit row / column in PB_ChestLamp
 	byte Pos = 0;
@@ -1177,7 +1192,7 @@ void PB_CountLitChestLamps() {												// count the lit chest lamps for the c
 	byte Buffer;
 	PB_LitChestLamps = 0;																// reset counter
 	for (byte x=0; x<5; x++) {													// for all rows
-		Buffer = PB_ChestLamp[Player-1][x];									// buffer the current row
+		Buffer = PB_ChestLamp[Player-1][x];								// buffer the current row
 		for (i=0; i<5; i++) {															// for all columns
 			if (Buffer & 1) {																// lamp lit?
 				PB_LitChestLamps++;}													// increase counter
@@ -1249,10 +1264,10 @@ void PB_Multiball() {
 void PB_Multiball2(byte Dummy) {
 	UNUSED(Dummy);
 	PB_EyeBlink(1);
-	LampPattern = Lamp;}
+	LampPattern = LampColumns;}
 
 void PB_LampSweep(byte Step) {
-	Lamp[Step] = false;
+	TurnOffLamp(Step);
 	if (PB_LampSweepActive) {
 		if (PB_LampSweepActive > 1) {
 			Step++;
@@ -1264,7 +1279,7 @@ void PB_LampSweep(byte Step) {
 			if (Step < 4) {
 				Step = 4;
 				PB_LampSweepActive = 2;}}
-		Lamp[Step] = true;
+		TurnOnLamp(Step);
 		ActivateTimer(100, Step, PB_LampSweep);}}
 
 void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar value ramp was not hit in time
@@ -1323,12 +1338,12 @@ void PB_AdvancePlanet() {
 	else {
 		PlaySound(150, "BS_S07.BIN");
 		if  (PB_Planet[Player] == 10) {                   //  10 = Sun
-			Lamp[51] = true;}																// light special
+			TurnOnLamp(51);}																// light special
 		else {
 			if (PB_Planet[Player] == game_settings[PB_ReachPlanet]) { // target planet reached
-				Lamp[51] = true;															// light special
+				TurnOnLamp(51);																// light special
 				RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);} // stop blinking
-			Lamp[PB_Planet[Player]+18] = true;}}}
+			TurnOnLamp(PB_Planet[Player]+18);}}}
 
 void PB_ResetDropTargets(byte Dummy) {
 	UNUSED(Dummy);
@@ -1431,7 +1446,7 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 				else {
 					RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
 			for (i=0; i<4; i++) {                           // turn off all eject mode lamps
-				Lamp[13+i] = false;}
+				TurnOffLamp(13+i);}
 			if (PB_BallSave == 2) {													// ball saver has been triggered
 				BlockOuthole = false;													// remove outhole block
 				ActivateTimer(2000, 0, PB_AfterExBallRelease);
@@ -1470,7 +1485,7 @@ void PB_BallEnd2() {
 		ActivateTimer(2000, 0, PB_AfterExBallRelease);
 		ActivateTimer(1000, AppByte, PB_NewBall);}
 	else {                                        			// Player has no extra balls
-		Lamp[51] = false;
+		TurnOffLamp(51);
 		if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
 			Switch_Pressed = DummyProcess;              		// Switches do nothing
 			PB_Congrats(0);}
@@ -1481,7 +1496,7 @@ void PB_BallEnd2() {
 
 void PB_BallEnd3(byte Dummy) {
 	UNUSED(Dummy);
-	LampPattern = Lamp;
+	LampPattern = LampColumns;
 	if (Player < NoPlayers) {                 					// last player?
 		Player++;
 		ActivateTimer(1000, AppByte, PB_NewBall);}
@@ -1497,7 +1512,7 @@ void PB_BallEnd3(byte Dummy) {
 			AfterMusic = GameDefinition.AttractMode;
 			PlayMusic(50, "BS_S10.BIN");
 			//PB_CheckForLockedBalls(0);
-			Lamp[3] = false;}}}                       			// turn off Ball in Play lamp
+			TurnOffLamp(3);}}}                       				// turn off Ball in Play lamp
 
 void PB_Congrats(byte Dummy) {                    		// show congratulations
 	UNUSED(Dummy);
@@ -1726,8 +1741,8 @@ void PB_Testmode(byte Select) {
 						WriteLower("              ");
 						AppByte2 = 0;
 						for (i=0; i<(LampMax+1); i++){            // erase lamp matrix
-							Lamp[i] = false;}
-						LampPattern = Lamp;                       // and show it
+							TurnOffLamp(i);}
+						LampPattern = LampColumns;                // and show it
 						break;
 					case 3:
 						WriteUpper(" ACTUAL LAMP  ");
@@ -1839,11 +1854,11 @@ void PB_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
 		*(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
 		*(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
 		*(DisplayLower+29) = DispPattern2[33 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
-		Lamp[CurrentLamp] = true;                         // turn on lamp
+		TurnOnLamp(CurrentLamp);                         	// turn on lamp
 		if (CurrentLamp > 1) {                            // and turn off the previous one
-			Lamp[CurrentLamp-1] = false;}
+			TurnOffLamp(CurrentLamp-1);}
 		else {
-			Lamp[LampMax] = false;}
+			TurnOffLamp(LampMax);}
 		CurrentLamp++;                                    // increase the lamp counter
 		if (CurrentLamp == LampMax+1) {                   // maximum reached?
 			CurrentLamp = 1;}}                              // then start again
