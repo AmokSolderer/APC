@@ -245,7 +245,7 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
     ByteBuffer3 = 0;
     LampPattern = NoLamps;                            // Turn off all lamps
     ReleaseAllSolenoids();
-    if (digitalRead(UpDown)) {
+    if (!QuerySwitch(73)) {														// Up/Down switch pressed?
       WriteUpper("  TEST  MODE    ");
       WriteLower("                ");
       AppByte = 0;
@@ -683,7 +683,7 @@ void BC_Testmode(byte Select) {
 }}
 
 void BC_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
-	if (!digitalRead(UpDown)) {
+	if (QuerySwitch(73)) {															// Up/Down switch pressed?
 		*(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
 		*(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
 		*(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
@@ -712,7 +712,7 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 		ActC_BankSol(Solenoid);
 		*(DisplayLower+30) = DispPattern2[('C'-32)*2];		// show the C
 		*(DisplayLower+31) = DispPattern2[('C'-32)*2+1];
-		if (!digitalRead(UpDown)) {
+		if (QuerySwitch(73)) {														// Up/Down switch pressed?
 			AppBool = false;
 			Solenoid++;}}
 	else {																							// if A bank solenoid
@@ -728,19 +728,19 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 		if (Solenoid < 9) {
 			*(DisplayLower+30) = DispPattern2[('A'-32)*2];	// show the A
 			*(DisplayLower+31) = DispPattern2[('A'-32)*2+1];
-			if (!digitalRead(UpDown)) {
+			if (QuerySwitch(73)) {													// Up/Down switch pressed?
 				AppBool = true;}}
 		else {
 			*(DisplayLower+30) = DispPattern2[(' '-32)*2];	// delete the C
 			*(DisplayLower+31) = DispPattern2[(' '-32)*2+1];
-			if (!digitalRead(UpDown)) {
+			if (QuerySwitch(73)) {													// Up/Down switch pressed?
 				Solenoid++;                                   // increase the solenoid counter
 				if (Solenoid == 22) {                         // maximum reached?
 					Solenoid = 1;}}}}                           // then start again
 	AppByte2 = ActivateTimer(1000, Solenoid, BC_FireSolenoids);}   // come back in one second
 
 void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
-	if (!digitalRead(UpDown)) {                         // cycle only if Up/Down switch is not pressed
+	if (QuerySwitch(73)) {                         			// cycle only if Up/Down switch is not pressed
 		if (CharNo == 116) {                             	// if the last character is reached
 			CharNo = 32;}                                 	// start from the beginning
 		else {
@@ -762,7 +762,7 @@ void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
 	AppByte2 = ActivateTimer(500, CharNo, BC_DisplayCycle);}   // restart timer
 
 void BC_NextTestSound() {
-	if (!digitalRead(UpDown)) {
+	if (QuerySwitch(73)) {															// Up/Down switch pressed?
 		AppByte++;}
 	if (!TestSounds[AppByte][0]) {
 		AppByte = 0;}

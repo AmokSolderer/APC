@@ -1394,7 +1394,7 @@ void TestMode_Enter() {
 	ActivateSolenoid(0, 23);                            // enable flipper fingers
 	ActivateSolenoid(0, 24);
 	Switch_Pressed = DummyProcess;                      // Switches do nothing
-	if (!digitalRead(UpDown)) {
+	if (QuerySwitch(73)) {															// Up/Down switch pressed?
 		Settings_Enter();}
 	else {
 		WriteUpper("  TEST  MODE  ");                     // Show Test Mode
@@ -1431,7 +1431,7 @@ void DisplayTestSw(byte Event) {
 		WriteLower("              ");}}
 
 void DisplayCycle(byte Event) {                       // Display cycle test
-	if (!digitalRead(UpDown)) {                         // cycle only if Up/Down switch is not pressed
+	if (QuerySwitch(73)) {                         			// cycle only if Up/Down switch is not pressed
 		if (Event == 116) {                             	// if the last character is reached
 			AppByte2 = 32;}                                 // start from the beginning
 		else {
@@ -1504,7 +1504,7 @@ void FireSolenoids(byte Event) {                      // cycle all solenoids
 	*(DisplayLower+28) = DispPattern2[32 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
 	*(DisplayLower+29) = DispPattern2[33 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
 	ActivateSolenoid(0, AppByte2);                     	// activate the solenoid for 50ms
-	if (!digitalRead(UpDown)) {
+	if (QuerySwitch(73)) {															// Up/Down switch pressed?
 		AppByte2++;                                       // increase the solenoid counter
 		if (AppByte2 == 20) {                             // maximum reached?
 			AppByte2 = 1;}}                                 // then start again
@@ -1536,7 +1536,7 @@ void SingleLamp(byte Event) {
 
 void ShowLamp(byte Event) {                           // cycle all lamps
 	UNUSED(Event);
-	if (!digitalRead(UpDown)) {
+	if (QuerySwitch(73)) {															// Up/Down switch pressed?
 		*(DisplayLower+30) = DispPattern2[32 + 2 * (AppByte2 % 10)]; // and show the actual solenoid number
 		*(DisplayLower+31) = DispPattern2[33 + 2 * (AppByte2 % 10)];
 		*(DisplayLower+28) = DispPattern2[32 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
@@ -1596,7 +1596,7 @@ void SoundTest_Enter(byte Switch) {
 		PlayMusic(50, (char*) TestSounds[AppByte]);}}
 
 void NextTestSound() {
-	if (!digitalRead(UpDown)) {
+	if (QuerySwitch(73)) {															// Up/Down switch pressed?
 		AppByte++;}
 	if (!TestSounds[AppByte][0]) {
 		AppByte = 0;}

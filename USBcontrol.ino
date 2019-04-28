@@ -63,7 +63,7 @@ void USB_SwitchHandler(byte Switch) {
 		digitalWrite(Blanking, LOW);                      // invoke the blanking
 		break;
 	case 72:																						// advance button
-		if (!digitalRead(UpDown)) {
+		if (QuerySwitch(73)) {														// Up/Down switch pressed?
 			ActivateTimer(1000, 0, USB_Testmode);}					// look again in 1s
 		else {
 			byte i = 0;
@@ -166,7 +166,7 @@ void USB_SerialCommand() {
 		break;
 	case 20:																						// get status of solenoid
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
-			Serial.write((byte) SolenoidStatus(SerialBuffer[0]));}
+			Serial.write((byte) QuerySolenoid(SerialBuffer[0]));}
 		break;
 	case 21:																						// set solenoid # to on
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids

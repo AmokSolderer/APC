@@ -7,7 +7,6 @@ SdFat SD;
 const int SwMax = 72;                                 // number of existing switches (max. 72)
 const int LampMax = 64;                               // number of existing lamps (max. 64)
 const int DispColumns = 16;                           // Number of columns of the used display unit
-// Disp Test Pattern const byte DispPattern[4] = {134,69,42,25};
 
 const byte AlphaUpper[118] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
 		63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,136,0,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
@@ -51,8 +50,7 @@ bool SDfound = false;                                 // SD card present?
 byte SwitchStack = 0;                                 // determines which switch events stack is active
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
 byte SwEvents[2];                                     // contains the number of pending switch events in each stack
-uint32_t SwitchRows[10];															// stores the present status of all switch rows (0 means switch is active)
-uint32_t SwPrevious[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the previous status of all switch rows
+uint32_t SwitchRows[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the status of all switch rows
 int SwDrv = 0;                                        // switch driver being accessed at the moment
 const byte *DispRow1;                                 // determines which patterns are to be shown (2 lines with 16 chars each)
 const byte *DispRow2;
@@ -270,10 +268,7 @@ void setup() {
 	REG_PIOC_SODR = 4194304;                            // use Sel4
 	MusicBuffer = (uint16_t *) malloc(2048 * 2);
 	SoundBuffer = (uint16_t *) malloc(2048 * 2);
-//	for (i=1; i< SwMax+1; i++) {
-//		Switch[i] = false;
-//		SwHistory[i] = 0; }                               // initialize switch status
-	for (i=0; i<8; i++) {                         // initialize lamp status
+	for (i=0; i<8; i++) {                         			// initialize lamp status
 		LampColumns[i+1] = 0; }
 	for (i=0; i< 8; i++) {                              // initialize switch input pins
 		pinMode(54 + i, INPUT); }
@@ -297,7 +292,7 @@ void setup() {
 	DispPattern2 = AlphaLower;
 	DispRow1 = DisplayUpper;
 	DispRow2 = DisplayLower;
-	//LampPattern = NoLamps;
+	LampPattern = NoLamps;
 	digitalWrite(Blanking, HIGH);                       // Release the blanking
 	if (SD.begin(52, SD_SCK_MHZ(20))) {                 // look for an SD card and set max SPI clock to 20MHz
 		WriteUpper("SD CARD FOUND   ");
@@ -389,25 +384,24 @@ void TC7_Handler() {                                  // interrupt routine - run
 
 	// Switches
 
-	SwitchRows[SwDrv] = REG_PIOA_PDSR & 29425756;				// ignore all pins not switch related
 	i = 0;
-	while (SwitchRows[SwDrv] != SwPrevious[SwDrv]) {		// as long as the previous row reading is different
-		if (SwitchRows[SwDrv] & SwitchMask[i]) {
-			if (!(SwPrevious[SwDrv] & SwitchMask[i]))  {
-				SwPrevious[SwDrv] = SwPrevious[SwDrv] | SwitchMask[i];
+	while (SwitchRows[SwDrv] != (REG_PIOA_PDSR & 29425756)) {		// as  long as something is different at the switch port
+		if (REG_PIOA_PDSR & SwitchMask[i]) {							// scan the switch port bit by bit
+			if (!(SwitchRows[SwDrv] & SwitchMask[i]))  {		// different from the stored switch state?
+				SwitchRows[SwDrv] = SwitchRows[SwDrv] | SwitchMask[i];	// then change it
 				SwEvents[SwitchStack]++;											// increase the number of pending switch events
 				c = 0;
 				while (ChangedSw[SwitchStack][c] && (c<30)) {	// look for a free slot
 					c++;}
-				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}
+				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}		// store the switch number to be processed in the main loop
 		else {
-			if (SwPrevious[SwDrv] & SwitchMask[i])  {
-				SwPrevious[SwDrv] = SwPrevious[SwDrv] & (29425756 - SwitchMask[i]);
+			if (SwitchRows[SwDrv] & SwitchMask[i])  {				// different from the stored switch state?
+				SwitchRows[SwDrv] = SwitchRows[SwDrv] & (29425756 - SwitchMask[i]); // then change it
 				SwEvents[SwitchStack]++;											// increase the number of pending switch events
 				c = 0;
 				while (ChangedSw[SwitchStack][c] && (c<30)) {	// look for a free slot
 					c++;}
-				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}
+				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}		// store the switch number to be processed in the main loop
 		i++;}
 	SwDrvMask = SwDrvMask<<1;                  					// and the corresponding select pattern
 	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals except Sel5 and the data bus
@@ -422,6 +416,16 @@ void TC7_Handler() {                                  // interrupt routine - run
 			REG_PIOC_SODR = 32768;                        	// use Sel12
 			REG_PIOC_CODR = 16384;}                       	// enable Sel13
 		else {
+			if ((bool)(SwitchRows[9] & 65536) != (bool)(REG_PIOB_PDSR & 16384)) {	// check state of the Up/Down button
+				if (SwitchRows[9] & 65536) {
+					SwitchRows[9] = SwitchRows[9] & (29425756 - 65536);}
+				else {
+					SwitchRows[9] = SwitchRows[9] | 65536;}
+				SwEvents[SwitchStack]++;											// increase the number of pending switch events
+				c = 0;
+				while (ChangedSw[SwitchStack][c] && (c<30)) {	// look for a free slot
+					c++;}
+				ChangedSw[SwitchStack][c] = 73;}
 			SwDrvMask = 2;
 			REG_PIOC_SODR = AllData - SwDrvMask;          	// put select pattern on data bus
 			SwDrv = 0;
@@ -668,8 +672,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 					*Buffer32b = 402655232;											// 2048 on both channels and the channel tag
 					Buffer32b++;}
 				g_Sound.next = Buffer32b;
-				g_Sound.enqueue();}}}
-}
+				g_Sound.enqueue();}}}}
 
 void loop() {
 	c = 0;                                  						// initialize counter
@@ -680,7 +683,7 @@ void loop() {
 				SwEvents[1-SwitchStack]--;										// decrease number of pending events
 				i = ChangedSw[1-SwitchStack][c];							// buffer the switch number
 				ChangedSw[1-SwitchStack][c] = 0;							// clear the event
-				if (QuerySwitch(i)) {                              // process SET switches
+				if (QuerySwitch(i)) {                         // process SET switches
 					Switch_Pressed(i);}													// access the set switch handler
 				else {																				// process released switches
 					Switch_Released(i);}}												// access the released switch handler
@@ -1138,9 +1141,8 @@ void ReleaseSolenoid(byte Solenoid) {
 	else {                                          		// if yes
 		ActivateTimer(1, Solenoid, ReleaseSolenoid);}}		// try again later
 
-bool SolenoidStatus(byte Solenoid) {                  // determine the current state of a solenoid
-	bool State = SolBuffer[Solenoid / 8] & (1<<((Solenoid % 8)-1));
-	return State;}
+bool QuerySolenoid(byte Solenoid) {                  	// determine the current state of a solenoid
+	return SolBuffer[Solenoid / 8] & (1<<((Solenoid % 8)-1));}
 
 void ActA_BankSol(byte Solenoid) {
 	if (!SolWaiting[NextSolSlot][0]) {
@@ -1720,7 +1722,7 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 	case 72:																						// Advance button pressed
 		StopPlayingMusic();
 		analogWrite(VolumePin, 255);
-		if (!digitalRead(UpDown)) {												// go forward or backward depending on UpDown switch
+		if (QuerySwitch(73)) {														// go forward or backward depending on UpDown switch
 			AppByte++;																			// show next setting
 			if (!SettingsList[AppByte].EventPointer) {			// end marker of settings list reached?
 				AppByte = 0;}}																// switch to the first
@@ -1804,7 +1806,7 @@ void ExitSettings(bool change) {											// exit settings and save them if nec
 void HandleNumSetting(bool change) {									// handling method for numeric settings
 	if (change) {																				// if the start button has been pressed
 		AppByte2 = 1;																			// set the change indicator
-		if (!digitalRead(UpDown)) {												// go forward or backward depending on UpDown switch
+		if (QuerySwitch(73)) {														// go forward or backward depending on UpDown switch
 			if (SettingsPointer[AppByte] != SettingsList[AppByte].UpperLimit) { // upper numeric limit reached?
 				SettingsPointer[AppByte]++;}}									// if limit not reached just increase the numeric value
 		else {																						// if the start button has not been pressed
@@ -1816,7 +1818,7 @@ void HandleNumSetting(bool change) {									// handling method for numeric sett
 void HandleTextSetting(bool change) {									// handling method for text settings
 	if (change) {																				// if the start button has been pressed
 		AppByte2 = 1;																			// set the change indicator
-		if (!digitalRead(UpDown)) {												// go forward or backward depending on UpDown switch
+		if (QuerySwitch(73)) {														// go forward or backward depending on UpDown switch
 			if (SettingsPointer[AppByte] == SettingsList[AppByte].UpperLimit) { // last text setting reached?
 				SettingsPointer[AppByte] = 0;}								// start from 0
 			else {
