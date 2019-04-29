@@ -376,7 +376,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 	static bool LEDFlag;																// stores whether Sel5 has to be triggered by the rising or falling edge
 	static byte LEDCount = 0;														// points to the next command byte to be send to the LED exp board
 	int i;                                              // general purpose counter
-	int buff;
+	uint32_t Buff;
 	uint16_t c;
 
 	if (APC_settings[DebugMode]) {
@@ -385,8 +385,9 @@ void TC7_Handler() {                                  // interrupt routine - run
 	// Switches
 
 	i = 0;
-	while (SwitchRows[SwDrv] != (REG_PIOA_PDSR & 29425756)) {		// as  long as something is different at the switch port
-		if (REG_PIOA_PDSR & SwitchMask[i]) {							// scan the switch port bit by bit
+	Buff = REG_PIOA_PDSR;
+	while (SwitchRows[SwDrv] != (Buff & 29425756)) {		// as  long as something is different at the switch port
+		if (Buff & SwitchMask[i]) {												// scan the switch port bit by bit
 			if (!(SwitchRows[SwDrv] & SwitchMask[i]))  {		// different from the stored switch state?
 				SwitchRows[SwDrv] = SwitchRows[SwDrv] | SwitchMask[i];	// then change it
 				SwEvents[SwitchStack]++;											// increase the number of pending switch events
@@ -476,11 +477,11 @@ void TC7_Handler() {                                  // interrupt routine - run
 	// Timers
 
 	if (!BlockTimers) {
-		buff = ActiveTimers;
+		Buff = ActiveTimers;
 		i = 1;
-		while (buff) {                                		// Number of timers to process (active timers)
+		while (Buff) {                                		// Number of timers to process (active timers)
 			if (TimerValue[i]) {                        		// Timer active?
-				buff--;                                   		// Decrease number of timers to process
+				Buff--;                                   		// Decrease number of timers to process
 				TimerValue[i]--;                          		// Decrease timer value
 				if (TimerValue[i]==0) {                   		// Timer run out?
 					c = 0;
@@ -1485,21 +1486,23 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
 			ErrorHandler(8,0,LampNo);}}}        						// show error 8
 
 void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3) {
-	WriteUpper2("ERROR           ");                      // Show Error Message
+	WriteUpper2("ERROR           ");                    // Show Error Message
 	WriteLower2("                ");
-	//LampPattern = NoLamps;                             // Turn off all lamps
 	Serial.print("Error = ");
 	Serial.println(Error);
 	Serial.print("Number2 = ");
 	Serial.println(Number2);
 	Serial.print("Number3 = ");
 	Serial.println(Number3);
-  //KillAllTimers();
-	//ReleaseAllSolenoids();
 	ShowNumber(15, Error);
 	ShowNumber(23, Number2);
 	ShowNumber(31, Number3);
-	SwitchDisplay(0);}
+	SwitchDisplay(0);
+	if (APC_settings[DebugMode]) {
+		LampPattern = NoLamps;                            // Turn off all lamps
+		KillAllTimers();
+		ReleaseAllSolenoids();
+		while(true) {}}}
 
 void ShowFileNotFound(String Filename) {							// show file not found message
 	Filename.toUpperCase();															// convert filename to upper case characters
