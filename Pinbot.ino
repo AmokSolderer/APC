@@ -28,7 +28,7 @@ byte PB_LampsToLight = 2;															// number of lamps to light when chest i
 byte *PB_ChestPatterns;                               // pointer to the current chest lamp pattern
 uint16_t PB_ChestPatternCounter = 0;                  // counter for the current chest lamp pattern to be shown
 
-const unsigned int PB_SolTimes[32] = {50,20,30,70,50,200,30,30,0,0,0,0,0,0,100,100,50,0,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
+const unsigned int PB_SolTimes[32] = {50,30,30,70,50,200,30,30,0,0,0,0,0,0,100,100,50,0,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[10] = {3,4,5,17,19,22,6,20,21,0}; // coils to fire when the ball watchdog timer runs out
 const byte PB_OpenVisorSeq[45] = {26,30,26,30,26,30,27,5,31,5,32,5,29,5,29,5,26,5,29,2,29,3,29,7,29,8,29,5,29,4,26,2,27,5,31,5,32,5,29,5,28,5,26,10,0};
 const byte PB_MultiballSeq[69] = {16,5,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,7,0,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,5,15,10,8,0,0};

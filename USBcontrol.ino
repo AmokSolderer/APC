@@ -165,7 +165,7 @@ void USB_SerialCommand() {
 			TurnOffLamp(SerialBuffer[0]);}
 		break;
 	case 20:																						// get status of solenoid
-		if (SerialBuffer[0] < 25) {												// max 24 solenoids
+		if (SerialBuffer[0] < 26) {												// max 24 solenoids
 			Serial.write((byte) QuerySolenoid(SerialBuffer[0]));}
 		break;
 	case 21:																						// set solenoid # to on
@@ -184,10 +184,16 @@ void USB_SerialCommand() {
 				SolDelayed[i] = SerialBuffer[0];              // insert the solenoid number
 				DurDelayed[i] = 0;                   					// and its duration into the list
 				ActivateTimer(25, SerialBuffer[0], ActivateLater);}}	// and try again later
+		else if (SerialBuffer[0] == 25) {									// 25 is a shortcut for both flipper fingers
+			ActivateSolenoid(0, 23);												// enable both flipper fingers
+			ActivateSolenoid(0, 24);}
 		break;
 	case 22:																						// set solenoid # to off
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
 			ReleaseSolenoid(SerialBuffer[0]);}
+		else if (SerialBuffer[0] == 25) {									// 25 is a shortcut for both flipper fingers
+			ReleaseSolenoid(23);														// disable both flipper fingers
+			ReleaseSolenoid(24);}
 		break;
 	case 23:																						// pulse solenoid
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids

@@ -1143,7 +1143,8 @@ void ReleaseSolenoid(byte Solenoid) {
 		ActivateTimer(1, Solenoid, ReleaseSolenoid);}}		// try again later
 
 bool QuerySolenoid(byte Solenoid) {                  	// determine the current state of a solenoid
-	return SolBuffer[Solenoid / 8] & (1<<((Solenoid % 8)-1));}
+	Solenoid--;
+	return SolBuffer[Solenoid / 8] & (1<<(Solenoid % 8));}
 
 void ActA_BankSol(byte Solenoid) {
 	if (!SolWaiting[NextSolSlot][0]) {
