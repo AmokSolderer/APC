@@ -7,7 +7,6 @@ SdFat SD;
 const int SwMax = 72;                                 // number of existing switches (max. 72)
 const int LampMax = 64;                               // number of existing lamps (max. 64)
 const int DispColumns = 16;                           // Number of columns of the used display unit
-// Disp Test Pattern const byte DispPattern[4] = {134,69,42,25};
 
 const byte AlphaUpper[118] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
 		63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,136,0,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
@@ -35,8 +34,8 @@ const byte RightCredit[118] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // Pattern P Q R S T U V W X Y Z
 
 const int LampPeriod = 2;                             // Lamp cycle period in ms
-const bool NoLamps[LampMax+1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-const bool AllLamps[LampMax+1] = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+const byte NoLamps[8] = {0,0,0,0,0,0,0,0};
+const byte AllLamps[8] = {255,255,255,255,255,255,255,255};
 
 // system variables
 
@@ -51,8 +50,7 @@ bool SDfound = false;                                 // SD card present?
 byte SwitchStack = 0;                                 // determines which switch events stack is active
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
 byte SwEvents[2];                                     // contains the number of pending switch events in each stack
-bool Switch[SwMax+3];                                 // stores the present status of all switches (Advance is 72, HighScoreRest is 71)
-bool SwHistory[SwMax+3];                              // stores the previous switch status
+uint32_t SwitchRows[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the status of all switch rows
 int SwDrv = 0;                                        // switch driver being accessed at the moment
 const byte *DispRow1;                                 // determines which patterns are to be shown (2 lines with 16 chars each)
 const byte *DispRow2;
@@ -64,17 +62,17 @@ byte DisplayUpper[32];                                // changeable display buff
 byte DisplayLower[32];
 byte DisplayUpper2[32];                               // second changeable display buffer
 byte DisplayLower2[32];
-const bool *LampPattern;                              // determines which lamp pattern is to be shown (for Lamps > 8)
-const bool *LampBuffer;
+const byte *LampPattern;                              // determines which lamp pattern is to be shown (for Lamps > 8)
+const byte *LampBuffer;
 byte StrobeLightsTimer = 0;
-bool Lamp[LampMax+1];                                 // changeable lamp status buffer
+byte LampColumns[8];																	// stores the status of all lamp columns
 byte LEDCommandBytes = 0;															// number of command bytes to be send to the LED exp board
 byte LEDCommand[20];																	// command bytes to be send to the LED exp board
 byte LampWait = 1;                                    // counter for lamp waiting time until next column is applied
 const struct LampPat *PatPointer;                     // Pointer to the lamp flow to be shown
 struct LampPat {                                      // a lamp pattern sequence played by ShowLampPatterns
 	uint16_t Duration;
-	bool Pattern[LampMax-7];};
+	byte Pattern[7];};
 struct LampFlow {                                     // defines a series of lamp patterns shown by AttractLampCycle
 	uint16_t Repeat;
 	const struct LampPat *FlowPat;};
@@ -270,11 +268,8 @@ void setup() {
 	REG_PIOC_SODR = 4194304;                            // use Sel4
 	MusicBuffer = (uint16_t *) malloc(2048 * 2);
 	SoundBuffer = (uint16_t *) malloc(2048 * 2);
-	for (i=1; i< SwMax+1; i++) {
-		Switch[i] = false;
-		SwHistory[i] = 0; }                               // initialize switch status
-	for (i=0; i<LampMax; i++) {                         // initialize lamp status
-		Lamp[i+1] = false; }
+	for (i=0; i<8; i++) {                         			// initialize lamp status
+		LampColumns[i+1] = 0; }
 	for (i=0; i< 8; i++) {                              // initialize switch input pins
 		pinMode(54 + i, INPUT); }
 	g_Sound.begin(44100, 100);													// initialize sound
@@ -381,27 +376,34 @@ void TC7_Handler() {                                  // interrupt routine - run
 	static bool LEDFlag;																// stores whether Sel5 has to be triggered by the rising or falling edge
 	static byte LEDCount = 0;														// points to the next command byte to be send to the LED exp board
 	int i;                                              // general purpose counter
-	int buff;
+	uint32_t Buff;
 	uint16_t c;
 
-  if (APC_settings[DebugMode]) {
-	  *(DisplayLower) = RightCredit[32 + 2 * ActiveTimers];} // show the number of active timers
+	if (APC_settings[DebugMode]) {
+		*(DisplayLower) = RightCredit[32 + 2 * ActiveTimers];} // show the number of active timers
 
 	// Switches
 
-	for (i=0; i<8; i++) {
-		if (REG_PIOA_PDSR & SwitchMask[i]) {
-			c = 1;}
+	i = 0;
+	Buff = REG_PIOA_PDSR;
+	while (SwitchRows[SwDrv] != (Buff & 29425756)) {		// as  long as something is different at the switch port
+		if (Buff & SwitchMask[i]) {												// scan the switch port bit by bit
+			if (!(SwitchRows[SwDrv] & SwitchMask[i]))  {		// different from the stored switch state?
+				SwitchRows[SwDrv] = SwitchRows[SwDrv] | SwitchMask[i];	// then change it
+				SwEvents[SwitchStack]++;											// increase the number of pending switch events
+				c = 0;
+				while (ChangedSw[SwitchStack][c] && (c<30)) {	// look for a free slot
+					c++;}
+				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}		// store the switch number to be processed in the main loop
 		else {
-			c = 0;}
-		if (SwHistory[SwDrv*8+i+1] == c) {
-			Switch[SwDrv*8+i+1] = !SwHistory[SwDrv*8+i+1]; 	// update the switch status
-			SwHistory[SwDrv*8+i+1] = !SwHistory[SwDrv*8+i+1];
-			SwEvents[SwitchStack]++;												// increase the number of pending switch events
-			c = 0;
-			while (ChangedSw[SwitchStack][c] && (c<30)) {		// look for a free slot
-				c++;}
-			ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}
+			if (SwitchRows[SwDrv] & SwitchMask[i])  {				// different from the stored switch state?
+				SwitchRows[SwDrv] = SwitchRows[SwDrv] & (29425756 - SwitchMask[i]); // then change it
+				SwEvents[SwitchStack]++;											// increase the number of pending switch events
+				c = 0;
+				while (ChangedSw[SwitchStack][c] && (c<30)) {	// look for a free slot
+					c++;}
+				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}		// store the switch number to be processed in the main loop
+		i++;}
 	SwDrvMask = SwDrvMask<<1;                  					// and the corresponding select pattern
 	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals except Sel5 and the data bus
 	if (SwDrv < 7) {
@@ -415,6 +417,16 @@ void TC7_Handler() {                                  // interrupt routine - run
 			REG_PIOC_SODR = 32768;                        	// use Sel12
 			REG_PIOC_CODR = 16384;}                       	// enable Sel13
 		else {
+			if ((bool)(SwitchRows[9] & 65536) != (bool)(REG_PIOB_PDSR & 16384)) {	// check state of the Up/Down button
+				if (SwitchRows[9] & 65536) {
+					SwitchRows[9] = SwitchRows[9] & (29425756 - 65536);}
+				else {
+					SwitchRows[9] = SwitchRows[9] | 65536;}
+				SwEvents[SwitchStack]++;											// increase the number of pending switch events
+				c = 0;
+				while (ChangedSw[SwitchStack][c] && (c<30)) {	// look for a free slot
+					c++;}
+				ChangedSw[SwitchStack][c] = 73;}
 			SwDrvMask = 2;
 			REG_PIOC_SODR = AllData - SwDrvMask;          	// put select pattern on data bus
 			SwDrv = 0;
@@ -427,49 +439,49 @@ void TC7_Handler() {                                  // interrupt routine - run
 		DispCol = 0;}                                 		// start again from column 0
 	else {
 		DispCol++;}                                   		// prepare for next column
-  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
-    REG_PIOD_CODR = 15;                               // clear strobe select signals
-    REG_PIOD_SODR = DispCol;                          // set display column
-    REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
-    byte Buf = ~(*(DispRow1+2*DispCol));
-    REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the upper row
-    REG_PIOC_SODR = 524288;                           // use Sel8
-    REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
-    Buf = ~(*(DispRow1+2*DispCol+1));
-    REG_PIOC_SODR = Buf<<1;                           // set 2nd byte of the display pattern for the upper row
-    REG_PIOC_SODR = 262144;                           // use Sel9
-    REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
-    Buf = ~(*(DispRow2+2*DispCol));
-    REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
-    REG_PIOC_SODR = 131072;                           // use Sel10
-    REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
-    Buf = ~(*(DispRow2+2*DispCol+1));
-    REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
-    REG_PIOC_SODR = 65536;}                           // use Sel11   
-  else {
-  	REG_PIOD_CODR = 15;                               // clear strobe select signals
-  	REG_PIOD_SODR = DispCol;                          // set display column
-  	REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
-  	REG_PIOC_SODR = *(DispRow1+2*DispCol)<<1;         // set 1st byte of the display pattern for the upper row
-  	REG_PIOC_SODR = 524288;                           // use Sel8
-  	REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
-  	REG_PIOC_SODR = *(DispRow1+2*DispCol+1)<<1;       // set 2nd byte of the display pattern for the upper row
-  	REG_PIOC_SODR = 262144;                           // use Sel9
-  	REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
-  	REG_PIOC_SODR = *(DispRow2+2*DispCol)<<1;         // set 1st byte of the display pattern for the lower row
-  	REG_PIOC_SODR = 131072;                           // use Sel10
-  	REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
-  	REG_PIOC_SODR = *(DispRow2+2*DispCol+1)<<1;       // set 1st byte of the display pattern for the lower row
-  	REG_PIOC_SODR = 65536;}                           // use Sel11
+	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+		REG_PIOD_CODR = 15;                               // clear strobe select signals
+		REG_PIOD_SODR = DispCol;                          // set display column
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		byte Buf = ~(*(DispRow1+2*DispCol));
+		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the upper row
+		REG_PIOC_SODR = 524288;                           // use Sel8
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		Buf = ~(*(DispRow1+2*DispCol+1));
+		REG_PIOC_SODR = Buf<<1;                           // set 2nd byte of the display pattern for the upper row
+		REG_PIOC_SODR = 262144;                           // use Sel9
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		Buf = ~(*(DispRow2+2*DispCol));
+		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 131072;                           // use Sel10
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		Buf = ~(*(DispRow2+2*DispCol+1));
+		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 65536;}                           // use Sel11
+	else {
+		REG_PIOD_CODR = 15;                               // clear strobe select signals
+		REG_PIOD_SODR = DispCol;                          // set display column
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_SODR = *(DispRow1+2*DispCol)<<1;         // set 1st byte of the display pattern for the upper row
+		REG_PIOC_SODR = 524288;                           // use Sel8
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_SODR = *(DispRow1+2*DispCol+1)<<1;       // set 2nd byte of the display pattern for the upper row
+		REG_PIOC_SODR = 262144;                           // use Sel9
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_SODR = *(DispRow2+2*DispCol)<<1;         // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 131072;                           // use Sel10
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_SODR = *(DispRow2+2*DispCol+1)<<1;       // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 65536;}                           // use Sel11
 
 	// Timers
 
 	if (!BlockTimers) {
-		buff = ActiveTimers;
+		Buff = ActiveTimers;
 		i = 1;
-		while (buff) {                                		// Number of timers to process (active timers)
+		while (Buff) {                                		// Number of timers to process (active timers)
 			if (TimerValue[i]) {                        		// Timer active?
-				buff--;                                   		// Decrease number of timers to process
+				Buff--;                                   		// Decrease number of timers to process
 				TimerValue[i]--;                          		// Decrease timer value
 				if (TimerValue[i]==0) {                   		// Timer run out?
 					c = 0;
@@ -521,15 +533,10 @@ void TC7_Handler() {                                  // interrupt routine - run
 			if (LampCol == 8){                              // max column reached?
 				LampCol = 0;
 				LampColMask = 2;
-				for (i=0; i<8; i++) {                         // write select pattern to buffer
-					if (*(Lamp+i+1)) {
-						REG_PIOC_SODR = c;}
-					c = c<<1;}}
+				c = LampColumns[LampCol];}										// column 0 is always from LampColumns
 			else {
-				for (i=0; i<8; i++) {                         // write select pattern to buffer
-					if (*(LampPattern+LampCol*8+i+1)) {
-						REG_PIOC_SODR = c;}
-					c = c<<1;}}
+				c = *(LampPattern+LampCol);}									// columns > 0 are referenced via LampPattern
+			REG_PIOC_SODR = c<<1;														// write lamp pattern
 			REG_PIOC_SODR = 33554432;                       // use Sel1
 			REG_PIOC_CODR = AllSelects + AllData;           // clear all select signals and the data bus
 			REG_PIOC_SODR = LampColMask;
@@ -547,15 +554,10 @@ void TC7_Handler() {                                  // interrupt routine - run
 			REG_PIOC_CODR = AllData;
 			c = 2;
 			if (!LampCol){                                  // max column reached?
-				for (i=0; i<8; i++) {                         // write select pattern to buffer
-					if (*(Lamp+i+1)) {
-						REG_PIOC_SODR = c;}
-					c = c<<1;}}
+				c = LampColumns[LampCol];}
 			else {
-				for (i=0; i<8; i++) {                         // write select pattern to buffer
-					if (*(LampPattern+LampCol*8+i+1)) {
-						REG_PIOC_SODR = c;}
-					c = c<<1;}}
+				c = *(LampPattern+LampCol);}
+			REG_PIOC_SODR = c<<1;														// write lamp pattern
 			if (LEDFlag) {
 				LEDFlag = false;
 				REG_PIOC_CODR = Sel5;}                        // activate Sel5 falling edge
@@ -671,8 +673,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 					*Buffer32b = 402655232;											// 2048 on both channels and the channel tag
 					Buffer32b++;}
 				g_Sound.next = Buffer32b;
-				g_Sound.enqueue();}}}
-}
+				g_Sound.enqueue();}}}}
 
 void loop() {
 	c = 0;                                  						// initialize counter
@@ -683,7 +684,7 @@ void loop() {
 				SwEvents[1-SwitchStack]--;										// decrease number of pending events
 				i = ChangedSw[1-SwitchStack][c];							// buffer the switch number
 				ChangedSw[1-SwitchStack][c] = 0;							// clear the event
-				if (Switch[i]) {                              // process SET switches
+				if (QuerySwitch(i)) {                         // process SET switches
 					Switch_Pressed(i);}													// access the set switch handler
 				else {																				// process released switches
 					Switch_Released(i);}}												// access the released switch handler
@@ -792,6 +793,22 @@ void SwitchReleased(int SwNumber) {
 void DummyProcess(byte Dummy) {
 	UNUSED(Dummy);
 }
+
+bool QuerySwitch(byte Switch) {												// return status of switch
+	Switch--;																						// arrays start with 0
+	return !(SwitchRows[(Switch - (Switch % 8))/8] & SwitchMask[Switch % 8]);}
+
+void TurnOnLamp(byte Lamp) {
+	Lamp--;
+	LampColumns[(Lamp - (Lamp % 8))/8] |= 1<<(Lamp % 8);}
+
+void TurnOffLamp(byte Lamp) {
+	Lamp--;
+	LampColumns[(Lamp - (Lamp % 8))/8] &= 255-(1<<(Lamp % 8));}
+
+bool QueryLamp(byte Lamp) {
+	Lamp--;
+	return LampColumns[(Lamp - (Lamp % 8))/8] & 1<<(Lamp % 8);}
 
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
 	byte i = 1;                                     		// reset counter
@@ -1125,9 +1142,9 @@ void ReleaseSolenoid(byte Solenoid) {
 	else {                                          		// if yes
 		ActivateTimer(1, Solenoid, ReleaseSolenoid);}}		// try again later
 
-bool SolenoidStatus(byte Solenoid) {                  // determine the current state of a solenoid
-	bool State = SolBuffer[Solenoid / 8] & (1<<((Solenoid % 8)-1));
-	return State;}
+bool QuerySolenoid(byte Solenoid) {                  	// determine the current state of a solenoid
+	Solenoid--;
+	return SolBuffer[Solenoid / 8] & (1<<(Solenoid % 8));}
 
 void ActA_BankSol(byte Solenoid) {
 	if (!SolWaiting[NextSolSlot][0]) {
@@ -1395,7 +1412,10 @@ void BlinkLamps(byte BlTimer) {
 			c++;
 			if (c > 65) {                          					// max 64 blink timers possible (starting from 1)
 				ErrorHandler(3,BlTimer,BlinkingNo[BlTimer]);}}// show error 3
-		Lamp[BlinkingLamps[BlTimer][c]] = BlinkState[BlTimer]; // toggle the state of the lamps
+				if (BlinkState[BlTimer]) { 										// toggle the state of the lamps
+					TurnOnLamp(BlinkingLamps[BlTimer][c]);}
+				else {
+					TurnOffLamp(BlinkingLamps[BlTimer][c]);}
 		c++;}
 	BlinkState[BlTimer] = !BlinkState[BlTimer];         // invert the target state for the next run
 	BlinkTimer[BlTimer] = ActivateTimer(BlinkPeriod[BlTimer], BlTimer, BlinkLamps);} // and start a new timer
@@ -1452,7 +1472,7 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
 					b++;                                        // increase the number of active lamps found for this blink timer
 					if (BlinkingLamps[x][y] == LampNo) {        // is it the lamp to be removed?
 						BlinkingLamps[x][y] = 0;                  // delete it from the list
-						Lamp[LampNo] = false;                     // turn it off
+						TurnOffLamp(LampNo);                     	// turn it off
 						BlinkingNo[x]--;                          // decrease the number of lamps controlled by this timer
 						if (!BlinkingNo[x]) {                     // = 0?
 							KillTimer(BlinkTimer[x]);               // kill the timer
@@ -1467,21 +1487,23 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
 			ErrorHandler(8,0,LampNo);}}}        						// show error 8
 
 void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3) {
-	WriteUpper2("ERROR           ");                      // Show Error Message
+	WriteUpper2("ERROR           ");                    // Show Error Message
 	WriteLower2("                ");
-	//LampPattern = NoLamps;                             // Turn off all lamps
 	Serial.print("Error = ");
 	Serial.println(Error);
 	Serial.print("Number2 = ");
 	Serial.println(Number2);
 	Serial.print("Number3 = ");
 	Serial.println(Number3);
-  //KillAllTimers();
-	//ReleaseAllSolenoids();
 	ShowNumber(15, Error);
 	ShowNumber(23, Number2);
 	ShowNumber(31, Number3);
-	SwitchDisplay(0);}
+	SwitchDisplay(0);
+	if (APC_settings[DebugMode]) {
+		LampPattern = NoLamps;                            // Turn off all lamps
+		KillAllTimers();
+		ReleaseAllSolenoids();
+		while(true) {}}}
 
 void ShowFileNotFound(String Filename) {							// show file not found message
 	Filename.toUpperCase();															// convert filename to upper case characters
@@ -1494,9 +1516,9 @@ void ShowFileNotFound(String Filename) {							// show file not found message
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being zero
 	unsigned int Buffer = (PatPointer+Step)->Duration;  // buffer the duration for the current pattern
 	if (StrobeLightsTimer) {
-		LampBuffer = ((PatPointer+Step)->Pattern)-8;}     // show the pattern
+		LampBuffer = ((PatPointer+Step)->Pattern)-1;}     // show the pattern
 	else {
-		LampPattern = ((PatPointer+Step)->Pattern)-8;}    // show the pattern
+		LampPattern = ((PatPointer+Step)->Pattern)-1;}    // show the pattern
 	Step++;                                             // increase the pattern number
 	if (!((PatPointer+Step)->Duration)) {               // if the duration for the next pattern is 0
 		Step = 0;                                         // reset the pattern
@@ -1704,7 +1726,7 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 	case 72:																						// Advance button pressed
 		StopPlayingMusic();
 		analogWrite(VolumePin, 255);
-		if (!digitalRead(UpDown)) {												// go forward or backward depending on UpDown switch
+		if (QuerySwitch(73)) {														// go forward or backward depending on UpDown switch
 			AppByte++;																			// show next setting
 			if (!SettingsList[AppByte].EventPointer) {			// end marker of settings list reached?
 				AppByte = 0;}}																// switch to the first
@@ -1788,7 +1810,7 @@ void ExitSettings(bool change) {											// exit settings and save them if nec
 void HandleNumSetting(bool change) {									// handling method for numeric settings
 	if (change) {																				// if the start button has been pressed
 		AppByte2 = 1;																			// set the change indicator
-		if (!digitalRead(UpDown)) {												// go forward or backward depending on UpDown switch
+		if (QuerySwitch(73)) {														// go forward or backward depending on UpDown switch
 			if (SettingsPointer[AppByte] != SettingsList[AppByte].UpperLimit) { // upper numeric limit reached?
 				SettingsPointer[AppByte]++;}}									// if limit not reached just increase the numeric value
 		else {																						// if the start button has not been pressed
@@ -1800,7 +1822,7 @@ void HandleNumSetting(bool change) {									// handling method for numeric sett
 void HandleTextSetting(bool change) {									// handling method for text settings
 	if (change) {																				// if the start button has been pressed
 		AppByte2 = 1;																			// set the change indicator
-		if (!digitalRead(UpDown)) {												// go forward or backward depending on UpDown switch
+		if (QuerySwitch(73)) {														// go forward or backward depending on UpDown switch
 			if (SettingsPointer[AppByte] == SettingsList[AppByte].UpperLimit) { // last text setting reached?
 				SettingsPointer[AppByte] = 0;}								// start from 0
 			else {

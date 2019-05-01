@@ -28,7 +28,7 @@ byte PB_LampsToLight = 2;															// number of lamps to light when chest i
 byte *PB_ChestPatterns;                               // pointer to the current chest lamp pattern
 uint16_t PB_ChestPatternCounter = 0;                  // counter for the current chest lamp pattern to be shown
 
-const unsigned int PB_SolTimes[32] = {50,20,30,70,50,200,30,30,0,0,0,0,0,0,100,100,50,0,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
+const unsigned int PB_SolTimes[32] = {50,30,30,70,50,200,30,30,0,0,0,0,0,0,100,100,50,0,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[10] = {3,4,5,17,19,22,6,20,21,0}; // coils to fire when the ball watchdog timer runs out
 const byte PB_OpenVisorSeq[45] = {26,30,26,30,26,30,27,5,31,5,32,5,29,5,29,5,26,5,29,2,29,3,29,7,29,8,29,5,29,4,26,2,27,5,31,5,32,5,29,5,28,5,26,10,0};
 const byte PB_MultiballSeq[69] = {16,5,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,7,0,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,5,15,10,8,0,0};
@@ -49,84 +49,85 @@ struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
 
-																	 //  DurationXX0910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364
-const struct LampPat PB_AttractPat1[5] = {{150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-														           		{150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
-																					{150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1},
-																					{150,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,1,1,1,1},
-																					{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+																		// Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
+																		// Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
+const struct LampPat PB_AttractPat1[5] = {{150,0b00000000,0b00000000,0b00000000,0b00000000,0b00100000,0b00000000,0b00000000},
+														           		{150,0b00000000,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b00000000},
+																					{150,0b00000000,0b00000000,0b11111000,0b11111000,0b11011000,0b11111000,0b11111000},
+																					{150,0b10000000,0b00111111,0b11111000,0b10001000,0b10001000,0b10001000,0b11111000},
+																					{0,0,0,0,0,0,0,0}};
 
-const struct LampPat PB_AttractPat2[5] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0},
- 																					{150,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0,1,1,1,0,1,0,0,0,1,1,1,0,1,0,0,0,0,0,0,0},
-																					{150,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,1,1,1,1,1,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1},
-																					{150,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,1,1,1,1},
-																					{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+const struct LampPat PB_AttractPat2[5] = {{150,0b00010000,0b11000000,0b00000111,0b00000110,0b00100001,0b00000110,0b00000010},
+ 																					{150,0b00100011,0b00000000,0b00000000,0b01110000,0b01110010,0b01110001,0b00000001},
+																					{150,0b01001100,0b00000000,0b11111000,0b11111001,0b11011100,0b11111000,0b11111000},
+																					{150,0b10000000,0b00111111,0b11111000,0b10001000,0b10001000,0b10001000,0b11111000},
+																					{0,0,0,0,0,0,0,0}};
 
-const struct LampPat PB_AttractPat3[4] = {{150,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0},
- 																					{150,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0},
-																					{150,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-																					{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+const struct LampPat PB_AttractPat3[4] = {{150,0b00010000,0b11000000,0b00000111,0b00000110,0b00000001,0b00000110,0b00000010},
+ 																					{150,0b00100011,0b00000000,0b00000000,0b00000000,0b00000010,0b00000001,0b00000001},
+																					{150,0b01001100,0b00000000,0b00000000,0b00000001,0b00000100,0b00000000,0b00000000},
+																					{0,0,0,0,0,0,0,0}};
 
-const struct LampPat PB_AttractPat4[36] = {{150,0,1,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-																					{150,0,1,1,0,0,1,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-																					{150,0,0,1,1,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0},
-																					{150,0,0,0,1,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0},
-																					{150,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0},
-																					{150,0,1,0,0,1,0,0,0,1,1,1,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0},
-																					{150,0,1,1,0,0,1,0,0,1,1,1,0,0,0,0,0,1,1,0,0,1,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0},
-																					{150,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0},
-																					{150,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1,0,0,1,0,0,0,0,1,1,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0},
-																					{150,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,1,0,0,0,0,0,1,1,1,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,1,1,0,0,0},
-																					{150,0,1,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,1,1,0,0},
-																					{150,0,1,1,0,0,1,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,1,1,1,1,0},
-																					{150,0,0,1,1,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1},
-																					{150,0,0,0,1,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,1},
-																					{150,0,0,0,0,1,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,1,1,1},
-																					{150,0,1,0,0,1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,0,0,1,1,1,1,0,0,0,0,1,0,0,0,0,0,0,1,1},
-																					{150,0,1,1,0,0,1,0,0,1,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,1},
-																					{150,0,0,1,1,0,1,1,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0},
-																					{150,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0},
-																					{150,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,1,1,1,1,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0},
-																					{150,0,1,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,1,1,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0},
-																					{150,0,1,1,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,0},
-																					{150,0,0,1,1,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,1,1,1,0,0,1,0,0,0,0,0,0},
-																					{150,0,0,0,1,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,1,0,1,0,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
-																					{150,0,0,0,0,1,0,0,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,1,1,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
-																					{150,0,1,0,0,1,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,1,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0},
-																					{150,0,1,1,0,0,1,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,0,1,0,0,1,0,0,0,0,0,0},
-																					{150,0,0,1,1,0,1,1,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0},
-																					{150,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0},
-																					{150,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0},
-																					{150,0,1,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0},
-																					{150,0,1,1,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-																					{150,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-																					{150,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-																					{150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-																					{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+const struct LampPat PB_AttractPat4[36] ={{150,0b10000001,0b00000101,0b10000000,0b00000000,0b00000000,0b00000001,0b00000000},
+																					{150,0b10010011,0b00001101,0b11000000,0b00000100,0b00000000,0b00000011,0b00000000},
+																					{150,0b00110110,0b00011000,0b11100000,0b00000100,0b00000001,0b00000010,0b00000010},
+																					{150,0b01100100,0b00110000,0b11110000,0b00000001,0b00000011,0b00000000,0b00000011},
+																					{150,0b01001000,0b01100000,0b11111000,0b00000011,0b00000110,0b00000100,0b00000001},
+																					{150,0b10001001,0b11000011,0b01111000,0b00001010,0b00000100,0b00000100,0b00000011},
+																					{150,0b10010011,0b10000011,0b00111001,0b00001100,0b00001000,0b00000010,0b00000010},
+																					{150,0b00110110,0b00000000,0b00011011,0b00001100,0b00001001,0b00001011,0b00000000},
+																					{150,0b01100100,0b00000000,0b00001110,0b00001001,0b00001011,0b00001001,0b00001000},
+																					{150,0b01001000,0b00000000,0b00000100,0b00001011,0b00001110,0b00001011,0b00011000},
+																					{150,0b10001001,0b00000001,0b00000000,0b00000010,0b00001100,0b00001010,0b00111010},
+																					{150,0b10010011,0b00000101,0b00000000,0b00000100,0b00000000,0b00001000,0b01111011},
+																					{150,0b00110110,0b00001100,0b00000000,0b00000100,0b00000001,0b00000000,0b11111001},
+																					{150,0b01100100,0b00011000,0b00000000,0b00000001,0b00000011,0b10000000,0b11110011},
+																					{150,0b01001000,0b00110000,0b00000000,0b00000011,0b10000110,0b10000010,0b11100010},
+																					{150,0b10001001,0b01100001,0b00000000,0b10000010,0b10000100,0b10000111,0b11000000},
+																					{150,0b10010011,0b11000011,0b00000000,0b11000100,0b10000000,0b10000101,0b10000000},
+																					{150,0b00110110,0b10000010,0b00000001,0b11100100,0b10000001,0b10000011,0b00000000},
+																					{150,0b01100100,0b00000000,0b00000011,0b11110001,0b10000011,0b00000010,0b00000010},
+																					{150,0b01001000,0b00000000,0b00000110,0b11110011,0b00010110,0b00000000,0b00000011},
+																					{150,0b10001001,0b00000001,0b00000100,0b01110010,0b00010100,0b00010000,0b00000001},
+																					{150,0b10010011,0b00000001,0b00000000,0b00110100,0b00010000,0b00110000,0b00000011},
+																					{150,0b00110110,0b00000100,0b00000000,0b00010100,0b00010001,0b01110010,0b00000010},
+																					{150,0b01100100,0b00001100,0b00000000,0b00000001,0b01010011,0b01110011,0b00000000},
+																					{150,0b01001000,0b00011000,0b00000000,0b00000011,0b01100110,0b01110001,0b00000000},
+																					{150,0b10001001,0b00110001,0b00000000,0b00000010,0b01100100,0b01100011,0b00000000},
+																					{150,0b10010011,0b01100001,0b00000000,0b00000100,0b01100000,0b01000110,0b00000010},
+																					{150,0b00110110,0b11000010,0b00000000,0b00000100,0b01100001,0b00000100,0b00000011},
+																					{150,0b01100100,0b10000010,0b00000001,0b00000001,0b00100011,0b00000000,0b00000001},
+																					{150,0b01001000,0b00000000,0b00000011,0b00000011,0b00000110,0b00000000,0b00000011},
+																					{150,0b10010001,0b00000001,0b00000011,0b00000010,0b00000100,0b00000010,0b00000010},
+																					{150,0b10010011,0b00000001,0b00000110,0b00000100,0b00000000,0b00000011,0b00000000},
+																					{150,0b00110110,0b00000000,0b00000100,0b00000100,0b00000000,0b00000001,0b00000000},
+																					{150,0b00100100,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+																					{150,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+																					{0,0,0,0,0,0,0,0}};
 																 //  DurationXX0910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364
-const struct LampPat PB_OpenVisorPat[23] = {{100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1,0,0,0,1,0,0,1,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0,0,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1},
-                                            {100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1},                                                                                                                            
-                                            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+const struct LampPat PB_OpenVisorPat[23] = {{100,0b00000000,0b00000000,0b00001000,0b00001000,0b00001000,0b00001000,0b00001000},
+                                            {100,0b00000000,0b00000000,0b00011000,0b00011000,0b00011000,0b00011000,0b00011000},
+                                            {100,0b00000000,0b00000000,0b00111000,0b00111000,0b00111000,0b00111000,0b00111000},
+                                            {100,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b01110000,0b01110000},
+                                            {100,0b00000000,0b00000000,0b11100000,0b11100000,0b11100000,0b11100000,0b11100000},
+                                            {100,0b00000000,0b00000000,0b11001000,0b11001000,0b11001000,0b11001000,0b11001000},
+                                            {100,0b00000000,0b00000000,0b10011000,0b10011000,0b10011000,0b10011000,0b10011000},
+                                            {100,0b00000000,0b00000000,0b00111000,0b00111000,0b00111000,0b00111000,0b00111000},
+                                            {100,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b01110000,0b01110000},
+                                            {100,0b00000000,0b00000000,0b11100000,0b11100000,0b11100000,0b11100000,0b11100000},
+                                            {100,0b00000000,0b00000000,0b11001000,0b11001000,0b11001000,0b11001000,0b11001000},
+                                            {100,0b00000000,0b00000000,0b10011000,0b10011000,0b10011000,0b10011000,0b10011000},
+                                            {100,0b00000000,0b00000000,0b00111000,0b00111000,0b00111000,0b00111000,0b00111000},
+                                            {100,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b01110000,0b01110000},
+                                            {100,0b00000000,0b00000000,0b11100000,0b11100000,0b11100000,0b11100000,0b11100000},
+                                            {100,0b00000000,0b00000000,0b11001000,0b11001000,0b11001000,0b11001000,0b11001000},
+                                            {100,0b00000000,0b00000000,0b10011000,0b10011000,0b10011000,0b10011000,0b10011000},
+                                            {100,0b00000000,0b00000000,0b00111000,0b00111000,0b00111000,0b00111000,0b00111000},
+                                            {100,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b01110000,0b01110000},
+                                            {100,0b00000000,0b00000000,0b11100000,0b11100000,0b11100000,0b11100000,0b11100000},
+                                            {100,0b00000000,0b00000000,0b11000000,0b11000000,0b11000000,0b11000000,0b11000000},
+                                            {100,0b00000000,0b00000000,0b10000000,0b10000000,0b10000000,0b10000000,0b10000000},
+                                            {0,0,0,0,0,0,0,0}};
                                       
 const struct LampFlow PB_AttractFlow[5] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{2,PB_AttractPat4},{0,0}};
 
@@ -287,13 +288,12 @@ void PB_AttractModeSW(byte Select) {
 			analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
 		else {
 			digitalWrite(VolumePin,HIGH);}                  // turn off the digital volume control
-		// StrobeLightsTimer = 0;
 		ByteBuffer3 = 0;
 		Switch_Pressed = AddPlayerSW;
-		for (i=0; i< LampMax+1; i++) {
-			Lamp[i] = false;}
-		LampPattern = Lamp;
-		Lamp[3] = true;                                 	// turn on Ball in Play lamp
+		for (i=0; i< 8; i++) {
+			LampColumns[i] = 0;}
+		LampPattern = LampColumns;
+		TurnOnLamp(3);                                 		// turn on Ball in Play lamp
 		NoPlayers = 0;
 		WriteUpper("              ");
 		WriteLower("              ");
@@ -313,9 +313,9 @@ void PB_AttractModeSW(byte Select) {
 		Multiballs = 1;
 		Bonus = 1;
 		BonusMultiplier = 1;
-		if (Switch[49] || Switch[50] || Switch[51]) {			// any drop target down?
+		if (QuerySwitch(49) || QuerySwitch(50) || QuerySwitch(51)) {			// any drop target down?
 			ActA_BankSol(4);}																// reset it
-		if (!Switch[44]) {																// ramp in up state?
+		if (!QuerySwitch(44)) {														// ramp in up state?
 			ActA_BankSol(6);}																// put it down
 		ActivateSolenoid(0, 12);                          // turn off playfield GI
 		AfterSound = PB_GameStart;                        // release a new ball (2 expected balls in the trunk)
@@ -342,11 +342,10 @@ void PB_AttractModeSW(byte Select) {
 		RemoveBlinkLamp(1);                               // stop the blinking of the game over lamp
 		BlinkScore(0);
 		KillAllTimers();
-		// StrobeLightsTimer = 0;
 		ByteBuffer3 = 0;
 		LampPattern = NoLamps;                          	// Turn off all lamps
 		ReleaseAllSolenoids();
-		if (digitalRead(UpDown)) {
+		if (!QuerySwitch(73)) {														// Up/Down switch pressed?
 			WriteUpper("  TEST  MODE  ");
 			WriteLower("              ");
 			AppByte = 0;
@@ -370,13 +369,13 @@ void AddPlayerSW(byte Switch) {
 
 void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are locked and release them
 	UNUSED(Dummy);
-	if (Switch[16]) {                                   // for the outhole
+	if (QuerySwitch(16)) {                              // for the outhole
 		ActA_BankSol(1);}
-	if (Switch[38]) {                                   // for the single eject hole
+	if (QuerySwitch(38)) {                              // for the single eject hole
 		ActA_BankSol(3);}
-	if (Switch[25] || Switch[26]) {                     // for the eyes
-		if (Switch[47]) {																	// visor is open
-			if (Switch[25]) {																// left eye
+	if (QuerySwitch(25) || QuerySwitch(26)) {           // for the eyes
+		if (QuerySwitch(47)) {														// visor is open
+			if (QuerySwitch(25)) {													// left eye
 				ActA_BankSol(7);}															// eject ball
 			else {																					// right eye
 				ActA_BankSol(8);}}														// eject ball
@@ -384,7 +383,7 @@ void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are lock
 			ActivateSolenoid(0, 13);												// activate visor motor
 			ActivateTimer(2000, 0, PB_OpenVisor);}}					// ignore the visor switch for 2 seconds
 	else {																							// no balls in lock
-		if (!Switch[46]) {																// visor not closed
+		if (!QuerySwitch(46)) {																// visor not closed
 			ActivateSolenoid(0, 13);												// activate visor motor
 			ActivateTimer(2000, 0, PB_CloseVisor);}}}				// ignore the visor switch for 2 seconds
 
@@ -399,7 +398,7 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 	Bonus = 1;
 	BonusMultiplier = 1;                                // reset bonus multiplier
 	for (i=0; i<4; i++) {                               // turn off the corresponding lamps
-		Lamp[9+i] = false;}
+		TurnOffLamp(9+i);}
 	PB_SkillMultiplier = 0;                             // reset skill shot multiplier
 	*(DisplayUpper+16) = LeftCredit[32 + 2 * Ball]; 		// show current ball in left credit
 	//*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
@@ -410,14 +409,14 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 		PB_Chest_Status[Player] = PB_Chest_Status[Player] - 100; // use it as a counter for opened visors
 		PB_LampsToLight = 1;
 		PB_ChestMode = 0;                                 // indicate an open visor
-		if (!Switch[47]) {                                // visor not already open?
+		if (!QuerySwitch(47)) {                           // visor not already open?
 			PB_OpenVisorFlag = true;
 			ActivateSolenoid(0, 13);}                       // open visor
 		PB_EyeBlink(1);
 		PB_ChestPatterns = (byte*)PB_WalkingLines;        // set chest lamps pattern
 		PB_ChestLightsTimer = ActivateTimer(500, 0, PB_StartChestPattern);} // start player
 	else {
-		if (!Switch[46]) {                                // visor not already closed?
+		if (!QuerySwitch(46)) {                           // visor not already closed?
 			PB_CloseVisorFlag = true;
 			ActivateSolenoid(0, 13);}                       // close visor
 		if (PB_LitChestLamps) {                           // chest lamps lit?
@@ -433,15 +432,15 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 		PB_LampsToLight = 2;}
 	for (i=0; i<4; i++) {                               // restore extra ball lamps
 		if (i<PB_ExBallsLit[Player]){
-			Lamp[PB_ExBallLamps[i]] = true;}
+			TurnOnLamp(PB_ExBallLamps[i]);}
 		else {
-			Lamp[PB_ExBallLamps[i]] = false;}}
+			TurnOffLamp(PB_ExBallLamps[i]);}}
 	if (PB_EjectMode[Player] < 5) {
 		for (i=0; i<PB_EjectMode[Player]; i++) {
-			Lamp[13+i] = true;}}
+			TurnOnLamp(13+i);}}
 	else {
 		for (i=0; i<(PB_EjectMode[Player]-5); i++) {
-			Lamp[13+i] = true;}
+			TurnOnLamp(13+i);}
 		AddBlinkLamp(PB_EjectMode[Player]+8, 100);}
 	PB_DropBlinkLamp = 41;
 	PB_CycleDropLights(1);															// start the blinking drop target lights
@@ -449,9 +448,9 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
 		AddBlinkLamp(18+game_settings[PB_ReachPlanet],100);}		// let target planet blink
 	for (i=0; i<9; i++) {                               // update planets
 		if (PB_Planet[Player] > i) {
-			Lamp[19+i] = true;}
+			TurnOnLamp(19+i);}
 		else {
-			Lamp[19+i] = false;}}
+			TurnOffLamp(19+i);}}
 	PB_GiveBall(Balls);}
 
 void PB_GiveBall(byte Balls) {
@@ -467,7 +466,7 @@ void PB_GiveBall(byte Balls) {
 	if (game_settings[PB_BallSaver]) {									// activate ball saver if enabled
 		PB_BallSave = 1;}
 	PB_SkillShot = true;                                // the first shot is a skill shot
-	if (!Switch[20]) {																	// ball not yet in shooter lane?
+	if (!QuerySwitch(20)) {															// ball not yet in shooter lane?
 		Switch_Released = DummyProcess;
 		ActA_BankSol(2);                          				// release ball
 		Switch_Pressed = PB_BallReleaseCheck;             // set switch check to enter game
@@ -541,7 +540,7 @@ void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
 	byte c = PB_CountBallsInTrunk();
 	if (c == Balls) {                             			// expected number of balls in trunk
 		WriteUpper("  BALL MISSING");
-		if (Switch[16]) {                                 // outhole switch still active?
+		if (QuerySwitch(16)) {                            // outhole switch still active?
 			ActA_BankSol(1);}}															// shove the ball into the trunk
 	else {																							//
 		if (c == 5) {																			// balls not settled
@@ -559,7 +558,7 @@ void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
 byte PB_CountBallsInTrunk() {
 	byte Balls = 0;
 	for (i=0; i<2; i++) {                               // check how many balls are on the ball ramp
-		if (Switch[17+i]) {
+		if (QuerySwitch(17+i)) {
 			if (Balls < i) {
 				return 5;}                                    // send warning
 			Balls++;}}
@@ -567,11 +566,11 @@ byte PB_CountBallsInTrunk() {
 
 void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
 	BallWatchdogTimer = 0;
-	if (Switch[16]) {																		// ball in outhole?
+	if (QuerySwitch(16)) {															// ball in outhole?
 		BlockOuthole = false;
 		ActivateTimer(1000, 0, PB_ClearOuthole);}
 	else {
-		if (Switch[20]) {																	// if ball is waiting to be launched
+		if (QuerySwitch(20)) {														// if ball is waiting to be launched
 			BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}	// restart watchdog
 		else {  																					// if ball is really missing
 			byte c = PB_CountBallsInTrunk();								// recount all balls
@@ -587,7 +586,7 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
 				else {
 					byte c2 = 0;
 					for (i=0; i<2; i++) {                       // count balls in lock
-						if (Switch[25+i]) {
+						if (QuerySwitch(25+i)) {
 							c2++;}}
 					if (c2 > InLock) {													// more locked balls found than expected?
 						PB_HandleLock(0);													// lock them
@@ -602,7 +601,7 @@ void PB_SearchBall(byte Counter) {										// ball watchdog timer has run out
 						Counter++;
 						if (Counter == 9) {												// all coils fired?
 							Counter = 0;}														// start again
-						if (Switch[46] && !SolenoidStatus(13)) {	// visor closed and motor not active?
+						if (QuerySwitch(46) && !QuerySolenoid(13)) {	// visor closed and motor not active?
 							ActivateSolenoid(0, 13);								// open it enough to deactivate switch 46
 							ActivateTimer(2000, 0, PB_CloseVisor);}	// and prepare to close it again
 						BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}}}}}} // come again in 1s if no switch is activated
@@ -617,7 +616,7 @@ void PB_CloseVisor(byte Dummy) {
 
 void PB_ClearOuthole(byte Event) {
 	UNUSED(Event);
-	if (Switch[16]) {                                   // outhole switch still active?
+	if (QuerySwitch(16)) {                              // outhole switch still active?
 		if (!BlockOuthole && !C_BankActive) {							// outhole blocked?
 			BlockOuthole = true;														// block outhole until this ball has been processed
 			ActivateSolenoid(30, 1);                        // put ball in trunk
@@ -747,23 +746,23 @@ void PB_GameMain(byte Switch) {
 			AddBlinkLamp(33, 250);}
 		else {
 			PB_AddBonus(3);
-			if (Lamp[49]) {
-				Lamp[49] = false;
+			if (QueryLamp(49)) {
+				TurnOffLamp(49);
 				PB_ExBallsLit[Player]--;
 				PB_GiveExBall();}}
 		break;
 	case 13:                                            // left inlane
 		PB_AddBonus(1);
-		Lamp[18] = true;
-		if (Lamp[50]) {
-			Lamp[50] = false;
+		TurnOnLamp(18);
+		if (QueryLamp(50)) {
+			TurnOffLamp(50);
 			PB_ExBallsLit[Player]--;
 			PB_GiveExBall();}
 		break;
 	case 14:                                            // right inlane
 		PB_AddBonus(1);
-		if (Lamp[58]) {
-			Lamp[58] = false;
+		if (QueryLamp(58)) {
+			TurnOffLamp(58);
 			PB_ExBallsLit[Player]--;
 			PB_GiveExBall();}
 		if (PB_EjectMode[Player] < 5) {
@@ -779,8 +778,8 @@ void PB_GameMain(byte Switch) {
 			AddBlinkLamp(33, 250);}
 		else {
 			PB_AddBonus(3);
-			if (Lamp[57]) {
-				Lamp[57] = false;
+			if (QueryLamp(57)) {
+				TurnOffLamp(57);
 				PB_ExBallsLit[Player]--;
 				PB_GiveExBall();}}
 		break;
@@ -788,11 +787,11 @@ void PB_GameMain(byte Switch) {
 		ActivateTimer(200, 0, PB_ClearOuthole);           // check again in 200ms
 		break;
 	case 19:                                            // advance planet
-		if (Lamp[51]) {                                   // special lit?
-			Lamp[51] = false;
+		if (QueryLamp(51)) {                              // special lit?
+			TurnOffLamp(51);
 			PB_AddExBall();}
-		if (Lamp[18]) {                                   // advance planet lit?
-			Lamp[18] = false;
+		if (QueryLamp(18)) {                              // advance planet lit?
+			TurnOffLamp(18);
 			PB_AddBonus(1);
 			PB_AdvancePlanet();}
 		break;
@@ -867,12 +866,12 @@ void PB_GameMain(byte Switch) {
 			else {
 				if (PB_EjectMode[Player] == 9) {
 					RemoveBlinkLamp(15);
-					Lamp[15] = true;
+					TurnOnLamp(15);
 					PB_EjectMode[Player] = 4;
 					Points[Player] += Multiballs * 75000;}
 				else {
 					RemoveBlinkLamp(PB_EjectMode[Player] + 8);
-					Lamp[PB_EjectMode[Player] + 8] = true;
+					TurnOnLamp(PB_EjectMode[Player] + 8);
 					PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
 					Points[Player] += Multiballs * (PB_EjectMode[Player] - 4) * 25000;
 					ShowPoints(Player);
@@ -896,7 +895,7 @@ void PB_GameMain(byte Switch) {
 			PB_ClearOutLock(0);}
 		else {                                            // solar ramp not lit
 			if (BonusMultiplier < 5) {                      // increase bonus multiplier
-				Lamp[8+BonusMultiplier] = true;               // turn on the corresponding lamp
+				TurnOnLamp(8+BonusMultiplier);               	// turn on the corresponding lamp
 				BonusMultiplier++;}
 			if (PB_SolarValue < 5000) {
 				PB_SolarValue += 50;
@@ -992,35 +991,47 @@ void PB_GameMain(byte Switch) {
 void PB_MoveExBallLamps(byte Direction) {
 	if (PB_ExBallsLit[Player]) {
 		if (Direction) {
-			Direction = Lamp[57];
+			Direction = QueryLamp(57);
 			for (byte c=0; c<3; c++) {
-				Lamp[PB_ExBallLamps[3-c]] = Lamp[PB_ExBallLamps[3-c-1]];}
-			Lamp[49] = Direction;}
+				if (QueryLamp(PB_ExBallLamps[3-c-1])) {
+					TurnOnLamp(PB_ExBallLamps[3-c]);}
+				else {
+					TurnOffLamp(PB_ExBallLamps[3-c]);}}
+			if (Direction) {
+				TurnOnLamp(49);}
+			else {
+				TurnOffLamp(49);}}
 		else {
-			Direction = Lamp[49];
+			Direction = QueryLamp(49);
 			for (byte c=0; c<3; c++) {
-				Lamp[PB_ExBallLamps[c]] = Lamp[PB_ExBallLamps[c+1]];}
-			Lamp[57] = Direction;}}}
+				if (QueryLamp(PB_ExBallLamps[c+1])) {
+					TurnOnLamp(PB_ExBallLamps[c]);}
+				else {
+					TurnOffLamp(PB_ExBallLamps[c]);}}
+			if (Direction) {
+				TurnOnLamp(57);}
+			else {
+				TurnOffLamp(57);}}}}
 
 void PB_AddExBall() {
 	if (PB_ExBallsLit[Player] < 4) {
 		PB_ExBallsLit[Player]++;
 		byte c = 0;
-		while (Lamp[PB_ExBallLamps[c]]) {
+		while (QueryLamp(PB_ExBallLamps[c])) {
 			c++;}
-		Lamp[PB_ExBallLamps[c]] = true;}}
+		TurnOnLamp(PB_ExBallLamps[c]);}}
 
 void PB_AfterExBallRelease(byte Event) {
-	if (Switch[20]) {                                   // ball still in the shooting lane?
+	if (QuerySwitch(20)) {                              // ball still in the shooting lane?
 		ActivateTimer(2000, Event, PB_AfterExBallRelease);}  // come back in2s
 	else {                                              // ball has been shot
 		RemoveBlinkLamp(33);
 		if (ExBalls) {                                    // player still has an extra balls
-			Lamp[33] = true;}}}
+			TurnOnLamp(33);}}}
 
 void PB_GiveExBall() {
 	ExBalls++;
-	Lamp[33] = true;}
+	TurnOnLamp(33);}
 
 void PB_AddBonus(byte BonusToAdd) {
 	if (Bonus < 99) {
@@ -1044,7 +1055,7 @@ void PB_ClearEjectHole(byte Solenoid) {               // activate solenoid after
 void PB_StartChestPattern(byte Dummy) {
 	UNUSED(Dummy);
 	PB_ChestPatternCounter = 0;
-	LampPattern = Lamp;
+	LampPattern = LampColumns;
 	PB_ChestLightHandler(0);}
 
 void PB_OpenVisorProc() {                   					// measures to open the visor
@@ -1072,12 +1083,12 @@ void PB_EyeBlink(byte State) {												// Blink lock flashers
 	if ((State > 1) || ((State == 1) && !Timer)) {
 		if (State == 2) {
 			ReleaseSolenoid (10);
-			if (!Switch[25]) {
+			if (!QuerySwitch(25)) {
 				ActivateSolenoid(0, 18);}
 			State = 3;}
 		else {
 			ReleaseSolenoid (18);
-			if (!Switch[26]) {
+			if (!QuerySwitch(26)) {
 				ActivateSolenoid(0, 10);}
 			State = 2;}
 		Timer = ActivateTimer(500, State, PB_EyeBlink);}
@@ -1092,9 +1103,9 @@ void PB_EyeBlink(byte State) {												// Blink lock flashers
 void PB_ChestLightHandler(byte State) {               // handle chest lights timer
 	if (State) {                                        // is there an animation for a row / column hit running?
 		if (State < 6) {                                  // turn on phase
-			Lamp[PB_ChestRows[AppByte][State-1]] = true;}
+			TurnOnLamp(PB_ChestRows[AppByte][State-1]);}
 		else {                                            // turn off phase
-			Lamp[PB_ChestRows[AppByte][State-6]] = false;}
+			TurnOffLamp(PB_ChestRows[AppByte][State-6]);}
 		State++;
 		if (State < 11) {                                 // not yet done
 			PB_ChestLightsTimer = ActivateTimer(100, State, PB_ChestLightHandler);} // come back with the current state set
@@ -1122,9 +1133,12 @@ void PB_ChestLightHandler(byte State) {               // handle chest lights tim
 				Buffer = PB_ChestPatterns[6*PB_ChestPatternCounter+x+1]; // buffer the current column
 				for (i=0; i<5; i++) {                         // for all rows
 					if (PB_ChestLamp[Player-1][x] & Mask) {     // if the lamp is stored
-						Lamp[28+8*x+i] = true;}                   // turn it on
+						TurnOnLamp(28+8*x+i);}                   	// turn it on
 					else {                                      // otherwise
-						Lamp[28+8*x+i] = Buffer & 1;}             // it is controlled by the pattern
+						if (Buffer & 1) {
+							TurnOnLamp(28+8*x+i);}
+						else {
+							TurnOffLamp(28+8*x+i);}}             		// it is controlled by the pattern
 					Mask = Mask<<1;                             // adjust the mask
 					Buffer = Buffer>>1;}}                       // and the buffer
 			PB_ChestPatternCounter++;
@@ -1135,7 +1149,7 @@ void PB_ClearChest() {                                // turn off chest lamps
 	byte y = 0;
 	for (x=0; x<5; x++) {
 		for (y=0; y<5; y++) {
-			Lamp[28+8*x+y] = false;}}}
+			TurnOffLamp(28+8*x+y);}}}
 
 void PB_SetChestLamps(byte Switch) {                  // add the lamps for the hit row / column in PB_ChestLamp
 	byte Pos = 0;
@@ -1177,7 +1191,7 @@ void PB_CountLitChestLamps() {												// count the lit chest lamps for the c
 	byte Buffer;
 	PB_LitChestLamps = 0;																// reset counter
 	for (byte x=0; x<5; x++) {													// for all rows
-		Buffer = PB_ChestLamp[Player-1][x];									// buffer the current row
+		Buffer = PB_ChestLamp[Player-1][x];								// buffer the current row
 		for (i=0; i<5; i++) {															// for all columns
 			if (Buffer & 1) {																// lamp lit?
 				PB_LitChestLamps++;}													// increase counter
@@ -1192,9 +1206,9 @@ void PB_HandleLock(byte State) {
 		PB_IgnoreLock = false;
 		InLock++;}
 	byte c = 0;
-	if (Switch[25]) {                                   // count locked balls
+	if (QuerySwitch(25)) {                              // count locked balls
 		c++;}
-	if (Switch[26]) {
+	if (QuerySwitch(26)) {
 		c++;}
 	if (c != InLock) {                                  // not as expected?
 		InLock = c;                                       // take the new count value
@@ -1249,10 +1263,10 @@ void PB_Multiball() {
 void PB_Multiball2(byte Dummy) {
 	UNUSED(Dummy);
 	PB_EyeBlink(1);
-	LampPattern = Lamp;}
+	LampPattern = LampColumns;}
 
 void PB_LampSweep(byte Step) {
-	Lamp[Step] = false;
+	TurnOffLamp(Step);
 	if (PB_LampSweepActive) {
 		if (PB_LampSweepActive > 1) {
 			Step++;
@@ -1264,7 +1278,7 @@ void PB_LampSweep(byte Step) {
 			if (Step < 4) {
 				Step = 4;
 				PB_LampSweepActive = 2;}}
-		Lamp[Step] = true;
+		TurnOnLamp(Step);
 		ActivateTimer(100, Step, PB_LampSweep);}}
 
 void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar value ramp was not hit in time
@@ -1276,14 +1290,14 @@ void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar v
 	PB_ClearOutLock(0);}
 
 void PB_ClearOutLock(byte CloseVisor) {
-	if (SolenoidStatus(13)) {                           // visor motor on?
+	if (QuerySolenoid(13)) {                           	// visor motor on?
 		ActivateTimer(1100, CloseVisor, PB_ClearOutLock);} // come back later
 	else {
-		if (Switch[47]) {                                 // visor is open
-			if (Switch[25]) {                               // left eye?
+		if (QuerySwitch(47)) {                            // visor is open
+			if (QuerySwitch(25)) {                          // left eye?
 				ActA_BankSol(7);}                          		// eject it
 			else {
-				if (Switch[26]) {                             // right eye
+				if (QuerySwitch(26)) {                        // right eye
 					ActA_BankSol(8);}}                       		// eject it
 			if (CloseVisor) {                               // closed visor requested?
 				ActivateTimer(1000, 13, DelaySolenoid);       // start visor motor in 1s
@@ -1295,7 +1309,7 @@ void PB_ClearOutLock(byte CloseVisor) {
 
 void PB_HandleDropTargets(byte Target) {
 	PB_DropWait = false;																// stop ignoring drop target switches
-	if (Switch[49] && Switch[50] && Switch[51]) {				// all targets down
+	if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {	// all targets down
 		if (PB_DropTimer) {																// any targets down before?
 			KillTimer(PB_DropTimer);												// turn off timer
 			PB_DropTimer = 0;
@@ -1323,12 +1337,12 @@ void PB_AdvancePlanet() {
 	else {
 		PlaySound(150, "BS_S07.BIN");
 		if  (PB_Planet[Player] == 10) {                   //  10 = Sun
-			Lamp[51] = true;}																// light special
+			TurnOnLamp(51);}																// light special
 		else {
 			if (PB_Planet[Player] == game_settings[PB_ReachPlanet]) { // target planet reached
-				Lamp[51] = true;															// light special
+				TurnOnLamp(51);																// light special
 				RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);} // stop blinking
-			Lamp[PB_Planet[Player]+18] = true;}}}
+			TurnOnLamp(PB_Planet[Player]+18);}}}
 
 void PB_ResetDropTargets(byte Dummy) {
 	UNUSED(Dummy);
@@ -1375,10 +1389,10 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 		InLock = 0;
 		if (Multiballs == 1) {
 			for (i=0; i<2; i++) {                         	// check how many balls are on the ball ramp
-				if (Switch[25+i]) {
+				if (QuerySwitch(25+i)) {
 					InLock++;}}}
 		WriteLower(" BALL   ERROR ");
-		if (Switch[16]) {                                 // ball still in outhole?
+		if (QuerySwitch(16)) {                            // ball still in outhole?
 			ActA_BankSol(1);                             		// make the coil a bit stronger
 			ActivateTimer(2000, Event, PB_BallEnd);}        // and come back in 2s
 		else {
@@ -1431,7 +1445,7 @@ void PB_BallEnd(byte Event) {													// ball has been kicked into trunk
 				else {
 					RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
 			for (i=0; i<4; i++) {                           // turn off all eject mode lamps
-				Lamp[13+i] = false;}
+				TurnOffLamp(13+i);}
 			if (PB_BallSave == 2) {													// ball saver has been triggered
 				BlockOuthole = false;													// remove outhole block
 				ActivateTimer(2000, 0, PB_AfterExBallRelease);
@@ -1470,7 +1484,7 @@ void PB_BallEnd2() {
 		ActivateTimer(2000, 0, PB_AfterExBallRelease);
 		ActivateTimer(1000, AppByte, PB_NewBall);}
 	else {                                        			// Player has no extra balls
-		Lamp[51] = false;
+		TurnOffLamp(51);
 		if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
 			Switch_Pressed = DummyProcess;              		// Switches do nothing
 			PB_Congrats(0);}
@@ -1481,7 +1495,7 @@ void PB_BallEnd2() {
 
 void PB_BallEnd3(byte Dummy) {
 	UNUSED(Dummy);
-	LampPattern = Lamp;
+	LampPattern = LampColumns;
 	if (Player < NoPlayers) {                 					// last player?
 		Player++;
 		ActivateTimer(1000, AppByte, PB_NewBall);}
@@ -1497,7 +1511,7 @@ void PB_BallEnd3(byte Dummy) {
 			AfterMusic = GameDefinition.AttractMode;
 			PlayMusic(50, "BS_S10.BIN");
 			//PB_CheckForLockedBalls(0);
-			Lamp[3] = false;}}}                       			// turn off Ball in Play lamp
+			TurnOffLamp(3);}}}                       				// turn off Ball in Play lamp
 
 void PB_Congrats(byte Dummy) {                    		// show congratulations
 	UNUSED(Dummy);
@@ -1726,8 +1740,8 @@ void PB_Testmode(byte Select) {
 						WriteLower("              ");
 						AppByte2 = 0;
 						for (i=0; i<(LampMax+1); i++){            // erase lamp matrix
-							Lamp[i] = false;}
-						LampPattern = Lamp;                       // and show it
+							TurnOffLamp(i);}
+						LampPattern = LampColumns;                // and show it
 						break;
 					case 3:
 						WriteUpper(" ACTUAL LAMP  ");
@@ -1795,14 +1809,14 @@ void PB_Testmode(byte Select) {
 								case 3:
 									AppByte2 = 1;
 									if (AppBool) {
-										if (Switch[46]) {
+										if (QuerySwitch(46)) {
 											AppBool = false;
 											PB_Testmode(3);}
 										else {
 											WriteUpper("CLOSING VISOR ");
 											ActivateSolenoid(0, 13);}}
 									else {
-										if (Switch[47]) {
+										if (QuerySwitch(47)) {
 											AppBool = true;
 											PB_Testmode(3);}
 										else {
@@ -1834,16 +1848,16 @@ void PB_Testmode(byte Select) {
 								}}}
 
 void PB_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
-	if (!digitalRead(UpDown)) {
+	if (QuerySwitch(73)) {															// Up/Down switch pressed?
 		*(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
 		*(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
 		*(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
 		*(DisplayLower+29) = DispPattern2[33 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
-		Lamp[CurrentLamp] = true;                         // turn on lamp
+		TurnOnLamp(CurrentLamp);                         	// turn on lamp
 		if (CurrentLamp > 1) {                            // and turn off the previous one
-			Lamp[CurrentLamp-1] = false;}
+			TurnOffLamp(CurrentLamp-1);}
 		else {
-			Lamp[LampMax] = false;}
+			TurnOffLamp(LampMax);}
 		CurrentLamp++;                                    // increase the lamp counter
 		if (CurrentLamp == LampMax+1) {                   // maximum reached?
 			CurrentLamp = 1;}}                              // then start again
@@ -1863,7 +1877,7 @@ void PB_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 		ActC_BankSol(Solenoid);
 		*(DisplayLower+30) = DispPattern2[('C'-32)*2];		// show the C
 		*(DisplayLower+31) = DispPattern2[('C'-32)*2+1];
-		if (!digitalRead(UpDown)) {
+		if (QuerySwitch(73)) {														// Up/Down switch pressed?
 			AppBool = false;
 			Solenoid++;}}
 	else {																							// if A bank solenoid
@@ -1879,19 +1893,19 @@ void PB_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 		if (Solenoid < 9) {
 			*(DisplayLower+30) = DispPattern2[('A'-32)*2];	// show the A
 			*(DisplayLower+31) = DispPattern2[('A'-32)*2+1];
-			if (!digitalRead(UpDown)) {
+			if (QuerySwitch(73)) {													// Up/Down switch pressed?
 				AppBool = true;}}
 		else {
 			*(DisplayLower+30) = DispPattern2[(' '-32)*2];	// delete the C
 			*(DisplayLower+31) = DispPattern2[(' '-32)*2+1];
-			if (!digitalRead(UpDown)) {
+			if (QuerySwitch(73)) {													// Up/Down switch pressed?
 				Solenoid++;                                   // increase the solenoid counter
 				if (Solenoid == 22) {                         // maximum reached?
 					Solenoid = 1;}}}}                           // then start again
 	AppByte2 = ActivateTimer(1000, Solenoid, PB_FireSolenoids);}   // come back in one second
 
 void PB_DisplayCycle(byte CharNo) {                   // Display cycle test
-	if (!digitalRead(UpDown)) {                         // cycle only if Up/Down switch is not pressed
+	if (QuerySwitch(73)) {                         			// cycle only if Up/Down switch is not pressed
 		if (CharNo == 116) {                             	// if the last character is reached
 			CharNo = 32;}                                 	// start from the beginning
 		else {
@@ -1913,7 +1927,7 @@ void PB_DisplayCycle(byte CharNo) {                   // Display cycle test
 	AppByte2 = ActivateTimer(500, CharNo, PB_DisplayCycle);}   // restart timer
 
 void PB_NextTestSound() {
-	if (!digitalRead(UpDown)) {
+	if (QuerySwitch(73)) {															// Up/Down switch pressed?
 		AppByte++;}
 	if (!TestSounds[AppByte][0]) {
 		AppByte = 0;}

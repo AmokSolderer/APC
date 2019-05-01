@@ -49,9 +49,9 @@ void USB_AttractMode() {                              // Attract Mode
 		analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
 	else {
 		digitalWrite(VolumePin,HIGH);}                		// turn off the digital volume control
-	for (i=0; i< LampMax+1; i++) {											// turn off all lamps
-		Lamp[i] = false;}
-	LampPattern = Lamp;
+	for (i=0; i<8; i++) {																// turn off all lamps
+		LampColumns[i] = 0;}
+	LampPattern = LampColumns;
 	Switch_Pressed = USB_SwitchHandler;
 	Switch_Released = USB_ReleasedSwitches;
 	WriteUpper("  USB  CONTROL  ");
@@ -63,7 +63,7 @@ void USB_SwitchHandler(byte Switch) {
 		digitalWrite(Blanking, LOW);                      // invoke the blanking
 		break;
 	case 72:																						// advance button
-		if (!digitalRead(UpDown)) {
+		if (QuerySwitch(73)) {														// Up/Down switch pressed?
 			ActivateTimer(1000, 0, USB_Testmode);}					// look again in 1s
 		else {
 			byte i = 0;
@@ -89,7 +89,7 @@ void USB_ReleasedSwitches(byte Switch) {
 
 void USB_Testmode(byte Dummy) {												// enter system settings if advance button still pressed
 	UNUSED(Dummy);
-	if (Switch[72]) {
+	if (QuerySwitch(72)) {
 		SerialCommand = 0;
 		Settings_Enter();}
 	else {
@@ -152,21 +152,21 @@ void USB_SerialCommand() {
 		break;
 	case 10:																						// get status of lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
-			Serial.write((byte) Lamp[SerialBuffer[0]]);}
+			Serial.write((byte) QueryLamp(SerialBuffer[0]));}
 		else {
 			Serial.write((byte) 2);}
 		break;
 	case 11:																						// turn on lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
-			Lamp[SerialBuffer[0]] = true;}
+			TurnOnLamp(SerialBuffer[0]);}
 		break;
 	case 12:																						// turn off lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
-			Lamp[SerialBuffer[0]] = false;}
+			TurnOffLamp(SerialBuffer[0]);}
 		break;
 	case 20:																						// get status of solenoid
-		if (SerialBuffer[0] < 25) {												// max 24 solenoids
-			Serial.write((byte) SolenoidStatus(SerialBuffer[0]));}
+		if (SerialBuffer[0] < 26) {												// max 24 solenoids
+			Serial.write((byte) QuerySolenoid(SerialBuffer[0]));}
 		break;
 	case 21:																						// set solenoid # to on
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
@@ -184,10 +184,16 @@ void USB_SerialCommand() {
 				SolDelayed[i] = SerialBuffer[0];              // insert the solenoid number
 				DurDelayed[i] = 0;                   					// and its duration into the list
 				ActivateTimer(25, SerialBuffer[0], ActivateLater);}}	// and try again later
+		else if (SerialBuffer[0] == 25) {									// 25 is a shortcut for both flipper fingers
+			ActivateSolenoid(0, 23);												// enable both flipper fingers
+			ActivateSolenoid(0, 24);}
 		break;
 	case 22:																						// set solenoid # to off
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
 			ReleaseSolenoid(SerialBuffer[0]);}
+		else if (SerialBuffer[0] == 25) {									// 25 is a shortcut for both flipper fingers
+			ReleaseSolenoid(23);														// disable both flipper fingers
+			ReleaseSolenoid(24);}
 		break;
 	case 23:																						// pulse solenoid
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
@@ -229,7 +235,7 @@ void USB_SerialCommand() {
 		break;
 	case 40:																						// get status of switch #
 		if (SerialBuffer[0] < 65) {												// max 64 switches
-			if (Switch[SerialBuffer[0]]) {									// query state
+			if (QuerySwitch(SerialBuffer[0])) {							// query state
 				Serial.write((byte) 1);}
 			else {
 				Serial.write((byte) 0);}}
