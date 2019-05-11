@@ -171,13 +171,13 @@ const byte Volume = 5;                             		// Volume of the speaker
 const byte LEDsetting = 6;                            // Setting for the APC_LED_EXP board
 const byte DebugMode = 7;                             // debug mode enabled?
 
-char TxTGameSelect[4][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "}};
+char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "},{"  ROLLERGAMES   "}};
 char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
 char TxTDisplaySelect[7][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{"123456123456    "},{"12345671234567  "}};
 
 struct SettingTopic APC_setList[11] = {
 		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,6},
-		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,3},
+		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
 		{" NO OF  BALLS   ",HandleNumSetting,0,1,5},
 		{"  FREE  GAME    ",HandleBoolSetting,0,0,0},
 		{"  DIM  INSERTS  ",HandleBoolSetting,0,0,0},
@@ -330,6 +330,9 @@ void Init_System2(byte State) {
 		break;
 	case 3:
 		USB_init();
+		break;
+	case 4:
+		RG_init();
 		break;
 	default:
 		WriteUpper("NO GAMESELECTD  ");
@@ -1091,10 +1094,6 @@ void ShowMessage(byte Seconds) {                      // switch to the second di
 		ShowMessageTimer = 0;                             // indicate that timer is not running any more
 		SwitchDisplay(1);}}                               // switch back to DispRow1
 
-//void ConvertToBCD(int Number) {
-//	ByteBuffer = Number % 10;
-//	ByteBuffer2 = (Number-ByteBuffer)/10;}
-
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
 	if (!SolChange) {                               		// change request for another solenoid pending?
 		if (!Duration) {
@@ -1258,12 +1257,14 @@ void DisplayBCD (byte Position, byte* BCDnumber) {		// displays BCD values on nu
 			Position--;
 			for(byte c=0; c<7; c++) {
 				*(DisplayLower+2+16*Position+2*c) = ConvertNumUpper(*(BCDnumber+c),(byte) *(DisplayLower+2+16*Position+2*c));
+				*(DisplayLower+3+16*Position+2*c) = 254 & *(DisplayLower+3+16*Position+2*c);	// delete commas
 				if (128 & *(BCDnumber+c)) {										// comma needed?
 					*(DisplayLower+3+16*Position+2*c) = 1 | *(DisplayLower+3+16*Position+2*c);}}}
 		else {																						// lower row
 			Position = Position - 3;
 			for(byte c=0; c<7; c++) {
 				*(DisplayLower+2+16*Position+2*c) = ConvertNumLower(*(BCDnumber+c),(byte) *(DisplayLower+2+16*Position+2*c));
+				*(DisplayLower+3+16*Position+2*c) = 127 & *(DisplayLower+3+16*Position+2*c);
 				if (128 & *(BCDnumber+c)) {
 					*(DisplayLower+3+16*Position+2*c) = 128 | *(DisplayLower+3+16*Position+2*c);}}}}
 	else {																							// credit display
@@ -1324,40 +1325,79 @@ void DisplayScore (byte Position, unsigned int Score) {
 		break;
 		case 3:																						// Sys11 BK2K type display
 		case 4:																						// Sys11 Taxi type display
-
-			break;
-		case 5:																						// Sys3 - 6 type display
-		case 6:																						// Sys7 - 9 type display
 			switch (Position) {
 			case 1:                                       	// for the players 1 and 3
 			case 3:
-				Buffer1 = 2;                             			// start in column 1
+				Buffer1 = 0;                             			// start in column 1
 				break;
 			case 2:                                       	// for the players 2 and 4
 			case 4:
 				Buffer1 = 18;                            			// start in column 9
 				break;}
 			if (Score) {                                  	// if the score is not 0
-				while (Score && i<7) {                      	// for all 7 display digits
+				while (Score && i<8) {                      	// for all 7 display digits
 					Buffer2 = Score % 10;                 			// extract the least significant digit
 					Score = (Score-Buffer2) / 10;         			// prepare for the next digit
+					Buffer2 = 32+2*Buffer2;           					// determine the corresponding display pattern
 					if (Position < 3) {                       	// depending on the player number show it in the upper display row
-						*(DisplayLower+Buffer1+12-2*i) = ConvertNumUpper(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
 						if ((i==3) || (i==6)) {
-							*(DisplayLower+Buffer1+13-2*i) = 1 | *(DisplayLower+Buffer1+13-2*i);}} // add a comma if necessary
+							*(DisplayUpper+Buffer1+14-2*i) = 128 | DispPattern1[Buffer2];
+							*(DisplayUpper+Buffer1+15-2*i) = 64 | DispPattern1[Buffer2+1];} // add a comma if necessary
+						else {
+							*(DisplayUpper+Buffer1+14-2*i) = DispPattern1[Buffer2];
+							*(DisplayUpper+Buffer1+15-2*i) = DispPattern1[Buffer2+1];}}
 					else {                                    	// the same for the lower display row
-						*(DisplayLower+Buffer1+12-2*i) = ConvertNumLower(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
 						if ((i==3) || (i==6)) {
-							*(DisplayLower+Buffer1+13-2*i) = 128 | *(DisplayLower+Buffer1+13-2*i);}}
+							*(DisplayLower+Buffer1+14-2*i) = 1 | DispPattern2[Buffer2];
+							*(DisplayLower+Buffer1+15-2*i) = 8 | DispPattern2[Buffer2+1];}
+						else {
+							*(DisplayLower+Buffer1+14-2*i) = DispPattern2[Buffer2];
+							*(DisplayLower+Buffer1+15-2*i) = DispPattern2[Buffer2+1];}} //
 					i++;}}
-			else {                                        	// if the points are 0 just show two 0s
+			else {                                        	// if the points are 0
 				if (Position < 3) {
-					*(DisplayLower+Buffer1+12) = ConvertNumUpper(0, (byte) *(DisplayLower+Buffer1+12));
-					*(DisplayLower+Buffer1+10) = ConvertNumUpper(0, (byte) *(DisplayLower+Buffer1+12));}
+					*(DisplayUpper+Buffer1+12) = DispPattern1[32]; // just show two 0s
+					*(DisplayUpper+Buffer1+13) = DispPattern1[33];
+					*(DisplayUpper+Buffer1+14) = DispPattern1[32];
+					*(DisplayUpper+Buffer1+15) = DispPattern1[33];}
 				else {
-					*(DisplayLower+Buffer1+12) = ConvertNumLower(0, (byte) *(DisplayLower+Buffer1+12));
-					*(DisplayLower+Buffer1+10) = ConvertNumLower(0, (byte) *(DisplayLower+Buffer1+12));}}
-			break;}}
+					*(DisplayLower+Buffer1+12) = DispPattern2[32]; // just show two 0s
+					*(DisplayLower+Buffer1+13) = DispPattern2[33];
+					*(DisplayLower+Buffer1+14) = DispPattern2[32];
+					*(DisplayLower+Buffer1+15) = DispPattern2[33];}}
+			break;
+			case 5:																					// Sys3 - 6 type display
+			case 6:																					// Sys7 - 9 type display
+				switch (Position) {
+				case 1:                                       // for the players 1 and 3
+				case 3:
+					Buffer1 = 2;                             		// start in column 1
+					break;
+				case 2:                                       // for the players 2 and 4
+				case 4:
+					Buffer1 = 18;                            		// start in column 9
+					break;}
+				if (Score) {                                  // if the score is not 0
+					while (Score && i<7) {                      // for all 7 display digits
+						Buffer2 = Score % 10;                 		// extract the least significant digit
+						Score = (Score-Buffer2) / 10;         		// prepare for the next digit
+						if (Position < 3) {                       // depending on the player number show it in the upper display row
+							*(DisplayLower+Buffer1+12-2*i) = ConvertNumUpper(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
+							if ((i==3) || (i==6)) {
+								*(DisplayLower+Buffer1+13-2*i) = 1 | *(DisplayLower+Buffer1+13-2*i);}} // add a comma if necessary
+						else {                                    // the same for the lower display row
+							*(DisplayLower+Buffer1+12-2*i) = ConvertNumLower(Buffer2,(byte) *(DisplayLower+Buffer1+12-2*i));
+							if ((i==3) || (i==6)) {
+								*(DisplayLower+Buffer1+13-2*i) = 128 | *(DisplayLower+Buffer1+13-2*i);}}
+						i++;}}
+				else {                                        // if the points are 0 just show two 0s
+					if (Position < 3) {
+						*(DisplayLower+Buffer1+12) = ConvertNumUpper(0, (byte) *(DisplayLower+Buffer1+12));
+						*(DisplayLower+Buffer1+10) = ConvertNumUpper(0, (byte) *(DisplayLower+Buffer1+12));}
+					else {
+						*(DisplayLower+Buffer1+12) = ConvertNumLower(0, (byte) *(DisplayLower+Buffer1+12));
+						*(DisplayLower+Buffer1+10) = ConvertNumLower(0, (byte) *(DisplayLower+Buffer1+12));}}
+				break;}}
 
 void ShowNumber(byte Position, unsigned int Number) {
 	byte Buffer = 0;
