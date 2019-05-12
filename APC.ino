@@ -1699,12 +1699,13 @@ void SelectSettings(byte Switch) {										// select system or game settings
 	case 0:																							// for the initial call
 		WriteUpper("SYSTEM SETTNGS  ");
 		WriteLower("                ");
-		byte CreditBuffer[4];
-		CreditBuffer[0] = 48;
-		CreditBuffer[1] = 49;
-		CreditBuffer[2] = 48;
-		CreditBuffer[3] = 48;
-		WritePlayerDisplay((char*) CreditBuffer, 0);
+		if ((APC_settings[DisplayType] != 3) && (APC_settings[DisplayType] != 3)) { // No Credit display
+			byte CreditBuffer[4];
+			CreditBuffer[0] = 48;
+			CreditBuffer[1] = 49;
+			CreditBuffer[2] = 48;
+			CreditBuffer[3] = 48;
+			WritePlayerDisplay((char*) CreditBuffer, 0);}
 		break;
 	case 3:																							// start button
 		if (AppByte) {																		// game settings selected
