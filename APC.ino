@@ -679,7 +679,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 				g_Sound.enqueue();}}}}
 
 void loop() {
-	c = 0;                                  						// initialize counter
+	byte c = 0;                                  				// initialize counter
 	if (SwEvents[SwitchStack]) {                        // switch event pending?
 		SwitchStack = 1-SwitchStack;                      // switch to the other stack to avoid a conflict with the interrupt
 		while (SwEvents[1-SwitchStack]) {									// as long as there are switch events to process
