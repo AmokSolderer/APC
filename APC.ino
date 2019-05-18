@@ -1330,11 +1330,11 @@ void DisplayScore (byte Position, unsigned int Score) {
 			switch (Position) {
 			case 1:                                       	// for the players 1 and 3
 			case 3:
-				Buffer1 = 0;                             			// start in column 1
+				Buffer1 = 0;                             			// start in column 0
 				break;
 			case 2:                                       	// for the players 2 and 4
 			case 4:
-				Buffer1 = 18;                            			// start in column 9
+				Buffer1 = 16;                            			// start in column 9
 				break;}
 			if (Score) {                                  	// if the score is not 0
 				while (Score && i<8) {                      	// for all 7 display digits
