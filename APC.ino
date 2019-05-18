@@ -45,7 +45,6 @@ byte ByteBuffer2 = 0;                                 // general purpose buffer
 byte ByteBuffer3 = 0;                                 // general purpose buffer
 byte i = 0;                                           // general purpose counter
 byte x = 0;                                           // general purpose counter
-byte c = 0;                                           // reserved counter
 bool SDfound = false;                                 // SD card present?
 byte SwitchStack = 0;                                 // determines which switch events stack is active
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
@@ -293,6 +292,8 @@ void setup() {
 	DispRow1 = DisplayUpper;
 	DispRow2 = DisplayLower;
 	LampPattern = NoLamps;
+  Switch_Pressed = DummyProcess;
+  Switch_Released = DummyProcess;
 	digitalWrite(Blanking, HIGH);                       // Release the blanking
 	if (SD.begin(52, SD_SCK_MHZ(20))) {                 // look for an SD card and set max SPI clock to 20MHz
 		WriteUpper("SD CARD FOUND   ");
