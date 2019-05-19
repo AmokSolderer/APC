@@ -922,12 +922,13 @@ void PB_GameMain(byte Switch) {
 			ShowMessage(3);}
 		PB_EnergyOff(0);
 		break;
-	case 46:
+	case 46:																						// visor closed
 		if (PB_CloseVisorFlag) {
 			PB_CloseVisorFlag = false;
-			ReleaseSolenoid(13);}
+			ReleaseSolenoid(13);
+			PB_EyeBlink(0);}																// turn off eye blinking
 		break;
-	case 47:
+	case 47:																						// visor open
 		if (PB_OpenVisorFlag) {
 			PB_OpenVisorFlag = false;
 			ReleaseSolenoid(13);}
@@ -1222,7 +1223,7 @@ void PB_HandleLock(byte State) {
 					if (Multiballs > 1) {                       // multiball already running?
 						AddBlinkLamp(35, 100);                    // start blinking of solar energy ramp
 						PB_OpenVisorFlag = false;
-						PB_EyeBlink(0);
+						PB_EyeBlink(0);														// turn off eye blinking
 						ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
 						ActivateSolenoid(0, 13);                  // start visor motor
 						PB_SolarValueTimer = ActivateTimer(8000, 0,PB_ReopenVisor);} // 8s to score the solar value
@@ -1231,7 +1232,7 @@ void PB_HandleLock(byte State) {
 						PB_GiveBall(1);}}                         // give second ball
 				else {                                        // both balls in lock
 					if (Multiballs == 1) {                      // multiball not yet running?
-						PB_EyeBlink(0);
+						PB_EyeBlink(0);														// turn off eye blinking
 						ActivateSolenoid(0, 11);                  // turn off GI
 						ActivateSolenoid(0, 12);
 						//ActivateSolenoid(0, 14);
@@ -1322,13 +1323,19 @@ void PB_HandleDropTargets(byte Target) {
 	else {
 		if (!PB_DropTimer) {															// first target hit
 			if (Target-8 == PB_DropBlinkLamp) {							// blinking target hit?
-				ActA_BankSol(5);															// raise ramp
+				ActivateTimer(1000, 0, PB_RaiseRamp);					// raise ramp in 1s
 				AddBlinkLamp(34, 500);												// blink energy lamp
 				PB_EnergyActive = true;												// energy value on
 				ActivateTimer(game_settings[PB_EnergyTimer]*1000, 0, PB_EnergyOff);}
 			PB_CycleDropLights(0);													// stop blinking of drop target lights
 			AddBlinkLamp(17, 500);													// blink drop target timer lamp
 			PB_DropTimer = ActivateTimer(game_settings[PB_DropTime]*1000, 0, PB_ResetDropTargets);}}}
+
+void PB_RaiseRamp(byte Dummy) {
+	UNUSED (Dummy);
+	if (QuerySwitch(44)) {															// ramp still down?
+		ActA_BankSol(5);																	// raise ramp
+		ActivateTimer(1000, 0, PB_RaiseRamp);}}						// recheck in 1s
 
 void PB_AdvancePlanet() {
 	PB_Planet[Player]++;                                // player has reached next planet
@@ -1354,10 +1361,9 @@ void PB_ResetDropTargets(byte Dummy) {
 
 void PB_EnergyOff(byte Dummy) {
 	UNUSED(Dummy);
-	if (PB_EnergyActive) {
-		RemoveBlinkLamp(34);															// stop blinking of energy lamp
-		PB_EnergyActive = false;													// energy value off
-		PB_DropRamp = true;}}															// ramp needs to be dropped
+	RemoveBlinkLamp(34);															// stop blinking of energy lamp
+	PB_EnergyActive = false;													// energy value off
+	PB_DropRamp = true;}															// ramp needs to be dropped
 
 void PB_CycleDropLights(byte State) {									// State = 0 -> Stop / State = 1 -> Start / State = 2 -> called by timer
 	static byte Timer;
