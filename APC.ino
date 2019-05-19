@@ -45,7 +45,6 @@ byte ByteBuffer2 = 0;                                 // general purpose buffer
 byte ByteBuffer3 = 0;                                 // general purpose buffer
 byte i = 0;                                           // general purpose counter
 byte x = 0;                                           // general purpose counter
-byte c = 0;                                           // reserved counter
 bool SDfound = false;                                 // SD card present?
 byte SwitchStack = 0;                                 // determines which switch events stack is active
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
@@ -293,6 +292,8 @@ void setup() {
 	DispRow1 = DisplayUpper;
 	DispRow2 = DisplayLower;
 	LampPattern = NoLamps;
+  Switch_Pressed = DummyProcess;
+  Switch_Released = DummyProcess;
 	digitalWrite(Blanking, HIGH);                       // Release the blanking
 	if (SD.begin(52, SD_SCK_MHZ(20))) {                 // look for an SD card and set max SPI clock to 20MHz
 		WriteUpper("SD CARD FOUND   ");
@@ -389,13 +390,13 @@ void TC7_Handler() {                                  // interrupt routine - run
 
 	i = 0;
 	Buff = REG_PIOA_PDSR;
-	while (SwitchRows[SwDrv] != (Buff & 29425756)) {		// as  long as something is different at the switch port
+	while ((SwitchRows[SwDrv] != (Buff & 29425756)) && (SwEvents[SwitchStack] < 30)) {		// as  long as something is different at the switch port
 		if (Buff & SwitchMask[i]) {												// scan the switch port bit by bit
 			if (!(SwitchRows[SwDrv] & SwitchMask[i]))  {		// different from the stored switch state?
 				SwitchRows[SwDrv] = SwitchRows[SwDrv] | SwitchMask[i];	// then change it
 				SwEvents[SwitchStack]++;											// increase the number of pending switch events
 				c = 0;
-				while (ChangedSw[SwitchStack][c] && (c<30)) {	// look for a free slot
+				while (ChangedSw[SwitchStack][c] && (c<29)) {	// look for a free slot
 					c++;}
 				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}		// store the switch number to be processed in the main loop
 		else {
@@ -403,7 +404,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 				SwitchRows[SwDrv] = SwitchRows[SwDrv] & (29425756 - SwitchMask[i]); // then change it
 				SwEvents[SwitchStack]++;											// increase the number of pending switch events
 				c = 0;
-				while (ChangedSw[SwitchStack][c] && (c<30)) {	// look for a free slot
+				while (ChangedSw[SwitchStack][c] && (c<29)) {	// look for a free slot
 					c++;}
 				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}		// store the switch number to be processed in the main loop
 		i++;}
@@ -420,7 +421,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 			REG_PIOC_SODR = 32768;                        	// use Sel12
 			REG_PIOC_CODR = 16384;}                       	// enable Sel13
 		else {
-			if ((bool)(SwitchRows[9] & 65536) != (bool)(REG_PIOB_PDSR & 16384)) {	// check state of the Up/Down button
+			if (((bool)(SwitchRows[9] & 65536) != (bool)(REG_PIOB_PDSR & 16384)) && (SwEvents[SwitchStack] < 30)) {	// check state of the Up/Down button
 				if (SwitchRows[9] & 65536) {
 					SwitchRows[9] = SwitchRows[9] & (29425756 - 65536);}
 				else {
@@ -679,7 +680,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 				g_Sound.enqueue();}}}}
 
 void loop() {
-	c = 0;                                  						// initialize counter
+	byte c = 0;                                  				// initialize counter
 	if (SwEvents[SwitchStack]) {                        // switch event pending?
 		SwitchStack = 1-SwitchStack;                      // switch to the other stack to avoid a conflict with the interrupt
 		while (SwEvents[1-SwitchStack]) {									// as long as there are switch events to process
@@ -694,7 +695,8 @@ void loop() {
 			if (c < 29) {                                   // number of pending events still in the allowed range?
 				c++;}																				  // increase counter
 			else {
-				ErrorHandler(21,0,c);}}}
+				if (c > 29) {
+					ErrorHandler(21,0,c);}}}}
 	c = 0;                                  						// initialize counter
 	if (TimerEvents[TimerStack]) {                      // timer event pending?
 		TimerStack = 1-TimerStack;                        // switch to the other stack to avoid a conflict with the interrupt
@@ -1328,11 +1330,11 @@ void DisplayScore (byte Position, unsigned int Score) {
 			switch (Position) {
 			case 1:                                       	// for the players 1 and 3
 			case 3:
-				Buffer1 = 0;                             			// start in column 1
+				Buffer1 = 0;                             			// start in column 0
 				break;
 			case 2:                                       	// for the players 2 and 4
 			case 4:
-				Buffer1 = 18;                            			// start in column 9
+				Buffer1 = 16;                            			// start in column 9
 				break;}
 			if (Score) {                                  	// if the score is not 0
 				while (Score && i<8) {                      	// for all 7 display digits
@@ -1699,12 +1701,13 @@ void SelectSettings(byte Switch) {										// select system or game settings
 	case 0:																							// for the initial call
 		WriteUpper("SYSTEM SETTNGS  ");
 		WriteLower("                ");
-		byte CreditBuffer[4];
-		CreditBuffer[0] = 48;
-		CreditBuffer[1] = 49;
-		CreditBuffer[2] = 48;
-		CreditBuffer[3] = 48;
-		WritePlayerDisplay((char*) CreditBuffer, 0);
+		if ((APC_settings[DisplayType] != 3) && (APC_settings[DisplayType] != 3)) { // No Credit display
+			byte CreditBuffer[4];
+			CreditBuffer[0] = 48;
+			CreditBuffer[1] = 49;
+			CreditBuffer[2] = 48;
+			CreditBuffer[3] = 48;
+			WritePlayerDisplay((char*) CreditBuffer, 0);}
 		break;
 	case 3:																							// start button
 		if (AppByte) {																		// game settings selected

@@ -291,7 +291,9 @@ void setup() {
 	DispRow1 = DisplayUpper;
 	DispRow2 = DisplayLower;
 	LampPattern = NoLamps;
-	//digitalWrite(Blanking, HIGH);                       // Release the blanking
+  Switch_Pressed = DummyProcess;
+  Switch_Released = DummyProcess;
+	digitalWrite(Blanking, HIGH);                       // Release the blanking
 	if (SD.begin(52, SD_SCK_MHZ(20))) {                 // look for an SD card and set max SPI clock to 20MHz
 		WriteUpper("SD CARD FOUND ");
     Serial.println("SD card found");
@@ -318,18 +320,18 @@ void Init_System() {
 	Init_System2(0);}
 
 void Init_System2(byte State) {
-	switch(APC_settings[ActiveGame]) {									// init calls for all valid games
-	case 0:
-		//BK_init();
-		break;
-
-	case 2:
-		//PB_init();
-		break;
-	default:
-		WriteUpper("NO GAMESELECTD");
-		while (true) {}
-	}
+//	switch(APC_settings[ActiveGame]) {									// init calls for all valid games
+//	case 0:
+//		//BK_init();
+//		break;
+//
+//	case 2:
+//		//PB_init();
+//		break;
+//	default:
+//		WriteUpper("NO GAMESELECTD");
+//		while (true) {}
+//	}
 	if ((APC_settings[DisplayType] == 1) || (APC_settings[DisplayType] == 2)) { // display with numerical lower row
 		DispPattern2 = NumLower;}													// use patterns for num displays
 	if (SDfound) {
@@ -383,7 +385,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 			c = 1;}
 		else {
 			c = 0;}
-		if (SwHistory[SwDrv*8+i+1] == c) {
+		if (false) {
 			Switch[SwDrv*8+i+1] = !SwHistory[SwDrv*8+i+1]; 	// update the switch status
 			SwHistory[SwDrv*8+i+1] = !SwHistory[SwDrv*8+i+1];
 			SwEvents[SwitchStack]++;												// increase the number of pending switch events
@@ -656,10 +658,11 @@ void loop() {
 					Switch_Pressed(i);}													// access the set switch handler
 				else {																				// process released switches
 					Switch_Released(i);}}												// access the released switch handler
-			if (c < 29) {                                   // number of pending events still in the allowed range?
-				c++;}																				  // increase counter
-			else {
-				ErrorHandler(21,0,c);}}}
+      if (c < 29) {                                   // number of pending events still in the allowed range?
+        c++;}                                         // increase counter
+      else {
+        if (c > 29) {
+          ErrorHandler(21,0,c);}}}}
 	c = 0;                                  						// initialize counter
 	if (TimerEvents[TimerStack]) {                      // timer event pending?
 		TimerStack = 1-TimerStack;                        // switch to the other stack to avoid a conflict with the interrupt
@@ -1594,8 +1597,9 @@ byte HandleHighScores(unsigned int Score) {
 
  void SoundCheck(byte State) {
   if (State) {
-    PlaySound(50, "SOUND.BIN");}
+    PlaySound(50, "SOUND.bin");}
   else {
     //analogWrite(VolumePin, 255-40);
-    PlayMusic(50, "MUSIC.BIN");}
+    PlayMusic(50, "Music.bin");}
   ActivateTimer(10000, 1, SoundCheck);}
+
