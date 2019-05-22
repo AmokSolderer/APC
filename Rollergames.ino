@@ -160,12 +160,16 @@ void RG_init() {
 void RG_AttractMode() {                               // Attract Mode
 	DispRow1 = DisplayUpper;
 	DispRow2 = DisplayLower;
-	WriteUpper("MY NEW GAME     ");}
+	WriteUpper("MY NEW GAME     ");
+	LampPattern = LampColumns;													// point to the standard lamp array
+	TurnOnLamp(53);
+	AddBlinkLamp(54, 250);
+	Switch_Pressed = RG_TestSW;
+	Switch_Released = DummyProcess;}
 
 //	digitalWrite(VolumePin,HIGH);                       // set volume to zero
 //	LampPattern = NoLamps;
-//	Switch_Pressed = RG_AttractModeSW;
-//	Switch_Released = DummyProcess;
+
 //	AppByte2 = 0;
 //	LampReturn = RG_AttractLampCycle;
 //	ActivateTimer(1000, 0, RG_AttractLampCycle);
