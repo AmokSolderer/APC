@@ -164,7 +164,7 @@ void RG_AttractMode() {                               // Attract Mode
 	LampPattern = LampColumns;													// point to the standard lamp array
 	TurnOnLamp(53);
 	AddBlinkLamp(54, 250);
-	Switch_Pressed = RG_TestSW;
+	//Switch_Pressed = RG_TestSW;
 	Switch_Released = DummyProcess;}
 
 //	digitalWrite(VolumePin,HIGH);                       // set volume to zero
