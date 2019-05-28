@@ -170,7 +170,7 @@ const byte Volume = 5;                             		// Volume of the speaker
 const byte LEDsetting = 6;                            // Setting for the APC_LED_EXP board
 const byte DebugMode = 7;                             // debug mode enabled?
 
-char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "},{"  ROLLERGAMES   "}};
+char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "},{"   TUTORIAL     "}};
 char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
 char TxTDisplaySelect[7][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{"123456123456    "},{"12345671234567  "}};
 
@@ -333,7 +333,7 @@ void Init_System2(byte State) {
 		USB_init();
 		break;
 	case 4:
-		RG_init();
+		TT_init();
 		break;
 	default:
 		WriteUpper("NO GAMESELECTD  ");
