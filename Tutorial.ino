@@ -176,24 +176,30 @@ void TT_AttractMode() {                               // Attract Mode
 //	TT_AttractDisplayCycle(0);}
 
 void TT_TutorialSW(byte SwitchNo) {
+	static byte DropTimer = 0;
 	switch (SwitchNo) {
 	case 8:                                             // high score reset
 		digitalWrite(Blanking, LOW);                      // invoke the blanking
 		break;
-	case 49:
+	case 49:																						// drop targets
 	case 50:
 	case 51:
-		if (QuerySwitch(49)) {
-			TurnOnLamp(49);}
-		if (QuerySwitch(50)) {
-			TurnOnLamp(50);}
-		if (QuerySwitch(51)) {
-			TurnOnLamp(51);}
-		if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {
-			ActA_BankSol(6);
-			TurnOffLamp(49);
-			TurnOffLamp(50);
-			TurnOffLamp(51);}}}
+		if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {	// all targets down?
+			if (DropTimer) {																// timer running?
+				KillTimer(DropTimer);													// stop timer
+				DropTimer = 0;																// and indicate it
+				RemoveBlinkLamp(53);}													// turn off blinking lamp
+			ActA_BankSol(6);}																// reset drop targets
+		else {																						// not all targets down
+			if (!DropTimer) {																// timer not yet running?
+				AddBlinkLamp(53, 500);												// start blinking lamp
+				DropTimer = ActivateTimer(5000, 100, TT_TutorialSW);}}	// start timer for 5s
+		break;
+	case 100:																						// timer has run out
+		DropTimer = 0;																		// indicate it
+		RemoveBlinkLamp(53);															// turn off blinking lamp
+		ActA_BankSol(6);																	// reset drop targets
+		break;}}
 
 void TT_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
 	UNUSED(Event);
