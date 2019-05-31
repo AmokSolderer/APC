@@ -164,16 +164,16 @@ void TT_AttractMode() {                               // Attract Mode
 	LampPattern = LampColumns;													// point to the standard lamp array
 	TurnOnLamp(53);
 	AddBlinkLamp(54, 250);
-	Switch_Pressed = TT_TutorialSW;
-	Switch_Released = DummyProcess;}
+	//Switch_Pressed = TT_TutorialSW;
+	//Switch_Released = DummyProcess;}
 
-//	digitalWrite(VolumePin,HIGH);                       // set volume to zero
-//	LampPattern = NoLamps;
+	digitalWrite(VolumePin,HIGH);                       // set volume to zero
+	LampPattern = NoLamps;
 
-//	AppByte2 = 0;
-//	LampReturn = TT_AttractLampCycle;
-//	ActivateTimer(1000, 0, TT_AttractLampCycle);
-//	TT_AttractDisplayCycle(0);}
+	AppByte2 = 0;
+	LampReturn = TT_AttractLampCycle;
+	ActivateTimer(1000, 0, TT_AttractLampCycle);
+	TT_AttractDisplayCycle(0);}
 
 void TT_TutorialSW(byte SwitchNo) {
 	static byte DropTimer = 0;
