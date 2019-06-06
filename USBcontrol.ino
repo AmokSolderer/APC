@@ -67,13 +67,13 @@ void USB_SwitchHandler(byte Switch) {
 			ActivateTimer(1000, 0, USB_Testmode);}					// look again in 1s
 		else {
 			byte i = 0;
-			while (USB_ChangedSwitches[i]) {
+			while (USB_ChangedSwitches[i] && (i<63)) {
 				i++;}
 			USB_ChangedSwitches[i] = Switch | 128;}
 		break;
 	default:
 		byte i = 0;
-		while (USB_ChangedSwitches[i]) {
+		while (USB_ChangedSwitches[i] && (i<63)) {
 			i++;}
 		USB_ChangedSwitches[i] = Switch | 128;}}
 
@@ -83,7 +83,7 @@ void USB_ReleasedSwitches(byte Switch) {
 		break;
 	default:
 		byte i = 0;
-		while (USB_ChangedSwitches[i]) {
+		while (USB_ChangedSwitches[i] && (i<63)) {
 			i++;}
 		USB_ChangedSwitches[i] = Switch;}}
 
