@@ -166,10 +166,8 @@ void TT_AttractMode() {                               // Attract Mode
 	AddBlinkLamp(54, 250);
 	//Switch_Pressed = TT_TutorialSW;
 	//Switch_Released = DummyProcess;}
-
 	digitalWrite(VolumePin,HIGH);                       // set volume to zero
 	LampPattern = NoLamps;
-
 	AppByte2 = 0;
 	LampReturn = TT_AttractLampCycle;
 	ActivateTimer(1000, 0, TT_AttractLampCycle);
