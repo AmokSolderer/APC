@@ -1,14 +1,13 @@
 // USB interface for APC based pinball machines
 
-const byte USB_SearchCoils[15] = {1,4,6,8,13,15,16,17,18,19,20,21,22,14,0}; // coils to fire when the ball watchdog timer runs out
 unsigned int USB_SolTimes[32]; 												// Activation times for solenoids
 const byte USB_CommandLength[101] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 0 - 9
 																		1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
-																		1,1,1,1,2,0,0,0,0,0,		// Length of USB commands from 20 - 29
+																		1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
 																		255,255,255,255,255,255,255,1,0,0,	// Length of USB commands from 30 - 39
 																		1,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 40 - 49
 																		1,0,255,255,1,0,0,0,0,0,	// Length of USB commands from 50 - 59
-																		0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 60 - 69
+																		10,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 60 - 69
 																		0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 70 - 79
 																		0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
 																		0,0,0,0,0,0,0,0,0,0,0};	// Length of USB commands from 90 - 101
@@ -23,6 +22,10 @@ const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0};
 
 byte USB_ChangedSwitches[64];
+byte USB_HWrule_ActSw[16][3];													// hardware rules for activated switches
+byte USB_HWrule_RelSw[16][3];													// hardware rules for released switches
+byte USB_SolRecycleTime[22];													// recycle time for each solenoid
+bool USB_SolBlock[22];																// indicates which solenoids are blocked due to active recycling time
 
 struct SettingTopic USB_setList[4] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
@@ -54,8 +57,41 @@ void USB_AttractMode() {                              // Attract Mode
 	LampPattern = LampColumns;
 	Switch_Pressed = USB_SwitchHandler;
 	Switch_Released = USB_ReleasedSwitches;
+	USB_WatchdogHandler(1);															// initiate reset and start watchdog
 	WriteUpper("  USB  CONTROL  ");
 	WriteLower("                ");}
+
+void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset & start WD / 2-> WD has run out / 3-> stop WD
+	static byte USB_WatchdogTimer;
+	byte i=0;
+	if (!Event) {																				// reset watchdog
+		Serial.write((byte) 0);														// send OK
+		KillTimer(USB_WatchdogTimer);											// restart timer
+		USB_WatchdogTimer = ActivateTimer(1000, 2, USB_WatchdogHandler);}
+	else {
+		if (Event == 3) {																	// stop watchdog
+			if (USB_WatchdogTimer) {
+				KillTimer(USB_WatchdogTimer);
+				USB_WatchdogTimer = 0;}}
+		else {
+			if (Event == 1) {																// initiate reset and start watchdog
+				if (USB_WatchdogTimer) {
+					KillTimer(USB_WatchdogTimer);
+					USB_WatchdogTimer = 0;}
+				Serial.write((byte) 0);}											// send OK
+			else {																					// timer has run out
+				WriteUpper2(" USB WATCHDOG   ");
+				WriteLower2("                ");
+				ShowMessage(3);}
+			ReleaseAllSolenoids();													// switch off all coils
+			for (i=0; i<63; i++) {													// clear switch buffer
+				USB_ChangedSwitches[i] = 0;}
+			for (i=0; i<8; i++) {														// turn off all lamps
+				LampColumns[i] = 0;}
+			for (i=0; i<16; i++) {													// delete all HW rules
+				USB_HWrule_ActSw[i][0] = 0;
+				USB_HWrule_RelSw[i][0] = 0;}
+			USB_WatchdogTimer = ActivateTimer(1000, 2, USB_WatchdogHandler);}}}	// restart watchdog
 
 void USB_SwitchHandler(byte Switch) {
 	switch (Switch) {
@@ -73,6 +109,15 @@ void USB_SwitchHandler(byte Switch) {
 		break;
 	default:
 		byte i = 0;
+		while (USB_HWrule_ActSw[i][0]) {									// check for HW rules for this switch
+			if (USB_HWrule_ActSw[i][0] == Switch) {
+				if (USB_HWrule_ActSw[i][2]) {									// duration != 0 ?
+					USB_FireSolenoid( USB_HWrule_ActSw[i][2], USB_HWrule_ActSw[i][1]);}
+				else {
+					ReleaseSolenoid(USB_HWrule_ActSw[i][1]);}
+				break;}
+			i++;}
+		i = 0;																						// add switch number to list of changed switches
 		while (USB_ChangedSwitches[i] && (i<63)) {
 			i++;}
 		USB_ChangedSwitches[i] = Switch | 128;}}
@@ -83,6 +128,15 @@ void USB_ReleasedSwitches(byte Switch) {
 		break;
 	default:
 		byte i = 0;
+		while (USB_HWrule_RelSw[i][0]) {									// check for HW rules for this switch
+			if (USB_HWrule_RelSw[i][0] == Switch) {
+				if (USB_HWrule_RelSw[i][2]) {									// duration != 0 ?
+					USB_FireSolenoid( USB_HWrule_RelSw[i][2], USB_HWrule_RelSw[i][1]);}
+				else {
+					ReleaseSolenoid(USB_HWrule_RelSw[i][1]);}
+				break;}
+			i++;}
+		i = 0;																						// add switch number to list of changed switches
 		while (USB_ChangedSwitches[i] && (i<63)) {
 			i++;}
 		USB_ChangedSwitches[i] = Switch;}}
@@ -90,6 +144,7 @@ void USB_ReleasedSwitches(byte Switch) {
 void USB_Testmode(byte Dummy) {												// enter system settings if advance button still pressed
 	UNUSED(Dummy);
 	if (QuerySwitch(72)) {
+		USB_WatchdogHandler(3);														// stop USB watchdog
 		SerialCommand = 0;
 		Settings_Enter();}
 	else {
@@ -143,12 +198,39 @@ void USB_SerialCommand() {
 		Serial.print("APC");
 		Serial.write((byte) 0);
 		break;
+	case 1:																							// get firmware version
+		Serial.print("0.01");
+		Serial.write((byte) 0);
+		break;
+	case 2:																							// get API version
+		Serial.print("0.09");
+		Serial.write((byte) 0);
+		break;
 	case 3:																							// get number of lamps
 	case 9:																							// get number of switches
 		Serial.write((byte) 64);
 		break;
 	case 4:																							// get number of solenoids
 		Serial.write((byte) 24);
+		break;
+	case 7:
+		switch (APC_settings[DisplayType]) {
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+			Serial.print("14-segment");
+			Serial.write((byte) 0);
+			break;
+		case 5:
+			Serial.print("7-segment");
+			Serial.write((byte) 0);
+			break;
+		case 6:
+			Serial.print("8-segment");
+			Serial.write((byte) 0);
+			break;}
 		break;
 	case 10:																						// get status of lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
@@ -197,11 +279,14 @@ void USB_SerialCommand() {
 		break;
 	case 23:																						// pulse solenoid
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
-			ActivateSolenoid(0, SerialBuffer[0]);}
+			USB_FireSolenoid(0, SerialBuffer[0]);}
 		break;
 	case 24:																						// set solenoid pulse time
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
 			USB_SolTimes[SerialBuffer[0]-1] = SerialBuffer[1];}
+		break;
+	case 25:																						// set solenoid recycle time
+		USB_SolRecycleTime[SerialBuffer[0]] = SerialBuffer[1];
 		break;
 	case 30:																						// set display 0 to (credit display)
 		if (APC_settings[DisplayType] > 4) {
@@ -263,6 +348,72 @@ void USB_SerialCommand() {
 		APC_settings[Volume] = 2*SerialBuffer[0];					// set system volume
 		analogWrite(VolumePin,255-APC_settings[Volume]);	// and apply it
 		break;
+	case 55:
+		USB_WatchdogHandler(1);
+		break;
+	case 60:																						// configure hardware rule for solenoid
+		i = 0;
+		c = 0;
+		if (!SerialBuffer[7] && !SerialBuffer[8] && !SerialBuffer[9]) { // all flags zero means disable rules
+			while (USB_HWrule_ActSw[i][0]) {									// check for HW activation rules for this switch
+				if (USB_HWrule_ActSw[i][1] == SerialBuffer[0]) { // rule for this solenoid found?
+					c = i;
+					byte x;
+					while (USB_HWrule_ActSw[c][0]) {						// move all entries up
+						for(x=0; x<3; x++) {
+							USB_HWrule_ActSw[c][x] = USB_HWrule_ActSw[c+1][x];}
+						c++;}}
+				else {
+					i++;}}
+			i = 0;
+			while (USB_HWrule_RelSw[i][0]) {								// check for HW release rules for this switch
+				if (USB_HWrule_RelSw[i][1] == SerialBuffer[0]) { // rule for this solenoid found?
+					c = i;
+					byte x;
+					while (USB_HWrule_RelSw[c][0]) {						// move all entries up
+						for(x=0; x<3; x++) {
+							USB_HWrule_RelSw[c][x] = USB_HWrule_RelSw[c+1][x];}
+						c++;}}
+				else {
+					i++;}}}
+		else {																						// create new HW rule
+			if (SerialBuffer[4]) {													// pulse time > 0?
+				while ((SerialBuffer[1+i] != 127) && (i<3)) {	// stop on a non active switch
+					if (SerialBuffer[1+i] < 127) {							// non inverted switch
+						if (SerialBuffer[7+i] & 1) {							// activate coil on switch?
+							c = 0;
+							while (USB_HWrule_ActSw[c][0] && (c<15)) {	// look for a free slot
+								c++;}
+							USB_HWrule_ActSw[c][0] = SerialBuffer[1+i];	// set switch as trigger
+							USB_HWrule_ActSw[c][1] = SerialBuffer[0];		// store coil number
+							USB_HWrule_ActSw[c][2] = SerialBuffer[4];}	// store pulse duration
+						if (SerialBuffer[7+i] & 2) {							// deactivate coil on switch release?
+							c = 0;
+							while (USB_HWrule_RelSw[c][0] && (c<15)) {	// look for a free slot
+								c++;}
+							USB_HWrule_RelSw[c][0] = SerialBuffer[1+i];	// set switch release as trigger
+							USB_HWrule_RelSw[c][1] = SerialBuffer[0];	// store coil number
+							USB_HWrule_RelSw[c][2] = 0;}}						// store pulse duration 0 (means coil release)
+					else {
+						if (SerialBuffer[7+i] & 1) {							// activate coil on switch?
+							c = 0;
+							while (USB_HWrule_RelSw[c][0] && (c<15)) {	// look for a free slot
+								c++;}
+							USB_HWrule_RelSw[c][0] = SerialBuffer[1+i] - 128;	// set switch release as trigger
+							USB_HWrule_RelSw[c][1] = SerialBuffer[0];	// store coil number
+							USB_HWrule_RelSw[c][2] = SerialBuffer[4];}	// store pulse duration
+						if (SerialBuffer[7+i] & 2) {							// deactivate coil on switch release?
+							c = 0;
+							while (USB_HWrule_ActSw[c][0] && (c<15)) {	// look for a free slot
+								c++;}
+							USB_HWrule_ActSw[c][0] = SerialBuffer[1+i] - 128;	// set switch as trigger
+							USB_HWrule_ActSw[c][1] = SerialBuffer[0];	// store coil number
+							USB_HWrule_ActSw[c][2] = 0;}}						// store pulse duration 0 (means coil release)
+					i++;}}}
+		break;
+	case 101:
+		USB_WatchdogHandler(0);
+		break;
 	default:
 		if (APC_settings[DisplayType] == 3) {           	// 2x16 alphanumeric display (BK2K type)
 			WriteUpper2("UNKNOWN COMMAND ");}
@@ -271,3 +422,13 @@ void USB_SerialCommand() {
 		WriteLower2("                ");
 		ShowNumber(31, Command);               						// show command number
 		ShowMessage(3);}}
+
+void USB_FireSolenoid(byte Duration, byte Coil) {			// consider solenoid recycling time when activating solenoids
+	if (!USB_SolBlock[Coil]) {													// recycling time over for this coil?
+		ActivateSolenoid((unsigned int) Duration, Coil);	// fire coil
+		if (USB_SolRecycleTime[Coil]) {										// is a recycling time specified?
+			USB_SolBlock[Coil] = true;											// block the coil
+			ActivateTimer((unsigned int) USB_SolRecycleTime[Coil], Coil, USB_ReleaseSolBlock);}}} // start the release timer
+
+void USB_ReleaseSolBlock(byte Coil) {									// release the coil block when the recycling time is over
+	USB_SolBlock[Coil] = false;}
