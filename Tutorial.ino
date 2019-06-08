@@ -439,6 +439,7 @@ void TT_CheckReleasedBall(byte Balls) {               // ball release watchdog
 	CheckReleaseTimer = ActivateTimer(5000, Balls, TT_CheckReleasedBall);}
 
 void TT_GameMain(byte Event) {                        // game switch events
+	static byte DropTimer = 0;
 	switch (Event) {
 	case 1:                                             // plumb bolt tilt
 	case 2:                                             // ball roll tilt
@@ -454,7 +455,28 @@ void TT_GameMain(byte Event) {                        // game switch events
 	case 3:                                             // credit button
 		TT_AddPlayer();
 		break;
-
+	case 8:                                             // high score reset
+		digitalWrite(Blanking, LOW);                      // invoke the blanking
+		break;
+	case 49:																						// drop targets
+	case 50:
+	case 51:
+		if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {	// all targets down?
+			if (DropTimer) {																// timer running?
+				KillTimer(DropTimer);													// stop timer
+				DropTimer = 0;																// and indicate it
+				RemoveBlinkLamp(53);}													// turn off blinking lamp
+			ActA_BankSol(6);}																// reset drop targets
+		else {																						// not all targets down
+			if (!DropTimer) {																// timer not yet running?
+				AddBlinkLamp(53, 500);												// start blinking lamp
+				DropTimer = ActivateTimer(5000, 100, TT_GameMain);}}	// start timer for 5s
+		break;
+	case 100:																						// timer has run out
+		DropTimer = 0;																		// indicate it
+		RemoveBlinkLamp(53);															// turn off blinking lamp
+		ActA_BankSol(6);																	// reset drop targets
+		break;
 	}}
 
 void TT_ClearOuthole(byte Event) {
