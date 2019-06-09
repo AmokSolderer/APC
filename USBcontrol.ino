@@ -12,6 +12,9 @@ const byte USB_CommandLength[101] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB comm
 																		0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
 																		0,0,0,0,0,0,0,0,0,0,0};	// Length of USB commands from 90 - 101
 
+																											// offsets of settings in the settings array
+const byte USB_Watchdog = 0;													// watchdog enable setting
+
 const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0,
@@ -27,7 +30,7 @@ byte USB_HWrule_RelSw[16][3];													// hardware rules for released switche
 byte USB_SolRecycleTime[22];													// recycle time for each solenoid
 byte USB_SolTimers[22];																// stores the sol timer numbers and indicates which solenoids are blocked due to active recycling time
 
-struct SettingTopic USB_setList[4] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+struct SettingTopic USB_setList[4] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS",ExitSettings,0,0,0},
 		{"",NULL,0,0,0}};
@@ -83,6 +86,8 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 					USB_HWrule_RelSw[i][0] = 0;}
 				Serial.write((byte) 0);}											// send OK
 			else {																					// timer has run out
+				if (!game_settings[USB_Watchdog]) {						// watchdog disabled?
+					return;}																		// then leave
 				WriteUpper2(" USB WATCHDOG   ");
 				WriteLower2("                ");
 				ShowMessage(3);}
