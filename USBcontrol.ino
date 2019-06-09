@@ -87,6 +87,7 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 				Serial.write((byte) 0);}											// send OK
 			else {																					// timer has run out
 				if (!game_settings[USB_Watchdog]) {						// watchdog disabled?
+					USB_WatchdogTimer = 0;
 					return;}																		// then leave
 				WriteUpper2(" USB WATCHDOG   ");
 				WriteLower2("                ");
