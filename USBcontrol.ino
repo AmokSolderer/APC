@@ -25,7 +25,7 @@ byte USB_ChangedSwitches[64];
 byte USB_HWrule_ActSw[16][3];													// hardware rules for activated switches
 byte USB_HWrule_RelSw[16][3];													// hardware rules for released switches
 byte USB_SolRecycleTime[22];													// recycle time for each solenoid
-bool USB_SolBlock[22];																// indicates which solenoids are blocked due to active recycling time
+byte USB_SolTimers[22];																// stores the sol timer numbers and indicates which solenoids are blocked due to active recycling time
 
 struct SettingTopic USB_setList[4] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
@@ -78,6 +78,9 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 				if (USB_WatchdogTimer) {
 					KillTimer(USB_WatchdogTimer);
 					USB_WatchdogTimer = 0;}
+				for (i=0; i<16; i++) {												// delete all HW rules
+					USB_HWrule_ActSw[i][0] = 0;
+					USB_HWrule_RelSw[i][0] = 0;}
 				Serial.write((byte) 0);}											// send OK
 			else {																					// timer has run out
 				WriteUpper2(" USB WATCHDOG   ");
@@ -88,9 +91,6 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 				USB_ChangedSwitches[i] = 0;}
 			for (i=0; i<8; i++) {														// turn off all lamps
 				LampColumns[i] = 0;}
-			for (i=0; i<16; i++) {													// delete all HW rules
-				USB_HWrule_ActSw[i][0] = 0;
-				USB_HWrule_RelSw[i][0] = 0;}
 			USB_WatchdogTimer = ActivateTimer(1000, 2, USB_WatchdogHandler);}}}	// restart watchdog
 
 void USB_SwitchHandler(byte Switch) {
@@ -114,7 +114,7 @@ void USB_SwitchHandler(byte Switch) {
 				if (USB_HWrule_ActSw[i][2]) {									// duration != 0 ?
 					USB_FireSolenoid( USB_HWrule_ActSw[i][2], USB_HWrule_ActSw[i][1]);}
 				else {
-					USB_ReleaseSolenoid(USB_HWrule_ActSw[i][1]);}
+					USB_KillSolenoid(USB_HWrule_ActSw[i][1]);}
 				break;}
 			i++;}
 		i = 0;																						// add switch number to list of changed switches
@@ -133,7 +133,7 @@ void USB_ReleasedSwitches(byte Switch) {
 				if (USB_HWrule_RelSw[i][2]) {									// duration != 0 ?
 					USB_FireSolenoid( USB_HWrule_RelSw[i][2], USB_HWrule_RelSw[i][1]);}
 				else {
-					USB_ReleaseSolenoid(USB_HWrule_RelSw[i][1]);}
+					USB_KillSolenoid(USB_HWrule_RelSw[i][1]);}
 				break;}
 			i++;}
 		i = 0;																						// add switch number to list of changed switches
@@ -252,34 +252,35 @@ void USB_SerialCommand() {
 		break;
 	case 21:																						// set solenoid # to on
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
-			if (!SolChange) {                               // change request for another solenoid pending?
-				SolNumber = SerialBuffer[0];                  // activate solenoid permanently
-				SolState = true;
-				SolChange = true;}
-			else {                                        	// if a change request is already pending
-				i = 0;
-				while (SolDelayed[i]) {                     	// look for a free slot in the list of solenoids to be processed later
-					i++;
-					if (i > 20) {
-						ErrorHandler(31,SerialBuffer[0],0);
-						break;}}
-				SolDelayed[i] = SerialBuffer[0];              // insert the solenoid number
-				DurDelayed[i] = 0;                   					// and its duration into the list
-				ActivateTimer(25, SerialBuffer[0], ActivateLater);}}	// and try again later
+			if (!USB_SolTimers[SerialBuffer[0]-1]) {				// recycling time over for this coil?
+				if (!SolChange) {                             // change request for another solenoid pending?
+					SolNumber = SerialBuffer[0];                // activate solenoid permanently
+					SolState = true;
+					SolChange = true;}
+				else {                                        // if a change request is already pending
+					i = 0;
+					while (SolDelayed[i]) {                     // look for a free slot in the list of solenoids to be processed later
+						i++;
+						if (i > 20) {
+							ErrorHandler(31,SerialBuffer[0],0);
+							break;}}
+					SolDelayed[i] = SerialBuffer[0];            // insert the solenoid number
+					DurDelayed[i] = 0;                   				// and its duration into the list
+					ActivateTimer(25, SerialBuffer[0], ActivateLater);}}}	// and try again later
 		else if (SerialBuffer[0] == 25) {									// 25 is a shortcut for both flipper fingers
 			ActivateSolenoid(0, 23);												// enable both flipper fingers
 			ActivateSolenoid(0, 24);}
 		break;
 	case 22:																						// set solenoid # to off
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
-			USB_ReleaseSolenoid(SerialBuffer[0]);}
+			USB_KillSolenoid(SerialBuffer[0]);}
 		else if (SerialBuffer[0] == 25) {									// 25 is a shortcut for both flipper fingers
 			ReleaseSolenoid(23);														// disable both flipper fingers
 			ReleaseSolenoid(24);}
 		break;
 	case 23:																						// pulse solenoid
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
-			USB_FireSolenoid(0, SerialBuffer[0]);}
+			USB_FireSolenoid(USB_SolTimes[SerialBuffer[0]-1], SerialBuffer[0]);}
 		break;
 	case 24:																						// set solenoid pulse time
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
@@ -348,7 +349,7 @@ void USB_SerialCommand() {
 		APC_settings[Volume] = 2*SerialBuffer[0];					// set system volume
 		analogWrite(VolumePin,255-APC_settings[Volume]);	// and apply it
 		break;
-	case 55:
+	case 55:																						// init
 		USB_WatchdogHandler(1);
 		break;
 	case 60:																						// configure hardware rule for solenoid
@@ -424,11 +425,12 @@ void USB_SerialCommand() {
 		ShowMessage(3);}}
 
 void USB_FireSolenoid(byte Duration, byte Coil) {			// consider solenoid recycling time when activating solenoids
-	if (!USB_SolBlock[Coil-1]) {												// recycling time over for this coil?
+	if (!USB_SolTimers[Coil-1]) {												// recycling time over for this coil?
 		if (!SolChange) {                               	// change request for another solenoid pending?
 			SolNumber = Coil;                  							// activate solenoid permanently
 			SolState = true;
-			SolChange = true;}
+			SolChange = true;
+			USB_SolTimers[Coil-1] = ActivateTimer((unsigned int) Duration, Coil, USB_ReleaseSolenoid);}
 		else {                                        		// if a change request is already pending
 			i = 0;
 			while (SolDelayed[i]) {                     		// look for a free slot in the list of solenoids to be processed later
@@ -438,14 +440,28 @@ void USB_FireSolenoid(byte Duration, byte Coil) {			// consider solenoid recycli
 					break;}}
 			SolDelayed[i] = Coil;              							// insert the solenoid number
 			DurDelayed[i] = 0;                   						// and its duration into the list
-			ActivateTimer(25, Coil, ActivateLater);}
-		ActivateTimer((unsigned int) Duration, Coil, USB_ReleaseSolenoid);}}
+			ActivateTimer(25, Coil, USB_ActivateLater);}}}
 
-void USB_ReleaseSolenoid(byte Coil) {
+void USB_ActivateLater(byte Solenoid) {               // handle delayed solenoid change requests
+	byte i = 0;
+	unsigned int Duration;
+	while (SolDelayed[i] != Solenoid) {             		// search the list of delayed solenoid requests
+		i++;}
+	SolDelayed[i] = 0;                              		// remove its entry
+	Duration = DurDelayed[i];                       		// get the duration
+	USB_FireSolenoid(Duration, Solenoid);}         	 		// and try again to activate it
+
+void USB_KillSolenoid(byte Coil) {										// stop solenoid immediately
+	if (QuerySolenoid(Coil)) {													// solenoid active?
+		if (USB_SolTimers[Coil-1]) {											// solenoid duration timer active?
+			KillTimer(USB_SolTimers[Coil-1]);}							// kill it
+		USB_ReleaseSolenoid(Coil);}}											// release solenoid
+
+void USB_ReleaseSolenoid(byte Coil) {									// solenoid timer has run out
 	ReleaseSolenoid(Coil);
+	USB_SolTimers[Coil-1] = 0;													// mark running timer as void
 	if (USB_SolRecycleTime[Coil-1]) {										// is a recycling time specified?
-		USB_SolBlock[Coil-1] = true;											// block the coil
-		ActivateTimer((unsigned int) USB_SolRecycleTime[Coil-1], Coil, USB_ReleaseSolBlock);}} // start the release timer
+		USB_SolTimers[Coil-1] = ActivateTimer((unsigned int) USB_SolRecycleTime[Coil-1], Coil, USB_ReleaseSolBlock);}} // start the release timer
 
 void USB_ReleaseSolBlock(byte Coil) {									// release the coil block when the recycling time is over
-	USB_SolBlock[Coil-1] = false;}
+	USB_SolTimers[Coil-1] = 0;}
