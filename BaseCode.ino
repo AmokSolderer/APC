@@ -591,96 +591,95 @@ void BC_Testmode(byte Select) {
 				*(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
 				*(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}
 			break;
-			case 2:																					// solenoid test
-				switch(Select) {															// switch events
-				case 0:																				// init (not triggered by switch)
-					WriteUpper("  COIL  TEST    ");
-					WriteLower("                ");
-					AppByte2 = 0;
-					break;
-				case 3:
-					WriteUpper(" FIRINGCOIL NO  ");
-					AppBool = false;
-					AppByte2 = ActivateTimer(1000, 1, BC_FireSolenoids);
-					break;
-				case 72:
-					if (AppByte2) {
-						KillTimer(AppByte2);
-						AppByte2 = 0;}
-					else {
-						AppByte++;}
-					BC_Testmode(0);}
+		case 2:																					// solenoid test
+			switch(Select) {															// switch events
+			case 0:																				// init (not triggered by switch)
+				WriteUpper("  COIL  TEST    ");
+				WriteLower("                ");
+				AppByte2 = 0;
 				break;
-				case 3:																				// single lamp test
-					switch(Select) {														// switch events
-					case 0:																			// init (not triggered by switch)
-						WriteUpper(" SINGLE LAMP    ");
-						WriteLower("                ");
-						AppByte2 = 0;
-						for (i=0; i<8; i++){            					// erase lamp matrix
-							LampColumns[i] = 0;}
-						LampPattern = LampColumns;                // and show it
-						break;
-					case 3:
-						WriteUpper(" ACTUAL LAMP    ");
-						AppByte2 = ActivateTimer(1000, 1, BC_ShowLamp);
-						break;
-					case 72:
-						LampPattern = NoLamps;
-						if (AppByte2) {
-							KillTimer(AppByte2);
-							AppByte2 = 0;}
-						else {
-							AppByte++;}
-						BC_Testmode(0);}
-					break;
-					case 4:																			// all lamps test
-						switch(Select) {													// switch events
-						case 0:																		// init (not triggered by switch)
-							WriteUpper("  ALL   LAMPS   ");
-							WriteLower("                ");
-							AppByte2 = 0;
-							break;
-						case 3:
-							WriteUpper("FLASHNG LAMPS   ");
-							AppByte2 = ActivateTimer(1000, 1, BC_ShowAllLamps);
-							break;
-						case 72:
-							LampPattern = NoLamps;
-							if (AppByte2) {
-								KillTimer(AppByte2);
-								AppByte2 = 0;}
-							else {
-								AppByte++;}
-							BC_Testmode(0);}
-						break;
-						case 5:																		// all music test
-							switch(Select) {												// switch events
-							case 0:																	// init (not triggered by switch)
-								WriteUpper(" MUSIC  TEST    ");
-								WriteLower("                ");
-								AppByte2 = 0;
-								break;
-							case 3:
-								WriteUpper("PLAYING MUSIC   ");
-                if (APC_settings[Volume]) {           // system set to digital volume control?
-                  analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-								AfterMusic = BC_NextTestSound;
-								AppByte2 = 1;
-								PlayMusic(50, (char*) TestSounds[0]);
-								break;
-							case 72:
-								AfterMusic = 0;
-                digitalWrite(VolumePin,HIGH);         // set volume to zero
-								StopPlayingMusic();
-								if (AppByte2) {
-									AppByte2 = 0;}
-								else {
-									GameDefinition.AttractMode();
-                  return;}
-								BC_Testmode(0);}
-							break;
-}}
+			case 3:
+				WriteUpper(" FIRINGCOIL NO  ");
+				AppBool = false;
+				AppByte2 = ActivateTimer(1000, 1, BC_FireSolenoids);
+				break;
+			case 72:
+				if (AppByte2) {
+					KillTimer(AppByte2);
+					AppByte2 = 0;}
+				else {
+					AppByte++;}
+				BC_Testmode(0);}
+			break;
+		case 3:																				// single lamp test
+			switch(Select) {														// switch events
+			case 0:																			// init (not triggered by switch)
+				WriteUpper(" SINGLE LAMP    ");
+				WriteLower("                ");
+				AppByte2 = 0;
+				for (i=0; i<8; i++){            					// erase lamp matrix
+					LampColumns[i] = 0;}
+				LampPattern = LampColumns;                // and show it
+				break;
+			case 3:
+				WriteUpper(" ACTUAL LAMP    ");
+				AppByte2 = ActivateTimer(1000, 1, BC_ShowLamp);
+				break;
+			case 72:
+				LampPattern = NoLamps;
+				if (AppByte2) {
+					KillTimer(AppByte2);
+					AppByte2 = 0;}
+				else {
+					AppByte++;}
+				BC_Testmode(0);}
+			break;
+		case 4:																			// all lamps test
+			switch(Select) {													// switch events
+			case 0:																		// init (not triggered by switch)
+				WriteUpper("  ALL   LAMPS   ");
+				WriteLower("                ");
+				AppByte2 = 0;
+				break;
+			case 3:
+				WriteUpper("FLASHNG LAMPS   ");
+				AppByte2 = ActivateTimer(1000, 1, BC_ShowAllLamps);
+				break;
+			case 72:
+				LampPattern = NoLamps;
+				if (AppByte2) {
+					KillTimer(AppByte2);
+					AppByte2 = 0;}
+				else {
+					AppByte++;}
+				BC_Testmode(0);}
+			break;
+		case 5:																		// all music test
+			switch(Select) {												// switch events
+			case 0:																	// init (not triggered by switch)
+				WriteUpper(" MUSIC  TEST    ");
+				WriteLower("                ");
+				AppByte2 = 0;
+				break;
+			case 3:
+				WriteUpper("PLAYING MUSIC   ");
+				if (APC_settings[Volume]) {           // system set to digital volume control?
+					analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+				AfterMusic = BC_NextTestSound;
+				AppByte2 = 1;
+				PlayMusic(50, (char*) TestSounds[0]);
+				break;
+			case 72:
+				AfterMusic = 0;
+				digitalWrite(VolumePin,HIGH);         // set volume to zero
+				StopPlayingMusic();
+				if (AppByte2) {
+					AppByte2 = 0;}
+				else {
+					GameDefinition.AttractMode();
+					return;}
+				BC_Testmode(0);}
+			break;}}
 
 void BC_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
 	if (QuerySwitch(73)) {															// Up/Down switch pressed?
