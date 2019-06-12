@@ -164,7 +164,7 @@ void TT_AttractMode() {                               // Attract Mode
 	LampPattern = LampColumns;													// point to the standard lamp array
 	TurnOnLamp(53);
 	AddBlinkLamp(54, 250);
-	//Switch_Pressed = TT_TutorialSW;
+	Switch_Pressed = TT_AttractModeSW;
 	//Switch_Released = DummyProcess;}
 	digitalWrite(VolumePin,HIGH);                       // set volume to zero
 	LampPattern = NoLamps;
@@ -212,7 +212,7 @@ void TT_AttractDisplayCycle(byte Step) {
 	TT_CheckForLockedBalls(0);
 	switch (Step) {
 	case 0:
-		WriteUpper2("APC BASE CODE   ");
+		WriteUpper2("THE APC TUTORIAL");
 		ActivateTimer(50, 0, ScrollUpper);
 		WriteLower2("                ");
 		ActivateTimer(1000, 0, ScrollLower2);
