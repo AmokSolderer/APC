@@ -199,7 +199,7 @@ void USB_SerialCommand() {
 		Serial.write((byte) 0);
 		break;
 	case 1:																							// get firmware version
-		Serial.print("0.01");
+		Serial.print("0.02");
 		Serial.write((byte) 0);
 		break;
 	case 2:																							// get API version
@@ -208,7 +208,7 @@ void USB_SerialCommand() {
 		break;
 	case 3:																							// get number of lamps
 	case 9:																							// get number of switches
-		Serial.write((byte) 64);
+		Serial.write((byte) 73);
 		break;
 	case 4:																							// get number of solenoids
 		Serial.write((byte) 24);
@@ -320,7 +320,7 @@ void USB_SerialCommand() {
 			WritePlayerDisplay((char*)SerialBuffer, 4);}
 		break;
 	case 40:																						// get status of switch #
-		if (SerialBuffer[0] < 65) {												// max 64 switches
+		if (SerialBuffer[0] < 74) {												// max 73 switches
 			if (QuerySwitch(SerialBuffer[0])) {							// query state
 				Serial.write((byte) 1);}
 			else {
