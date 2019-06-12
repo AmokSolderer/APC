@@ -1,6 +1,6 @@
 // USB interface for APC based pinball machines
 
-unsigned int USB_SolTimes[32]; 												// Activation times for solenoids
+unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
 const byte USB_CommandLength[101] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 0 - 9
 																		1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
 																		1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
