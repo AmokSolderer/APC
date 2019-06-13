@@ -1,6 +1,6 @@
 // USB interface for APC based pinball machines
 
-unsigned int USB_SolTimes[32]; 												// Activation times for solenoids
+unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
 const byte USB_CommandLength[101] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 0 - 9
 																		1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
 																		1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
@@ -205,7 +205,11 @@ void USB_SerialCommand() {
 		Serial.write((byte) 0);
 		break;
 	case 1:																							// get firmware version
+<<<<<<< HEAD
 		Serial.print("0.01");
+=======
+		Serial.print("0.02");
+>>>>>>> branch 'master' of https://github.com/AmokSolderer/APC.git
 		Serial.write((byte) 0);
 		break;
 	case 2:																							// get API version
@@ -214,7 +218,7 @@ void USB_SerialCommand() {
 		break;
 	case 3:																							// get number of lamps
 	case 9:																							// get number of switches
-		Serial.write((byte) 64);
+		Serial.write((byte) 73);
 		break;
 	case 4:																							// get number of solenoids
 		Serial.write((byte) 24);
@@ -326,7 +330,7 @@ void USB_SerialCommand() {
 			WritePlayerDisplay((char*)SerialBuffer, 4);}
 		break;
 	case 40:																						// get status of switch #
-		if (SerialBuffer[0] < 65) {												// max 64 switches
+		if (SerialBuffer[0] < 74) {												// max 73 switches
 			if (QuerySwitch(SerialBuffer[0])) {							// query state
 				Serial.write((byte) 1);}
 			else {
