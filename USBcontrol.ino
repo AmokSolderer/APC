@@ -205,11 +205,7 @@ void USB_SerialCommand() {
 		Serial.write((byte) 0);
 		break;
 	case 1:																							// get firmware version
-<<<<<<< HEAD
-		Serial.print("0.01");
-=======
 		Serial.print("0.02");
->>>>>>> branch 'master' of https://github.com/AmokSolderer/APC.git
 		Serial.write((byte) 0);
 		break;
 	case 2:																							// get API version
