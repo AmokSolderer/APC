@@ -213,6 +213,8 @@ void USB_SerialCommand() {
 		Serial.write((byte) 0);
 		break;
 	case 3:																							// get number of lamps
+		Serial.write((byte) 64);
+		break;
 	case 9:																							// get number of switches
 		Serial.write((byte) 73);
 		break;
