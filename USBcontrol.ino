@@ -357,9 +357,6 @@ void USB_SerialCommand() {
 		APC_settings[Volume] = 2*SerialBuffer[0];					// set system volume
 		analogWrite(VolumePin,255-APC_settings[Volume]);	// and apply it
 		break;
-	case 55:																						// init
-		USB_WatchdogHandler(1);
-		break;
 	case 60:																						// configure hardware rule for solenoid
 		i = 0;
 		c = 0;
@@ -419,6 +416,9 @@ void USB_SerialCommand() {
 							USB_HWrule_ActSw[c][1] = SerialBuffer[0];	// store coil number
 							USB_HWrule_ActSw[c][2] = 0;}}						// store pulse duration 0 (means coil release)
 					i++;}}}
+		break;
+	case 100:																						// init
+		USB_WatchdogHandler(1);
 		break;
 	case 101:
 		USB_WatchdogHandler(0);
