@@ -720,10 +720,10 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 		*(DisplayLower+26) = DispPattern2[32 + 2 * (Solenoid - (Solenoid % 10)) / 10];
 		*(DisplayLower+27) = DispPattern2[33 + 2 * (Solenoid - (Solenoid % 10)) / 10];
 		//if (Solenoid == 11 || Solenoid == 12 || Solenoid == 13 || Solenoid == 14 || Solenoid == 9 || Solenoid == 10 || Solenoid == 18) {	// is it a relay or a #1251 flasher?
-		if (false) {																			// remove this line and adapt it to your game (see above)
-			ActivateSolenoid(999, Solenoid);}								// then the duration must be specified
+		if (!(*(GameDefinition.SolTimes+Solenoid-1))) {		// can this solenoid be turned on permanently?
+			ActivateSolenoid(500, Solenoid);}								// then the duration must be specified
 		else {
-			ActivateSolenoid(0, Solenoid);}                 // activate the solenoid
+			ActivateSolenoid(0, Solenoid);}                 // activate the solenoid with default duration
 		if ((Solenoid < 9) && BC_ACselectRelay) {					// A solenoid and Sys11 machine?
 			*(DisplayLower+30) = DispPattern2[('A'-32)*2];	// show the A
 			*(DisplayLower+31) = DispPattern2[('A'-32)*2+1];

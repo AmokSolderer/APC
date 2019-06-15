@@ -1,6 +1,6 @@
 // USB interface for APC based pinball machines
 
-unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
+unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
 const byte USB_CommandLength[101] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 0 - 9
 																		1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
 																		1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
@@ -213,6 +213,8 @@ void USB_SerialCommand() {
 		Serial.write((byte) 0);
 		break;
 	case 3:																							// get number of lamps
+		Serial.write((byte) 64);
+		break;
 	case 9:																							// get number of switches
 		Serial.write((byte) 73);
 		break;
@@ -355,9 +357,6 @@ void USB_SerialCommand() {
 		APC_settings[Volume] = 2*SerialBuffer[0];					// set system volume
 		analogWrite(VolumePin,255-APC_settings[Volume]);	// and apply it
 		break;
-	case 55:																						// init
-		USB_WatchdogHandler(1);
-		break;
 	case 60:																						// configure hardware rule for solenoid
 		i = 0;
 		c = 0;
@@ -417,6 +416,9 @@ void USB_SerialCommand() {
 							USB_HWrule_ActSw[c][1] = SerialBuffer[0];	// store coil number
 							USB_HWrule_ActSw[c][2] = 0;}}						// store pulse duration 0 (means coil release)
 					i++;}}}
+		break;
+	case 100:																						// init
+		USB_WatchdogHandler(1);
 		break;
 	case 101:
 		USB_WatchdogHandler(0);
