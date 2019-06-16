@@ -69,8 +69,12 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 	byte i=0;
 	if (!Event) {																				// reset watchdog
 		Serial.write((byte) 0);														// send OK
-		KillTimer(USB_WatchdogTimer);											// restart timer
-		USB_WatchdogTimer = ActivateTimer(1000, 2, USB_WatchdogHandler);}
+		if (USB_WatchdogTimer) {
+			KillTimer(USB_WatchdogTimer);}									// restart timer
+		if (game_settings[USB_Watchdog]) {								// watchdog enabled?
+			USB_WatchdogTimer = ActivateTimer(1000, 2, USB_WatchdogHandler);} // start the timer
+		else {																						// watchdog disabled?
+			USB_WatchdogTimer = 0;}}												// mark timer as inactive
 	else {
 		if (Event == 3) {																	// stop watchdog
 			if (USB_WatchdogTimer) {
@@ -215,11 +219,11 @@ void USB_SerialCommand() {
 	case 3:																							// get number of lamps
 		Serial.write((byte) 64);
 		break;
-	case 9:																							// get number of switches
-		Serial.write((byte) 73);
-		break;
 	case 4:																							// get number of solenoids
 		Serial.write((byte) 24);
+		break;
+	case 6:																							// get number of displays
+		Serial.write((byte) 7);
 		break;
 	case 7:
 		switch (APC_settings[DisplayType]) {
@@ -240,6 +244,9 @@ void USB_SerialCommand() {
 			Serial.write((byte) 0);
 			break;}
 		break;
+	case 9:																							// get number of switches
+		Serial.write((byte) 73);
+		break;
 	case 10:																						// get status of lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
 			Serial.write((byte) QueryLamp(SerialBuffer[0]));}
@@ -253,6 +260,9 @@ void USB_SerialCommand() {
 	case 12:																						// turn off lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
 			TurnOffLamp(SerialBuffer[0]);}
+		break;
+	case 19:																						// get number of modern lights
+		Serial.write((byte) 0);
 		break;
 	case 20:																						// get status of solenoid
 		if (SerialBuffer[0] < 26) {												// max 24 solenoids
