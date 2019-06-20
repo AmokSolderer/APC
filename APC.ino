@@ -1558,10 +1558,11 @@ void ShowFileNotFound(String Filename) {							// show file not found message
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being one - stop with step being zero
 	static byte Timer = 0;
 	unsigned int Buffer = (PatPointer+Step-1)->Duration;  // buffer the duration for the current pattern
-	if (Timer) {
-		KillTimer(Timer);
-		Timer = 0;}
-	if (Step)  {																				// no kill signal
+	if (!Step) {																				// kill signal received?
+		if (Timer) {
+			KillTimer(Timer);
+			Timer = 0;}}
+	else {																							// no kill signal
 		if (StrobeLightsTimer) {
 			LampBuffer = ((PatPointer+Step-1)->Pattern)-1;} // show the pattern
 		else {
