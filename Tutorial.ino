@@ -162,15 +162,15 @@ void TT_AttractMode() {                               // Attract Mode
 	DispRow2 = DisplayLower;
 	WriteUpper("MY NEW GAME     ");
 	LampPattern = LampColumns;													// point to the standard lamp array
-	TurnOnLamp(53);
-	AddBlinkLamp(54, 250);
+	//TurnOnLamp(53);
+	//AddBlinkLamp(54, 250);
 	Switch_Pressed = TT_AttractModeSW;
+	//Switch_Pressed = TT_TutorialSW;
 	//Switch_Released = DummyProcess;}
 	digitalWrite(VolumePin,HIGH);                       // set volume to zero
 	LampPattern = NoLamps;
-	AppByte2 = 0;
 	LampReturn = TT_AttractLampCycle;
-	ActivateTimer(1000, 0, TT_AttractLampCycle);
+	ActivateTimer(1000, 1, TT_AttractLampCycle);
 	TT_AttractDisplayCycle(0);}
 
 void TT_TutorialSW(byte SwitchNo) {
@@ -200,13 +200,15 @@ void TT_TutorialSW(byte SwitchNo) {
 		break;}}
 
 void TT_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
-	UNUSED(Event);
-	PatPointer = TT_AttractFlow[AppByte2].FlowPat;      // set the pointer to the current series
-	FlowRepeat = TT_AttractFlow[AppByte2].Repeat;       // set the repetitions
-	AppByte2++;                                         // increase counter
-	if (!TT_AttractFlow[AppByte2].Repeat) {             // repetitions of next series = 0?
-		AppByte2 = 0;}                                    // reset counter
-	ShowLampPatterns(0);}                               // call the player
+	static byte Phase;
+	if (Event == 1) {																		// initial call?
+		Phase = 0;}																				// reset cycle phase
+	PatPointer = TT_AttractFlow[Phase].FlowPat;      		// set the pointer to the current series
+	FlowRepeat = TT_AttractFlow[Phase].Repeat;       		// set the repetitions
+	Phase++;                                         		// increase counter
+	if (!TT_AttractFlow[Phase].Repeat) {             		// repetitions of next series = 0?
+		Phase = 0;}                                    		// reset counter
+	ShowLampPatterns(1);}                               // call the player
 
 void TT_AttractDisplayCycle(byte Step) {
 	TT_CheckForLockedBalls(0);
@@ -268,11 +270,11 @@ void TT_AttractModeSW(byte Button) {                  // Attract Mode switch beh
 		ActivateTimer(200, 0, TT_CheckForLockedBalls);    // check again in 200ms
 		break;
 	case 72:                                            // Service Mode
-		BlinkScore(0);
+		BlinkScore(0);																		// stop score blinking
+		ShowLampPatterns(0);															// stop lamp animations
     KillAllTimers();
 		BallWatchdogTimer = 0;
 		CheckReleaseTimer = 0;
-    ByteBuffer3 = 0;
     LampPattern = NoLamps;                            // Turn off all lamps
     ReleaseAllSolenoids();
     if (!QuerySwitch(73)) {														// Up/Down switch pressed?
@@ -289,8 +291,8 @@ void TT_AttractModeSW(byte Button) {                  // Attract Mode switch beh
 void TT_InitGame() {
 	if (TT_CountBallsInTrunk() == TT_InstalledBalls || (TT_CountBallsInTrunk() == TT_InstalledBalls-1 && QuerySwitch(TT_PlungerLaneSwitch))) { // Ball missing?
 		Switch_Pressed = DummyProcess;                  	// Switches do nothing
+		ShowLampPatterns(0);															// stop lamp animations
     KillAllTimers();
-    ByteBuffer3 = 0;
 		if (APC_settings[Volume]) {     	                // system set to digital volume control?
 			analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
 		else {
