@@ -176,7 +176,7 @@ void BC_AttractLampCycle(byte Event) {                // play multiple lamp patt
 	AppByte2++;                                         // increase counter
 	if (!BC_AttractFlow[AppByte2].Repeat) {             // repetitions of next series = 0?
 		AppByte2 = 0;}                                    // reset counter
-	ShowLampPatterns(0);}                               // call the player
+	ShowLampPatterns(1);}                               // call the player
 
 void BC_AttractDisplayCycle(byte Step) {
 	BC_CheckForLockedBalls(0);
@@ -238,11 +238,11 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
 		ActivateTimer(200, 0, BC_CheckForLockedBalls);    // check again in 200ms
 		break;
 	case 72:                                            // Service Mode
-		BlinkScore(0);
+		BlinkScore(0);																		// stop score blinking
+		ShowLampPatterns(0);															// stop lamp animations
     KillAllTimers();
 		BallWatchdogTimer = 0;
 		CheckReleaseTimer = 0;
-    ByteBuffer3 = 0;
     LampPattern = NoLamps;                            // Turn off all lamps
     ReleaseAllSolenoids();
     if (!QuerySwitch(73)) {														// Up/Down switch pressed?
@@ -256,8 +256,8 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
 	case 3:																							// start game
 		if (BC_CountBallsInTrunk() == BC_InstalledBalls || (BC_CountBallsInTrunk() == BC_InstalledBalls-1 && QuerySwitch(BC_PlungerLaneSwitch))) { // Ball missing?
 			Switch_Pressed = DummyProcess;                  // Switches do nothing
+			ShowLampPatterns(0);														// stop lamp animations
       KillAllTimers();
-      ByteBuffer3 = 0;
 			if (APC_settings[Volume]) {                     // system set to digital volume control?
 				analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
 			else {

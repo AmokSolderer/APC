@@ -277,18 +277,18 @@ void PB_AttractLampCycle(byte Event) {                // play multiple lamp patt
 	State++;                                            // increase counter
 	if (!PB_AttractFlow[State].Repeat) {                // repetitions of next series = 0?
 		State = 0;}                                       // reset counter
-	ShowLampPatterns(0);}                               // call the player
+	ShowLampPatterns(1);}                               // call the player
 
 void PB_AttractModeSW(byte Select) {
 	switch(Select) {
 	case 3:																							// credit button
 		RemoveBlinkLamp(1);																// stop the blinking of the game over lamp
+		ShowLampPatterns(0);															// stop lamp animations
 		KillAllTimers();
 		if (APC_settings[Volume]) {                       // system set to digital volume control?
 			analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
 		else {
 			digitalWrite(VolumePin,HIGH);}                  // turn off the digital volume control
-		ByteBuffer3 = 0;
 		Switch_Pressed = AddPlayerSW;
 		for (i=0; i< 8; i++) {
 			LampColumns[i] = 0;}
@@ -341,8 +341,8 @@ void PB_AttractModeSW(byte Select) {
 		Switch_Pressed = DummyProcess;
 		RemoveBlinkLamp(1);                               // stop the blinking of the game over lamp
 		BlinkScore(0);
+		ShowLampPatterns(0);															// stop lamp animations
 		KillAllTimers();
-		ByteBuffer3 = 0;
 		LampPattern = NoLamps;                          	// Turn off all lamps
 		ReleaseAllSolenoids();
 		if (!QuerySwitch(73)) {														// Up/Down switch pressed?
