@@ -235,7 +235,7 @@ void AttractLampCycle(byte Event) {                   // play multiple lamp patt
 	AppByte2++;                                         // increase counter
 	if (!AttractFlow[AppByte2].Repeat) {                // repetitions of next series = 0?
 		AppByte2 = 0;}                                    // reset counter
-	ShowLampPatterns(0);}                               // call the player
+	ShowLampPatterns(1);}                               // call the player
 
 void AttractScroll(byte Dummy) {
 	UNUSED(Dummy);
@@ -309,6 +309,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 		RightMysteryTimer = 0;
 		LeftMysteryTimer = 0;
 		LockChaseLight(0);
+		ShowLampPatterns(0);
 		BlinkScore(0);
 		BallWatchdogTimer = 0;
 		TimedRightMagnaTimer = 0;
@@ -321,6 +322,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 	case 3:																							// start game
 		if (CountBallsInTrunk() == 3 || (CountBallsInTrunk() == 2 && QuerySwitch(45))) { // Ball missing?
 			StrobeLightsTimer = 0;
+			ShowLampPatterns(0);
 			RemoveBlinkLamp(4);
 			RemoveBlinkLamp(6);
 			Switch_Pressed = DummyProcess;                  // Switches do nothing

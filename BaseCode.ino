@@ -176,7 +176,7 @@ void BC_AttractLampCycle(byte Event) {                // play multiple lamp patt
 	AppByte2++;                                         // increase counter
 	if (!BC_AttractFlow[AppByte2].Repeat) {             // repetitions of next series = 0?
 		AppByte2 = 0;}                                    // reset counter
-	ShowLampPatterns(0);}                               // call the player
+	ShowLampPatterns(1);}                               // call the player
 
 void BC_AttractDisplayCycle(byte Step) {
 	BC_CheckForLockedBalls(0);
@@ -238,11 +238,11 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
 		ActivateTimer(200, 0, BC_CheckForLockedBalls);    // check again in 200ms
 		break;
 	case 72:                                            // Service Mode
-		BlinkScore(0);
+		BlinkScore(0);																		// stop score blinking
+		ShowLampPatterns(0);															// stop lamp animations
     KillAllTimers();
 		BallWatchdogTimer = 0;
 		CheckReleaseTimer = 0;
-    ByteBuffer3 = 0;
     LampPattern = NoLamps;                            // Turn off all lamps
     ReleaseAllSolenoids();
     if (!QuerySwitch(73)) {														// Up/Down switch pressed?
@@ -256,8 +256,8 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
 	case 3:																							// start game
 		if (BC_CountBallsInTrunk() == BC_InstalledBalls || (BC_CountBallsInTrunk() == BC_InstalledBalls-1 && QuerySwitch(BC_PlungerLaneSwitch))) { // Ball missing?
 			Switch_Pressed = DummyProcess;                  // Switches do nothing
+			ShowLampPatterns(0);														// stop lamp animations
       KillAllTimers();
-      ByteBuffer3 = 0;
 			if (APC_settings[Volume]) {                     // system set to digital volume control?
 				analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
 			else {
@@ -720,10 +720,10 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 		*(DisplayLower+26) = DispPattern2[32 + 2 * (Solenoid - (Solenoid % 10)) / 10];
 		*(DisplayLower+27) = DispPattern2[33 + 2 * (Solenoid - (Solenoid % 10)) / 10];
 		//if (Solenoid == 11 || Solenoid == 12 || Solenoid == 13 || Solenoid == 14 || Solenoid == 9 || Solenoid == 10 || Solenoid == 18) {	// is it a relay or a #1251 flasher?
-		if (false) {																			// remove this line and adapt it to your game (see above)
-			ActivateSolenoid(999, Solenoid);}								// then the duration must be specified
+		if (!(*(GameDefinition.SolTimes+Solenoid-1))) {		// can this solenoid be turned on permanently?
+			ActivateSolenoid(500, Solenoid);}								// then the duration must be specified
 		else {
-			ActivateSolenoid(0, Solenoid);}                 // activate the solenoid
+			ActivateSolenoid(0, Solenoid);}                 // activate the solenoid with default duration
 		if ((Solenoid < 9) && BC_ACselectRelay) {					// A solenoid and Sys11 machine?
 			*(DisplayLower+30) = DispPattern2[('A'-32)*2];	// show the A
 			*(DisplayLower+31) = DispPattern2[('A'-32)*2+1];

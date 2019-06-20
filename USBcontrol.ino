@@ -1,6 +1,6 @@
 // USB interface for APC based pinball machines
 
-unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
+unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
 const byte USB_CommandLength[101] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 0 - 9
 																		1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
 																		1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
@@ -69,8 +69,12 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 	byte i=0;
 	if (!Event) {																				// reset watchdog
 		Serial.write((byte) 0);														// send OK
-		KillTimer(USB_WatchdogTimer);											// restart timer
-		USB_WatchdogTimer = ActivateTimer(1000, 2, USB_WatchdogHandler);}
+		if (USB_WatchdogTimer) {
+			KillTimer(USB_WatchdogTimer);}									// restart timer
+		if (game_settings[USB_Watchdog]) {								// watchdog enabled?
+			USB_WatchdogTimer = ActivateTimer(1000, 2, USB_WatchdogHandler);} // start the timer
+		else {																						// watchdog disabled?
+			USB_WatchdogTimer = 0;}}												// mark timer as inactive
 	else {
 		if (Event == 3) {																	// stop watchdog
 			if (USB_WatchdogTimer) {
@@ -213,11 +217,13 @@ void USB_SerialCommand() {
 		Serial.write((byte) 0);
 		break;
 	case 3:																							// get number of lamps
-	case 9:																							// get number of switches
-		Serial.write((byte) 73);
+		Serial.write((byte) 64);
 		break;
 	case 4:																							// get number of solenoids
 		Serial.write((byte) 24);
+		break;
+	case 6:																							// get number of displays
+		Serial.write((byte) 7);
 		break;
 	case 7:
 		switch (APC_settings[DisplayType]) {
@@ -238,6 +244,9 @@ void USB_SerialCommand() {
 			Serial.write((byte) 0);
 			break;}
 		break;
+	case 9:																							// get number of switches
+		Serial.write((byte) 73);
+		break;
 	case 10:																						// get status of lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
 			Serial.write((byte) QueryLamp(SerialBuffer[0]));}
@@ -251,6 +260,9 @@ void USB_SerialCommand() {
 	case 12:																						// turn off lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
 			TurnOffLamp(SerialBuffer[0]);}
+		break;
+	case 19:																						// get number of modern lights
+		Serial.write((byte) 0);
 		break;
 	case 20:																						// get status of solenoid
 		if (SerialBuffer[0] < 26) {												// max 24 solenoids
@@ -355,9 +367,6 @@ void USB_SerialCommand() {
 		APC_settings[Volume] = 2*SerialBuffer[0];					// set system volume
 		analogWrite(VolumePin,255-APC_settings[Volume]);	// and apply it
 		break;
-	case 55:																						// init
-		USB_WatchdogHandler(1);
-		break;
 	case 60:																						// configure hardware rule for solenoid
 		i = 0;
 		c = 0;
@@ -417,6 +426,9 @@ void USB_SerialCommand() {
 							USB_HWrule_ActSw[c][1] = SerialBuffer[0];	// store coil number
 							USB_HWrule_ActSw[c][2] = 0;}}						// store pulse duration 0 (means coil release)
 					i++;}}}
+		break;
+	case 100:																						// init
+		USB_WatchdogHandler(1);
 		break;
 	case 101:
 		USB_WatchdogHandler(0);
