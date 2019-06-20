@@ -277,7 +277,7 @@ void PB_AttractLampCycle(byte Event) {                // play multiple lamp patt
 	State++;                                            // increase counter
 	if (!PB_AttractFlow[State].Repeat) {                // repetitions of next series = 0?
 		State = 0;}                                       // reset counter
-	ShowLampPatterns(0);}                               // call the player
+	ShowLampPatterns(1);}                               // call the player
 
 void PB_AttractModeSW(byte Select) {
 	switch(Select) {
