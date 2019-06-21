@@ -1,7 +1,7 @@
 // USB interface for APC based pinball machines
 
 unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
-const byte USB_CommandLength[101] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 0 - 9
+const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 0 - 9
 																		1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
 																		1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
 																		255,255,255,255,255,255,255,1,0,0,	// Length of USB commands from 30 - 39
@@ -10,7 +10,7 @@ const byte USB_CommandLength[101] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB comm
 																		10,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 60 - 69
 																		0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 70 - 79
 																		0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
-																		0,0,0,0,0,0,0,0,0,0,0};	// Length of USB commands from 90 - 101
+																		0,0,0,0,0,0,0,0,0,0,0,0};	// Length of USB commands from 90 - 101
 
 																											// offsets of settings in the settings array
 const byte USB_Watchdog = 0;													// watchdog enable setting
