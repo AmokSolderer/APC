@@ -196,14 +196,16 @@ void USB_SerialCommand() {
 		else {
 			CommandPending = true;
 			return;}}
-	switch (Command) {																	// execute command if complete
 	if (APC_settings[DebugMode]) {
 		for (i=1; i<24; i++) {                        		// move all characters in the lower display row 4 chars to the left
 			DisplayLower[i] = DisplayLower[i+8];}
-		*(DisplayLower+30) = DispPattern2[32 + 2 * (Command % 10)]; // and insert the switch number to the right of the row
+		*(DisplayLower+30) = DispPattern2[32 + 2 * (Command % 10)]; // and insert the command number to the right of the row
 		*(DisplayLower+31) = DispPattern2[33 + 2 * (Command % 10)];
 		*(DisplayLower+28) = DispPattern2[32 + 2 * (Command - (Command % 10)) / 10];
-		*(DisplayLower+29) = DispPattern2[33 + 2 * (Command - (Command % 10)) / 10];}
+		*(DisplayLower+29) = DispPattern2[33 + 2 * (Command - (Command % 10)) / 10];
+		*(DisplayLower+26) = DispPattern2[32 + 2 * (Command - (Command % 100)) / 100];
+		*(DisplayLower+27) = DispPattern2[33 + 2 * (Command - (Command % 100)) / 100];}
+	switch (Command) {																	// execute command if complete
 	case 0:																							// get connected hardware
 		Serial.print("APC");
 		Serial.write((byte) 0);
@@ -220,7 +222,7 @@ void USB_SerialCommand() {
 		Serial.write((byte) 64);
 		break;
 	case 4:																							// get number of solenoids
-		Serial.write((byte) 24);
+		Serial.write((byte) 25);
 		break;
 	case 6:																							// get number of displays
 		Serial.write((byte) 7);
