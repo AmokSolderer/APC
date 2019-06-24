@@ -363,7 +363,10 @@ void USB_SerialCommand() {
 		StopPlayingSound();
 		break;
 	case 52:																						// play soundfile
-		PlaySound(50, (char*) SerialBuffer);
+		if (SerialBuffer[0] == 1) {												// channel 1?
+			PlayMusic(50, (char*) SerialBuffer+1);}
+		else {																						// channel 2
+			PlaySound(50, (char*) SerialBuffer+1);}
 		break;
 	case 54:																						// sound volume setting
 		APC_settings[Volume] = 2*SerialBuffer[0];					// set system volume
