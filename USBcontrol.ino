@@ -211,7 +211,7 @@ void USB_SerialCommand() {
 		Serial.write((byte) 0);
 		break;
 	case 1:																							// get firmware version
-		Serial.print("0.02");
+		Serial.print(APC_Version);
 		Serial.write((byte) 0);
 		break;
 	case 2:																							// get API version
@@ -225,7 +225,23 @@ void USB_SerialCommand() {
 		Serial.write((byte) 25);
 		break;
 	case 6:																							// get number of displays
-		Serial.write((byte) 7);
+		switch (APC_settings[DisplayType]) {
+		case 0:																						// 4 ALPHA+CREDIT
+		case 1:																						// Sys11 Pinbot
+		case 6:																						// Sys3 - 6
+		case 7:																						// Sys7 + 9
+			Serial.write((byte) 5);
+			break;
+		case 2:																						// Sys11 F-14
+		case 5:																						// Sys11 Riverboat Gambler
+			Serial.write((byte) 4);
+			break;
+		case 3:																						// Sys11 BK2K
+			Serial.write((byte) 2);
+			break;
+		case 4:																						// Sys11 Taxi
+			Serial.write((byte) 3);
+			break;}
 		break;
 	case 7:
 		switch (APC_settings[DisplayType]) {
