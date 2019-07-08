@@ -316,6 +316,8 @@ void Init_System() {
 	else {																							// no SD card?
 		for(i=0;i<64;i++) {																// use default settings
 			APC_settings[i] = APC_defaults[i];}}
+	if ((APC_settings[DisplayType] == 1) || (APC_settings[DisplayType] == 2)) { // display with numerical lower row
+		DispPattern2 = NumLower;}													// use patterns for num displays
 	if (APC_settings[DisplayType] < 6) {								// non BCD display
 		WriteLower("APC REV         ");
 		*(DisplayLower+24) = DispPattern2[2*(APC_Version[0]-32)];
