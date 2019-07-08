@@ -11,6 +11,8 @@ const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB comm
 																		0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 70 - 79
 																		0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
 																		0,0,0,0,0,0,0,0,0,0,0,0};	// Length of USB commands from 90 - 101
+const byte DisplayDigitNum[8][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
+const byte DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
 
 																											// offsets of settings in the settings array
 const byte USB_Watchdog = 0;													// watchdog enable setting
@@ -244,23 +246,8 @@ void USB_SerialCommand() {
 			break;}
 		break;
 	case 7:
-		switch (APC_settings[DisplayType]) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-			Serial.print("14-segment");
-			Serial.write((byte) 0);
-			break;
-		case 5:
-			Serial.print("7-segment");
-			Serial.write((byte) 0);
-			break;
-		case 6:
-			Serial.print("8-segment");
-			Serial.write((byte) 0);
-			break;}
+		Serial.write((byte) DisplayDigitNum[APC_settings[DisplayType]][SerialBuffer[0]]);
+		Serial.write((byte) DisplayTypes[APC_settings[DisplayType]][SerialBuffer[0]]);
 		break;
 	case 9:																							// get number of switches
 		Serial.write((byte) 73);

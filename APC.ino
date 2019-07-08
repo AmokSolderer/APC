@@ -403,6 +403,10 @@ void TC7_Handler() {                                  // interrupt routine - run
 	if (APC_settings[DebugMode]) {
 		*(DisplayLower) = RightCredit[32 + 2 * ActiveTimers];} // show the number of active timers
 
+	if (APC_settings[DimInserts] || (LampWait == LampPeriod)) { // if inserts have to be dimmed or waiting time has passed
+		REG_PIOC_CODR = AllSelects + AllData;         		// clear all select signals and the data bus
+		REG_PIOC_SODR = 268435456;}                   		// use Sel0 to disable column driver outputs at half time
+
 	// Switches
 
 	i = 0;
@@ -563,10 +567,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 			REG_PIOC_SODR = LampColMask;
 			LampWait = 1;                                  	// restart lamp waiting counter
 			REG_PIOC_SODR = 268435456;}                     // use Sel0
-		else {
-			if (APC_settings[DimInserts]) {                 // if inserts have to be dimmed
-				REG_PIOC_CODR = AllSelects + AllData;         // clear all select signals and the data bus
-				REG_PIOC_SODR = 268435456;}                   // use Sel0 to disable column driver outputs at half time
+		else {																						// waiting time has not yet passed
 			LampWait++;}}                                   // increase wait counter
 	else {                                              // LEDs selected
 		if (LampCol > 19) {                               // 20ms over
