@@ -4,7 +4,7 @@ SdFat SD;
 #include "Arduino.h"
 #include "Sound.h"
 
-const char APC_Version[6] = "00.03";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "00.10";                  // Current APC version - includes the other INO files also
 const int SwMax = 72;                                 // number of existing switches (max. 72)
 const int LampMax = 64;                               // number of existing lamps (max. 64)
 const int DispColumns = 16;                           // Number of columns of the used display unit
@@ -56,7 +56,7 @@ const byte *DispRow1;                                 // determines which patter
 const byte *DispRow2;
 const byte *DispPattern1;
 const byte *DispPattern2;
-const byte NumMaskUpper[5] = {184,64,4,2,1};						// Bitmasks for the upper row of numerical displays
+const byte NumMaskUpper[5] = {184,64,4,2,1};					// Bitmasks for the upper row of numerical displays
 const byte NumMaskLower[5] = {71,16,8,128,32};				// Bitmasks for the lower row of numerical displays
 byte DisplayUpper[32];                                // changeable display buffer
 byte DisplayLower[32];
@@ -322,7 +322,7 @@ void Init_System() {
 		WriteLower("APC REV         ");
 		*(DisplayLower+24) = DispPattern2[2*(APC_Version[0]-32)];
 		*(DisplayLower+25) = DispPattern2[2*(APC_Version[0]-32)+1];
-		*(DisplayLower+26) = DispPattern2[2*(APC_Version[1]-32)];
+		*(DisplayLower+26) = DispPattern2[2*(APC_Version[1]-32)] | 1; // Comma
 		*(DisplayLower+27) = DispPattern2[2*(APC_Version[1]-32)+1] | 8; // Dot
 		*(DisplayLower+28) = DispPattern2[2*(APC_Version[3]-32)];
 		*(DisplayLower+29) = DispPattern2[2*(APC_Version[3]-32)+1];
