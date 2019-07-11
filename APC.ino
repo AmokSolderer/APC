@@ -908,22 +908,10 @@ byte ConvertNumLower(byte Number, byte Pattern) {			// convert a number to be sh
 	return Pattern;}
 
 void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to player displays - credit is Player 0
-	if (APC_settings[DisplayType] > 5) {            		// numbers only type display
-		if (Player) {																			// player display?
-			if (Player < 3) {																// upper row?
-				Player--;
-				for (i=0;i<7;i++) {														// for all digits
-					*(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));}}
-			else {																					// lower row
-				Player = Player - 3;
-				for (i=0;i<7;i++) {														// for all digits
-					*(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));}}}
-		else {																						// credit display
-			*(DisplayLower) = ConvertNumUpper((byte) *(DisplayText)-48,(byte) *(DisplayLower));
-			*(DisplayLower+16) = ConvertNumUpper((byte) *(DisplayText+1)-48,(byte) *(DisplayLower+16));
-			*(DisplayLower) = ConvertNumLower((byte) *(DisplayText+2)-48,(byte) *(DisplayLower));
-			*(DisplayLower+16) = ConvertNumLower((byte) *(DisplayText+3)-48,(byte) *(DisplayLower+16));}}
-	else {                                            	// Sys11 display with credit
+	switch (APC_settings[DisplayType]) {
+	case 0:																							// numbers only type display
+	case 1:																							// Sys11 Pinbot
+	case 2:																							// Sys11 F-14
 		if (Player) {																			// player display?
 			if (Player < 3) {																// upper row?
 				Player--;
@@ -943,7 +931,34 @@ void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to
 			*(DisplayLower) = RightCredit[(*(DisplayText+2)-32)*2];
 			*(DisplayLower+1) = RightCredit[((*(DisplayText+2)-32)*2)+1];
 			*(DisplayLower+16) = RightCredit[(*(DisplayText+3)-32)*2];
-			*(DisplayLower+17) = RightCredit[((*(DisplayText+3)-32)*2)+1];}}}
+			*(DisplayLower+17) = RightCredit[((*(DisplayText+3)-32)*2)+1];}
+		break;
+	case 3:																							// Sys 11BK2K
+		if (Player == 1) {
+			for (i=0;i<16;i++) {														// for all digits
+				*(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+				*(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
+		else {
+			for (i=0;i<16;i++) {														// for all digits
+				*(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
+				*(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
+		break;
+	case 6:																							// numbers only type display
+	case 7:
+		if (Player) {																			// player display?
+			if (Player < 3) {																// upper row?
+				Player--;
+				for (i=0;i<7;i++) {														// for all digits
+					*(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));}}
+			else {																					// lower row
+				Player = Player - 3;
+				for (i=0;i<7;i++) {														// for all digits
+					*(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));}}}
+		else {																						// credit display
+			*(DisplayLower) = ConvertNumUpper((byte) *(DisplayText)-48,(byte) *(DisplayLower));
+			*(DisplayLower+16) = ConvertNumUpper((byte) *(DisplayText+1)-48,(byte) *(DisplayLower+16));
+			*(DisplayLower) = ConvertNumLower((byte) *(DisplayText+2)-48,(byte) *(DisplayLower));
+			*(DisplayLower+16) = ConvertNumLower((byte) *(DisplayText+3)-48,(byte) *(DisplayLower+16));}}}
 
 void WriteUpper(const char* DisplayText) {            
 	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)

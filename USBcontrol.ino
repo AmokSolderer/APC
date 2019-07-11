@@ -1,10 +1,10 @@
 // USB interface for APC based pinball machines
 
 unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
-byte USB_CommandLength[102] = {0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 0 - 9
+byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB commands from 0 - 9
 															1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
 															1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
-															1,1,255,255,255,255,255,1,0,0,	// Length of USB commands from 30 - 39
+															1,1,255,255,255,255,255,2,0,0,	// Length of USB commands from 30 - 39
 															1,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 40 - 49
 															1,0,255,255,1,0,0,0,0,0,	// Length of USB commands from 50 - 59
 															10,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 60 - 69
@@ -248,7 +248,7 @@ void USB_SerialCommand() {
 			Serial.write((byte) 3);
 			break;}
 		break;
-	case 7:
+	case 7:																							// Display details
 		Serial.write((byte) USB_DisplayDigitNum[APC_settings[DisplayType]][SerialBuffer[0]]);
 		Serial.write((byte) USB_DisplayTypes[APC_settings[DisplayType]][SerialBuffer[0]]);
 		break;
@@ -373,7 +373,8 @@ void USB_SerialCommand() {
 			switch (APC_settings[DisplayType]) {						// which display is used?
 			case 0:																					// 4 ALPHA+CREDIT
 			case 1:																					// Sys11 Pinbot
-				switch (USB_DisplayProtocol[0]) {							// which protocol shall be used?
+			case 2:																					// Sys11 F-14
+				switch (USB_DisplayProtocol[1]) {							// which protocol shall be used?
 				case 1:																				// BCD
 					for (i=0; i<7; i++) {
 						*(DisplayUpper+2*i+2) = DispPattern1[32+2*SerialBuffer[i]];
@@ -401,11 +402,41 @@ void USB_SerialCommand() {
 					WritePlayerDisplay((char*)SerialBuffer, 0);
 					break;}
 				break;
+			case 3:																					// Sys11 BK2K
+			case 4:																					// Sys11 Taxi
+				switch (USB_DisplayProtocol[1]) {							// which protocol shall be used?
+				case 1:																				// BCD
+					for (i=0; i<16; i++) {
+						*(DisplayUpper+2*i) = DispPattern1[32+2*SerialBuffer[i]];
+						*(DisplayUpper+2*i+1) = DispPattern1[33+2*SerialBuffer[i]];}
+					break;
+				case 2:																				// BCD with comma
+					for (i=0; i<16; i++) {
+						if (SerialBuffer[i] & 128) {							// comma set?
+							*(DisplayUpper+2*i) = 128 | DispPattern1[32+2*(SerialBuffer[i] & 15)];
+							*(DisplayUpper+2*i+1) = 64 | DispPattern1[33+2*(SerialBuffer[i] & 15)];}
+						else {
+							*(DisplayUpper+2*i) = DispPattern1[32+2*SerialBuffer[i]];
+							*(DisplayUpper+2*i+1) = DispPattern1[33+2*SerialBuffer[i]];}}
+					break;
+				case 3:																				// 7 segment pattern (1 byte)
+					for (i=0; i<16; i++) {
+						*(DisplayUpper+2*i) = SerialBuffer[i];}
+					break;
+				case 4:																				// 14 segment pattern (2 bytes)
+					for (i=0; i<32; i++) {
+						*(DisplayUpper+i) = SerialBuffer[i];}
+					break;
+				case 5:																				// ASCII
+				case 6:																				// ASCII with comma
+					WritePlayerDisplay((char*)SerialBuffer, 1);
+					break;}
+				break;
 			case 6:																					// Sys3 - 6 display
 
 				break;
 			case 7:																					// Sys7 + 9 display
-				switch (USB_DisplayProtocol[0]) {							// which protocol shall be used?
+				switch (USB_DisplayProtocol[1]) {							// which protocol shall be used?
 				case 1:																				// BCD
 				case 2:																				// BCD with comma
 					DisplayBCD(1, SerialBuffer);
