@@ -1295,7 +1295,6 @@ void DisplayBCD (byte Position, byte* BCDnumber) {		// displays BCD values on nu
 		*(DisplayLower) = ConvertNumLower((byte) *(BCDnumber+2),(byte) *(DisplayLower));
 		*(DisplayLower+16) = ConvertNumLower((byte) *(BCDnumber+3),(byte) *(DisplayLower+16));}}
 
-
 void DisplayScore (byte Position, unsigned int Score) {
 	byte i=0;                                       		// use a private counter
 	byte Buffer1 = 0;

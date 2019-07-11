@@ -375,24 +375,29 @@ void USB_SerialCommand() {
 			case 1:																					// Sys11 Pinbot
 				switch (USB_DisplayProtocol[0]) {							// which protocol shall be used?
 				case 1:																				// BCD
-				case 2:																				// BCD with comma (not possible as credit has no comma)
-					*(DisplayUpper) = LeftCredit[(SerialBuffer[0]+16)*2];
-					*(DisplayUpper+1) = LeftCredit[((SerialBuffer[0]+16)*2)+1];
-					*(DisplayUpper+16) = LeftCredit[(SerialBuffer[1]+16)*2];
-					*(DisplayUpper+17) = LeftCredit[((SerialBuffer[1]+16)*2)+1];
-					*(DisplayLower) = RightCredit[(SerialBuffer[2]+16)*2];
-					*(DisplayLower+1) = RightCredit[((SerialBuffer[2]+16)*2)+1];
-					*(DisplayLower+16) = RightCredit[(SerialBuffer[3]+16)*2];
-					*(DisplayLower+17) = RightCredit[((SerialBuffer[3]+16)*2)+1];
+					for (i=0; i<7; i++) {
+						*(DisplayUpper+2*i+2) = DispPattern1[32+2*SerialBuffer[i]];
+						*(DisplayUpper+2*i+3) = DispPattern1[33+2*SerialBuffer[i]];}
+					break;
+				case 2:																				// BCD with comma
+					for (i=0; i<7; i++) {
+						if (SerialBuffer[i] & 128) {							// comma set?
+							*(DisplayUpper+2*i+2) = 128 | DispPattern1[32+2*(SerialBuffer[i] & 15)];
+							*(DisplayUpper+2*i+3) = 64 | DispPattern1[33+2*(SerialBuffer[i] & 15)];}
+						else {
+							*(DisplayUpper+2*i+2) = DispPattern1[32+2*SerialBuffer[i]];
+							*(DisplayUpper+2*i+3) = DispPattern1[33+2*SerialBuffer[i]];}}
 					break;
 				case 3:																				// 7 segment pattern (1 byte)
-
+					for (i=0; i<7; i++) {
+						*(DisplayUpper+2*i+2) = SerialBuffer[i];}
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
-
+					for (i=0; i<14; i++) {
+						*(DisplayUpper+i+2) = SerialBuffer[i];}
 					break;
 				case 5:																				// ASCII
-				case 6:																				// ASCII with comma (not possible as credit has no comma)
+				case 6:																				// ASCII with comma
 					WritePlayerDisplay((char*)SerialBuffer, 0);
 					break;}
 				break;
@@ -403,11 +408,11 @@ void USB_SerialCommand() {
 				switch (USB_DisplayProtocol[0]) {							// which protocol shall be used?
 				case 1:																				// BCD
 				case 2:																				// BCD with comma
-					DisplayBCD(0, SerialBuffer);
+					DisplayBCD(1, SerialBuffer);
 					break;
-				case 5:
-				case 6:
-					WritePlayerDisplay((char*)SerialBuffer, 0);
+				case 5:																				// ASCII
+				case 6:																				// ASCII with comma
+					WritePlayerDisplay((char*)SerialBuffer, 1);
 					break;}
 				break;}}
 		break;
