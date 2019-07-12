@@ -941,13 +941,13 @@ void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to
 			*(DisplayLower+16) = RightCredit[(*(DisplayText+3)-32)*2];
 			*(DisplayLower+17) = RightCredit[((*(DisplayText+3)-32)*2)+1];}
 		break;
-	case 3:																							// Sys 11BK2K
+	case 3:																							// Sys11 BK2K
 		if (Player == 1) {
-			if (*(DisplayText+i) & 128) {										// comma set?
-				*(DisplayUpper+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
-				*(DisplayUpper+2*i+1) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
-			else {
-				for (i=0;i<16;i++) {													// for all digits
+			for (i=0;i<16;i++) {														// for all digits
+				if (*(DisplayText+i) & 128) {									// comma set?
+					*(DisplayUpper+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
+					*(DisplayUpper+2*i+1) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
+				else {
 					*(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
 					*(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}}
 		else {

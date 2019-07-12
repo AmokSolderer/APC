@@ -399,7 +399,7 @@ void USB_SerialCommand() {
 					break;
 				case 5:																				// ASCII
 				case 6:																				// ASCII with comma
-					WritePlayerDisplay((char*)SerialBuffer, 0);
+					WritePlayerDisplay((char*)SerialBuffer, 1);
 					break;}
 				break;
 			case 3:																					// Sys11 BK2K
