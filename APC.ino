@@ -916,8 +916,12 @@ void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to
 			if (Player < 3) {																// upper row?
 				Player--;
 				for (i=0;i<7;i++) {														// for all digits
-					*(DisplayUpper+2+16*Player+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
-					*(DisplayUpper+3+16*Player+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
+					if (*(DisplayText+i) & 128) {								// comma set?
+						*(DisplayUpper+2+16*Player+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
+						*(DisplayUpper+3+16*Player+2*i) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
+					else {
+						*(DisplayUpper+2+16*Player+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+						*(DisplayUpper+3+16*Player+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}}
 			else {																					// lower row
 				Player = Player - 3;
 				for (i=0;i<7;i++) {														// for all digits
