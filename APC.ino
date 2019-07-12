@@ -909,7 +909,7 @@ byte ConvertNumLower(byte Number, byte Pattern) {			// convert a number to be sh
 
 void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to player displays - credit is Player 0
 	switch (APC_settings[DisplayType]) {
-	case 0:																							// numbers only type display
+	case 0:																							// 4 Alpha + Credit
 	case 1:																							// Sys11 Pinbot
 	case 2:																							// Sys11 F-14
 		if (Player) {																			// player display?
@@ -925,8 +925,12 @@ void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to
 			else {																					// lower row
 				Player = Player - 3;
 				for (i=0;i<7;i++) {														// for all digits
-					*(DisplayLower+2+16*Player+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
-					*(DisplayLower+3+16*Player+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}}
+					if (*(DisplayText+i) & 128) {								// comma set?
+						*(DisplayLower+2+16*Player+2*i) = 1 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)];
+						*(DisplayLower+3+16*Player+2*i) = 8 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
+					else {
+						*(DisplayLower+2+16*Player+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
+						*(DisplayLower+3+16*Player+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}}}
 		else {																						// credit display
 			*(DisplayUpper) = LeftCredit[(*(DisplayText)-32)*2];
 			*(DisplayUpper+1) = LeftCredit[((*(DisplayText)-32)*2)+1];
@@ -939,13 +943,21 @@ void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to
 		break;
 	case 3:																							// Sys 11BK2K
 		if (Player == 1) {
-			for (i=0;i<16;i++) {														// for all digits
-				*(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
-				*(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
+			if (*(DisplayText+i) & 128) {										// comma set?
+				*(DisplayUpper+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
+				*(DisplayUpper+2*i+1) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
+			else {
+				for (i=0;i<16;i++) {													// for all digits
+					*(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+					*(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}}
 		else {
 			for (i=0;i<16;i++) {														// for all digits
-				*(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
-				*(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
+				if (*(DisplayText+i) & 128) {									// comma set?
+					*(DisplayLower+2*i) = 1 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)];
+					*(DisplayLower+2*i+1) = 8 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
+				else {
+					*(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
+					*(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}}
 		break;
 	case 6:																							// numbers only type display
 	case 7:
@@ -953,11 +965,21 @@ void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to
 			if (Player < 3) {																// upper row?
 				Player--;
 				for (i=0;i<7;i++) {														// for all digits
-					*(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));}}
+					if (*(DisplayText+i) & 128) {								// comma set?
+						*(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) (*(DisplayText+i) & 127)-48,(byte) *(DisplayLower+2+16*Player+2*i));
+						*(DisplayLower+3+16*Player+2*i) = 128;}
+					else {
+						*(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));
+						*(DisplayLower+3+16*Player+2*i) = 0;}}}
 			else {																					// lower row
 				Player = Player - 3;
 				for (i=0;i<7;i++) {														// for all digits
-					*(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));}}}
+					if (*(DisplayText+i) & 128) {								// comma set?
+						*(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) (*(DisplayText+i) & 127)-48,(byte) *(DisplayLower+2+16*Player+2*i));
+						*(DisplayLower+3+16*Player+2*i) = 1;}
+					else {
+						*(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));
+						*(DisplayLower+3+16*Player+2*i) = 0;}}}}
 		else {																						// credit display
 			*(DisplayLower) = ConvertNumUpper((byte) *(DisplayText)-48,(byte) *(DisplayLower));
 			*(DisplayLower+16) = ConvertNumUpper((byte) *(DisplayText+1)-48,(byte) *(DisplayLower+16));
