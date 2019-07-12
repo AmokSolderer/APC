@@ -907,6 +907,15 @@ byte ConvertNumLower(byte Number, byte Pattern) {			// convert a number to be sh
 		Mask = Mask << 1;}
 	return Pattern;}
 
+byte ConvertPattern(byte Select, byte Pattern) {			// convert the main display pattern to those of the lower row etc
+	const byte ConvTable[3][8] = {{32,128,8,16,64,4,2,1},{1,128,2,64,32,16,8},{0,0,0,0,0,0,0,0}}; // conversion table
+	byte Result = 0;																		// clear Result
+	for (byte i=0;i<8;i++) {														// for every bit
+		if (Pattern & 1) {																// is the LSB set in the pattern?
+			Result |= ConvTable[Select][i];}								// set the corresponding bit in the result
+		Pattern = Pattern >> 1;}													// shift the pattern
+	return Result;}
+
 void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to player displays - credit is Player 0
 	switch (APC_settings[DisplayType]) {
 	case 0:																							// 4 Alpha + Credit
