@@ -4,7 +4,7 @@ unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40,
 byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB commands from 0 - 9
 															1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
 															1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
-															1,1,255,255,255,255,255,2,0,0,	// Length of USB commands from 30 - 39
+															1,1,1,1,1,1,1,2,0,0,		// Length of USB commands from 30 - 39
 															1,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 40 - 49
 															1,0,255,255,1,0,0,0,0,0,	// Length of USB commands from 50 - 59
 															10,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 60 - 69
@@ -340,14 +340,14 @@ void USB_SerialCommand() {
 				case 3:																				// 7 segment pattern (1 byte)
 					*(DisplayUpper) = SerialBuffer[0];
 					*(DisplayUpper+16) = SerialBuffer[1];
-					*(DisplayLower) = ConvertPattern(1, SerialBuffer[2]);
-					*(DisplayLower+16) = ConvertPattern(1, SerialBuffer[3]);
+					*(DisplayLower) = ConvertPattern(0, SerialBuffer[2]);
+					*(DisplayLower+16) = ConvertPattern(0, SerialBuffer[3]);
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
 					*(DisplayUpper) = SerialBuffer[0];
 					*(DisplayUpper+16) = SerialBuffer[2];
-					*(DisplayLower) = ConvertPattern(1, SerialBuffer[4]);
-					*(DisplayLower+16) = ConvertPattern(1, SerialBuffer[6]);
+					*(DisplayLower) = ConvertPattern(0, SerialBuffer[4]);
+					*(DisplayLower+16) = ConvertPattern(0, SerialBuffer[6]);
 					break;
 				case 5:																				// ASCII
 				case 6:																				// ASCII with comma (not possible as credit has no comma)
@@ -519,12 +519,12 @@ void USB_SerialCommand() {
 					break;
 				case 3:																				// 7 segment pattern (1 byte)
 					for (i=0; i<16; i++) {
-						*(DisplayLower+2*i) = ConvertPattern(1, SerialBuffer[i]);}
+						*(DisplayLower+2*i) = ConvertPattern(0, SerialBuffer[i]);}
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
 					for (i=0; i<16; i++) {
-						*(DisplayLower+2*i) = ConvertPattern(1, SerialBuffer[2*i]);
-						*(DisplayLower+2*i+1) = ConvertPattern(2, SerialBuffer[2*i+1]);}
+						*(DisplayLower+2*i) = ConvertPattern(0, SerialBuffer[2*i]);
+						*(DisplayLower+2*i+1) = ConvertPattern(1, SerialBuffer[2*i+1]);}
 					break;
 				case 5:																				// ASCII
 				case 6:																				// ASCII with comma
@@ -572,7 +572,7 @@ void USB_SerialCommand() {
 					break;
 				case 3:																				// 7 segment pattern (1 byte)
 					for (i=0; i<7; i++) {
-						*(DisplayUpper+2*i+2) = ConvertPattern(1, SerialBuffer[i]);
+						*(DisplayUpper+2*i+2) = ConvertPattern(0, SerialBuffer[i]);
 						if (SerialBuffer[i] & 64) {								// g segment set?
 							*(DisplayLower+2*i+3) = 2;}							// turn on m segment of alpha display
 						else {
@@ -580,8 +580,8 @@ void USB_SerialCommand() {
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
 					for (i=0; i<14; i++) {
-						*(DisplayLower+2*i+2) = ConvertPattern(1, SerialBuffer[2*i]);
-						*(DisplayLower+2*i+3) = ConvertPattern(2, SerialBuffer[2*i+1]);}
+						*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[2*i]);
+						*(DisplayLower+2*i+3) = ConvertPattern(1, SerialBuffer[2*i+1]);}
 					break;
 				case 5:																				// ASCII
 				case 6:																				// ASCII with comma
@@ -608,7 +608,7 @@ void USB_SerialCommand() {
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
 					for (i=0; i<14; i++) {
-						*(DisplayLower+2*i+2) = ConvertPattern(1, SerialBuffer[i]);}
+						*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[i]);}
 					break;
 				case 5:																				// ASCII
 				case 6:																				// ASCII with comma
@@ -659,7 +659,7 @@ void USB_SerialCommand() {
 					break;
 				case 3:																				// 7 segment pattern (1 byte)
 					for (i=0; i<7; i++) {
-						*(DisplayUpper+2*i+18) = ConvertPattern(1, SerialBuffer[i]);
+						*(DisplayUpper+2*i+18) = ConvertPattern(0, SerialBuffer[i]);
 						if (SerialBuffer[i] & 64) {								// g segment set?
 							*(DisplayLower+2*i+19) = 2;}						// turn on m segment of alpha display
 						else {
@@ -667,8 +667,8 @@ void USB_SerialCommand() {
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
 					for (i=0; i<14; i++) {
-						*(DisplayLower+2*i+2) = ConvertPattern(1, SerialBuffer[2*i]);
-						*(DisplayLower+2*i+3) = ConvertPattern(2, SerialBuffer[2*i+1]);}
+						*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[2*i]);
+						*(DisplayLower+2*i+3) = ConvertPattern(1, SerialBuffer[2*i+1]);}
 					break;
 				case 5:																				// ASCII
 				case 6:																				// ASCII with comma
@@ -691,11 +691,11 @@ void USB_SerialCommand() {
 					break;
 				case 3:																				// 7 segment pattern (1 byte)
 					for (i=0; i<7; i++) {
-						*(DisplayLower+2*i+18) = ConvertPattern(1, SerialBuffer[i]);}
+						*(DisplayLower+2*i+18) = ConvertPattern(0, SerialBuffer[i]);}
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
 					for (i=0; i<14; i++) {
-						*(DisplayLower+2*i+18) = ConvertPattern(1, SerialBuffer[i]);}
+						*(DisplayLower+2*i+18) = ConvertPattern(0, SerialBuffer[i]);}
 					break;
 				case 5:																				// ASCII
 				case 6:																				// ASCII with comma
