@@ -908,7 +908,7 @@ byte ConvertNumLower(byte Number, byte Pattern) {			// convert a number to be sh
 	return Pattern;}
 
 byte ConvertPattern(byte Select, byte Pattern) {			// convert the main display pattern to those of the lower row etc
-	const byte ConvTable[3][8] = {{32,128,8,16,64,4,2,1},{1,128,2,64,32,16,8},{0,0,0,0,0,0,0,0}}; // conversion table
+	const byte ConvTable[3][8] = {{32,128,8,16,64,4,2,1},{1,128,2,64,32,16,8,4},{0,0,0,0,0,0,0,0}}; // conversion table
 	byte Result = 0;																		// clear Result
 	for (byte i=0;i<8;i++) {														// for every bit
 		if (Pattern & 1) {																// is the LSB set in the pattern?

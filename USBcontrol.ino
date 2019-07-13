@@ -397,7 +397,11 @@ void USB_SerialCommand() {
 					break;
 				case 3:																				// 7 segment pattern (1 byte)
 					for (i=0; i<7; i++) {
-						*(DisplayUpper+2*i+2) = SerialBuffer[i];}
+						*(DisplayUpper+2*i+2) = SerialBuffer[i];
+						if (SerialBuffer[i] & 64) {								// g segment set?
+							*(DisplayUpper+2*i+3) = 4;}							// turn on m segment of alpha display
+						else {
+							*(DisplayUpper+2*i+1) = 0;}}
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
 					for (i=0; i<14; i++) {
@@ -604,7 +608,7 @@ void USB_SerialCommand() {
 					break;
 				case 3:																				// 7 segment pattern (1 byte)
 					for (i=0; i<7; i++) {
-						*(DisplayLower+2*i+2) = ConvertPattern(1, SerialBuffer[i]);}
+						*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[i]);}
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
 					for (i=0; i<14; i++) {
