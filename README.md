@@ -53,21 +53,25 @@ Please note that I have equipped my Black Knight with a [special kind of display
 
 To make it easier to start doing your own game I did a Base Code which provides basic pinball funtionality and should work in all machines with only small adaptions.
 
-## Current Status (June 2019)
+## Current Status (August 2019)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/wiki#cable-extensions).
 
 | System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
-|3| Not yet | Not yet | Not yet | Needs an additional wire |
-|4| Not yet | Not yet | Not yet | Needs an additional wire |
-|6| Not yet | Not yet | Not yet | Needs an additional wire |
-|7| Yes | Not yet | Not yet | Needs three additional wires |
-|9| Yes | soon | Not yet |  |
-|11| Yes | Not yet | soon | Some cable ties have to be cut and the wiring harness opened a bit |
-|11a| Yes | Not yet | soon |  |
-|11b| Not yet | Not yet | soon |  |
-|11c| Yes | Not yet | soon | The wires of three connectors must be extended |
+|3| Not yet | Not yet | Yes, but more testing needed | Needs an additional wire |
+|4| Not yet | Not yet | Yes, but more testing needed | Needs an additional wire |
+|6| Not yet | Not yet | Yes, but more testing needed | Needs an additional wire |
+|7| Yes | Not yet | Yes, but more testing needed | Needs three additional wires |
+|9| Yes | soon | Yes, but more testing needed |  |
+|11| Yes | Not yet | Yes, but more testing needed | Some cable ties have to be cut and the wiring harness opened a bit |
+|11a| Yes | Not yet | Yes, but more testing needed |  |
+|11b| Not yet | Not yet | Yes, but more testing needed |  |
+|11c| Yes | Not yet | Yes, but more testing needed | The wires of three connectors must be extended |
+
+## Changes / What's new?
+
+A history of the recent changes can be found in our [Changelog](https://github.com/AmokSolderer/APC/tree/AmokWork/DOC/Changes.md)
 
 ## Why this page?
 
