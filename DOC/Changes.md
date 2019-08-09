@@ -1,4 +1,4 @@
-# Changelog of the Arduino Pinball Controller
+# APC News and Changelog
 
 ## Aug 2019
 
@@ -6,7 +6,7 @@ After some changes in the USB protocol the displays are now also working with MP
 
 ### New SW Version V0.11
 
-The new SW Version is V0.11 which affected only the USBcontrol.ino and changed the display numbering to be consistent with MPF.
+The new SW Version is V0.11 which affects only the USBcontrol.ino and changes the display numbering to be consistent with MPF.
 
 Snux?
 
@@ -22,15 +22,15 @@ Snux has successfully made the attract mode of his 'F-14 Second Sortie' work wit
 
 [F-14 attract mode video](https://www.youtube.com/embed/XlqPyIdEk2k)
 
-As long as the new display protocol is not implemented in MPF the display cannot be used.
+Don't be suprised about the boring display. As the new display protocol is not yet implemented in MPF the display cannot be controlled yet.
 
 ### Change in the BOM
 
-When Snux used his LED lamp tester it became obvious that there is some 'crosstalk' between the lamp columns. That means if a lamp is turned on it's counterpart in the previous lamp row shows a weak glow.
+When Snux used his LED lamp tester it became obvious that there is some 'crosstalk' between the lamp columns. That means if a lamp is turned on, it's counterpart in the previous lamp row shows a weak glow.
 
-![LampFix](https://github.com/AmokSolderer/APC/blob/AmokWork/DOC/PICS/LampFix.jpg)
+![LampFix](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/LampFix.jpg)
 
-It's hardly visible with the normal light bulbs, but I wanted to fix it anyway. For this reason the value of the resistors R1 - R16 has been changed to speed up the column driver.
+It's much less obvious with the normal light bulbs, but I wanted to fix it anyway. For this reason the values of the resistors R1 - R16 have been changed to speed up the column driver.
 
 ### New SW Version V0.10
 
@@ -42,6 +42,12 @@ It's hardly visible with the normal light bulbs, but I wanted to fix it anyway. 
 
 First experiments with [Lisy Mini](https://lisy.dev/lisy_mini.html) which is used to run PinMame and control the APC via USB.
 
-![Pic Mini Lisy](https://github.com/AmokSolderer/APC/blob/AmokWork/DOC/PICS/MiniLisy.png)
+![Pic Mini Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/MiniLisy.png)
 
 Attract mode of a Comet (System9) is already working. The display protocol still needs some work, but we're going to do that together with the MPF guys.
+
+And I wish my backboxes were so clean and tidy.
+
+### New HW Version V2.3
+
+The pre Sys11 machines need an inverted blanking signal for their displays. In order to generate this signal an additional transistor Q8 and a base resistor R88 have been added. Furthermore the 'Display Segments 1' connector has been enlarged from 9 to 12 pins. System9 can use this connector directly, Sys 3-6 machines only require the Blanking_N pin and Sys7 users have to connect the comma pins additionally.
