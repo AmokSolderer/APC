@@ -71,7 +71,7 @@ The following table gives an overview about the various system generations the A
 
 ## Changes / What's new?
 
-A history of the recent changes can be found in our [Changelog](https://github.com/AmokSolderer/APC/tree/AmokWork/DOC/Changes.md)
+A history of the recent changes can be found in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md)
 
 ## Why this page?
 
