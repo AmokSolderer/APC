@@ -1,4 +1,4 @@
-# Changelog of the Ardiono Pinball Controller
+# Changelog of the Arduino Pinball Controller
 
 ## Aug 2019
 
@@ -20,8 +20,28 @@ This required a new HW release which has both pins connected to ground and I use
 
 Snux has successfully made the attract mode of his 'F-14 Second Sortie' work with the APC:
 
-[![F-14 attract mode video](https://img.youtube.com/embed/XlqPyIdEk2k/0.jpg)](https://www.youtube.com/embed/XlqPyIdEk2k "F-14 attract mode video")
-
 [F-14 attract mode video](https://www.youtube.com/embed/XlqPyIdEk2k)
 
-We still have to work on the display protocol, so the display is not used yet.
+As long as the new display protocol is not implemented in MPF the display cannot be used.
+
+### Change in the BOM
+
+When Snux used his LED lamp tester it became obvious that there is some 'crosstalk' between the lamp columns. That means if a lamp is turned on it's counterpart in the previous lamp row shows a weak glow.
+
+![LampFix](https://github.com/AmokSolderer/APC/blob/AmokWork/DOC/PICS/LampFix.jpg)
+
+It's hardly visible with the normal light bulbs, but I wanted to fix it anyway. For this reason the value of the resistors R1 - R16 has been changed to speed up the column driver.
+
+### New SW Version V0.10
+
+* SW version number will now be shown during startup.
+* The lamp timing has been changed slightly to suppress the 'crosstalk' between the lamp columns (see above)
+* The USB display protocol has been updated as agreed with the Mini Lisy and MPF developers
+
+## June 2019
+
+First experiments with [Lisy Mini](https://lisy.dev/lisy_mini.html) which is used to run PinMame and control the APC via USB.
+
+![Pic Mini Lisy](https://github.com/AmokSolderer/APC/blob/AmokWork/DOC/PICS/MiniLisy.png)
+
+Attract mode of a Comet (System9) is already working. The display protocol still needs some work, but we're going to do that together with the MPF guys.
