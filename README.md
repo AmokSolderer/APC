@@ -59,15 +59,15 @@ The following table gives an overview about the various system generations the A
 
 | System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
-|3| Not yet | Not yet | Yes, but more testing needed | Needs an additional wire |
-|4| Not yet | Not yet | Yes, but more testing needed | Needs an additional wire |
-|6| Not yet | Not yet | Yes, but more testing needed | Needs an additional wire |
-|7| Yes | Not yet | Yes, but more testing needed | Needs three additional wires |
-|9| Yes | soon | Yes, but more testing needed |  |
-|11| Yes | Not yet | Yes, but more testing needed | Some cable ties have to be cut and the wiring harness opened a bit |
-|11a| Yes | Not yet | Yes, but more testing needed |  |
-|11b| Not yet | Not yet | Yes, but more testing needed |  |
-|11c| Yes | Not yet | Yes, but more testing needed | The wires of three connectors must be extended |
+|3| Not yet | Not yet | Yes| Needs an additional wire |
+|4| Not yet | Not yet | Yes| Needs an additional wire |
+|6| Not yet | Not yet | Yes | Needs an additional wire |
+|7| Yes | Not yet | Yes | Needs three additional wires |
+|9| Yes | soon | Yes |  |
+|11| Yes | Not yet | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
+|11a| Yes | Not yet | Yes |  |
+|11b| Not yet | Not yet | Yes |  |
+|11c| Yes | Not yet | Yes | The wires of three connectors must be extended |
 
 ## Changes / What's new?
 

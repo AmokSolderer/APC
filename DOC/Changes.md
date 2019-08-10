@@ -2,13 +2,16 @@
 
 ## Aug 2019
 
-After some changes in the USB protocol the displays are now also working with MPF. That means everything is working and it just must be tested in a real game. I guess Snux is the first to try ...
+After some changes in the USB protocol the displays are now also working with MPF.
+Snux has already shown it all working in his famous F-14
+
+[F-14 game video](https://www.youtube.com/watch?time_continue=1&v=XAQ0JEPhWv4)
+
+The only thing that hasn't been completely tested yet is the sound. It works when you're sending the necessary USB commands with a terminal program - I tried that. So from the APC point of view it should be OK.
 
 ### New SW Version V0.11
 
 The new SW Version is V0.11 which affects only the USBcontrol.ino and changes the display numbering to be consistent with MPF.
-
-Snux?
 
 ### New HW Version V2.4
 
