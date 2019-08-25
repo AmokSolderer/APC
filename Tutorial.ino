@@ -266,7 +266,7 @@ void TT_AttractModeSW(byte Button) {                  // Attract Mode switch beh
 	case 8:                                             // high score reset
 		digitalWrite(Blanking, LOW);                      // invoke the blanking
 		break;
-	case 20:                                            // outhole
+	case TT_OutholeSwitch:                              // outhole
 		ActivateTimer(200, 0, TT_CheckForLockedBalls);    // check again in 200ms
 		break;
 	case 72:                                            // Service Mode
@@ -440,9 +440,9 @@ void TT_CheckReleasedBall(byte Balls) {               // ball release watchdog
 				ActA_BankSol(TT_ShooterLaneFeeder);}}}        // release again
 	CheckReleaseTimer = ActivateTimer(5000, Balls, TT_CheckReleasedBall);}
 
-void TT_GameMain(byte Event) {                        // game switch events
+void TT_GameMain(byte Switch) {                        // game switch events
 	static byte DropTimer = 0;
-	switch (Event) {
+	switch (Switch) {
 	case 1:                                             // plumb bolt tilt
 	case 2:                                             // ball roll tilt
 	case 7:                                             // slam tilt

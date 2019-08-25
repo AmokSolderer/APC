@@ -30,8 +30,6 @@ The LED expansion board is a self made board to control WS2812 based LED-Strips 
 
 Basically the hardware extensions interface is an 8 bit bus with several enable signals which can be used for all kinds of additional hardware.
 
-## Current Status (April 2019)
-
 ### Hardware
 
 The APC hardware status is mature. I have version 2.0 in use for more than a year now without anything to complain about. Beginning of march 2019 I built a version 2.1 board which spared some components and had some slight layout changes. The version in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware) is 2.3 which has the Display Segments 1 connector enlarged to 12 pins to ease the use of System7 and System9 displays.
@@ -55,12 +53,25 @@ Please note that I have equipped my Black Knight with a [special kind of display
 
 To make it easier to start doing your own game I did a Base Code which provides basic pinball funtionality and should work in all machines with only small adaptions.
 
-### To Do
+## Current Status (August 2019)
 
-Apart from writing new game code and generating sound samples the following software improvements come to my mind:
+The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/wiki#cable-extensions).
 
-* Add a mode for the APC being controlled by a PC via USB. This would enable PinMame or the Mission Pinball Framework to use the APC. With PinMame, the APC could also be used as a replacement for old boards and the MPF could ease the design of homebrew games. (USB mode is done, but just tested with a terminal programm. Tests with PinMame and MPF are next)
-* Implementation of a better error handler
+| System | Tested  | PinMame support | MPF support | Comment |
+|--|--|--|--|--|
+|3| Not yet | Not yet | Yes| Needs an additional wire |
+|4| Not yet | Not yet | Yes| Needs an additional wire |
+|6| Not yet | Not yet | Yes | Needs an additional wire |
+|7| Yes | Not yet | Yes | Needs three additional wires |
+|9| Yes | soon | Yes |  |
+|11| Yes | Not yet | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
+|11a| Yes | Not yet | Yes |  |
+|11b| Not yet | Not yet | Yes |  |
+|11c| Yes | Not yet | Yes | The wires of three connectors must be extended |
+
+## Changes / What's new?
+
+A history of the recent changes can be found in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md)
 
 ## Why this page?
 
