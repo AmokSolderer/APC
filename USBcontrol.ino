@@ -180,10 +180,16 @@ void USB_SerialCommand() {
 	if (USB_CommandLength[Command] > 249) {							// command doesn't have a constant length
 		switch (USB_CommandLength[Command]) {
 		case 250:																					// argument length is stored in the first byte
-			if (CommandPending) {
+			if (BufferPointer) {														// length byte already stored?
 				c = SerialBuffer[0];}													// read previously stored argument length
 			else {
-				c = Serial.read();}														// read argument length
+				if (Serial.available()) {											// length byte available?
+					BufferPointer = 1;													// indicated that the length is read
+					c = Serial.read();}													// read argument length
+				else {
+					BufferPointer = 0;
+					CommandPending = true;											// command not finished
+					return;}}
 			if (Serial.available() >= c) { 									// enough bytes in the serial buffer?
 				for (i=0; i<c; i++) {													// read the required amount of bytes
 					SerialBuffer[i] = Serial.read();}}
@@ -195,11 +201,10 @@ void USB_SerialCommand() {
 		case 251:
 			c = Serial.available();
 			i = BufferPointer;
-			if (c < 2) {																		// 2 bytes needed at least
-				//BufferPointer = 0;
-				CommandPending = true;
-				return;}
-			if (!BufferPointer) {
+			if (!BufferPointer) {														// first run?
+				if (c < 2) {																	// 2 bytes needed at least
+					CommandPending = true;
+					return;}
 				SerialBuffer[0] = Serial.read();							// store options byte
 				i++;}
 			do {																						// receive bytes
@@ -210,13 +215,11 @@ void USB_SerialCommand() {
 				CommandPending = true;												// command not finished
 				BufferPointer = i;
 				return;}
-			BufferPointer = 0;
 			break;
 		case 255:																					// argument is terminated by a zero byte
 			c = Serial.available();
 			i = BufferPointer;
 			if (!c) {																				// no further received bytes
-				//BufferPointer = 0;
 				CommandPending = true;
 				return;}
 			do {																						// receive bytes
@@ -227,7 +230,6 @@ void USB_SerialCommand() {
 				CommandPending = true;												// command not finished
 				BufferPointer = i;
 				return;}
-			BufferPointer = 0;
 			break;}}
 	else {																							// argument has a specific length
 		if (Serial.available() >= USB_CommandLength[Command]) { // enough bytes in the serial buffer?
@@ -237,6 +239,7 @@ void USB_SerialCommand() {
 			CommandPending = true;													// command not finished
 			return;}}
 	CommandPending = false;
+	BufferPointer = 0;
 	if (APC_settings[DebugMode]) {
 		for (i=1; i<24; i++) {                        		// move all characters in the lower display row 4 chars to the left
 			DisplayLower[i] = DisplayLower[i+8];}
