@@ -1696,6 +1696,7 @@ void PlayMusic(byte Priority, const char* Filename) {
 
 void StopPlayingMusic() {
 	if (StartMusic || PlayingMusic) {
+		AfterMusic = 0;
 		MusicFile.close();
 		StopMusic = MBP;}}
 
@@ -1753,6 +1754,7 @@ void PlaySound(byte Priority, const char* Filename) {
 
 void StopPlayingSound() {
 	if (StartSound || PlayingSound) {
+		AfterSound = 0;
 		SoundFile.close();
 		StopSound = SBP;}}
 

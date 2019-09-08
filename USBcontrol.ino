@@ -760,7 +760,10 @@ void USB_SerialCommand() {
 			Serial.write((byte) 127);}											// no changed switches at all
 		break;
 	case 51:																						// stop sound
-		StopPlayingSound();
+		if (SerialBuffer[0] == 1) {												// channel 1?
+			StopPlayingMusic();}
+		else {
+			StopPlayingSound();}
 		break;
 	case 52:																						// play soundfile
 		if (SerialBuffer[0] == 1) {												// channel 1?
