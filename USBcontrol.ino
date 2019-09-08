@@ -32,6 +32,8 @@ byte USB_HWrule_RelSw[16][3];													// hardware rules for released switche
 byte USB_SolRecycleTime[22];													// recycle time for each solenoid
 byte USB_SolTimers[22];																// stores the sol timer numbers and indicates which solenoids are blocked due to active recycling time
 byte USB_DisplayProtocol[5];													// stores the selected display protocol
+char USB_RepeatSound[12];															// name of the sound file to be repeated
+char USB_RepeatMusic[12];															// name of the music file to be repeated
 
 struct SettingTopic USB_setList[4] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
@@ -202,10 +204,12 @@ void USB_SerialCommand() {
 			c = Serial.available();
 			i = BufferPointer;
 			if (!BufferPointer) {														// first run?
-				if (c < 2) {																	// 2 bytes needed at least
+				if (c < 3) {																	// 3 bytes needed at least
 					CommandPending = true;
 					return;}
-				SerialBuffer[0] = Serial.read();							// store options byte
+				SerialBuffer[0] = Serial.read();							// store track number
+				i++;
+				SerialBuffer[1] = Serial.read();							// store options byte
 				i++;}
 			do {																						// receive bytes
 				SerialBuffer[i] = Serial.read();							// and store them
@@ -759,10 +763,24 @@ void USB_SerialCommand() {
 		StopPlayingSound();
 		break;
 	case 52:																						// play soundfile
-		if (SerialBuffer[1] == 1) {												// channel 1?
-			PlayMusic(50, (char*) SerialBuffer+2);}
+		if (SerialBuffer[0] == 1) {												// channel 1?
+			PlayMusic(50, (char*) SerialBuffer+2);
+			if (SerialBuffer[1] & 1) {											// looping active?
+				for (i=0; i<12; i++) {
+					USB_RepeatMusic[i] = SerialBuffer[2+i];}
+				NextMusicName = USB_RepeatMusic;
+				AfterMusic = PlayNextMusic;}
+			else {
+				AfterMusic = 0;}}
 		else {																						// channel 2
-			PlaySound(50, (char*) SerialBuffer+2);}
+			PlaySound(50, (char*) SerialBuffer+2);
+			if (SerialBuffer[1] & 1) {											// looping active?
+				for (i=0; i<12; i++) {
+					USB_RepeatSound[i] = SerialBuffer[2+i];}
+				NextSoundName = USB_RepeatSound;
+				AfterSound = PlayNextSound;}
+			else {
+				AfterSound = 0;}}
 		break;
 	case 54:																						// sound volume setting
 		APC_settings[Volume] = 2*SerialBuffer[0];					// set system volume
