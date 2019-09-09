@@ -6,7 +6,7 @@ const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 															1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
 															250,250,250,250,250,0,0,2,0,0,		// Length of USB commands from 30 - 39
 															1,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 40 - 49
-															1,0,251,0,1,0,0,0,0,0,	// Length of USB commands from 50 - 59
+															0,1,251,0,1,0,0,0,0,0,	// Length of USB commands from 50 - 59
 															10,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 60 - 69
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 70 - 79
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
