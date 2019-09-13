@@ -37,7 +37,7 @@ const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
 const char PB_GameMusic[6][12] = {{"BS_M03.BIN"},{"BS_M05.BIN"},{"BS_M06.BIN"},{"BS_M07.BIN"},{"BS_M08.BIN"},{"BS_M09.BIN"}};
-byte PB_ACselectRelay = 14;														// solenoid number of the A/C select relay
+const byte PB_ACselectRelay = 14;											// solenoid number of the A/C select relay
 
 struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
 		{" REACH PLANET ",HandleNumSetting,0,1,9},
@@ -457,8 +457,10 @@ void PB_GiveBall(byte Balls) {
 	if (PB_SkillMultiplier < 10) {
 		PB_SkillMultiplier++;
 		if (PB_SkillMultiplier == 10) {
-			// super skill shot
+			PlayFlashSequence((byte*) PB_MultiballSeq); 		// super skill shot
 		}}
+	else {
+		PB_SkillMultiplier = 1;}
 	WriteUpper2(" VORTEX   X   ");
 	WriteLower2("              ");
 	ShowNumber(15, PB_SkillMultiplier);               	// show multiplier

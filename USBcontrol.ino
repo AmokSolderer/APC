@@ -761,8 +761,10 @@ void USB_SerialCommand() {
 		break;
 	case 51:																						// stop sound
 		if (SerialBuffer[0] == 1) {												// channel 1?
+			AfterMusic = 0;
 			StopPlayingMusic();}
 		else {
+			AfterSound = 0;
 			StopPlayingSound();}
 		break;
 	case 52:																						// play soundfile
