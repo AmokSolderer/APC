@@ -6,7 +6,7 @@ const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 															1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
 															250,250,250,250,250,0,0,2,0,0,		// Length of USB commands from 30 - 39
 															1,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 40 - 49
-															0,1,251,0,1,0,0,0,0,0,	// Length of USB commands from 50 - 59
+															0,1,251,0,2,0,0,0,0,0,	// Length of USB commands from 50 - 59
 															10,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 60 - 69
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 70 - 79
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
@@ -293,8 +293,8 @@ void USB_SerialCommand() {
 			break;}
 		break;
 	case 7:																							// Display details
-		Serial.write((byte) USB_DisplayDigitNum[APC_settings[DisplayType]][SerialBuffer[0]]);
 		Serial.write((byte) USB_DisplayTypes[APC_settings[DisplayType]][SerialBuffer[0]]);
+		Serial.write((byte) USB_DisplayDigitNum[APC_settings[DisplayType]][SerialBuffer[0]]);
 		break;
 	case 9:																							// get number of switches
 		Serial.write((byte) 73);
@@ -761,8 +761,10 @@ void USB_SerialCommand() {
 		break;
 	case 51:																						// stop sound
 		if (SerialBuffer[0] == 1) {												// channel 1?
+			AfterMusic = 0;
 			StopPlayingMusic();}
 		else {
+			AfterSound = 0;
 			StopPlayingSound();}
 		break;
 	case 52:																						// play soundfile
@@ -786,7 +788,7 @@ void USB_SerialCommand() {
 				AfterSound = 0;}}
 		break;
 	case 54:																						// sound volume setting
-		APC_settings[Volume] = 2*SerialBuffer[0];					// set system volume
+		APC_settings[Volume] = 2*SerialBuffer[1];					// set system volume
 		analogWrite(VolumePin,255-APC_settings[Volume]);	// and apply it
 		break;
 	case 60:																						// configure hardware rule for solenoid
