@@ -1093,7 +1093,6 @@ void ScrollUpper(byte Step) {													// call with Step = 0 and the text bei
 		ActivateTimer(50, Step, ScrollUpper);}}						// come back
 
 void AddScrollUpper(byte Step) {											// call with Step = 0 and the text being in DisplayUpper2
-                          // TODO add support for more displays
   if (!Step) {
     Step++;}
 	if (Step > 8) {																			// scroll into the left display?
@@ -1115,7 +1114,6 @@ void AddScrollUpper(byte Step) {											// call with Step = 0 and the text be
 		ActivateTimer(50, Step, AddScrollUpper);}}
 
 void ScrollLower(byte Step) {													// call with Step = 0 and the text being in DisplayLower2
-                        // TODO add support for more displays
     if (!Step) {
     Step++;}
 	if (Step < 8) {																			// do display 3 first
