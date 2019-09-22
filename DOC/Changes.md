@@ -1,5 +1,18 @@
 # APC News and Changelog
 
+## Sep 2019
+
+It has required some additional changes in the SW to make the sound work completely with MPF, but now it's done.
+That means the APC is all set for MPF, as you can see in the following video:
+
+[MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw)
+
+It's not a cineastic masterpiece (again) but it shows that everything works now. Sorry for the slight display flicker - it's just caused by my camera, in reality the displays look just fine.
+
+### New SW Version V0.12
+
+Some changes in the USBcontrol.ino to make the sound commands fully compliant to MPF.
+
 ## Aug 2019
 
 After some changes in the USB protocol the displays are now also working with MPF.
