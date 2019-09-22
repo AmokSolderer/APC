@@ -1,0 +1,42 @@
+#config_version=5
+# mode2 config file
+
+mode:
+    start_events: mode2_start
+    stop_events: mode2_stop
+    priority: 200
+
+# widgets:
+    # mode2_start_banner:
+      # type: text
+      # text: MODE 2 STARTED
+      # font_size: 50
+      # color: lime
+      # y: 80%
+      # expire: 1s
+
+# widget_player:
+    # mode_mode2_started: mode2_start_banner
+
+variable_player:
+    my_first_shot_mode2_flashing_hit:
+       score: 10000
+    my_first_shot_mode2_lit_hit:
+        score: 100
+        
+shots:
+    my_first_shot_mode2:
+        switch: s_right_inlane
+        profile: mode2
+        
+shot_profiles:
+    mode2:
+        states:
+          - name: flashing
+            show: flash
+            speed: 5
+          - name: lit
+            show: on
+        loop: no
+        block: yes
+        

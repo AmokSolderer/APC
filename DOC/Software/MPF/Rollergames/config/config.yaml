@@ -1,0 +1,505 @@
+#config_version=5
+   
+hardware:
+    platform: lisy
+    
+lisy:
+    connection: serial
+    port: com3
+    baud: 115200
+    debug: True
+    
+virtual_platform_start_active_switches:
+    s_trough1
+    s_trough2
+    s_trough3
+    
+playfields:
+    playfield:
+        tags: default
+        default_source_device: bd_plunger
+        
+# displays:
+    # window:
+        # width: 800
+        # height: 600
+        
+segment_displays:
+    display1:
+        number: 1
+        platform: lisy
+    display2:
+        number: 2
+        platform: lisy
+
+hardware_sound_systems:
+    default:
+        label: APC
+            
+keyboard:
+    y:
+        switch: s_ouhole
+    m:
+        switch: s_trough1
+    s:
+        switch: s_start
+    q:
+        switch: s_right_inlane
+    p:
+        switch: s_plunger_lane
+    c:
+        event: mode2_start
+    v:
+        event: mode2_stop
+        
+modes:
+  - base
+  - mode2
+  - Lock1
+        
+# slides:
+    # welcome_slide:
+        # widgets:
+          # - type: text
+            # text: PINBALL
+            # number_grouping: true
+            # min_digits: 2
+            # font_name: Ten_segment
+            # color: black
+            # x: 620
+            # y: 724
+            # font_size: 240
+            # anchor_x: right
+            # anchor_y: bottom
+            # z: 2
+            
+# slide_player:
+    # init_done: welcome_slide
+
+player_vars:
+    kickback_enable:
+        initial_value: 1
+    score:
+        initial_value: 0
+            
+switches:
+    s_tilt:
+        number: 1
+    s_ac_relay:
+        number: 2
+    s_start:
+        number: 3
+        tags: start
+    s_right_coin_chute:
+        number: 4
+    s_center_coin_chute:
+        number: 5
+    s_left_coin_chute:
+        number: 6
+    s_slam_tilt:
+        number: 7
+    s_high_score_reset:
+        number: 8
+    s_ouhole:
+        number: 9
+    s_trough1:
+        number: 13
+    s_trough2:
+        number: 12
+    s_trough3:
+        number: 11
+    s_upper_kickback:
+        number: 14
+    s_ball_popper:
+        number: 16
+    s_right_inlane:
+        number: 18
+        tags: playfield_active
+    s_right_oulane:
+        number: 19
+        tags: playfield_active
+    s_plunger_lane:
+        number: 20
+    s_left_jetway_top:
+        number: 21
+        tags: playfield_active
+    s_right_jetway_top:
+        number: 22
+        tags: playfield_active
+    s_left_spinner:
+        number: 23
+        tags: playfield_active
+    s_right_spinner:
+        number: 24
+        tags: playfield_active
+    s_5bank_E:
+        number: 25
+        tags: playfield_active
+    s_5bank_T:
+        number: 26
+        tags: playfield_active
+    s_5bank_A:
+        number: 27
+        tags: playfield_active
+    s_5bank_K:
+        number: 28
+        tags: playfield_active
+    s_5bank_S:
+        number: 29
+        tags: playfield_active
+    s_standup_A:
+        number: 30
+        tags: playfield_active
+    s_standup_B:
+        number: 31
+        tags: playfield_active
+    s_standup_C:
+        number: 32
+        tags: playfield_active
+    s_left_sling:
+        number: 33
+    s_right_sling:
+        number: 34
+    s_left_jet_bumper:
+        number: 35
+    s_right_jet_bumper:
+        number: 36
+    s_lower_jet_bumper:
+        number: 37
+    s_ramp_diverter_1:
+        number: 38
+    s_ramp_diverter_2:
+        number: 39
+    s_oulane_kickback:
+        number: 40
+    s_top_standup_1:
+        number: 41
+        tags: playfield_active
+    s_top_standup_2:
+        number: 42
+        tags: playfield_active
+    s_top_standup_3:
+        number: 43
+        tags: playfield_active
+    s_extra_ball:
+        number: 44
+        tags: playfield_active
+    s_lane_rollover_J:
+        number: 46
+        tags: playfield_active
+    s_lane_rollover_E:
+        number: 47
+        tags: playfield_active
+    s_lane_rollover_T:
+        number: 48
+        tags: playfield_active
+    s_left_drop_target:
+        number: 49
+    s_center_drop_target:
+        number: 50
+    s_right_drop_target:
+        number: 51
+    s_lock_ramp_entry:
+        number: 52
+    s_lock_1:
+        number: 53
+    s_lock_2:
+        number: 54
+    s_left_inlane:
+        number: 56
+        tags: playfield_active
+    s_right_lane_change:
+        number: 57
+    s_left_lane_change:
+        number: 58
+        
+coils:
+    c_ouhole_kicker:
+        number: 1
+        default_pulse_ms: 30
+    c_shooter_lane:
+        number: 2
+        default_pulse_ms: 30
+    c_ball_popper:
+        number: 4
+        default_pulse_ms: 50
+    c_drop_target_reset:
+        number: 6
+        default_pulse_ms: 50
+    c_knocker:
+        number: 7
+    c_flash_9:
+        number: 9
+    c_insert_gen_illum_relay:
+        number: 10
+    c_playfield_gen_illum_relay:
+        number: 11
+    c_ac_relay:
+        number: 12
+    c_upper_kickback:
+        number: 13
+        default_pulse_ms: 40
+    c_lock_kickback:
+        number: 14
+        default_pulse_ms: 40
+    c_left_sling:
+        number: 15
+        default_pulse_ms: 30
+    c_right_sling:
+        number: 16
+        default_pulse_ms: 30
+    c_left_bumper:
+        number: 17
+        default_pulse_ms: 30
+    c_ramp_diverter:
+        number: 18
+    c_right_bumper:
+        number: 19
+        default_pulse_ms: 30
+    c_outlane_kickback:
+        number: 20
+        default_pulse_ms: 40
+    c_lower_bumper:
+        number: 21
+        default_pulse_ms: 30
+    c_deepfreeze_magnet:
+        number: 22
+    c_right_flipper:
+        number: 23
+    c_left_flipper:
+        number: 24
+        
+lights:
+    l_W:
+        number: 1
+    l_I1:
+        number: 2
+    l_L1:
+        number: 3
+    l_L2:
+        number: 4
+    l_I2:
+        number: 5
+    l_A:
+        number: 6
+    l_M:
+        number: 7
+    l_S:
+        number: 8
+    l_track_8:
+        number: 9
+    l_track_11:
+        number: 10
+    l_track_4:
+        number: 11
+    l_bonus2x:
+        number: 12
+    l_track_7:
+        number: 13
+    l_bonus1x:
+        number: 14
+    l_bonus4x:
+        number: 15
+    l_track_12:
+        number: 16
+    l_track_13:
+        number: 17
+    l_track_10:
+        number: 18
+    l_track_6:
+        number: 19
+    l_track_9:
+        number: 20
+    l_skate_again:
+        number: 21
+    l_left_orbit:
+        number: 22
+    l_roller_motion:
+        number: 23
+    l_right_orbit:
+        number: 24
+    l_5bank_E:
+        number: 25
+    l_5bank_T:
+        number: 26
+    l_5bank_A:
+        number: 27
+    l_5bank_K:
+        number: 28
+    l_5bank_S:
+        number: 29
+    l_standup_A:
+        number: 30
+    l_standup_B:
+        number: 31
+    l_standup_C:
+        number: 32
+    l_team_1:
+        number: 33
+    l_team_2:
+        number: 34
+    l_team_3:
+        number: 35
+    l_team_4:
+        number: 36
+    l_team_5:
+        number: 37
+    l_team_6:
+        number: 38
+    l_scoring_cycle:
+        number: 39
+    l_lites_loop:
+        number: 40
+    l_standup_1:
+        number: 41
+    l_standup_2:
+        number: 42
+    l_standup_3:
+        number: 43
+    l_extra_ball:
+        number: 44
+    l_special:
+        number: 45
+    l_lane_J:
+        number: 46
+    l_lane_E:
+        number: 47
+    l_lane_T:
+        number: 48
+    l_drop_target_W:
+        number: 49
+    l_drop_target_A:
+        number: 50
+    l_drop_target_R:
+        number: 51
+    l_jackpot:
+        number: 52
+    l_lock:
+        number: 53
+    l_million:
+        number: 54
+    l_deep_freeze:
+        number: 55
+    l_kickback:
+        number: 56
+    l_track_1:
+        number: 57
+    l_track_2:
+        number: 58
+    l_track_3:
+        number: 59
+    l_track_5:
+        number: 60
+    l_track_14:
+        number: 61
+    l_track_15:
+        number: 62
+    l_track_16:
+        number: 63
+    l_track_17:
+        number: 64
+        
+shot_profiles:
+    my_first_profile:
+        states:
+          - name: unlit
+            show: off
+          - name: flashing
+            show: flash
+          - name: lit
+            show: on
+        loop: yes
+    flash_profile:
+        states:
+          - name: flashing
+            show: flash
+        loop: no
+        
+digital_outputs:
+    game_over_relay:
+        number: 25
+        type: driver
+        enable_events: ball_started
+        disable_events: ball_will_end
+       
+drop_targets:
+    w_drop_target:
+        switch: s_left_drop_target
+    a_drop_target:
+        switch: s_center_drop_target
+    r_drop_target:
+        switch: s_right_drop_target
+        
+drop_target_banks:
+    war_drop_targets:
+        drop_targets: w_drop_target, a_drop_target, r_drop_target
+        reset_coils: c_drop_target_reset
+        reset_on_complete: 1s
+
+ball_devices:
+    bd_drain:
+        ball_switches: s_ouhole
+        eject_coil: c_ouhole_kicker
+        eject_targets: bd_trough
+        tags: drain  
+    bd_trough:
+        ball_switches: s_trough1, s_trough2, s_trough3
+        eject_coil: c_shooter_lane
+        eject_targets: bd_plunger
+        tags: home, trough
+    bd_plunger:
+        ball_switches: s_plunger_lane
+        mechanical_eject: true
+        eject_timeouts: 5s
+    bd_popper:
+        ball_switches: s_ball_popper
+        eject_coil: c_ball_popper
+        eject_timeouts: 5s
+    bd_lock:
+        ball_switches: s_lock_1, s_lock_2, s_lock_ramp_entry
+        eject_coil: c_lock_kickback
+        
+    bd_upper_kickback:
+        ball_switches: s_upper_kickback
+        eject_coil: c_upper_kickback
+        eject_timeouts: 2s
+               
+autofire_coils:
+    left_slingshot:
+        coil: c_left_sling
+        switch: s_left_sling
+    right_slingshot:
+        coil: c_right_sling
+        switch: s_right_sling
+    left_bumper:
+        coil: c_left_bumper
+        switch: s_left_jet_bumper
+    right_bumper:
+        coil: c_right_bumper
+        switch: s_right_jet_bumper
+    lower_bumper:
+        coil: c_lower_bumper
+        switch: s_lower_jet_bumper
+
+kickbacks:
+    outlane_kickback:
+        coil: c_outlane_kickback
+        switch: s_oulane_kickback
+        enable_events: kickback_enable, mode_base_will_start
+        disable_events: kickback_fired
+        debug: true
+        
+hardware_sound_player:
+    game_start:
+        set_volume:
+            action: set_volume
+            value: 0.2
+        "MUSIC.BIN":
+            track: 1
+            action: play_file
+            
+    game_ending:
+        action: stop
+        set_volume:
+            action: set_volume
+            value: 0

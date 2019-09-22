@@ -1,0 +1,234 @@
+#show_version=5
+
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "               T"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "              Th"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "             Thi"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "            This"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "           This "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "          This i"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "         This is"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "        This is " 
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "       This is a"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "      This is a "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "     This is a t"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "    This is a te"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "   This is a tes"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "  This is a test"
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: " This is a test "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "               M"
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "              MP"
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "             MPF"
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "            MPF "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "           MPF r"
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "          MPF ru"
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "         MPF run"
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "        MPF runs" 
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "       MPF runs "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "      MPF runs A"
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "     MPF runs AP"
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "    MPF runs APC"
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "   MPF runs APC "
+-   duration: 2
+    segment_displays:
+        display2:
+            text: "  MPF runs APC  "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "This is a test  "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "his is a test   "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "is is a test    "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "s is a test     "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: " is a test      "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "is a test       "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "s a test        "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: " a test         "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "a test          "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: " test           "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "test            "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "est             "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "st              "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "t               "
+-   duration: 0.05
+    segment_displays:
+        display1:
+            text: "                "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: " MPF runs APC   "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "MPF runs APC    "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "PF runs APC     "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "F runs APC      "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: " runs APC       "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "runs APC        "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "uns APC         "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "ns APC          "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "s APC           "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: " APC            "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "APC             "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "PC              "
+-   duration: 0.05
+    segment_displays:
+        display2:
+            text: "C               "
+-   duration: 0.1
+    segment_displays:
+        display2:
+            text: "                "

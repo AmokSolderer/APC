@@ -1,0 +1,93 @@
+#config_version=5
+mode:
+    start_events: ball_starting
+    priority: 100
+    
+segment_display_player:
+    mode_base_started:
+        display1:
+            text: "{players[0].score:d}"
+            
+hardware_sound_player:
+    sh_s_skate_s_hit:
+        "SOUND.BIN":
+            track: 2
+            action: play_file
+    sh_s_skate_k_hit:
+        "SOUND.BIN":
+            track: 2
+            action: play_file
+    sh_s_skate_a_hit:
+        "SOUND.BIN":
+            track: 2
+            action: play_file
+    sh_s_skate_t_hit:
+        "SOUND.BIN":
+            track: 2
+            action: play_file
+    sh_s_skate_e_hit:
+        "SOUND.BIN":
+            track: 2
+            action: play_file
+                 
+variable_player:
+    sh_s_skate_s_hit:
+        score: 100
+    sh_s_skate_k_hit:
+        score: 200
+    sh_s_skate_a_hit:
+        score: 300
+    sh_s_skate_t_hit:
+        score: 400
+    sh_s_skate_e_hit:
+        score: 500
+    my_first_shot_my_first_profile_unlit_hit:
+        score: 100
+    my_first_shot_my_first_profile_flashing_hit:
+        score: 1000
+    lock1_shot_hit:
+        v_balls_locked: 1
+        
+shots:
+    sh_w_drop_target:
+        switch: s_left_drop_target
+        reset_events: drop_target_bank_war_drop_targets_down, ball_will_end
+        show_tokens:
+            light: l_drop_target_W
+    sh_a_drop_target:
+        switch: s_center_drop_target
+        reset_events: drop_target_bank_war_drop_targets_down, ball_will_end
+        show_tokens:
+            light: l_drop_target_A
+    sh_r_drop_target:
+        switch: s_right_drop_target
+        reset_events: drop_target_bank_war_drop_targets_down, ball_will_end
+        show_tokens:
+            light: l_drop_target_R
+    my_first_shot:
+        switch: s_right_inlane
+        show_tokens:
+            light: l_left_orbit
+        profile: my_first_profile
+    sh_s_skate_s:
+        switch: s_5bank_S
+        show_tokens:
+            light: l_5bank_S
+    sh_s_skate_k:
+        switch: s_5bank_K
+        show_tokens:
+            light: l_5bank_K
+    sh_s_skate_a:
+        switch: s_5bank_A
+        show_tokens:
+            light: l_5bank_A
+    sh_s_skate_t:
+        switch: s_5bank_T
+        show_tokens:
+            light: l_5bank_T
+    sh_s_skate_e:
+        switch: s_5bank_E
+        show_tokens:
+            light: l_5bank_E
+
+        
