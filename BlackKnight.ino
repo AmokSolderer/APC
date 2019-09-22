@@ -1170,13 +1170,13 @@ void HandleDropTargets(byte Event) {
 						TurnOnLamp(23);                          	// turn on the lower extra ball lamp
 						LowerExBall[Player] = true;}}             // and enable the lower extra ball
 				else {                                        // if the player didn't get an extra ball yet
-					for (byte i=0 ; i < 2; i++) {
-						if ((DropHits[(Player-1)*4+i*2] == 3) && (DropHits[(Player-1)*4+i*2+1] == 3)) {
+					for (byte Counter=0 ; Counter < 2; Counter++) {
+						if ((DropHits[(Player-1)*4+Counter*2] == 3) && (DropHits[(Player-1)*4+Counter*2+1] == 3)) {
 							for (i=0; i<2; i++) {                   // for all drop target banks
-								DropHits[(Player-1)*4+i*2+i] = 0; 		// clear their hits
-								TurnOffLamp(DropTargets[i*2+i]); 			// and their arrow lamps
-								TurnOffLamp(DropTargets[i*2+i]+1);
-								TurnOffLamp(DropTargets[i*2+i]+2);}
+								DropHits[(Player-1)*4+Counter*2+i] = 0; 		// clear their hits
+								TurnOffLamp(DropTargets[Counter*2+i]); 			// and their arrow lamps
+								TurnOffLamp(DropTargets[Counter*2+i]+1);
+								TurnOffLamp(DropTargets[Counter*2+i]+2);}
 							TurnOnLamp(41);                        	// turn on the upper extra ball lamp
 							PlayersExBalls[Player] = true;
 							UpperExBall[Player] = true;}}}}}}

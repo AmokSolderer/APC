@@ -53,7 +53,7 @@ Please note that I have equipped my Black Knight with a [special kind of display
 
 To make it easier to start doing your own game I did a Base Code which provides basic pinball funtionality and should work in all machines with only small adaptions.
 
-## Current Status (August 2019)
+## Current Status (September 2019)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/wiki#cable-extensions).
 
