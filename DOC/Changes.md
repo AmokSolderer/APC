@@ -12,6 +12,7 @@ It's not a cineastic masterpiece (again) but it shows that everything works now.
 ### New SW Version V0.12
 
 Some changes in the USBcontrol.ino to make the sound commands fully compliant to MPF.
+You can find my MPF configs in DOC/Software/MPF. I don't know whether they qualify more as a good or a bad example, but they might be helpful anyway.
 
 ## Aug 2019
 
