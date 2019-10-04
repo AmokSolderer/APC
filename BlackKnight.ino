@@ -180,6 +180,7 @@ const struct LampPat AttractPat5[17] = {{50,0b01000000,0b00000000,0b00000000,0b0
 																				{0,0,0,0,0,0,0,0}};
 
 const struct LampFlow AttractFlow[6] = {{3,AttractPat1},{10,AttractPat2},{3,AttractPat4},{10,AttractPat3},{10,AttractPat5},{0,0}};
+const char BK_NewGameSounds[4][12] = {{"BK_S10.bin"},{"BK_S11.bin"},{"BK_S12.bin"},{"BK_S14.bin"}}; // sounds for the game start
 const byte BonusLamps[13] = {60,59,58,57,56,55,54,53,52,51,50,49,48}; // numbers of the bonus lamps
 const byte BonusValues[13] = {40,30,20,10,9,8,7,6,5,4,3,2,1}; // values of the bonus lamps
 const byte FirstMultLamp = 61;
@@ -322,6 +323,9 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 	case 3:																							// start game
 		if (CountBallsInTrunk() == 3 || (CountBallsInTrunk() == 2 && QuerySwitch(45))) { // Ball missing?
 			StrobeLightsTimer = 0;
+			randomSeed(TC_ReadCV(TC2, 1));
+			AfterMusic = BK_StartBackgroundMusic;
+			PlayRandomMusic(50, 4, (char *)BK_NewGameSounds);
 			ShowLampPatterns(0);
 			RemoveBlinkLamp(4);
 			RemoveBlinkLamp(6);
@@ -436,6 +440,7 @@ void NewBall(byte Balls) {                            // release ball (Event = e
 void CheckShooterLaneSwitch(byte Switch) {
 	if (Switch == 45) {                                 // shooter lane switch released?
 		Switch_Released = DummyProcess;
+		PlayMusic(50, "BK_E05.bin");
 		if (!BallWatchdogTimer) {
 			BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}}}
 
@@ -1297,9 +1302,16 @@ void ShowBonus() {                                    // set lamps on bonus mete
 				Count -= BonusValues[i];}                   	// reduce bonus accordingly
 			else {
 				Count -= 1;}
-			TurnOnLamp(BonusLamps[i]);}                    // and turn the lamp on
+			TurnOnLamp(BonusLamps[i]);}                    	// and turn the lamp on
 		else {
-			TurnOffLamp(BonusLamps[i]);}}}                 // otherwise turn it off
+			TurnOffLamp(BonusLamps[i]);}}}                 	// otherwise turn it off
+
+void BK_StartBackgroundMusic() {
+	BK_PlayBackgroundMusic(1);}
+
+void BK_PlayBackgroundMusic(byte Init) {
+	char Filename[12] = {"BK_BG01.bin"};
+	PlayMusic(50, Filename);}
 
 void EndRightMagna(byte Event) {
 	UNUSED(Event);
