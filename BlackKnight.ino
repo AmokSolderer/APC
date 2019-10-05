@@ -324,7 +324,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 		if (CountBallsInTrunk() == 3 || (CountBallsInTrunk() == 2 && QuerySwitch(45))) { // Ball missing?
 			StrobeLightsTimer = 0;
 			randomSeed(TC_ReadCV(TC2, 1));
-			AfterMusic = BK_StartBackgroundMusic;
+			AfterMusic = BK_StartBgMusic;
 			PlayRandomMusic(50, 4, (char *)BK_NewGameSounds);
 			ShowLampPatterns(0);
 			RemoveBlinkLamp(4);
@@ -382,6 +382,7 @@ void AddPlayer() {
 void NewBall(byte Balls) {                            // release ball (Event = expected balls on ramp)
 	ShowAllPoints(0);
 	ShowBonus();
+	BK_StartBgMusic();
 	*(DisplayUpper+16) = LeftCredit[32 + 2 * Ball]; 		// show current ball in left credit
 	//*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
 	LockChaseLight(1);
@@ -767,12 +768,15 @@ void GameMain(byte Event) {                           // game switch events
 	case 44:                                            // left ramp rollover
 		Points[Player] += Multiballs * 5000;
 		ShowPoints(Player);
-		if (UpperExBall[Player]) {
+		if (UpperExBall[Player]) {												// upper extra ball lit?
+			PlayMusic(51, "BK_E04.bin");
 			TurnOffLamp(41);
 			TurnOnLamp(47);
 			TurnOnLamp(1);
 			UpperExBall[Player] = false;
 			ExBalls++;}
+		else {
+			PlayMusic(50, "BK_E09.bin");}
 		break;
 	case 65:
 		ActivateSolenoid(0, 17);
@@ -875,6 +879,7 @@ void BallEnd(byte Event) {
 						InLock++;}}
 				ActivateTimer(1000, 0, BallEnd);}
 			else {
+				BK_PlayBgMusic(3);														// disable BgMusic
 				LockedBalls[Player] = 0;
 				TurnOffLamp(24);                             	// unlight lower lock
 				LockChaseLight(0);
@@ -1133,6 +1138,7 @@ void HandleLock(byte Event) {
 void HandleDropTargets(byte Event) {
 	DropWait[Event] = false;
 	if (QuerySwitch(DropTargets[Event]) && (QuerySwitch(DropTargets[Event]+1)) && (QuerySwitch(DropTargets[Event]+2))) { // all drop targets hit?
+		PlayMusic(51, "BK_E07.bin");
 		AddBonus(3);                                      // add 3K bonus
 		if (DropTimer[Event]) {
 			KillTimer(DropTimer[Event]);}                   // kill the target bank timer
@@ -1187,8 +1193,10 @@ void HandleDropTargets(byte Event) {
 							UpperExBall[Player] = true;}}}}}}
 	else {                                              // not all targets cleared
 		if (QuerySwitch(DropTargets[Event]) || (QuerySwitch(DropTargets[Event]+1)) || (QuerySwitch(DropTargets[Event]+2))) { // any target down? (or false alarm)
+			PlaySound(50, "BK_E09.bin");
 			if (!DropTimer[Event]) {                        // no timer running for this bank already?
-				DropTimer[Event] = ActivateTimer(3000, Event, BlinkFaster); // start one
+				PlayMusic(50, "BK_E14.bin");
+				DropTimer[Event] = ActivateTimer(6000, Event, BlinkFaster); // start one
 				AddBlinkLamp(DropLamp+Event, 500);}}}}        // and let the bank lamp blink
 
 void BlinkFaster(byte Event) {                        // increase blink frequency
@@ -1306,12 +1314,39 @@ void ShowBonus() {                                    // set lamps on bonus mete
 		else {
 			TurnOffLamp(BonusLamps[i]);}}}                 	// otherwise turn it off
 
-void BK_StartBackgroundMusic() {
-	BK_PlayBackgroundMusic(1);}
+void BK_StartBgMusic() {
+	BK_PlayBgMusic(1);
+	AfterMusic = BK_ResumeBgMusic;}
 
-void BK_PlayBackgroundMusic(byte Init) {
+void BK_ResumeBgMusic() {
+	BK_PlayBgMusic(0);}
+
+void BK_PlayBgMusic(byte State) {
+	static byte CurrentBgMusic;
+	static byte TimerNo = 0;
 	char Filename[12] = {"BK_BG01.bin"};
-	PlayMusic(50, Filename);}
+	switch (State) {
+	case 0:																							// Resume BgMusic
+		Filename[6] = (CurrentBgMusic % 10) + 48;
+		Filename[5] = (CurrentBgMusic / 10) + 48;
+		PlayMusic(50, Filename);
+		break;
+	case 1:																							// Start BgMusic
+		CurrentBgMusic = 2;
+		if (!TimerNo) {
+			PlayMusic(50, Filename);
+			TimerNo = ActivateTimer(30000, 2, BK_PlayBgMusic);}
+		break;
+	case 2:																							// proceed to next track
+		if (CurrentBgMusic < 28) {
+			CurrentBgMusic++;}
+		TimerNo = ActivateTimer(30000, 2, BK_PlayBgMusic);
+		break;
+	case 3:																							// stop BgMusic
+		if (TimerNo) {
+			KillTimer(TimerNo);
+			TimerNo = 0;}
+		StopPlayingMusic();}}
 
 void EndRightMagna(byte Event) {
 	UNUSED(Event);
