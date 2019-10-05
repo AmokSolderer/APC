@@ -722,6 +722,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 26:                                            // lower left drop targets
 	case 27:
 		if (!DropWait[0]) {
+			PlaySound(50, "BK_E09.bin");
 			DropWait[0] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -731,6 +732,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 30:                                            // lower right drop targets
 	case 31:
 		if (!DropWait[1]) {
+			PlaySound(50, "BK_E09.bin");
 			DropWait[1] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -740,6 +742,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 34:                                            // upper left drop targets
 	case 35:
 		if (!DropWait[2]) {
+			PlaySound(50, "BK_E09.bin");
 			DropWait[2] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -753,6 +756,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 38:                                            // upper right drop targets
 	case 39:
 		if (!DropWait[3]) {
+			PlaySound(50, "BK_E09.bin");
 			DropWait[3] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -1193,7 +1197,6 @@ void HandleDropTargets(byte Event) {
 							UpperExBall[Player] = true;}}}}}}
 	else {                                              // not all targets cleared
 		if (QuerySwitch(DropTargets[Event]) || (QuerySwitch(DropTargets[Event]+1)) || (QuerySwitch(DropTargets[Event]+2))) { // any target down? (or false alarm)
-			PlaySound(50, "BK_E09.bin");
 			if (!DropTimer[Event]) {                        // no timer running for this bank already?
 				PlayMusic(50, "BK_E14.bin");
 				DropTimer[Event] = ActivateTimer(6000, Event, BlinkFaster); // start one
