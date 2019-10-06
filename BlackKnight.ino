@@ -325,7 +325,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 			StrobeLightsTimer = 0;
 			randomSeed(TC_ReadCV(TC2, 1));
 			AfterMusic = BK_StartBgMusic;
-			PlayRandomMusic(50, 4, (char *)BK_NewGameSounds);
+			PlayRandomMusic(51, 4, (char *)BK_NewGameSounds);
 			ShowLampPatterns(0);
 			RemoveBlinkLamp(4);
 			RemoveBlinkLamp(6);
@@ -773,7 +773,7 @@ void GameMain(byte Event) {                           // game switch events
 		Points[Player] += Multiballs * 5000;
 		ShowPoints(Player);
 		if (UpperExBall[Player]) {												// upper extra ball lit?
-			PlayMusic(51, "BK_E04.bin");
+			PlaySound(51, "BK_E04.bin");
 			TurnOffLamp(41);
 			TurnOnLamp(47);
 			TurnOnLamp(1);
@@ -1118,6 +1118,7 @@ void HandleLock(byte Event) {
 		ClearLocks(0);}                                 	// eject balls
 	else {                                            	// no multiball running
 		if (LockCount > InLock) {                         // more than before?
+			PlayMusic(51, "BK_E13.bin");
 			Points[Player] += 5000;
 			ShowPoints(Player);
 			InLock++;
@@ -1343,7 +1344,7 @@ void BK_PlayBgMusic(byte State) {
 	case 2:																							// proceed to next track
 		if (CurrentBgMusic < 28) {
 			CurrentBgMusic++;}
-		TimerNo = ActivateTimer(30000, 2, BK_PlayBgMusic);
+		TimerNo = ActivateTimer(10000, 2, BK_PlayBgMusic);
 		break;
 	case 3:																							// stop BgMusic
 		if (TimerNo) {
