@@ -703,6 +703,7 @@ void GameMain(byte Event) {                           // game switch events
 			AddBlinkLamp(FirstMultLamp+BonusMultiplier-2, 250);
 			ActivateTimer(2000, FirstMultLamp+BonusMultiplier-2, SetBonusMultiplier);}
 		if (LowerExBall[Player]) {
+			PlayMusic(51, "BK_E04.bin");
 			TurnOffLamp(23);
 			TurnOnLamp(47);
 			TurnOnLamp(1);
@@ -773,14 +774,14 @@ void GameMain(byte Event) {                           // game switch events
 		Points[Player] += Multiballs * 5000;
 		ShowPoints(Player);
 		if (UpperExBall[Player]) {												// upper extra ball lit?
-			PlaySound(51, "BK_E04.bin");
+			PlayMusic(51, "BK_E04.bin");
 			TurnOffLamp(41);
 			TurnOnLamp(47);
 			TurnOnLamp(1);
 			UpperExBall[Player] = false;
 			ExBalls++;}
 		else {
-			PlayMusic(50, "BK_E09.bin");}
+			PlaySound(50, "BK_E09.bin");}
 		break;
 	case 65:
 		ActivateSolenoid(0, 17);
