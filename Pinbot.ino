@@ -720,6 +720,12 @@ void PB_GameMain(byte Switch) {
 		Serial.println((unsigned int)&PB_EnergyOff);
 		Serial.print("PB_ResetDropTargets = ");
 		Serial.println((unsigned int)&PB_ResetDropTargets);
+		Serial.print("InLock = ");
+		Serial.println((unsigned int)InLock);
+		Serial.print("Multiballs = ");
+		Serial.println((unsigned int)Multiballs);
+		Serial.print("PB_ChestMode = ");
+		Serial.println((unsigned int)PB_ChestMode);
 		c=0;
 		i=1;
 		while (c<ActiveTimers) {													// list all active timers
@@ -1228,7 +1234,7 @@ void PB_HandleLock(byte State) {
 						PB_EyeBlink(0);														// turn off eye blinking
 						ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
 						ActivateSolenoid(0, 13);                  // start visor motor
-						PB_SolarValueTimer = ActivateTimer(8000, 0,PB_ReopenVisor);} // 8s to score the solar value
+						PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
 					else {                                      // multiball not yet running
 						PlaySound(150, "BS_S02.BIN");
 						PB_GiveBall(1);}}                         // give second ball
