@@ -639,6 +639,7 @@ void GameMain(byte Event) {                           // game switch events
 			AddBlinkLamp(12, 150);}
 		break;
 	case 13:                                            // spinner
+		PlayMusic(51, "BK_E10.bin");
 		if (RightMysteryTimer) {
 			Points[Player] += Multiballs * 2500;}           // add 5000 points
 		else {
