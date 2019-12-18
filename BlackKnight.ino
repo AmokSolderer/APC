@@ -846,7 +846,7 @@ void BallEnd(byte Event) {
 				if (QuerySwitch(41+i)) {
 					InLock++;}}}
 		WriteLower(" BALL   ERROR ");
-		if (QuerySwitch(16)) {                            // ball still in outhole?
+		if (QuerySwitch(20)) {                            // ball still in outhole?
 			ActivateSolenoid(0, 1);                         // make the coil a bit stronger
 			ActivateTimer(2000, Event, BallEnd);}           // and come back in 2s
 		else {
