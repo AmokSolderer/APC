@@ -1223,7 +1223,7 @@ void ResetDropWait(byte Event) {                      // ensure waiting time to 
 void StartMultiball() {
 	WriteUpper2(" MULTI  BALL  ");                     	// switch display to alternate buffer
 	DispRow1 = DisplayUpper2;
-	if (LastChance) {                                   // last chance avtive?
+	if (LastChance) {                                   // last chance active?
 		LastChance = false;                               // deactivate it
 		TurnOffLamp(11);
 		TurnOffLamp(12);}
