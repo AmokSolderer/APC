@@ -56,8 +56,6 @@ const byte *DispRow1;                                 // determines which patter
 const byte *DispRow2;
 const byte *DispPattern1;
 const byte *DispPattern2;
-const byte NumMaskUpper[5] = {184,64,4,2,1};					// Bitmasks for the upper row of numerical displays
-const byte NumMaskLower[5] = {71,16,8,128,32};				// Bitmasks for the lower row of numerical displays
 byte DisplayUpper[32];                                // changeable display buffer
 byte DisplayLower[32];
 byte DisplayUpper2[32];                               // second changeable display buffer
@@ -890,6 +888,7 @@ void KillTimer(byte TimerNo) {
 	BlockTimers = false;}																// release the IRQ block
 
 byte ConvertNumUpper(byte Number, byte Pattern) {			// convert a number to be shown in the upper row of numerical displays
+	const byte NumMaskUpper[5] = {184,64,4,2,1};				// Bitmasks for the upper row of numerical displays
 	byte Mask = 1;
 	Pattern &= NumMaskUpper[0];													// clear all bits belonging to this digit
 	for (byte c=1;c<5;c++) {														// for 4 bit
@@ -899,6 +898,7 @@ byte ConvertNumUpper(byte Number, byte Pattern) {			// convert a number to be sh
 	return Pattern;}
 
 byte ConvertNumLower(byte Number, byte Pattern) {			// convert a number to be shown in the lower row of numerical displays
+	const byte NumMaskLower[5] = {71,16,8,128,32};			// Bitmasks for the lower row of numerical displays
 	byte Mask = 1;
 	Pattern &= NumMaskLower[0];													// clear all bits belonging to this digit
 	for (byte c=1;c<5;c++) {														// for 4 bit
