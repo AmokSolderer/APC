@@ -267,7 +267,7 @@ void USB_SerialCommand() {
 		Serial.write((byte) 0);
 		break;
 	case 3:																							// get number of lamps
-		Serial.write((byte) 64);
+		Serial.write((byte) 65);
 		break;
 	case 4:																							// get number of solenoids
 		Serial.write((byte) 25);
