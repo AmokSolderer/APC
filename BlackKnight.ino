@@ -183,6 +183,7 @@ const struct LampFlow AttractFlow[6] = {{3,AttractPat1},{10,AttractPat2},{3,Attr
 const char BK_NewGameSounds[4][12] = {{"BK_S10.bin"},{"BK_S11.bin"},{"BK_S12.bin"},{"BK_S14.bin"}}; // sounds for the game start
 const byte BonusLamps[13] = {60,59,58,57,56,55,54,53,52,51,50,49,48}; // numbers of the bonus lamps
 const byte BonusValues[13] = {40,30,20,10,9,8,7,6,5,4,3,2,1}; // values of the bonus lamps
+const byte BK_ResetAllDropTargets[9] = {2,30,3,30,4,30,5,30,0};
 const byte FirstMultLamp = 61;
 const byte DropTargets[4] = {25, 29, 33, 37};
 const byte DropSolenoid = 2;
@@ -324,7 +325,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 		if (CountBallsInTrunk() == 3 || (CountBallsInTrunk() == 2 && QuerySwitch(45))) { // Ball missing?
 			StrobeLightsTimer = 0;
 			randomSeed(TC_ReadCV(TC2, 1));
-			AfterMusic = BK_StartBgMusic;
+			AfterSound = BK_StartBgMusic;
 			PlayRandomMusic(51, 4, (char *)BK_NewGameSounds);
 			ShowLampPatterns(0);
 			RemoveBlinkLamp(4);
@@ -441,7 +442,7 @@ void NewBall(byte Balls) {                            // release ball (Event = e
 void CheckShooterLaneSwitch(byte Switch) {
 	if (Switch == 45) {                                 // shooter lane switch released?
 		Switch_Released = DummyProcess;
-		PlayMusic(50, "BK_E05.bin");
+		PlaySound(50, "BK_E05.bin");
 		if (!BallWatchdogTimer) {
 			BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}}}
 
@@ -639,7 +640,7 @@ void GameMain(byte Event) {                           // game switch events
 			AddBlinkLamp(12, 150);}
 		break;
 	case 13:                                            // spinner
-		PlayMusic(51, "BK_E10.bin");
+		PlaySound(51, "BK_E10.bin");
 		if (RightMysteryTimer) {
 			Points[Player] += Multiballs * 2500;}           // add 5000 points
 		else {
@@ -704,7 +705,7 @@ void GameMain(byte Event) {                           // game switch events
 			AddBlinkLamp(FirstMultLamp+BonusMultiplier-2, 250);
 			ActivateTimer(2000, FirstMultLamp+BonusMultiplier-2, SetBonusMultiplier);}
 		if (LowerExBall[Player]) {
-			PlayMusic(51, "BK_E04.bin");
+			PlaySound(51, "BK_E04.bin");
 			TurnOffLamp(23);
 			TurnOnLamp(47);
 			TurnOnLamp(1);
@@ -724,7 +725,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 26:                                            // lower left drop targets
 	case 27:
 		if (!DropWait[0]) {
-			PlaySound(50, "BK_E09.bin");
+			PlayMusic(50, "BK_E09.bin");
 			DropWait[0] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -734,7 +735,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 30:                                            // lower right drop targets
 	case 31:
 		if (!DropWait[1]) {
-			PlaySound(50, "BK_E09.bin");
+			PlayMusic(50, "BK_E09.bin");
 			DropWait[1] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -744,7 +745,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 34:                                            // upper left drop targets
 	case 35:
 		if (!DropWait[2]) {
-			PlaySound(50, "BK_E09.bin");
+			PlayMusic(50, "BK_E09.bin");
 			DropWait[2] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -758,7 +759,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 38:                                            // upper right drop targets
 	case 39:
 		if (!DropWait[3]) {
-			PlaySound(50, "BK_E09.bin");
+			PlayMusic(50, "BK_E09.bin");
 			DropWait[3] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -775,14 +776,14 @@ void GameMain(byte Event) {                           // game switch events
 		Points[Player] += Multiballs * 5000;
 		ShowPoints(Player);
 		if (UpperExBall[Player]) {												// upper extra ball lit?
-			PlayMusic(51, "BK_E04.bin");
+			PlaySound(51, "BK_E04.bin");
 			TurnOffLamp(41);
 			TurnOnLamp(47);
 			TurnOnLamp(1);
 			UpperExBall[Player] = false;
 			ExBalls++;}
 		else {
-			PlaySound(50, "BK_E09.bin");}
+			PlayMusic(50, "BK_E09.bin");}
 		break;
 	case 65:
 		ActivateSolenoid(0, 17);
@@ -1120,7 +1121,7 @@ void HandleLock(byte Event) {
 		ClearLocks(0);}                                 	// eject balls
 	else {                                            	// no multiball running
 		if (LockCount > InLock) {                         // more than before?
-			PlayMusic(51, "BK_E13.bin");
+			PlaySound(51, "BK_E13.bin");
 			Points[Player] += 5000;
 			ShowPoints(Player);
 			InLock++;
@@ -1145,7 +1146,7 @@ void HandleLock(byte Event) {
 void HandleDropTargets(byte Event) {
 	DropWait[Event] = false;
 	if (QuerySwitch(DropTargets[Event]) && (QuerySwitch(DropTargets[Event]+1)) && (QuerySwitch(DropTargets[Event]+2))) { // all drop targets hit?
-		PlayMusic(51, "BK_E07.bin");
+		PlaySound(51, "BK_E07.bin");
 		AddBonus(3);                                      // add 3K bonus
 		if (DropTimer[Event]) {
 			KillTimer(DropTimer[Event]);}                   // kill the target bank timer
@@ -1201,7 +1202,7 @@ void HandleDropTargets(byte Event) {
 	else {                                              // not all targets cleared
 		if (QuerySwitch(DropTargets[Event]) || (QuerySwitch(DropTargets[Event]+1)) || (QuerySwitch(DropTargets[Event]+2))) { // any target down? (or false alarm)
 			if (!DropTimer[Event]) {                        // no timer running for this bank already?
-				PlayMusic(50, "BK_E14.bin");
+				PlaySound(50, "BK_E14.bin");
 				DropTimer[Event] = ActivateTimer(6000, Event, BlinkFaster); // start one
 				AddBlinkLamp(DropLamp+Event, 500);}}}}        // and let the bank lamp blink
 
@@ -1221,6 +1222,16 @@ void ResetDropWait(byte Event) {                      // ensure waiting time to 
 	DropWait[Event] = false;}
 
 void StartMultiball() {
+	ActivateSolenoid(0, 11);														// turn off GI
+	LampPattern = NoLamps;
+	PlayFlashSequence((byte*) BK_ResetAllDropTargets);
+	ActivateTimer(1500, 0, BK_Multiball2);}
+
+void BK_Multiball2(byte Step) {
+	if (!Step) {
+		PlaySound(55, "BK_E16.bin");}
+
+
 	WriteUpper2(" MULTI  BALL  ");                     	// switch display to alternate buffer
 	DispRow1 = DisplayUpper2;
 	if (LastChance) {                                   // last chance active?
@@ -1322,7 +1333,7 @@ void ShowBonus() {                                    // set lamps on bonus mete
 
 void BK_StartBgMusic() {
 	BK_PlayBgMusic(1);
-	AfterMusic = BK_ResumeBgMusic;}
+	AfterSound = BK_ResumeBgMusic;}
 
 void BK_ResumeBgMusic() {
 	BK_PlayBgMusic(0);}
@@ -1335,12 +1346,12 @@ void BK_PlayBgMusic(byte State) {
 	case 0:																							// Resume BgMusic
 		Filename[6] = (CurrentBgMusic % 10) + 48;
 		Filename[5] = (CurrentBgMusic / 10) + 48;
-		PlayMusic(50, Filename);
+		PlaySound(50, Filename);
 		break;
 	case 1:																							// Start BgMusic
 		CurrentBgMusic = 2;
 		if (!TimerNo) {
-			PlayMusic(50, Filename);
+			PlaySound(50, Filename);
 			TimerNo = ActivateTimer(30000, 2, BK_PlayBgMusic);}
 		break;
 	case 2:																							// proceed to next track
@@ -1647,8 +1658,8 @@ void SoundTest_Enter(byte Switch) {
 		WriteUpper("PLAYING SOUND ");
 		WriteLower("            01");
 		Switch_Pressed = SoundTest;
-		AfterMusic = NextTestSound;
-		PlayMusic(50, (char*) TestSounds[AppByte]);}}
+		AfterSound = NextTestSound;
+		PlaySound(50, (char*) TestSounds[AppByte]);}}
 
 void NextTestSound() {
 	if (QuerySwitch(73)) {															// Up/Down switch pressed?
@@ -1659,13 +1670,13 @@ void NextTestSound() {
 	*(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte+1) % 10)];
 	*(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
 	*(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-	PlayMusic(50, (char*) TestSounds[AppByte]);}
+	PlaySound(50, (char*) TestSounds[AppByte]);}
 
 void SoundTest(byte Switch) {
 	if (Switch == 3) {
 		NextTestSound();}
 	if (Switch == 72) {
-		AfterMusic = 0;
+		AfterSound = 0;
 		StopPlayingMusic();
 		WriteUpper(" SOUND  TEST  ");
 		Switch_Pressed = SoundTest_Enter;
