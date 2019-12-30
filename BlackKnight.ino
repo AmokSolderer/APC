@@ -183,7 +183,7 @@ const struct LampFlow AttractFlow[6] = {{3,AttractPat1},{10,AttractPat2},{3,Attr
 const char BK_NewGameSounds[4][12] = {{"BK_S10.bin"},{"BK_S11.bin"},{"BK_S12.bin"},{"BK_S14.bin"}}; // sounds for the game start
 const byte BonusLamps[13] = {60,59,58,57,56,55,54,53,52,51,50,49,48}; // numbers of the bonus lamps
 const byte BonusValues[13] = {40,30,20,10,9,8,7,6,5,4,3,2,1}; // values of the bonus lamps
-const byte BK_ResetAllDropTargets[9] = {2,30,3,30,4,30,5,30,0};
+const byte BK_ResetAllDropTargets[9] = {2,15,3,15,4,15,5,15,0};
 const byte FirstMultLamp = 61;
 const byte DropTargets[4] = {25, 29, 33, 37};
 const byte DropSolenoid = 2;
@@ -301,7 +301,13 @@ void AttractDisplayCycle(byte Event) {
 void AttractModeSW(byte Event) {                      // Attract Mode switch behaviour
 	switch (Event) {
   case 8:                                             // high score reset
-    digitalWrite(Blanking, LOW);                      // invoke the blanking
+    //digitalWrite(Blanking, LOW);                      // invoke the blanking
+		if (APC_settings[Volume]) {                     // system set to digital volume control?
+			analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+		else {
+			digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
+		KillAllTimers();                                // stop the lamp cycling
+  	StartMultiball();
     break;
 	case 20:                                            // outhole
 		ActivateTimer(200, 0, CheckForLockedBalls);       // check again in 200ms
@@ -326,7 +332,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 			StrobeLightsTimer = 0;
 			randomSeed(TC_ReadCV(TC2, 1));
 			AfterSound = BK_StartBgMusic;
-			PlayRandomMusic(51, 4, (char *)BK_NewGameSounds);
+			PlayRandomSound(51, 4, (char *)BK_NewGameSounds);
 			ShowLampPatterns(0);
 			RemoveBlinkLamp(4);
 			RemoveBlinkLamp(6);
@@ -1225,13 +1231,38 @@ void StartMultiball() {
 	ActivateSolenoid(0, 11);														// turn off GI
 	LampPattern = NoLamps;
 	PlayFlashSequence((byte*) BK_ResetAllDropTargets);
-	ActivateTimer(1500, 0, BK_Multiball2);}
+	ActivateTimer(800, 0, BK_Multiball2);}
 
 void BK_Multiball2(byte Step) {
+	static byte Counter;
+//	Serial.print("S= ");
+//	Serial.println(Step);
+//	Serial.print("C= ");
+//	Serial.println(Counter);
 	if (!Step) {
-		PlaySound(55, "BK_E16.bin");}
+		PlaySound(55, "BK_E16.bin");
+		Counter = 0;
+		LampPattern = AttractPat1[0].Pattern;}
+	else {
+		switch (Counter) {
+		case 0:
+			LampPattern = AttractPat1[Step].Pattern;
+			Counter++;
+			break;
+		case 1:
+			LampPattern = LampColumns;
+			Counter++;
+			break;
+		case 2:
+			LampPattern = NoLamps;
+			Counter = 0;}}
+	Step++;
+	if(Step < 26) {
+		ActivateTimer(100, Step, BK_Multiball2);}
+	else {
+		PlaySound(55, "BK_E01.bin");}}
 
-
+void Rest() {
 	WriteUpper2(" MULTI  BALL  ");                     	// switch display to alternate buffer
 	DispRow1 = DisplayUpper2;
 	if (LastChance) {                                   // last chance active?
@@ -1346,12 +1377,12 @@ void BK_PlayBgMusic(byte State) {
 	case 0:																							// Resume BgMusic
 		Filename[6] = (CurrentBgMusic % 10) + 48;
 		Filename[5] = (CurrentBgMusic / 10) + 48;
-		PlaySound(50, Filename);
+		PlayMusic(50, Filename);
 		break;
 	case 1:																							// Start BgMusic
 		CurrentBgMusic = 2;
 		if (!TimerNo) {
-			PlaySound(50, Filename);
+			PlayMusic(50, Filename);
 			TimerNo = ActivateTimer(30000, 2, BK_PlayBgMusic);}
 		break;
 	case 2:																							// proceed to next track
