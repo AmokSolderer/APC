@@ -21,7 +21,7 @@ byte DropTimer[4];                                    // timer for all drop targ
 byte DropHits[16];                                    // counts how often the target banks have been cleared
 bool DropWait[5];																			// indicates that a waiting time for this drop target bank is active before it it being processed
 const byte BallSearchCoils[12] = {1,8,10,9,2,3,4,5,7,19,15,0}; // coils to fire when the ball watchdog timer runs out
-const unsigned int BK_SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,5,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
+const unsigned int BK_SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,0,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
 
 																											// offsets of settings in the settings array
 const byte TimedMagna = 0;                            // Timed Magna saves?
@@ -307,6 +307,8 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 		else {
 			digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
 		KillAllTimers();                                // stop the lamp cycling
+		for(byte i=0;i<7;i++) {
+			LampColumns[i+1] = *(((AttractPat5+8)->Pattern)+i);}
   	StartMultiball();
     break;
 	case 20:                                            // outhole
@@ -1229,6 +1231,7 @@ void ResetDropWait(byte Event) {                      // ensure waiting time to 
 
 void StartMultiball() {
 	ActivateSolenoid(0, 11);														// turn off GI
+	LockChaseLight(0);
 	LampPattern = NoLamps;
 	PlayFlashSequence((byte*) BK_ResetAllDropTargets);
 	ActivateTimer(800, 0, BK_Multiball2);}
@@ -1241,23 +1244,45 @@ void BK_Multiball2(byte Step) {
 		Step++;
 		LampPattern = (AttractPat1->Pattern)-1;}
 	else {
-		switch (Counter) {
-		case 0:
-			LampPattern = NoLamps;
-			Counter++;
-			break;
-		case 1:
-			LampPattern = LampColumns;
-			Counter++;
-			break;
-		case 2:
-			LampPattern = ((AttractPat1+Step)->Pattern)-1;
-			Counter = 0;
-			Step++;}}
-	if(Step < 26) {
-		ActivateTimer(30, Step, BK_Multiball2);}
-	else {
-		PlaySound(55, "BK_E01.bin");}}
+		if (Step < 26) {
+			switch (Counter) {
+			case 0:
+				LampPattern = NoLamps;
+				Counter++;
+				break;
+			case 1:
+				LampPattern = LampColumns;
+				Counter++;
+				break;
+			case 2:
+				LampPattern = ((AttractPat1+Step)->Pattern)-1;
+				Counter = 0;
+				Step++;}}
+		else {
+			if (Step == 26) {
+				Counter = 0;
+				if (LockedBalls[Player] == 3) {                     // 2 or 3 ball multiball?
+					Multiballs = 3;
+					PlaySound(55, "BK_S17.bin");}
+				else {
+					Multiballs = 2;
+					PlaySound(55, "BK_S01.bin");}}
+			else {
+				switch (Counter) {
+				case 0:
+					LampPattern = NoLamps;
+					Counter++;
+					break;
+				case 1:
+					LampPattern = LampColumns;
+					Counter++;
+					break;
+				case 2:
+					LampPattern = ((AttractPat1+Step)->Pattern)-1;
+					Counter = 0;
+					Step++;}}}
+		if (Step < 52) {
+			ActivateTimer(30, Step, BK_Multiball2);}}}
 
 void Rest() {
 	WriteUpper2(" MULTI  BALL  ");                     	// switch display to alternate buffer
