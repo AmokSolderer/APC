@@ -308,7 +308,8 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 			digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
 		KillAllTimers();                                // stop the lamp cycling
 		for(byte i=0;i<7;i++) {
-			LampColumns[i+1] = *(((AttractPat5+8)->Pattern)+i);}
+			LampColumns[i+1] = *(((AttractPat4+8)->Pattern)+i);}
+		LampPattern = LampColumns;
   	StartMultiball();
     break;
 	case 20:                                            // outhole
@@ -1244,29 +1245,30 @@ void BK_Multiball2(byte Step) {
 		Step++;
 		LampPattern = (AttractPat1->Pattern)-1;}
 	else {
-		if (Step < 26) {
+		if (Step < 26) {																	// 26 steps to fill the lamps to the top
 			switch (Counter) {
-			case 0:
+			case 0:																					// no lamps
 				LampPattern = NoLamps;
 				Counter++;
 				break;
 			case 1:
-				LampPattern = LampColumns;
+				LampPattern = LampColumns;										// last pattern
 				Counter++;
 				break;
 			case 2:
-				LampPattern = ((AttractPat1+Step)->Pattern)-1;
+				LampPattern = ((AttractPat1+Step)->Pattern)-1;	// turn on the lamps from the bottom to the top
 				Counter = 0;
 				Step++;}}
 		else {
-			if (Step == 26) {
+			if (Step == 26) {																// all lamps on
 				Counter = 0;
-				if (LockedBalls[Player] == 3) {                     // 2 or 3 ball multiball?
+				Step++;
+				if (LockedBalls[Player] == 3) {               // 2 or 3 ball multiball?
 					Multiballs = 3;
-					PlaySound(55, "BK_S17.bin");}
+					PlaySound(55, "BK_S17.bin");}								// fight against three enemies
 				else {
 					Multiballs = 2;
-					PlaySound(55, "BK_S01.bin");}}
+					PlaySound(55, "BK_S01.bin");}}							// fight against two enemies
 			else {
 				switch (Counter) {
 				case 0:
@@ -1278,11 +1280,11 @@ void BK_Multiball2(byte Step) {
 					Counter++;
 					break;
 				case 2:
-					LampPattern = ((AttractPat1+Step)->Pattern)-1;
+					LampPattern = ((AttractPat1+51-Step)->Pattern)-1;	// turn off the lamps from the top to the bottom
 					Counter = 0;
-					Step++;}}}
-		if (Step < 52) {
-			ActivateTimer(30, Step, BK_Multiball2);}}}
+					Step++;}}}}
+	if (Step < 52) {
+		ActivateTimer(30, Step, BK_Multiball2);}}
 
 void Rest() {
 	WriteUpper2(" MULTI  BALL  ");                     	// switch display to alternate buffer
