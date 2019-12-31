@@ -1235,18 +1235,15 @@ void StartMultiball() {
 
 void BK_Multiball2(byte Step) {
 	static byte Counter;
-//	Serial.print("S= ");
-//	Serial.println(Step);
-//	Serial.print("C= ");
-//	Serial.println(Counter);
 	if (!Step) {
 		PlaySound(55, "BK_E16.bin");
 		Counter = 0;
-		LampPattern = AttractPat1[0].Pattern;}
+		Step++;
+		LampPattern = (AttractPat1->Pattern)-1;}
 	else {
 		switch (Counter) {
 		case 0:
-			LampPattern = AttractPat1[Step].Pattern;
+			LampPattern = NoLamps;
 			Counter++;
 			break;
 		case 1:
@@ -1254,11 +1251,11 @@ void BK_Multiball2(byte Step) {
 			Counter++;
 			break;
 		case 2:
-			LampPattern = NoLamps;
-			Counter = 0;}}
-	Step++;
+			LampPattern = ((AttractPat1+Step)->Pattern)-1;
+			Counter = 0;
+			Step++;}}
 	if(Step < 26) {
-		ActivateTimer(100, Step, BK_Multiball2);}
+		ActivateTimer(30, Step, BK_Multiball2);}
 	else {
 		PlaySound(55, "BK_E01.bin");}}
 
