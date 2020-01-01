@@ -1284,16 +1284,16 @@ void BK_Multiball2(byte Step) {
 					Counter = 0;
 					Step++;}}}}
 	if (Step < 52) {
-		ActivateTimer(30, Step, BK_Multiball2);}}
+		ActivateTimer(30, Step, BK_Multiball2);}
+	else {
 
-void Rest() {
 	WriteUpper2(" MULTI  BALL  ");                     	// switch display to alternate buffer
 	DispRow1 = DisplayUpper2;
 	if (LastChance) {                                   // last chance active?
 		LastChance = false;                               // deactivate it
 		TurnOffLamp(11);
 		TurnOffLamp(12);}
-	ActivateSolenoid(1000, 15);                         // ring the bell
+	//ActivateSolenoid(1000, 15);                         // ring the bell
 	TurnOffLamp(24);                                   	// unlight lower lock
 	if (LockedBalls[Player] == 3) {                     // 2 or 3 ball multiball?
 		Multiballs = 3;
@@ -1307,7 +1307,7 @@ void Rest() {
 	ActivateTimer(3000, 1, SwitchDisplay);              // switch display back to main buffer in 3 seconds
 	if (QuerySwitch(24)) {                              // for the lower elect hole
 		ActivateTimer(2000, 8, DelaySolenoid);}
-	ActivateTimer(3100, 0, ClearLocks);}                // clear out balls after that
+	ActivateTimer(3100, 0, ClearLocks);}}                // clear out balls after that
 
 void ClearLocks(byte Event) {
 	UNUSED(Event);
