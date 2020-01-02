@@ -301,16 +301,7 @@ void AttractDisplayCycle(byte Event) {
 void AttractModeSW(byte Event) {                      // Attract Mode switch behaviour
 	switch (Event) {
   case 8:                                             // high score reset
-    //digitalWrite(Blanking, LOW);                      // invoke the blanking
-		if (APC_settings[Volume]) {                     // system set to digital volume control?
-			analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-		else {
-			digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
-		KillAllTimers();                                // stop the lamp cycling
-		for(byte i=0;i<7;i++) {
-			LampColumns[i+1] = *(((AttractPat4+8)->Pattern)+i);}
-		LampPattern = LampColumns;
-  	StartMultiball();
+    digitalWrite(Blanking, LOW);                      // invoke the blanking
     break;
 	case 20:                                            // outhole
 		ActivateTimer(200, 0, CheckForLockedBalls);       // check again in 200ms
@@ -334,8 +325,8 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 		if (CountBallsInTrunk() == 3 || (CountBallsInTrunk() == 2 && QuerySwitch(45))) { // Ball missing?
 			StrobeLightsTimer = 0;
 			randomSeed(TC_ReadCV(TC2, 1));
-			AfterSound = BK_StartBgMusic;
-			PlayRandomSound(51, 4, (char *)BK_NewGameSounds);
+			AfterMusic = BK_StartBgMusic;
+			PlayRandomMusic(51, 4, (char *)BK_NewGameSounds);
 			ShowLampPatterns(0);
 			RemoveBlinkLamp(4);
 			RemoveBlinkLamp(6);
@@ -392,7 +383,8 @@ void AddPlayer() {
 void NewBall(byte Balls) {                            // release ball (Event = expected balls on ramp)
 	ShowAllPoints(0);
 	ShowBonus();
-	BK_StartBgMusic();
+	if (!((Player == 1) && (Ball == 1))) {							// skip for the first ball of the game to wait for speech sequence
+		BK_StartBgMusic();}
 	*(DisplayUpper+16) = LeftCredit[32 + 2 * Ball]; 		// show current ball in left credit
 	//*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
 	LockChaseLight(1);
@@ -451,7 +443,7 @@ void NewBall(byte Balls) {                            // release ball (Event = e
 void CheckShooterLaneSwitch(byte Switch) {
 	if (Switch == 45) {                                 // shooter lane switch released?
 		Switch_Released = DummyProcess;
-		PlaySound(50, "BK_E05.bin");
+		PlayMusic(50, "BK_E05.bin");
 		if (!BallWatchdogTimer) {
 			BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}}}
 
@@ -608,6 +600,9 @@ void GameMain(byte Event) {                           // game switch events
 		WriteUpper(" FREE   GAME  ");
 		ActivateTimer(3000, 0, ShowAllPoints);
 		break;
+	case 8:
+		BK_CycleSwordLights(1);
+		break;
 	case 9:                                             // right magna save button
 		if (RightMagna[Player]) {                         // right magna save available?
 			if (!game_settings[TimedMagna]) {								// no timed magna save
@@ -728,7 +723,10 @@ void GameMain(byte Event) {                           // game switch events
 			LockedBalls[Player]++;
 			StartMultiball();}
 		else {
-			ActivateTimer(2000, 8, DelaySolenoid);}         // eject ball
+			if (Multiballs > 1) {														// multiball running?
+				BK_GiveMultiballs(0);}												// eject ball with some ado
+			else {
+				ActivateTimer(2000, 8, DelaySolenoid);}}      // eject ball
 		break;
 	case 25:
 	case 26:                                            // lower left drop targets
@@ -1127,7 +1125,7 @@ void HandleLock(byte Event) {
 	else {
 		DropWait[4] = false;}                             // clear ignore flag
 	if (Multiballs > 1) {                             	// multiball running
-		ClearLocks(0);}                                 	// eject balls
+		BK_GiveMultiballs(0);}                            // eject balls
 	else {                                            	// no multiball running
 		if (LockCount > InLock) {                         // more than before?
 			PlaySound(51, "BK_E13.bin");
@@ -1338,9 +1336,39 @@ void ClearLocks(byte Event) {
 		InLock = 0;
 		ActivateTimer(1000, 0, ClearLocks);}}
 
-void SetBonusMultiplier(byte Event) {                 // switch from blinking bonus multiplier lamp to permanent on
-	RemoveBlinkLamp(Event);
-	TurnOnLamp(Event);}
+void BK_CycleSwordLights(byte State) {								// do sword light effects - start with State = 1 and stop with State = 0
+	const byte SwordLamps[26][3] = {{1,0b00000000,0b00000000},{1,0b00000001,0b00000000},{1,0b00000011,0b00000000},{1,0b00000111,0b11110000},{1,0b00001111,0b11110000},{1,0b00011111,0b11110000},{1,0b00111111,0b11110000},{1,0b01111111,0b11110000},{1,0b11111111,0b11110000},{1,0b11111111,0b11110001},{1,0b11111111,0b11110011},{1,0b11111111,0b11110111},{1,0b11111111,0b11111111},
+			{0,0b11111111,0b11111111},{0,0b11111110,0b11111111},{0,0b11111100,0b11111111},{0,0b11111000,0b00001111},{0,0b11110000,0b00001111},{0,0b11100000,0b00001111},{0,0b11000000,0b00001111},{0,0b10000000,0b00001111},{0,0b00000000,0b00001111},{0,0b00000000,0b00001110},{0,0b00000000,0b00001100},{0,0b00000000,0b00001000},{0,0b00000000,0b00000000}};
+	static byte Timer = 0;
+	if ((State > 1) || ((State == 1) && !Timer)) {
+		if (State == 1) {
+			State++;}
+		if (SwordLamps[State-2][0]) {
+			TurnOnLamp(48);}
+		else {
+			TurnOffLamp(48);}
+		LampColumns[6] = SwordLamps[State-2][1];
+		LampColumns[7] = SwordLamps[State-2][2];
+		if (State < 27) {
+			State++;}
+		else {
+			State = 2;}
+		Timer = ActivateTimer(50, State, BK_CycleSwordLights);}
+	else {
+		if (!State) {
+			if (Timer) {
+				KillTimer(Timer);
+				Timer = 0;}
+			ShowBonus();
+			for (byte i=0; i<4; i++) {
+				if (i<BonusMultiplier-1) {
+					TurnOnLamp(61 + i);}
+				else {
+					TurnOffLamp(61 + i);}}}}}
+
+void SetBonusMultiplier(byte Lamp) {                 	// switch from blinking bonus multiplier lamp to permanent on
+	RemoveBlinkLamp(Lamp);
+	TurnOnLamp(Lamp);}
 
 void AddBonus(byte BonusPts) {
 	byte OldBonusToAdd = BonusToAdd;
@@ -1405,7 +1433,7 @@ void ShowBonus() {                                    // set lamps on bonus mete
 
 void BK_StartBgMusic() {
 	BK_PlayBgMusic(1);
-	AfterSound = BK_ResumeBgMusic;}
+	AfterMusic = BK_ResumeBgMusic;}
 
 void BK_ResumeBgMusic() {
 	BK_PlayBgMusic(0);}
