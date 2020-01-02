@@ -1233,6 +1233,7 @@ void ResetDropWait(byte Event) {                      // ensure waiting time to 
 void StartMultiball() {
 	ActivateSolenoid(0, 11);														// turn off GI
 	LockChaseLight(0);
+	RemoveBlinkLamp(40);                              	// turn off the blinking of the first lock arrow
 	LampPattern = NoLamps;
 	PlayFlashSequence((byte*) BK_ResetAllDropTargets);
 	ActivateTimer(800, 0, BK_Multiball2);}
@@ -1286,28 +1287,44 @@ void BK_Multiball2(byte Step) {
 	if (Step < 52) {
 		ActivateTimer(30, Step, BK_Multiball2);}
 	else {
+		WriteUpper2(" MULTI  BALL  ");                    // switch display to alternate buffer
+		DispRow1 = DisplayUpper2;
+		if (LastChance) {                                 // last chance active?
+			LastChance = false;                             // deactivate it
+			TurnOffLamp(11);
+			TurnOffLamp(12);}
+		//ActivateSolenoid(1000, 15);                         // ring the bell
+		TurnOffLamp(24);                                  // unlight lower lock
+		if (Multiballs == 3) {                     				// 2 or 3 ball multiball?
+			AddBlinkLamp(32, 500);}                         // let triple points lamp blink
+		else {
+			AddBlinkLamp(28, 500);}                         // let double points lamp blink
+		LockedBalls[Player] = 0;
+		ActivateTimer(3000, 1, SwitchDisplay);            // switch display back to main buffer in 3 seconds
+		BK_GiveMultiballs(0);}}
 
-	WriteUpper2(" MULTI  BALL  ");                     	// switch display to alternate buffer
-	DispRow1 = DisplayUpper2;
-	if (LastChance) {                                   // last chance active?
-		LastChance = false;                               // deactivate it
-		TurnOffLamp(11);
-		TurnOffLamp(12);}
-	//ActivateSolenoid(1000, 15);                         // ring the bell
-	TurnOffLamp(24);                                   	// unlight lower lock
-	if (LockedBalls[Player] == 3) {                     // 2 or 3 ball multiball?
-		Multiballs = 3;
-		AddBlinkLamp(32, 500);                            // let triple points lamp blink
-		RemoveBlinkLamp(40);                              // turn off the blinking of the first lock arrow
-		LockChaseLight(1);}
-	else {
-		Multiballs = 2;
-		AddBlinkLamp(28, 500);}                           // let double points lamp blink
-	LockedBalls[Player] = 0;
-	ActivateTimer(3000, 1, SwitchDisplay);              // switch display back to main buffer in 3 seconds
-	if (QuerySwitch(24)) {                              // for the lower elect hole
-		ActivateTimer(2000, 8, DelaySolenoid);}
-	ActivateTimer(3100, 0, ClearLocks);}}                // clear out balls after that
+void BK_GiveMultiballs(byte Step) {										// release locked balls with multiball effects
+	if (!Step) {
+		PlaySound(55, "BK_E17.bin");}
+	if (Step < 6) {																			// still in flickering phase?
+		if (Step & 1) {																		// flicker GI based on the LSB of Step
+			LampPattern = AllLamps;													// turn on all lamps
+			ReleaseSolenoid(11);														// turn on GI
+			ActivateTimer(120, Step+1, BK_GiveMultiballs);}
+		else {
+			LampPattern = NoLamps;													// turn off all lamps
+			ActivateSolenoid(0, 11);												// turn off GI
+			ActivateTimer(30, Step+1, BK_GiveMultiballs);}}
+	else {																							// time to release a ball
+		LampPattern = LampColumns;												// restore lamp states
+		if (QuerySwitch(24)) {                            // for the lower elect hole
+			if (QuerySwitch(41)) {													// additional ball in the upper lock?
+				ActivateTimer(2000, 0, BK_GiveMultiballs);}		// come back in 2 seconds to release it also
+			ActivateSolenoid(0, 8);}												// release ball from lower lock
+		else {																						// no ball in lower lock
+			if (QuerySwitch(42)) {													// more than 1 ball in the upper lock?
+				ActivateTimer(2000, 0, BK_GiveMultiballs);}		// come back in 2 seconds to release it also
+			ActivateSolenoid(0, 7);}}}                			// release ball from upper lock
 
 void ClearLocks(byte Event) {
 	UNUSED(Event);
