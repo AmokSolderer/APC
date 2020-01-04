@@ -326,7 +326,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 			StrobeLightsTimer = 0;
 			randomSeed(TC_ReadCV(TC2, 1));
 			AfterMusic = BK_StartBgMusic;
-			PlayRandomMusic(51, 4, (char *)BK_NewGameSounds);
+			PlayRandomMusic(61, 4, (char *)BK_NewGameSounds);
 			ShowLampPatterns(0);
 			RemoveBlinkLamp(4);
 			RemoveBlinkLamp(6);
@@ -1250,6 +1250,7 @@ void BK_Multiball2(byte Step) {
 	static byte Counter;
 	if (!Step) {
 		StopPlayingMusic();
+		AfterSound = 0;
 		PlaySound(55, "BK_E16.bin");
 		Counter = 0;
 		Step++;
@@ -1315,6 +1316,7 @@ void BK_Multiball2(byte Step) {
 void BK_GiveMultiballs(byte Step) {										// release locked balls with multiball effects
 	if (!Step) {
 		StopPlayingMusic();
+		AfterSound = BK_ResumeBgMusic;
 		PlaySound(55, "BK_E17.bin");}
 	if (Step < 6) {																			// still in flickering phase?
 		if (Step & 1) {																		// flicker GI based on the LSB of Step

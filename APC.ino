@@ -119,7 +119,7 @@ byte StopMusic = 0;																		// last music buffer block with music data
 bool StartMusic = false;															// music startup active -> filling music buffer
 bool PlayingMusic = false;														// StartMusic done -> continuously playing music
 File MusicFile;																				// file handle for the music file (SD)
-bool AfterMusicPending = false;												// indicates that there's an after music event to be executed
+byte AfterMusicPending = 0;														// indicates an after music event -> 0 - no event, 1 - event pending, 2 - event is blocked by StopPlayingMusic
 void (*AfterMusic)() = 0;															// program to execute after music file has ended
 const char *NextMusicName;														// points to the name of the next music file to be played (if any)
 byte MusicPriority = 0;																// stores the priority of the music file currently being played
@@ -129,7 +129,7 @@ byte StopSound = 0;																		// last sound buffer block with sound data
 bool StartSound = false;															// sound startup active -> filling sound buffer
 bool PlayingSound = false;														// StartSound done -> continuously playing sound
 File SoundFile;																				// file handle for the sound file (SD)
-bool AfterSoundPending = false;												// indicates that there's an after sound event to be executed
+byte AfterSoundPending = 0;														// indicates an after sound event -> 0 - no event, 1 - event pending, 2 - event is blocked by StopPlayingSound
 void (*AfterSound)() = 0;															// program to execute after sound file has ended
 byte SoundPriority = 0;																// stores the priority of the sound file currently being played
 bool SoundPrio = false;																// indicates which channel has to be processed first
@@ -638,16 +638,20 @@ void TC7_Handler() {                                  // interrupt routine - run
 						MBP = 0;																	// reset write pointer
 						MusicIRpos = 0;														// reset read pointer
 						StopMusic = 0;														// mark stop sequence as completed
-						if (AfterMusic) {													// anything to do after the music?
-							AfterMusicPending = true;}}}						// indicate now is the time to do so
+						if (AfterMusic && AfterMusicPending != 2) {	// anything to do after the music?
+							AfterMusicPending = 1;}									// indicate now is the time to do so
+						else {
+							AfterMusicPending = 0;}}}
 				if (StopSound) {															// end of sound file reached?
 					if (SoundIRpos == SBP) {										// remaining sound data played?
 						PlayingSound = false;											// stop playing sound
 						SBP = 0;																	// reset write pointer
 						SoundIRpos = 0;														// reset read pointer
 						StopSound = 0;														// mark stop sequence as completed
-						if (AfterSound) {													// anything to do after the sound?
-							AfterSoundPending = true;}}}}						// indicate now is the time to do so
+						if (AfterSound && AfterSoundPending != 2) {	// anything to do after the sound and not blocked by StopPlayingSound?
+							AfterSoundPending = 1;}									// indicate now is the time to do so
+						else {
+							AfterSoundPending = 0;}}}}
 			else {																					// playing music only
 				Buffer16b = (uint16_t *) g_Sound.next;				// same as above but music only
 				for (i=0; i<64; i++) {
@@ -666,8 +670,10 @@ void TC7_Handler() {                                  // interrupt routine - run
 						MBP = 0;
 						MusicIRpos = 0;
 						StopMusic = 0;
-						if (AfterMusic) {
-							AfterMusicPending = true;}}}}}
+						if (AfterMusic && AfterMusicPending != 2) {
+							AfterMusicPending = 1;}
+						else {
+							AfterMusicPending = 0;}}}}}
 		else {																						// not playing music
 			if (PlayingSound) {															// playing sound only
 				Buffer16b = (uint16_t *) g_Sound.next;				// same as above but sound only
@@ -687,8 +693,10 @@ void TC7_Handler() {                                  // interrupt routine - run
 						SBP = 0;
 						SoundIRpos = 0;
 						StopSound = 0;
-						if (AfterSound) {
-							AfterSoundPending = true;}}}}
+						if (AfterSound && AfterSoundPending != 2) {
+							AfterSoundPending = 1;}
+						else {
+							AfterSoundPending = 0;}}}}
 			else {																					// neither sound nor music
 				Buffer32b = g_Sound.next;
 				for (i=0; i<64; i++) {
@@ -733,31 +741,31 @@ void loop() {
 		if (!StopSound && (SBP != SoundIRpos)) {					// still sound data to read?
 			ReadSound();}																		// read it
 		else {																						// no sound data?
-			if (AfterSoundPending) {												// is there an after sound event pending?
-				AfterSoundPending = false;										// reset the flag
+			if (AfterSoundPending == 1) {										// is there an after sound event pending?
+				AfterSoundPending = 0;												// reset the flag
 				if (AfterSound) {															// really?
 					AfterSound();}}															// call it
 			else {																					// no after sound event
 				if (!StopMusic && (MBP != MusicIRpos)) {			// proceed with music
 					ReadMusic();}
 				else {																				// no music data?
-					if (AfterMusicPending) {										// is there an after music event pending?
-						AfterMusicPending = false;								// reset the flag
+					if (AfterMusicPending == 1) {								// is there an after music event pending?
+						AfterMusicPending = 0;								// reset the flag
 						if (AfterMusic) {													// really?
 							AfterMusic();}}}}}}											// call it
 	else {																							// same as above but with the priority on music
 		if (!StopMusic && (MBP != MusicIRpos)) {
 			ReadMusic();}
 		else {
-			if (AfterMusicPending) {
-				AfterMusicPending = false;
+			if (AfterMusicPending == 1) {
+				AfterMusicPending = 0;
 				if (AfterMusic) {
 					AfterMusic();}}
 			else {
 				if (!StopSound && (SBP != SoundIRpos)) {
 					ReadSound();}
-				if (AfterSoundPending) {
-					AfterSoundPending = false;
+				if (AfterSoundPending == 1) {
+					AfterSoundPending = 0;
 					if (AfterSound) {
 						AfterSound();}}}}}
 	if (SerialCommand && Serial.available()) {					// USB command mode
@@ -1695,6 +1703,7 @@ void PlayMusic(byte Priority, const char* Filename) {
 void StopPlayingMusic() {
 	if (StartMusic || PlayingMusic) {
 		MusicFile.close();
+		AfterMusicPending = 2;														// no AfterMusicEvent shall be executed
 		StopMusic = MBP;}}
 
 void PlayRandomMusic(byte Priority, byte Amount, char* List) {
@@ -1752,6 +1761,7 @@ void PlaySound(byte Priority, const char* Filename) {
 void StopPlayingSound() {
 	if (StartSound || PlayingSound) {
 		SoundFile.close();
+		AfterSoundPending = 2;														// no AfterSoundEvent shall be executed
 		StopSound = SBP;}}
 
 void PlayRandomSound(byte Priority, byte Amount, char* List) {
