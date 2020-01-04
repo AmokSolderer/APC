@@ -443,7 +443,8 @@ void NewBall(byte Balls) {                            // release ball (Event = e
 void CheckShooterLaneSwitch(byte Switch) {
 	if (Switch == 45) {                                 // shooter lane switch released?
 		Switch_Released = DummyProcess;
-		PlayMusic(50, "BK_E05.bin");
+		StopPlayingMusic();
+		PlaySound(50, "BK_E05.bin");
 		if (!BallWatchdogTimer) {
 			BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}}}
 
@@ -644,6 +645,7 @@ void GameMain(byte Event) {                           // game switch events
 			AddBlinkLamp(12, 150);}
 		break;
 	case 13:                                            // spinner
+		StopPlayingMusic();
 		PlaySound(51, "BK_E10.bin");
 		if (RightMysteryTimer) {
 			Points[Player] += Multiballs * 2500;}           // add 5000 points
@@ -709,6 +711,7 @@ void GameMain(byte Event) {                           // game switch events
 			AddBlinkLamp(FirstMultLamp+BonusMultiplier-2, 250);
 			ActivateTimer(2000, FirstMultLamp+BonusMultiplier-2, SetBonusMultiplier);}
 		if (LowerExBall[Player]) {
+			StopPlayingMusic();
 			PlaySound(51, "BK_E04.bin");
 			TurnOffLamp(23);
 			TurnOnLamp(47);
@@ -732,7 +735,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 26:                                            // lower left drop targets
 	case 27:
 		if (!DropWait[0]) {
-			PlayMusic(50, "BK_E09.bin");
+			PlaySound(50, "BK_E09.bin");
 			DropWait[0] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -742,7 +745,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 30:                                            // lower right drop targets
 	case 31:
 		if (!DropWait[1]) {
-			PlayMusic(50, "BK_E09.bin");
+			PlaySound(50, "BK_E09.bin");
 			DropWait[1] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -752,7 +755,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 34:                                            // upper left drop targets
 	case 35:
 		if (!DropWait[2]) {
-			PlayMusic(50, "BK_E09.bin");
+			PlaySound(50, "BK_E09.bin");
 			DropWait[2] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -766,7 +769,7 @@ void GameMain(byte Event) {                           // game switch events
 	case 38:                                            // upper right drop targets
 	case 39:
 		if (!DropWait[3]) {
-			PlayMusic(50, "BK_E09.bin");
+			PlaySound(50, "BK_E09.bin");
 			DropWait[3] = true;
 			Points[Player] += Multiballs * 1000;
 			ShowPoints(Player);
@@ -783,6 +786,7 @@ void GameMain(byte Event) {                           // game switch events
 		Points[Player] += Multiballs * 5000;
 		ShowPoints(Player);
 		if (UpperExBall[Player]) {												// upper extra ball lit?
+			StopPlayingMusic();
 			PlaySound(51, "BK_E04.bin");
 			TurnOffLamp(41);
 			TurnOnLamp(47);
@@ -790,7 +794,7 @@ void GameMain(byte Event) {                           // game switch events
 			UpperExBall[Player] = false;
 			ExBalls++;}
 		else {
-			PlayMusic(50, "BK_E09.bin");}
+			PlaySound(50, "BK_E09.bin");}
 		break;
 	case 65:
 		ActivateSolenoid(0, 17);
@@ -878,7 +882,10 @@ void BallEnd(byte Event) {
 			break;
 		case 2:                                           // end multiball
 			Multiballs = 1;
-			RemoveBlinkLamp(28);
+			BK_CycleSwordLights(0);													// stop sword lamp animation
+			RemoveBlinkLamp(28);														// stop blinking of double scoring lamp
+			ShowBonus();																		// restore bonus lamps
+			LockChaseLight(1);															// restart Lock lights
 			if (AppByte == 3) {                             // 3 balls in trunk?
 				ActivateTimer(1000, 0, BallEnd);}
 			else {
@@ -1128,6 +1135,7 @@ void HandleLock(byte Event) {
 		BK_GiveMultiballs(0);}                            // eject balls
 	else {                                            	// no multiball running
 		if (LockCount > InLock) {                         // more than before?
+			StopPlayingMusic();
 			PlaySound(51, "BK_E13.bin");
 			Points[Player] += 5000;
 			ShowPoints(Player);
@@ -1153,6 +1161,7 @@ void HandleLock(byte Event) {
 void HandleDropTargets(byte Event) {
 	DropWait[Event] = false;
 	if (QuerySwitch(DropTargets[Event]) && (QuerySwitch(DropTargets[Event]+1)) && (QuerySwitch(DropTargets[Event]+2))) { // all drop targets hit?
+		StopPlayingMusic();
 		PlaySound(51, "BK_E07.bin");
 		AddBonus(3);                                      // add 3K bonus
 		if (DropTimer[Event]) {
@@ -1209,6 +1218,7 @@ void HandleDropTargets(byte Event) {
 	else {                                              // not all targets cleared
 		if (QuerySwitch(DropTargets[Event]) || (QuerySwitch(DropTargets[Event]+1)) || (QuerySwitch(DropTargets[Event]+2))) { // any target down? (or false alarm)
 			if (!DropTimer[Event]) {                        // no timer running for this bank already?
+				StopPlayingMusic();
 				PlaySound(50, "BK_E14.bin");
 				DropTimer[Event] = ActivateTimer(6000, Event, BlinkFaster); // start one
 				AddBlinkLamp(DropLamp+Event, 500);}}}}        // and let the bank lamp blink
@@ -1239,6 +1249,7 @@ void StartMultiball() {
 void BK_Multiball2(byte Step) {
 	static byte Counter;
 	if (!Step) {
+		StopPlayingMusic();
 		PlaySound(55, "BK_E16.bin");
 		Counter = 0;
 		Step++;
@@ -1291,7 +1302,6 @@ void BK_Multiball2(byte Step) {
 			LastChance = false;                             // deactivate it
 			TurnOffLamp(11);
 			TurnOffLamp(12);}
-		//ActivateSolenoid(1000, 15);                         // ring the bell
 		TurnOffLamp(24);                                  // unlight lower lock
 		if (Multiballs == 3) {                     				// 2 or 3 ball multiball?
 			AddBlinkLamp(32, 500);}                         // let triple points lamp blink
@@ -1299,10 +1309,12 @@ void BK_Multiball2(byte Step) {
 			AddBlinkLamp(28, 500);}                         // let double points lamp blink
 		LockedBalls[Player] = 0;
 		ActivateTimer(3000, 1, SwitchDisplay);            // switch display back to main buffer in 3 seconds
-		BK_GiveMultiballs(0);}}
+		BK_CycleSwordLights(1);														// start sword lamp animation
+		ActivateTimer(1000, 0, BK_GiveMultiballs);}}
 
 void BK_GiveMultiballs(byte Step) {										// release locked balls with multiball effects
 	if (!Step) {
+		StopPlayingMusic();
 		PlaySound(55, "BK_E17.bin");}
 	if (Step < 6) {																			// still in flickering phase?
 		if (Step & 1) {																		// flicker GI based on the LSB of Step
@@ -1353,7 +1365,7 @@ void BK_CycleSwordLights(byte State) {								// do sword light effects - start 
 			State++;}
 		else {
 			State = 2;}
-		Timer = ActivateTimer(50, State, BK_CycleSwordLights);}
+		Timer = ActivateTimer(100, State, BK_CycleSwordLights);}
 	else {
 		if (!State) {
 			if (Timer) {
@@ -1433,7 +1445,8 @@ void ShowBonus() {                                    // set lamps on bonus mete
 
 void BK_StartBgMusic() {
 	BK_PlayBgMusic(1);
-	AfterMusic = BK_ResumeBgMusic;}
+	AfterMusic = BK_ResumeBgMusic;
+	AfterSound = BK_ResumeBgMusic;}
 
 void BK_ResumeBgMusic() {
 	BK_PlayBgMusic(0);}
