@@ -1120,14 +1120,14 @@ void AfterExBallRelease(byte Event) {
 
 void HandleLock(byte Event) {
 	UNUSED(Event);
-	AppBool = false;
+	bool Flag = false;
 	byte LockCount = 0;
 	for (i=0; i<3; i++) {                               // count balls in lock
 		if (QuerySwitch(41+i)) {
 			if (LockCount < i) {
-				AppBool = true;}                              // set warning flag
+				Flag = true;}                              		// set warning flag
 			LockCount++;}}
-	if (AppBool) {
+	if (Flag) {
 		ActivateTimer(1000, 0, HandleLock);}              // try again in 1s
 	else {
 		DropWait[4] = false;}                             // clear ignore flag
