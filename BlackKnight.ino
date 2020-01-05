@@ -241,14 +241,14 @@ void AttractLampCycle(byte Event) {                   // play multiple lamp patt
 
 void AttractScroll(byte Dummy) {
 	UNUSED(Dummy);
-	WriteUpper2("SPEZIAL       ");
+	WriteUpper2("    APC       ");
 	AddScrollUpper(0);}
 
 void AttractDisplayCycle(byte Event) {
 	CheckForLockedBalls(0);
 	switch (Event) {
 	case 0:
-		WriteUpper2(" FRANKS       ");
+		WriteUpper2("  THE         ");
 		ActivateTimer(50, 0, ScrollUpper);
 		ActivateTimer(900, 0, AttractScroll);
 		WriteLower2(" BLACK KNIGHT ");
@@ -325,8 +325,8 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
 		if (CountBallsInTrunk() == 3 || (CountBallsInTrunk() == 2 && QuerySwitch(45))) { // Ball missing?
 			StrobeLightsTimer = 0;
 			randomSeed(TC_ReadCV(TC2, 1));
-			AfterMusic = BK_StartBgMusic;
-			PlayRandomMusic(61, 4, (char *)BK_NewGameSounds);
+			AfterSound = BK_StartBgMusic;
+			PlayRandomSound(61, 4, (char *)BK_NewGameSounds);
 			ShowLampPatterns(0);
 			RemoveBlinkLamp(4);
 			RemoveBlinkLamp(6);
@@ -543,6 +543,23 @@ void CheckReleasedBall(byte Balls) {                  // ball release watchdog
 				ActivateSolenoid(0, 6);}}}                    // release again
 	CheckReleaseTimer = ActivateTimer(5000, Balls, CheckReleasedBall);}
 
+void BK_PlaySpinnerSound(byte Event) {								// play the sounds of the lit spinner - start with Event = 0
+	static byte TimerNo;
+	static byte Step = 0;
+	char Filename[12] = {"BK_SP01.bin"};
+	if (Event) {																				// called from timer (spinner not lit any more)
+		TimerNo = 0;
+		Step = 0;}
+	else {																							// called from spinner switch
+		if (TimerNo) {																		// not the first time
+			KillTimer(TimerNo);															// kill old timer
+			Filename[6] = (Step % 10) + 48;									// determine new filename
+			Filename[5] = (Step / 10) + 48;}
+		PlaySound(51, Filename);													// play sound
+		if (Step < 31) {																	// still soundfiles left?
+			Step++;}																				// increase filenumber
+		TimerNo = ActivateTimer(2000, 1, BK_PlaySpinnerSound);}}	// set timer to stop sound cycling
+
 void TimedRightMagna(byte dummy) {										// runs every second as long as button is pressed
 	UNUSED(dummy);
 	if (QuerySwitch(9) && RightMagna[Player]) {					// button still pressed and magna seconds left?
@@ -649,10 +666,11 @@ void GameMain(byte Event) {                           // game switch events
 		break;
 	case 13:                                            // spinner
 		StopPlayingMusic();
-		PlaySound(51, "BK_E10.bin");
 		if (RightMysteryTimer) {
-			Points[Player] += Multiballs * 2500;}           // add 5000 points
+			BK_PlaySpinnerSound(0);
+			Points[Player] += Multiballs * 2500;}           // add 2500 points
 		else {
+			PlaySound(51, "BK_E10.bin");
 			Points[Player] += Multiballs * 100;}            // add 100 points
 		ShowPoints(Player);                               // and show the score
 		break;
@@ -684,7 +702,7 @@ void GameMain(byte Event) {                           // game switch events
 			Points[Player] += Multiballs * 10000;}          // add 10000 points
 		else {
 			StopPlayingMusic();
-			PlaySound(51, "BK_E05.bin");
+			PlaySound(50, "BK_E05.bin");
 			AddBonus(2);
 			Points[Player] += Multiballs * 2000;}           // add 2000 points
 		ShowPoints(Player);                               // and show the score
@@ -702,7 +720,7 @@ void GameMain(byte Event) {                           // game switch events
 			Points[Player] += Multiballs * 10000;}          // add 10000 points
 		else {
 			StopPlayingMusic();
-			PlaySound(51, "BK_E05.bin");
+			PlaySound(50, "BK_E05.bin");
 			AddBonus(2);
 			Points[Player] += Multiballs * 2000;}           // add 2000 points
 		ShowPoints(Player);                               // and show the score
@@ -722,15 +740,19 @@ void GameMain(byte Event) {                           // game switch events
 		if (BonusMultiplier < 5) {
 			BonusMultiplier++;
 			AddBlinkLamp(FirstMultLamp+BonusMultiplier-2, 250);
-			ActivateTimer(2000, FirstMultLamp+BonusMultiplier-2, SetBonusMultiplier);}
+			ActivateTimer(2000, FirstMultLamp+BonusMultiplier-2, SetBonusMultiplier);
+			if ((BonusMultiplier == 5) && (Bonus == 49)) {	// full bonus and multiplier?
+				BK_CycleSwordLights(1);}}
 		if (LowerExBall[Player]) {
-			StopPlayingMusic();
-			PlaySound(51, "BK_E04.bin");
+			ActivateSolenoid(5000, 15);											// ring the bell
+																	// TODO add animation
 			TurnOffLamp(23);
 			TurnOnLamp(47);
 			TurnOnLamp(1);
 			LowerExBall[Player] = false;
 			ExBalls++;}
+		else {
+			PlaySound(51, "BK_E09.bin");}
 		break;
 	case 24:                                            // lower eject hole
 		Points[Player] += Multiballs * 5000;
@@ -802,7 +824,8 @@ void GameMain(byte Event) {                           // game switch events
 		ShowPoints(Player);
 		if (UpperExBall[Player]) {												// upper extra ball lit?
 			StopPlayingMusic();
-			PlaySound(51, "BK_E04.bin");
+			ActivateSolenoid(5000, 15);											// ring the bell
+																			// TODO add animation
 			TurnOffLamp(41);
 			TurnOnLamp(47);
 			TurnOnLamp(1);
@@ -928,6 +951,10 @@ void BallEnd(byte Event) {
 				LastChanceActive = false;
 				BonusToAdd = Bonus;
 				BonusCountTime = 20;
+				BK_CycleSwordLights(0);
+				AfterSound = 0;
+				AfterMusic = 0;
+				StopPlayingMusic();
 				PlaySound(60, "BK_E18.bin");									// play bonus count sound
 				CountBonus(AppByte);}}}}
 
@@ -1220,6 +1247,7 @@ void HandleDropTargets(byte Event) {
 							TurnOffLamp(DropTargets[i]+1);
 							TurnOffLamp(DropTargets[i]+2);}
 						TurnOnLamp(23);                          	// turn on the lower extra ball lamp
+						PlaySound(51, "BK_E04.bin");							// cheering
 						LowerExBall[Player] = true;}}             // and enable the lower extra ball
 				else {                                        // if the player didn't get an extra ball yet
 					for (byte Counter=0 ; Counter < 2; Counter++) {
@@ -1230,6 +1258,7 @@ void HandleDropTargets(byte Event) {
 								TurnOffLamp(DropTargets[Counter*2+i]+1);
 								TurnOffLamp(DropTargets[Counter*2+i]+2);}
 							TurnOnLamp(41);                        	// turn on the upper extra ball lamp
+							PlaySound(51, "BK_E04.bin");						// cheering
 							PlayersExBalls[Player] = true;
 							UpperExBall[Player] = true;}}}}}}
 	else {                                              // not all targets cleared
@@ -1256,6 +1285,10 @@ void ResetDropWait(byte Event) {                      // ensure waiting time to 
 	DropWait[Event] = false;}
 
 void StartMultiball() {
+	if (LockedBalls[Player] == 3) {               			// 2 or 3 ball multiball?
+		Multiballs = 3;}
+	else {
+		Multiballs = 2;}
 	ActivateSolenoid(0, 11);														// turn off GI
 	LockChaseLight(0);
 	RemoveBlinkLamp(40);                              	// turn off the blinking of the first lock arrow
@@ -1291,11 +1324,9 @@ void BK_Multiball2(byte Step) {
 			if (Step == 26) {																// all lamps on
 				Counter = 0;
 				Step++;
-				if (LockedBalls[Player] == 3) {               // 2 or 3 ball multiball?
-					Multiballs = 3;
+				if (Multiballs == 3) {               					// 2 or 3 ball multiball?
 					PlaySound(55, "BK_S17.bin");}								// fight against three enemies
 				else {
-					Multiballs = 2;
 					PlaySound(55, "BK_S01.bin");}}							// fight against two enemies
 			else {
 				switch (Counter) {
@@ -1345,6 +1376,7 @@ void BK_GiveMultiballs(byte Step) {										// release locked balls with multib
 			ActivateSolenoid(0, 11);												// turn off GI
 			ActivateTimer(30, Step+1, BK_GiveMultiballs);}}
 	else {																							// time to release a ball
+		InLock = 0;																				// reset locked balls counter
 		LampPattern = LampColumns;												// restore lamp states
 		if (QuerySwitch(24)) {                            // for the lower elect hole
 			if (QuerySwitch(41)) {													// additional ball in the upper lock?
@@ -1404,14 +1436,18 @@ void SetBonusMultiplier(byte Lamp) {                 	// switch from blinking bo
 void AddBonus(byte BonusPts) {
 	byte OldBonusToAdd = BonusToAdd;
 	if (Bonus < 49) {
-		if (Bonus+BonusPts > 49) {
+		if (Bonus+BonusPts > 49) {												// full bonus reached?
 			BonusToAdd += 49 - Bonus;
-			Bonus = 49;}
+			Bonus = 49;
+			if (BonusMultiplier == 5) {											// multiplier = 5?
+				BK_CycleSwordLights(1);}}											// start sword lamp animation
 		else {
 			BonusToAdd += BonusPts;
 			Bonus += BonusPts;}
 		if (BonusToAdd && !OldBonusToAdd) {
-			ClearBonusLight(0);}}}
+			ClearBonusLight(0);}}
+	else {																							// full bonus
+	}}
 
 void ClearBonusLight(byte Step) {
 	if (Step == 10) {
