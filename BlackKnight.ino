@@ -637,9 +637,12 @@ void GameMain(byte Event) {                           // game switch events
 		Points[Player] += Multiballs * 5000;              // add 5000 points
 		ShowPoints(Player);                               // and show the score
 		AddBonus(2);
+		if (RightAfterMagna || LeftAfterMagna) {          // if it's right after using the right magna save
+			StopPlayingMusic();
+			PlaySound(51, "BK_S09.bin");}										// BK laughing
 		if (LastChance) {
 			LastChance = false;
-			LastChanceOver = true;                          // dont give a last chance again
+			LastChanceOver = true;                          // don't give a last chance again
 			LastChanceActive = true;                        // give a last chance ball
 			AddBlinkLamp(11, 150);                          // let the last chance lamps blink
 			AddBlinkLamp(12, 150);}
@@ -655,6 +658,8 @@ void GameMain(byte Event) {                           // game switch events
 		break;
 	case 14:                                            // right ramp
 		if (LeftMysteryTimer) {                           // left mystery active?
+			StopPlayingMusic();
+			PlaySound(51, "BK_E19.bin");
 			ByteBuffer = ((byte)(TimerValue[LeftMysteryTimer])/2.56);
 			if (ByteBuffer < 20) {
 				Points[Player] += Multiballs * 20000;}        // at least 20000 points
@@ -673,9 +678,13 @@ void GameMain(byte Event) {                           // game switch events
 		else {
 			AddBlinkLamp(13, 250);}                         // let the mystery lamp blink
 		if (RightAfterMagna) {                            // if it's right after using the right magna save
+			StopPlayingMusic();
+			PlaySound(51, "BK_E20.bin");
 			AddBonus(5);
 			Points[Player] += Multiballs * 10000;}          // add 10000 points
 		else {
+			StopPlayingMusic();
+			PlaySound(51, "BK_E05.bin");
 			AddBonus(2);
 			Points[Player] += Multiballs * 2000;}           // add 2000 points
 		ShowPoints(Player);                               // and show the score
@@ -687,9 +696,13 @@ void GameMain(byte Event) {                           // game switch events
 		else {
 			AddBlinkLamp(14, 250);}                         // let the mystery lamp blink
 		if (LeftAfterMagna) {                             // if it's right after using the right magna save
+			StopPlayingMusic();
+			PlaySound(51, "BK_E20.bin");
 			AddBonus(5);
 			Points[Player] += Multiballs * 10000;}          // add 10000 points
 		else {
+			StopPlayingMusic();
+			PlaySound(51, "BK_E05.bin");
 			AddBonus(2);
 			Points[Player] += Multiballs * 2000;}           // add 2000 points
 		ShowPoints(Player);                               // and show the score
@@ -729,7 +742,9 @@ void GameMain(byte Event) {                           // game switch events
 			if (Multiballs > 1) {														// multiball running?
 				BK_GiveMultiballs(0);}												// eject ball with some ado
 			else {
-				ActivateTimer(2000, 8, DelaySolenoid);}}      // eject ball
+				StopPlayingMusic();
+				PlaySound(51, "BK_E03.bin");
+				ActivateTimer(500, 8, DelaySolenoid);}}      // eject ball
 		break;
 	case 25:
 	case 26:                                            // lower left drop targets
@@ -913,6 +928,7 @@ void BallEnd(byte Event) {
 				LastChanceActive = false;
 				BonusToAdd = Bonus;
 				BonusCountTime = 20;
+				PlaySound(60, "BK_E18.bin");									// play bonus count sound
 				CountBonus(AppByte);}}}}
 
 void CountBonus(byte Balls) {
@@ -943,6 +959,7 @@ void CountBonus(byte Balls) {
 		else {
 			BonusToAdd = 0;
 			Bonus = 1;
+			PlaySound(60, "BK_E18a.bin");										// play bonus end sound
 			BallEnd2(Balls);}}}
 
 void BallEnd2(byte Balls) {
