@@ -1968,7 +1968,7 @@ void HandleTextSetting(bool change) {									// handling method for text settin
 void HandleVolumeSetting(bool change) {
 	HandleNumSetting(change);
 	if (!change) {
-		PlayMusic(50, "MUSIC.BIN");}
+		PlayMusic(90, "MUSIC.BIN");}
 	analogWrite(VolumePin,255-APC_settings[Volume]);}   // adjust PWM to volume setting
 
 byte HandleHighScores(unsigned int Score) {
