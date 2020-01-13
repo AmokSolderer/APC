@@ -750,7 +750,7 @@ void loop() {
 					ReadMusic();}
 				else {																				// no music data?
 					if (AfterMusicPending == 1) {								// is there an after music event pending?
-						AfterMusicPending = 0;								// reset the flag
+						AfterMusicPending = 0;										// reset the flag
 						if (AfterMusic) {													// really?
 							AfterMusic();}}}}}}											// call it
 	else {																							// same as above but with the priority on music

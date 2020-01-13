@@ -1501,9 +1501,9 @@ void AddBonus(byte BonusPts) {
 		if (BonusToAdd && !OldBonusToAdd) {
 			ClearBonusLight(0);}}
 	else {																							// full bonus
-		if (BonusMultiplier == 5) {												// multiplier = 5?
+		if (BonusMultiplier == 5 && Multiballs == 1) {		// multiplier = 5 and no multiball running?
 			ActivateSolenoid(0, 11);
-			ActivateSolenoid(1000, 15);
+			ActivateSolenoid(800, 15);
 			BK_PlayFullBonusEffect(0);}}}
 
 void ClearBonusLight(byte Step) {
@@ -1876,6 +1876,7 @@ void SoundTest_Enter(byte Switch) {
 	switch (Switch) {
 	case 72:
 		analogWrite(VolumePin,255);												// set volume to zero
+		StopPlayingSound();
 		ReleaseSolenoid(23);                            	// disable flipper fingers
 		ReleaseSolenoid(24);
 		GameDefinition.AttractMode();
