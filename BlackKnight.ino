@@ -646,6 +646,26 @@ void GameMain(byte Event) {                           // game switch events
 		WriteUpper(" FREE   GAME  ");
 		ActivateTimer(3000, 0, ShowAllPoints);
 		break;
+	case 8:
+		Serial.print("MBP = ");
+		Serial.println(MBP);
+		Serial.print("StopMusic = ");
+		Serial.println(StopMusic);
+		Serial.print("PlayingMusic = ");
+		Serial.println(PlayingMusic);
+		Serial.print("StartMusic = ");
+		Serial.println(StartMusic);
+		Serial.print("AfterMusicPending = ");
+		Serial.println(AfterMusicPending);
+		Serial.print("MusicIRpos = ");
+		Serial.println(MusicIRpos);
+		Serial.print("AfterMusic = ");
+		if (AfterMusic) {
+			Serial.println("True");}
+		else {
+			Serial.println("False");}
+
+		break;
 	case 9:                                             // right magna save button
 		if (RightMagna[Player]) {                         // right magna save available?
 			if (!game_settings[TimedMagna]) {								// no timed magna save

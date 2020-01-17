@@ -1633,26 +1633,29 @@ void ShowFileNotFound(String Filename) {							// show file not found message
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being one - stop with step being zero
 	static byte Timer = 0;
-	unsigned int Buffer = (PatPointer+Step-1)->Duration;  // buffer the duration for the current pattern
-	if (!Step) {																				// kill signal received?
-		if (Timer) {
-			KillTimer(Timer);
-			Timer = 0;}}
-	else {																							// no kill signal
+	if ((Step > 1) || (Step ==1 && !Timer)) {						// no kill signal
+		if (Step == 1) {
+			Step++;}
+		unsigned int Buffer = (PatPointer+Step-2)->Duration;  // buffer the duration for the current pattern
 		if (StrobeLightsTimer) {
-			LampBuffer = ((PatPointer+Step-1)->Pattern)-1;} // show the pattern
+			LampBuffer = ((PatPointer+Step-2)->Pattern)-1;} // show the pattern
 		else {
-			LampPattern = ((PatPointer+Step-1)->Pattern)-1;}// show the pattern
+			LampPattern = ((PatPointer+Step-2)->Pattern)-1;}// show the pattern
 		Step++;                                           // increase the pattern number
 		if (!((PatPointer+Step-1)->Duration)) {           // if the duration for the next pattern is 0
-			Step = 1;                                       // reset the pattern
+			Step = 2;                                       // reset the pattern
 			FlowRepeat--;                                   // decrease the number of repetitions
 			if (!FlowRepeat) {                              // if no more repetitions pending
 				Timer = 0;																		// indicate that the process has stopped
 				if (LampReturn) {                             // is a return pointer given?
 					LampReturn(0);}                             // call the procedure
 				return;}}                                     // otherwise just quit
-		Timer = ActivateTimer(Buffer, Step, ShowLampPatterns);}} // come back after the given duration
+		Timer = ActivateTimer(Buffer, Step, ShowLampPatterns);}	// come back after the given duration
+	else {																							// kill signal
+		if (!Step) {
+			if (Timer) {
+				KillTimer(Timer);
+				Timer = 0;}}}}
 
 void StrobeLights(byte State) {
 	if (State) {
@@ -1703,8 +1706,12 @@ void PlayMusic(byte Priority, const char* Filename) {
 void StopPlayingMusic() {
 	if (StartMusic || PlayingMusic) {
 		MusicFile.close();
-		AfterMusicPending = 2;														// no AfterMusicEvent shall be executed
-		StopMusic = MBP;}}
+		if (StartMusic) {																	// during startup
+			StartMusic = 0;																	// cancel startup
+			MBP = 0;}																				// neglect data
+		else {
+			AfterMusicPending = 2;													// no AfterMusicEvent shall be executed
+			StopMusic = MBP;}}}															// play the remaining data
 
 void PlayRandomMusic(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
@@ -1761,8 +1768,12 @@ void PlaySound(byte Priority, const char* Filename) {
 void StopPlayingSound() {
 	if (StartSound || PlayingSound) {
 		SoundFile.close();
-		AfterSoundPending = 2;														// no AfterSoundEvent shall be executed
-		StopSound = SBP;}}
+		if (StartSound) {																	// during startup
+			StartSound = 0;																	// cancel startup
+			SBP = 0;}																				// neglect data
+		else {
+			AfterSoundPending = 2;													// no AfterSoundEvent shall be executed
+			StopSound = SBP;}}}
 
 void PlayRandomSound(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
