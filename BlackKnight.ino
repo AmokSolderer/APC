@@ -37,8 +37,8 @@ const byte BK_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0};
 
-char TxTJackpot[4][15] = {{"           OFF"},{"        500000"},{"        750000"},{"       1000000"}};
-char TxTReplayScore[4][15] = {{"       1000000"},{"       1500000"},{"       2000000"},{"       2500000"}};
+char TxTJackpot[4][17] = {{"             OFF"},{"          500000"},{"          750000"},{"         1000000"}};
+char TxTReplayScore[4][17] = {{"         1000000"},{"         1500000"},{"         2000000"},{"         2500000"}};
 
 struct SettingTopic BK_setList[7] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
 																		{" REPLAY SCORE ",HandleTextSetting,&TxTReplayScore[0][0],0,3},
@@ -50,18 +50,18 @@ struct SettingTopic BK_setList[7] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
 
 																//  Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
 																//  Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
-const struct LampPat ExBallPat[13] =   {{50,0b00000000,0b00000000,0b00000000,0b00000000,0b01000000,0b00000000,0b00000000},
-																				{50,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
-																				{50,0b00001000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
-																				{50,0b00100000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
-																				{50,0b00000000,0b00000000,0b00010000,0b00000000,0b00000000,0b00000000,0b00000000},
-																				{50,0b00000000,0b00000000,0b00100000,0b00000000,0b00000000,0b00000000,0b00000000},
-																				{50,0b00000000,0b00000000,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000},
-																				{50,0b00000000,0b00000000,0b00000100,0b00000000,0b00000000,0b00000000,0b00000000},
-																				{50,0b00000000,0b00000000,0b00000010,0b00000000,0b00000000,0b00000000,0b00000000},
-																				{50,0b00000000,0b00000000,0b00000001,0b00000000,0b00000000,0b00000000,0b00000000},
-																				{50,0b00000100,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
-																				{50,0b10000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+const struct LampPat ExBallPat[13] =   {{50,0b10000000,0b00000000,0b00000000,0b00000000,0b01000000,0b00000000,0b00000000},
+																				{50,0b01000000,0b00000000,0b00000000,0b00000000,0b01000000,0b00000000,0b00000000},
+																				{50,0b01001000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+																				{50,0b00101000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+																				{50,0b00100000,0b00000000,0b00010000,0b00000000,0b00000000,0b00000000,0b00000000},
+																				{50,0b00000000,0b00000000,0b00110000,0b00000000,0b00000000,0b00000000,0b00000000},
+																				{50,0b00000000,0b00000000,0b01100000,0b00000000,0b00000000,0b00000000,0b00000000},
+																				{50,0b00000000,0b00000000,0b01000100,0b00000000,0b00000000,0b00000000,0b00000000},
+																				{50,0b00000000,0b00000000,0b00000110,0b00000000,0b00000000,0b00000000,0b00000000},
+																				{50,0b00000000,0b00000000,0b00000011,0b00000000,0b00000000,0b00000000,0b00000000},
+																				{50,0b00000100,0b00000000,0b00000001,0b00000000,0b00000000,0b00000000,0b00000000},
+																				{50,0b10000100,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
 																				{0,0,0,0,0,0,0,0}};
 
 const struct LampPat AttractPat1[52] = {{30,0b00000000,0b00000000,0b00000000,0b00000000,0b01000000,0b00000000,0b00000000},
@@ -586,6 +586,13 @@ void BK_StopExballParty(byte dummy){
 	LampReturn = 0;
 	LampPattern = LampColumns;}
 
+void BK_StopExballParty2(byte dummy){
+	UNUSED(dummy);
+	LampReturn = 0;
+	LampPattern = LampColumns;
+	ReleaseSolenoid(15);
+	PlaySound(51, "BK_S02.bin");}
+
 void TimedRightMagna(byte dummy) {										// runs every second as long as button is pressed
 	UNUSED(dummy);
 	if (QuerySwitch(9) && RightMagna[Player]) {					// button still pressed and magna seconds left?
@@ -790,10 +797,10 @@ void GameMain(byte Event) {                           // game switch events
 			if ((BonusMultiplier == 5) && (Bonus == 49)) {	// full bonus and multiplier?
 				BK_CycleSwordLights(1);}}
 		if (LowerExBall[Player]) {
-			ActivateSolenoid(6000, 15);											// ring the bell
+			ActivateSolenoid(8000, 15);											// ring the bell
 			PatPointer = ExBallPat;
 			FlowRepeat = 10;
-			LampReturn = BK_StopExballParty;
+			LampReturn = BK_StopExballParty2;
 			ShowLampPatterns(1);														// show lamp animation
 			TurnOffLamp(23);
 			TurnOnLamp(47);
@@ -874,10 +881,10 @@ void GameMain(byte Event) {                           // game switch events
 		ShowPoints(Player);
 		if (UpperExBall[Player]) {												// upper extra ball lit?
 			StopPlayingMusic();
-			ActivateSolenoid(6000, 15);											// ring the bell
+			ActivateSolenoid(8000, 15);											// ring the bell
 			PatPointer = ExBallPat;
 			FlowRepeat = 10;
-			LampReturn = BK_StopExballParty;
+			LampReturn = BK_StopExballParty2;
 			ShowLampPatterns(1);														// show lamp animation
 			TurnOffLamp(41);
 			TurnOnLamp(47);
@@ -1425,30 +1432,37 @@ void BK_Multiball2(byte Step) {
 		ActivateTimer(500, 0, BK_GiveMultiballs);}}
 
 void BK_GiveMultiballs(byte Step) {										// release locked balls with multiball effects
+	static bool running;
 	if (!Step) {
+		if (running) {
+			return;}
 		StopPlayingMusic();
 		AfterSound = BK_ResumeBgMusic;
+		running = true;
 		PlaySound(55, "BK_E17.bin");}
-	if (Step < 6) {																			// still in flickering phase?
-		if (Step & 1) {																		// flicker GI based on the LSB of Step
-			LampPattern = AllLamps;													// turn on all lamps
-			ReleaseSolenoid(11);														// turn on GI
-			ActivateTimer(120, Step+1, BK_GiveMultiballs);}
-		else {
-			LampPattern = NoLamps;													// turn off all lamps
-			ActivateSolenoid(0, 11);												// turn off GI
-			ActivateTimer(30, Step+1, BK_GiveMultiballs);}}
-	else {																							// time to release a ball
-		InLock = 0;																				// reset locked balls counter
-		LampPattern = LampColumns;												// restore lamp states
-		if (QuerySwitch(24)) {                            // for the lower elect hole
-			if (QuerySwitch(41)) {													// additional ball in the upper lock?
-				ActivateTimer(2000, 0, BK_GiveMultiballs);}		// come back in 2 seconds to release it also
-			ActivateSolenoid(0, 8);}												// release ball from lower lock
-		else {																						// no ball in lower lock
-			if (QuerySwitch(42)) {													// more than 1 ball in the upper lock?
-				ActivateTimer(2000, 0, BK_GiveMultiballs);}		// come back in 2 seconds to release it also
-			ActivateSolenoid(0, 7);}}}                			// release ball from upper lock
+	if (running) {
+		if (Step < 6) {																		// still in flickering phase?
+			if (Step & 1) {																	// flicker GI based on the LSB of Step
+				LampPattern = AllLamps;												// turn on all lamps
+				ReleaseSolenoid(11);													// turn on GI
+				ActivateTimer(120, Step+1, BK_GiveMultiballs);}
+			else {
+				LampPattern = NoLamps;												// turn off all lamps
+				ActivateSolenoid(0, 11);											// turn off GI
+				ActivateTimer(30, Step+1, BK_GiveMultiballs);}}
+		else {																						// time to release a ball
+			InLock = 0;																			// reset locked balls counter
+			LampPattern = LampColumns;											// restore lamp states
+			if (QuerySwitch(24)) {                          // for the lower elect hole
+				if (QuerySwitch(41)) {												// additional ball in the upper lock?
+					ActivateTimer(2000, 0, BK_GiveMultiballs);}	// come back in 2 seconds to release it also
+				running = false;
+				ActivateSolenoid(0, 8);}											// release ball from lower lock
+			else {																					// no ball in lower lock
+				if (QuerySwitch(42)) {												// more than 1 ball in the upper lock?
+					ActivateTimer(2000, 0, BK_GiveMultiballs);}	// come back in 2 seconds to release it also
+				running = false;
+				ActivateSolenoid(0, 7);}}}}                		// release ball from upper lock
 
 void ClearLocks(byte Event) {
 	UNUSED(Event);
