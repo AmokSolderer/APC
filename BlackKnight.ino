@@ -816,6 +816,7 @@ void GameMain(byte Event) {                           // game switch events
 			ShowPoints(Player);
 			if (QueryLamp(24)) {              							// lower lock lit?
 				LockedBalls[Player]++;
+				DropWait[4] = true;														// block locks
 				StartMultiball();}
 			else {
 				if (Multiballs > 1) {													// multiball running?
@@ -1431,38 +1432,35 @@ void BK_Multiball2(byte Step) {
 		DropWait[4] = false;                            	// clear ignore flag
 		ActivateTimer(500, 0, BK_GiveMultiballs);}}
 
-void BK_GiveMultiballs(byte Step) {										// release locked balls with multiball effects
-	static bool running;
-	if (!Step) {
-		if (running) {
-			return;}
-		StopPlayingMusic();
-		AfterSound = BK_ResumeBgMusic;
-		running = true;
-		PlaySound(55, "BK_E17.bin");}
-	if (running) {
-		if (Step < 6) {																		// still in flickering phase?
-			if (Step & 1) {																	// flicker GI based on the LSB of Step
-				LampPattern = AllLamps;												// turn on all lamps
-				ReleaseSolenoid(11);													// turn on GI
-				ActivateTimer(120, Step+1, BK_GiveMultiballs);}
-			else {
-				LampPattern = NoLamps;												// turn off all lamps
-				ActivateSolenoid(0, 11);											// turn off GI
-				ActivateTimer(30, Step+1, BK_GiveMultiballs);}}
-		else {																						// time to release a ball
-			InLock = 0;																			// reset locked balls counter
-			LampPattern = LampColumns;											// restore lamp states
-			if (QuerySwitch(24)) {                          // for the lower elect hole
-				if (QuerySwitch(41)) {												// additional ball in the upper lock?
-					ActivateTimer(2000, 0, BK_GiveMultiballs);}	// come back in 2 seconds to release it also
-				running = false;
-				ActivateSolenoid(0, 8);}											// release ball from lower lock
-			else {																					// no ball in lower lock
-				if (QuerySwitch(42)) {												// more than 1 ball in the upper lock?
-					ActivateTimer(2000, 0, BK_GiveMultiballs);}	// come back in 2 seconds to release it also
-				running = false;
-				ActivateSolenoid(0, 7);}}}}                		// release ball from upper lock
+void BK_GiveMultiballs(byte Step) {										// release locked balls with multiball effects - call with Step = 1
+	if ((Step > 1) || ((Step == 1) && !DropWait[4])) {
+		if (Step == 1) {																	// start nre cycle
+			StopPlayingMusic();
+			AfterSound = BK_ResumeBgMusic;
+			DropWait[4] = true;
+			PlaySound(55, "BK_E17.bin");}
+		else {
+			if (Step < 7) {																	// still in flickering phase?
+				if (Step & 1) {																// flicker GI based on the LSB of Step
+					LampPattern = NoLamps;											// turn off all lamps
+					ActivateSolenoid(0, 11);										// turn off GI
+					ActivateTimer(30, Step+1, BK_GiveMultiballs);}
+				else {
+					LampPattern = AllLamps;											// turn on all lamps
+					ReleaseSolenoid(11);												// turn on GI
+					ActivateTimer(120, Step+1, BK_GiveMultiballs);}}
+			else {																					// time to release a ball
+				InLock = 0;																		// reset locked balls counter
+				LampPattern = LampColumns;										// restore lamp states
+				if (QuerySwitch(24)) {                        // for the lower elect hole
+					ActivateTimer(2000, 1, BK_GiveMultiballs);	// come back in 2 seconds to check again
+					ActivateSolenoid(0, 8);}										// release ball from lower lock
+				else {																				// no ball in lower lock
+					if (QuerySwitch(41)) {											// ball in the upper lock?
+						ActivateTimer(2000, 1, BK_GiveMultiballs);// come back in 2 seconds to check again
+						ActivateSolenoid(0, 7);}									// release ball from upper lock
+					else {
+						DropWait[4] = false;}}}}}}
 
 void ClearLocks(byte Event) {
 	UNUSED(Event);
@@ -1514,10 +1512,10 @@ void BK_PlayFullBonusEffect(byte Step) {
 	if (Step < 8) {																			// still in flickering phase?
 		if (Step & 1) {																		// flicker lamps based on the LSB of Step
 			LampPattern = LampColumns;											// turn on lamps
-			ActivateTimer(120, Step+1, BK_GiveMultiballs);}
+			ActivateTimer(120, Step+1, BK_PlayFullBonusEffect);}
 		else {
 			LampPattern = NoLamps;													// turn off all lamps
-			ActivateTimer(30, Step+1, BK_GiveMultiballs);}}
+			ActivateTimer(30, Step+1, BK_PlayFullBonusEffect);}}
 	else {
 		ReleaseSolenoid(11);}}
 
