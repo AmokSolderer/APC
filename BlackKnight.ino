@@ -22,7 +22,8 @@ byte DropHits[16];                                    // counts how often the ta
 bool DropWait[5];																			// indicates that a waiting time for this drop target bank is active before it it being processed
 const byte BallSearchCoils[12] = {1,8,10,9,2,3,4,5,7,19,15,0}; // coils to fire when the ball watchdog timer runs out
 const unsigned int BK_SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,0,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
-
+const char BK_TestSounds[21][15] = {{"BK_E01.BIN"},{"BK_E02.BIN"},{"BK_E03.BIN"},{"BK_E04.BIN"},{"BK_E05.BIN"},{"BK_E06.BIN"},{"BK_E07.BIN"},{"BK_E08.BIN"},
+		{"BK_E09.BIN"},{"BK_E10.BIN"},{"BK_E11.BIN"},{"BK_E12.BIN"},{"BK_E13.BIN"},{"BK_E14.BIN"},{"BK_E15.BIN"},{"BK_E16.BIN"},{"BK_E17.BIN"},{"BK_E18.BIN"},{"BK_E18a.BIN"},{"BK_E19.BIN"},0};
 																											// offsets of settings in the settings array
 const byte TimedMagna = 0;                            // Timed Magna saves?
 const byte ReplayScore = 1;														// without credits being implemented just show some respect
@@ -591,7 +592,8 @@ void BK_StopExballParty2(byte dummy){
 	LampReturn = 0;
 	LampPattern = LampColumns;
 	ReleaseSolenoid(15);
-	PlaySound(51, "BK_S02.bin");}
+	StopPlayingMusic();
+	PlaySound(61, "BK_S02.bin");}
 
 void TimedRightMagna(byte dummy) {										// runs every second as long as button is pressed
 	UNUSED(dummy);
@@ -708,7 +710,7 @@ void GameMain(byte Event) {                           // game switch events
 		AddBonus(2);
 		if (RightAfterMagna || LeftAfterMagna) {          // if it's right after using the right magna save
 			StopPlayingMusic();
-			PlaySound(51, "BK_S09.bin");}										// BK laughing
+			PlaySound(61, "BK_S09.bin");}										// BK laughing
 		if (LastChance) {
 			LastChance = false;
 			LastChanceOver = true;                          // don't give a last chance again
@@ -717,7 +719,7 @@ void GameMain(byte Event) {                           // game switch events
 			AddBlinkLamp(12, 150);}
 		break;
 	case 13:                                            // spinner
-		StopPlayingMusic();
+		//StopPlayingMusic();
 		if (RightMysteryTimer) {
 			BK_PlaySpinnerSound(0);
 			Points[Player] += Multiballs * 2500;}           // add 2500 points
@@ -728,7 +730,7 @@ void GameMain(byte Event) {                           // game switch events
 		break;
 	case 14:                                            // right ramp
 		if (LeftMysteryTimer) {                           // left mystery active?
-			StopPlayingMusic();
+			//StopPlayingMusic();
 			PlaySound(52, "BK_E19.bin");
 			ByteBuffer = ((byte)(TimerValue[LeftMysteryTimer])/2.56);
 			if (ByteBuffer < 20) {
@@ -820,7 +822,7 @@ void GameMain(byte Event) {                           // game switch events
 				StartMultiball();}
 			else {
 				if (Multiballs > 1) {													// multiball running?
-					BK_GiveMultiballs(0);}											// eject ball with some ado
+					BK_GiveMultiballs(1);}											// eject ball with some ado
 				else {
 					StopPlayingMusic();
 					PlaySound(50, "BK_E03.bin");
@@ -1237,7 +1239,7 @@ void HandleLock(byte Event) {
 	else {
 		DropWait[4] = false;}                            	// clear ignore flag
 	if (Multiballs > 1) {                             	// multiball running
-		BK_GiveMultiballs(0);}                          	// eject balls
+		BK_GiveMultiballs(1);}                          	// eject balls
 	else {                           	                 	// no multiball running
 		if (LockCount > InLock) {       	                // more than before?
 			StopPlayingMusic();
@@ -1334,8 +1336,8 @@ void HandleDropTargets(byte Event) {
 	else {                                              // not all targets cleared
 		if (QuerySwitch(DropTargets[Event]) || (QuerySwitch(DropTargets[Event]+1)) || (QuerySwitch(DropTargets[Event]+2))) { // any target down? (or false alarm)
 			if (!DropTimer[Event]) {                        // no timer running for this bank already?
-				StopPlayingMusic();
-				PlaySound(50, "BK_E14.bin");
+				//StopPlayingMusic();
+				PlayMusic(51, "BK_E14.bin");
 				DropTimer[Event] = ActivateTimer(6000, Event, BlinkFaster); // start one
 				AddBlinkLamp(DropLamp+Event, 500);}}}}        // and let the bank lamp blink
 
@@ -1430,37 +1432,39 @@ void BK_Multiball2(byte Step) {
 		ActivateTimer(3000, 1, SwitchDisplay);            // switch display back to main buffer in 3 seconds
 		BK_CycleSwordLights(1);														// start sword lamp animation
 		DropWait[4] = false;                            	// clear ignore flag
-		ActivateTimer(500, 0, BK_GiveMultiballs);}}
+		ActivateTimer(500, 1, BK_GiveMultiballs);}}
 
 void BK_GiveMultiballs(byte Step) {										// release locked balls with multiball effects - call with Step = 1
-	if ((Step > 1) || ((Step == 1) && !DropWait[4])) {
-		if (Step == 1) {																	// start nre cycle
-			StopPlayingMusic();
+	static bool running = 0;
+	if ((Step > 1) || ((Step == 1) && !running)) {
+		if (Step == 1) {																	// start new cycle
+			//StopPlayingMusic();
 			AfterSound = BK_ResumeBgMusic;
 			DropWait[4] = true;
+			running = true;
 			PlaySound(55, "BK_E17.bin");}
-		else {
-			if (Step < 7) {																	// still in flickering phase?
-				if (Step & 1) {																// flicker GI based on the LSB of Step
-					LampPattern = NoLamps;											// turn off all lamps
-					ActivateSolenoid(0, 11);										// turn off GI
-					ActivateTimer(30, Step+1, BK_GiveMultiballs);}
-				else {
-					LampPattern = AllLamps;											// turn on all lamps
-					ReleaseSolenoid(11);												// turn on GI
-					ActivateTimer(120, Step+1, BK_GiveMultiballs);}}
-			else {																					// time to release a ball
-				InLock = 0;																		// reset locked balls counter
-				LampPattern = LampColumns;										// restore lamp states
-				if (QuerySwitch(24)) {                        // for the lower elect hole
+		if (Step < 7) {																		// still in flickering phase?
+			if (Step & 1) {																	// flicker GI based on the LSB of Step
+				LampPattern = NoLamps;												// turn off all lamps
+				ActivateSolenoid(0, 11);											// turn off GI
+				ActivateTimer(30, Step+1, BK_GiveMultiballs);}
+			else {
+				LampPattern = AllLamps;												// turn on all lamps
+				ReleaseSolenoid(11);													// turn on GI
+				ActivateTimer(120, Step+1, BK_GiveMultiballs);}}
+		else {																						// time to release a ball
+			running = false;
+			InLock = 0;																			// reset locked balls counter
+			LampPattern = LampColumns;											// restore lamp states
+			if (QuerySwitch(24)) {                      	  // for the lower elect hole
+				ActivateTimer(2000, 1, BK_GiveMultiballs);		// come back in 2 seconds to check again
+				ActivateSolenoid(0, 8);}											// release ball from lower lock
+			else {																					// no ball in lower lock
+				if (QuerySwitch(41)) {												// ball in the upper lock?
 					ActivateTimer(2000, 1, BK_GiveMultiballs);	// come back in 2 seconds to check again
-					ActivateSolenoid(0, 8);}										// release ball from lower lock
-				else {																				// no ball in lower lock
-					if (QuerySwitch(41)) {											// ball in the upper lock?
-						ActivateTimer(2000, 1, BK_GiveMultiballs);// come back in 2 seconds to check again
-						ActivateSolenoid(0, 7);}									// release ball from upper lock
-					else {
-						DropWait[4] = false;}}}}}}
+					ActivateSolenoid(0, 7);}										// release ball from upper lock
+				else {
+					DropWait[4] = false;}}}}}
 
 void ClearLocks(byte Event) {
 	UNUSED(Event);
@@ -1919,18 +1923,18 @@ void SoundTest_Enter(byte Switch) {
 		analogWrite(VolumePin,255-APC_settings[Volume]);	// set volume
 		Switch_Pressed = SoundTest;
 		AfterSound = NextTestSound;
-		PlaySound(50, (char*) TestSounds[AppByte]);}}
+		PlaySound(50, (char*) BK_TestSounds[AppByte]);}}
 
 void NextTestSound() {
 	if (QuerySwitch(73)) {															// Up/Down switch pressed?
 		AppByte++;}
-	if (!TestSounds[AppByte][0]) {
+	if (!BK_TestSounds[AppByte][0]) {
 		AppByte = 0;}
 	*(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte+1) % 10)]; // and show the next sound number
 	*(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte+1) % 10)];
 	*(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
 	*(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-	PlaySound(50, (char*) TestSounds[AppByte]);}
+	PlaySound(50, (char*) BK_TestSounds[AppByte]);}
 
 void SoundTest(byte Switch) {
 	if (Switch == 3) {
