@@ -111,21 +111,19 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 			USB_WatchdogTimer = ActivateTimer(1000, 2, USB_WatchdogHandler);}}}	// restart watchdog
 
 void USB_SwitchHandler(byte Switch) {
+	byte i = 0;
 	switch (Switch) {
 	case 8:                                             // high score reset
 		digitalWrite(Blanking, LOW);                      // invoke the blanking
 		break;
 	case 72:																						// advance button
+		while (USB_ChangedSwitches[i] && (i<63)) {
+			i++;}
+		USB_ChangedSwitches[i] = Switch | 128;						// send switch code to USB
 		if (QuerySwitch(73)) {														// Up/Down switch pressed?
 			ActivateTimer(1000, 0, USB_Testmode);}					// look again in 1s
-		else {
-			byte i = 0;
-			while (USB_ChangedSwitches[i] && (i<63)) {
-				i++;}
-			USB_ChangedSwitches[i] = Switch | 128;}
 		break;
 	default:
-		byte i = 0;
 		while (USB_HWrule_ActSw[i][0]) {									// check for HW rules for this switch
 			if (USB_HWrule_ActSw[i][0] == Switch) {
 				if (USB_HWrule_ActSw[i][2]) {									// duration != 0 ?
@@ -160,15 +158,10 @@ void USB_ReleasedSwitches(byte Switch) {
 
 void USB_Testmode(byte Dummy) {												// enter system settings if advance button still pressed
 	UNUSED(Dummy);
-	if (QuerySwitch(72)) {
+	if (QuerySwitch(72)) {															// advance button still pressed?
 		USB_WatchdogHandler(3);														// stop USB watchdog
 		SerialCommand = 0;
-		Settings_Enter();}
-	else {
-		byte i = 0;
-		while (USB_ChangedSwitches[i]) {
-			i++;}
-		USB_ChangedSwitches[i] = 72 | 128;}}
+		Settings_Enter();}}
 
 void USB_SerialCommand() {
 	static byte Command;
