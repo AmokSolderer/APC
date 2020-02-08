@@ -666,8 +666,6 @@ void PB_GameMain(byte Switch) {
 		Serial.println((unsigned int)&PB_SearchBall);
 		Serial.print("PB_ChestLightHandler = ");
 		Serial.println((unsigned int)&PB_ChestLightHandler);
-		Serial.print("ActivateLater = ");
-		Serial.println((unsigned int)&ActivateLater);
 		Serial.print("BlinkScore = ");
 		Serial.println((unsigned int)&BlinkScore);
 		Serial.print("BlinkLamps = ");

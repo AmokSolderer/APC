@@ -83,15 +83,12 @@ bool BlinkState[65];                                  // current state of the la
 unsigned int BlinkPeriod[65];                         // blink period for this timer
 byte BlinkingLamps[65][65];                           // [BlinkTimer] used by these [lamps]
 bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
-byte SolNumber = 0;                                   // Determines which solenoid is to be changed ...
-bool SolState = false;                                // and what the desired state is
-byte SolDelayed[20];                                  // Queue for waiting solenoid requests
+byte SolLatch = 0;																		// Indicates which solenoid latches must be updated
 bool C_BankActive = false;														// A/C relay currently doing C bank?
 byte SolWaiting[64][2];																// list of waiting A/C solenoid requests
 byte ACselectRelay = 0;																// solenoid number of the A/C select relay
 byte ActSolSlot = 0;																	// currently processed slot in SolWaiting
 byte NextSolSlot = 0;																	// next free slot in SolWaiting
-unsigned int DurDelayed[20];                          // duration values for waiting solenoid requests
 byte SettingsRepeatTimer = 0;													// number of the timer of the key repeat function in the settings function
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte CheckReleaseTimer = 0;														// number of the timer for the ball release check
@@ -524,26 +521,19 @@ void TC7_Handler() {                                  // interrupt routine - run
 
 	if (SolChange) {                                		// is there a solenoid state to be changed?
 		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals and the data bus
-		if (SolNumber > 8) {                          		// does the solenoid not belong to the first latch?
-			if (SolNumber < 17) {                       		// does it belong to the second latch?
-				c = 1;
-				i = 8388608;                              		// select second latch
-				SolNumber = SolNumber-8;}                 		// and reduce the solenoid number accordingly
-			else {                                      		// it belongs to the third latch
-				c = 2;
-				i = 4194304;                  								// select third latch
-				SolNumber = SolNumber-16;}}               		// and match the solenoid number
-		else {
-			c = 0;
-			i = 16777216;}
-		SolNumber--;                                  		// latch counts from 0
-		if (SolState) {
-			SolBuffer[c] = SolBuffer[c] | 1<<SolNumber;}
-		else {
-			SolBuffer[c] = SolBuffer[c] & (255-(1<<SolNumber));}
-		REG_PIOC_SODR = SolBuffer[c]<<1;
-		SolChange = false;																// reset flag
-		REG_PIOC_SODR = i;}                           		// trigger latch
+		if (SolLatch & 1) {
+			REG_PIOC_SODR = SolBuffer[0]<<1;
+			REG_PIOC_SODR = 16777216;}											// select first latch
+		if (SolLatch & 2) {
+			REG_PIOC_CODR = AllSelects - Sel5 + AllData;    // clear all select signals and the data bus
+			REG_PIOC_SODR = SolBuffer[1]<<1;
+			REG_PIOC_SODR = 8388608;}												// select second latch
+		if (SolLatch & 4) {
+			REG_PIOC_CODR = AllSelects - Sel5 + AllData;    // clear all select signals and the data bus
+			REG_PIOC_SODR = SolBuffer[2]<<1;
+			REG_PIOC_SODR = 4194304;}												// select third latch
+		SolLatch = 0;
+		SolChange = false;}																// reset flag
 
 	REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
 	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals and the data bus
@@ -1173,33 +1163,22 @@ void ShowMessage(byte Seconds) {                      // switch to the second di
 		SwitchDisplay(1);}}                               // switch back to DispRow1
 
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
-	if (!SolChange) {                               		// change request for another solenoid pending?
-		if (!Duration) {
-			Duration = *(GameDefinition.SolTimes+Solenoid-1);} // if no duration is specified use the solenoid specific default
-		SolNumber = Solenoid;                         		// activate solenoid
-		SolState = true;
-		if (Duration) {                               		// duration = 0 means solenoid is permanently on
-			ActivateTimer(Duration, Solenoid, ReleaseSolenoid);} // otherwise use a timer to turn it off again
-		SolChange = true;}
-	else {                                        			// if a change request is already pending
-		i = 0;
-		while (SolDelayed[i]) {                     			// look for a free slot in the list of solenoids to be processed later
-			i++;
-			if (i > 20) {
-				ErrorHandler(31,Solenoid,Duration);
-				break;}}
-		SolDelayed[i] = Solenoid;                   			// insert the solenoid number
-		DurDelayed[i] = Duration;                   			// and its duration into the list
-		ActivateTimer(25, Solenoid, ActivateLater);}}			// and try again later
-
-void ActivateLater(byte Solenoid) {               		// handle delayed solenoid change requests
-	byte i = 0;
-	unsigned int Duration;
-	while (SolDelayed[i] != Solenoid) {             		// search the list of delayed solenoid requests
-		i++;}
-	SolDelayed[i] = 0;                              		// remove its entry
-	Duration = DurDelayed[i];                       		// get the duration
-	ActivateSolenoid(Duration, Solenoid);}         	 		// and try again to activate it
+	SolChange = false;																	// block IRQ solenoid handling
+	if (Solenoid > 8) {																	// does the solenoid not belong to the first latch?
+		if (Solenoid < 17) {															// does it belong to the second latch?
+			SolBuffer[1] |= 1<<(Solenoid-9);								// latch counts from 0
+			SolLatch |= 2;}																	// select second latch
+		else {
+			SolBuffer[2] |= 1<<(Solenoid-17);
+			SolLatch |= 4;}}																// select third latch
+	else {
+		SolBuffer[0] |= 1<<(Solenoid-1);
+		SolLatch |= 1;}																		// select first latch
+	if (!Duration) {
+		Duration = *(GameDefinition.SolTimes+Solenoid-1);} // if no duration is specified use the solenoid specific default
+	if (Duration) {                               			// duration = 0 means solenoid is permanently on
+		ActivateTimer(Duration, Solenoid, ReleaseSolenoid);} // otherwise use a timer to turn it off again
+	SolChange = true;}
 
 void DelaySolenoid(byte Solenoid) {                   // activate solenoid after delay time
 	ActivateSolenoid(0, Solenoid);}
@@ -1212,12 +1191,18 @@ void ReleaseAllSolenoids() {
 	ReleaseSolenoid(17);}
 
 void ReleaseSolenoid(byte Solenoid) {
-	if (!SolChange) {                               		// change request for another solenoid pending?
-		SolNumber = Solenoid;                         		// if not process it
-		SolState = false;
-		SolChange = true;}
-	else {                                          		// if yes
-		ActivateTimer(1, Solenoid, ReleaseSolenoid);}}		// try again later
+	SolChange = false;																	// block IRQ solenoid handling
+	if (Solenoid > 8) {																	// does the solenoid not belong to the first latch?
+		if (Solenoid < 17) {															// does it belong to the second latch?
+			SolBuffer[1] &= 255-(1<<(Solenoid-9));					// latch counts from 0
+			SolLatch |= 2;}																	// select second latch
+		else {
+			SolBuffer[2] &= 255-(1<<(Solenoid-17));
+			SolLatch |= 4;}}																// select third latch
+	else {
+		SolBuffer[0] &= 255-(1<<(Solenoid-1));
+		SolLatch |= 1;}																		// select first latch
+	SolChange = true;}
 
 bool QuerySolenoid(byte Solenoid) {                  	// determine the current state of a solenoid
 	Solenoid--;
@@ -1272,7 +1257,7 @@ void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
 				else {
 					ActivateSolenoid(0, ACselectRelay);					// switch to C
 					C_BankActive = true;}												// signal it
-				ActivateTimer(50, 1, ActSolenoid);}					  // wait 500ms for the relay to settle
+				ActivateTimer(50, 1, ActSolenoid);}					  // wait 50ms for the relay to settle
 			else {
 				if (SolWaiting[ActSolSlot][0] < 25) {
 					ActivateSolenoid(0, SolWaiting[ActSolSlot][0]);}
@@ -1287,7 +1272,7 @@ void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
 				if (ActSolSlot > 63) {												// array end reached?
 					ActSolSlot = 0;}}														// start from zero
 			State = 1;}																			// set routing state to active
-		else if (C_BankActive){														// nothing more to do any relay still active?
+		else if (C_BankActive){														// nothing more to do and relay still active?
 			ReleaseSolenoid(ACselectRelay);									// reset it
 			C_BankActive = false;
 			State = 1;
@@ -1642,7 +1627,7 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
 		else {
 			LampPattern = ((PatPointer+Step-2)->Pattern)-1;}// show the pattern
 		Step++;                                           // increase the pattern number
-		if (!((PatPointer+Step-1)->Duration)) {           // if the duration for the next pattern is 0
+		if (!((PatPointer+Step-2)->Duration)) {           // if the duration for the next pattern is 0
 			Step = 2;                                       // reset the pattern
 			FlowRepeat--;                                   // decrease the number of repetitions
 			if (!FlowRepeat) {                              // if no more repetitions pending

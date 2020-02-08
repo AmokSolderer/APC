@@ -316,20 +316,18 @@ void USB_SerialCommand() {
 	case 21:																						// set solenoid # to on
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
 			if (!USB_SolTimers[SerialBuffer[0]-1]) {				// recycling time over for this coil?
-				if (!SolChange) {                             // change request for another solenoid pending?
-					SolNumber = SerialBuffer[0];                // activate solenoid permanently
-					SolState = true;
-					SolChange = true;}
-				else {                                        // if a change request is already pending
-					i = 0;
-					while (SolDelayed[i]) {                     // look for a free slot in the list of solenoids to be processed later
-						i++;
-						if (i > 20) {
-							ErrorHandler(31,SerialBuffer[0],0);
-							break;}}
-					SolDelayed[i] = SerialBuffer[0];            // insert the solenoid number
-					DurDelayed[i] = 0;                   				// and its duration into the list
-					ActivateTimer(25, SerialBuffer[0], ActivateLater);}}}	// and try again later
+				SolChange = false;														// block IRQ solenoid handling
+				if (SerialBuffer[0] > 8) {										// does the solenoid not belong to the first latch?
+					if (SerialBuffer[0] < 17) {									// does it belong to the second latch?
+						SolBuffer[1] |= 1<<(SerialBuffer[0]-9);		// latch counts from 0
+						SolLatch |= 2;}														// select second latch
+					else {
+						SolBuffer[2] |= 1<<(SerialBuffer[0]-17);
+						SolLatch |= 4;}}													// select third latch
+				else {
+					SolBuffer[0] |= 1<<(SerialBuffer[0]-1);
+					SolLatch |= 1;}															// select first latch
+				SolChange = true;}}
 		else if (SerialBuffer[0] == 25) {									// 25 is a shortcut for both flipper fingers
 			ActivateSolenoid(0, 23);												// enable both flipper fingers
 			ActivateSolenoid(0, 24);}
@@ -859,32 +857,21 @@ void USB_SerialCommand() {
 		ShowNumber(31, Command);               						// show command number
 		ShowMessage(3);}}
 
-void USB_FireSolenoid(byte Duration, byte Coil) {			// consider solenoid recycling time when activating solenoids
-	if (!USB_SolTimers[Coil-1]) {												// recycling time over for this coil?
-		if (!SolChange) {                               	// change request for another solenoid pending?
-			SolNumber = Coil;                  							// activate solenoid permanently
-			SolState = true;
-			SolChange = true;
-			USB_SolTimers[Coil-1] = ActivateTimer((unsigned int) Duration, Coil, USB_ReleaseSolenoid);}
-		else {                                        		// if a change request is already pending
-			i = 0;
-			while (SolDelayed[i]) {                     		// look for a free slot in the list of solenoids to be processed later
-				i++;
-				if (i > 20) {
-					ErrorHandler(31,Coil,0);
-					break;}}
-			SolDelayed[i] = Coil;              							// insert the solenoid number
-			DurDelayed[i] = 0;                   						// and its duration into the list
-			ActivateTimer(25, Coil, USB_ActivateLater);}}}
-
-void USB_ActivateLater(byte Solenoid) {               // handle delayed solenoid change requests
-	byte i = 0;
-	unsigned int Duration;
-	while (SolDelayed[i] != Solenoid) {             		// search the list of delayed solenoid requests
-		i++;}
-	SolDelayed[i] = 0;                              		// remove its entry
-	Duration = DurDelayed[i];                       		// get the duration
-	USB_FireSolenoid(Duration, Solenoid);}         	 		// and try again to activate it
+void USB_FireSolenoid(byte Duration, byte Solenoid) {	// consider solenoid recycling time when activating solenoids
+	if (!USB_SolTimers[Solenoid-1]) {											// recycling time over for this coil?
+		SolChange = false;																	// block IRQ solenoid handling
+		if (Solenoid > 8) {																	// does the solenoid not belong to the first latch?
+			if (Solenoid < 17) {															// does it belong to the second latch?
+				SolBuffer[1] |= 1<<(Solenoid-9);								// latch counts from 0
+				SolLatch |= 2;}																	// select second latch
+			else {
+				SolBuffer[2] |= 1<<(Solenoid-17);
+				SolLatch |= 4;}}																// select third latch
+		else {
+			SolBuffer[0] |= 1<<(Solenoid-1);
+			SolLatch |= 1;}																		// select first latch
+		USB_SolTimers[Solenoid-1] = ActivateTimer((unsigned int) Duration, Solenoid, USB_ReleaseSolenoid);
+		SolChange = true;}}
 
 void USB_KillSolenoid(byte Coil) {										// stop solenoid immediately
 	if (QuerySolenoid(Coil)) {													// solenoid active?

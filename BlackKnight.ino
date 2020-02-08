@@ -241,9 +241,9 @@ void CheckForLockedBalls(byte Event) {                // check if balls are lock
 	UNUSED(Event);
 	if (QuerySwitch(20)) {                              // for the outhole
 		ActivateSolenoid(0, 1);}
-	if (QuerySwitch(24)) {                              // for the lower eject hole
+	else if (QuerySwitch(24)) {                         // for the lower eject hole
 		ActivateSolenoid(0, 8);}
-	if (QuerySwitch(41)) {                              // for the multiball lock
+	else if (QuerySwitch(41)) {                         // for the multiball lock
 		ActivateSolenoid(0, 7);}}
 
 void AttractLampCycle(byte Event) {                   // play multiple lamp pattern series
@@ -656,24 +656,7 @@ void GameMain(byte Event) {                           // game switch events
 		ActivateTimer(3000, 0, ShowAllPoints);
 		break;
 	case 8:
-		Serial.print("MBP = ");
-		Serial.println(MBP);
-		Serial.print("StopMusic = ");
-		Serial.println(StopMusic);
-		Serial.print("PlayingMusic = ");
-		Serial.println(PlayingMusic);
-		Serial.print("StartMusic = ");
-		Serial.println(StartMusic);
-		Serial.print("AfterMusicPending = ");
-		Serial.println(AfterMusicPending);
-		Serial.print("MusicIRpos = ");
-		Serial.println(MusicIRpos);
-		Serial.print("AfterMusic = ");
-		if (AfterMusic) {
-			Serial.println("True");}
-		else {
-			Serial.println("False");}
-
+    digitalWrite(Blanking, LOW);                      // invoke the blanking
 		break;
 	case 9:                                             // right magna save button
 		if (RightMagna[Player]) {                         // right magna save available?
