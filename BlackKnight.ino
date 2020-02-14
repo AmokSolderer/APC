@@ -221,13 +221,13 @@ struct GameDef BK_GameDefinition = {
 	BK_SolTimes};																				// Default activation times of solenoids
 
 void BK_init() {
+	digitalWrite(VolumePin,HIGH);												// mute sound
 	ACselectRelay = BK_ACselectRelay;										// assign the number of the A/C select relay
 	GameDefinition = BK_GameDefinition;}								// read the game specific settings and highscores
 
 void BK_AttractMode() {                               // Attract Mode
 	DispRow1 = DisplayUpper;
 	DispRow2 = DisplayLower;
-	digitalWrite(VolumePin,HIGH);
 	LampPattern = NoLamps;
 	Switch_Pressed = AttractModeSW;
 	Switch_Released = DummyProcess;
@@ -1060,6 +1060,7 @@ void BallEnd2(byte Balls) {
 		BlockOuthole = false;}														// remove outhole block
 	else {                                        			// Player has no extra balls
 		if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
+			PlaySound(55, "BK_S04.bin");
 			Switch_Pressed = DummyProcess;                  // Switches do nothing
 			CheckHighScore(Player);}
 		else {
@@ -1083,7 +1084,13 @@ void BallEnd3(byte Balls) {
 			//digitalWrite(SpcSolEnable, LOW);      				// disable special solenoids
 			CheckForLockedBalls(0);
 			TurnOffLamp(2);                      						// turn off Ball in Play lamp
+			AfterSound = BK_MuteSound;											// mute after next sound
+			PlaySound(55, "BK_S03.bin");
 			GameDefinition.AttractMode();}}}
+
+void BK_MuteSound() {
+	digitalWrite(VolumePin,HIGH);
+	AfterSound = 0;}
 
 void CheckHighScore(byte Player) {                    // show congratulations
 	LampPattern = NoLamps;
@@ -1337,7 +1344,11 @@ void ResetDropTargets(byte Event) {
 	ActivateSolenoid(0, DropSolenoid+Event);}           // and reset the drop targets
 
 void ResetDropWait(byte Event) {                      // ensure waiting time to ignore switch bouncing
-	DropWait[Event] = false;}
+	if (QuerySwitch(DropTargets[Event]) && (QuerySwitch(DropTargets[Event]+1)) && (QuerySwitch(DropTargets[Event]+2))) { // drop targets still down?
+		ActivateTimer(2200, Event, ResetDropWait);        // come back in 2.2s
+		ActivateTimer(2000, DropSolenoid+Event, DelaySolenoid);}  // and reset the drop targets again in 2s
+	else {
+		DropWait[Event] = false;}}												// reset flag to ignore switch bouncing during drop target reset
 
 void StartMultiball() {
 	if (LockedBalls[Player] == 3) {               			// 2 or 3 ball multiball?
@@ -1348,7 +1359,12 @@ void StartMultiball() {
 	LockChaseLight(0);
 	RemoveBlinkLamp(40);                              	// turn off the blinking of the first lock arrow
 	LampPattern = NoLamps;
-	PlayFlashSequence((byte*) BK_ResetAllDropTargets);
+	for (byte i=0; i<4; i++) {													// check for running drop target timers
+		if (DropTimer[i]) {																// found one?
+			KillTimer(DropTimer[i]);												// kill it
+			DropTimer[i] = 0;
+			RemoveBlinkLamp(DropLamp+i);}}
+	PlayFlashSequence((byte*) BK_ResetAllDropTargets);	// reset all drop targets
 	ActivateTimer(800, 0, BK_Multiball2);}
 
 void BK_Multiball2(byte Step) {
