@@ -1666,10 +1666,11 @@ void PB_ResetHighScores(bool change) {                // delete the high scores 
 		WriteLower(" SCORES       ");}}
 
 void PB_HandleVolumeSetting(bool change) {
-	HandleNumSetting(change);
-	if (!change) {
-		PlayMusic(50, "BS_M04.BIN");}
-	analogWrite(VolumePin,255-APC_settings[Volume]-SettingsPointer[AppByte]);}  // adjust PWM to volume setting
+	if (APC_settings[Volume]) {
+		HandleNumSetting(change);
+		if (!change) {
+			PlayMusic(50, "BS_M04.BIN");}
+		analogWrite(VolumePin,255-APC_settings[Volume]-SettingsPointer[AppByte]);}}  // adjust PWM to volume setting
 
 void PB_Testmode(byte Select) {
 	Switch_Pressed = PB_Testmode;
