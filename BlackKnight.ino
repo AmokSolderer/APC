@@ -807,7 +807,7 @@ void GameMain(byte Event) {                           // game switch events
 		if (!DropWait[4]) {																// locks are not blocked?
 			Points[Player] += Multiballs * 5000;
 			ShowPoints(Player);
-			if (QueryLamp(24)) {              							// lower lock lit?
+			if (QueryLamp(24) && Multiballs == 1) { 				// lower lock lit and no multiball running?
 				LockedBalls[Player]++;
 				DropWait[4] = true;														// block locks
 				StartMultiball();}
@@ -1462,11 +1462,15 @@ void BK_Multiball2(byte Step) {
 
 void BK_GiveMultiballs(byte Step) {										// release locked balls with multiball effects - call with Step = 1
 	static bool running = 0;
-	if ((Step > 1) || ((Step == 1) && !running)) {
+	if ((Step > 1) || ((Step == 1) && !running)) {			// is there a ball in one of the locks?
 		if (Step == 1) {																	// start new cycle
-			DropWait[4] = true;
-			running = true;
-			PlaySound(55, "BK_E17.bin");}
+			if (QuerySwitch(24) || QuerySwitch(41)) {
+				DropWait[4] = true;
+				running = true;
+				PlaySound(55, "BK_E17.bin");}
+			else {
+				DropWait[4] = false;
+				return;}}
 		if (Step < 7) {																		// still in flickering phase?
 			if (Step & 1) {																	// flicker GI based on the LSB of Step
 				LampPattern = NoLamps;												// turn off all lamps
