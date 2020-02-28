@@ -522,15 +522,18 @@ void TC7_Handler() {                                  // interrupt routine - run
 	if (SolChange) {                                		// is there a solenoid state to be changed?
 		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals and the data bus
 		if (SolLatch & 1) {
-			REG_PIOC_SODR = SolBuffer[0]<<1;
+			c = SolBuffer[0];
+			REG_PIOC_SODR = c<<1;
 			REG_PIOC_SODR = 16777216;}											// select first latch
 		if (SolLatch & 2) {
 			REG_PIOC_CODR = AllSelects - Sel5 + AllData;    // clear all select signals and the data bus
-			REG_PIOC_SODR = SolBuffer[1]<<1;
+			c = SolBuffer[1];
+			REG_PIOC_SODR = c<<1;
 			REG_PIOC_SODR = 8388608;}												// select second latch
 		if (SolLatch & 4) {
 			REG_PIOC_CODR = AllSelects - Sel5 + AllData;    // clear all select signals and the data bus
-			REG_PIOC_SODR = SolBuffer[2]<<1;
+			c = SolBuffer[2];
+			REG_PIOC_SODR = c<<1;
 			REG_PIOC_SODR = 4194304;}												// select third latch
 		SolLatch = 0;
 		SolChange = false;}																// reset flag
