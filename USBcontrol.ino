@@ -34,6 +34,8 @@ byte USB_SolTimers[22];																// stores the sol timer numbers and indic
 byte USB_DisplayProtocol[5];													// stores the selected display protocol
 char USB_RepeatSound[12];															// name of the sound file to be repeated
 char USB_RepeatMusic[12];															// name of the music file to be repeated
+byte USB_WaitingSoundFiles[2][17];										// names of the waiting sound files first byte is for channel and commands
+byte USB_WaitSoundTimer;															// number of the timer for the sound sequencing
 
 struct SettingTopic USB_setList[4] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
@@ -760,23 +762,85 @@ void USB_SerialCommand() {
 		break;
 	case 52:																						// play soundfile
 		if (SerialBuffer[0] == 1) {												// channel 1?
-			PlayMusic(50, (char*) SerialBuffer+2);
-			if (SerialBuffer[1] & 1) {											// looping active?
-				for (i=0; i<12; i++) {
-					USB_RepeatMusic[i] = SerialBuffer[2+i];}
-				NextMusicName = USB_RepeatMusic;
-				AfterMusic = PlayNextMusic;}
-			else {
-				AfterMusic = 0;}}
+			if (!USB_WaitSoundTimer) {											// no sound wait timer active?
+				PlayMusic(50, (char*) SerialBuffer+2);				// play the sound
+				USB_WaitSoundTimer = ActivateTimer(15, 0, USB_ResetWaitSoundTimers); // start a timer
+				if (SerialBuffer[1] & 1) {										// looping active?
+					for (i=0; i<12; i++) {
+						USB_RepeatMusic[i] = SerialBuffer[2+i];}
+					NextMusicName = USB_RepeatMusic;
+					AfterMusic = PlayNextMusic;}
+				else {
+					AfterMusic = 0;}}
+			else {																					// sound wait timer active
+				if (!USB_WaitingSoundFiles[0][1]) {						// any waiting sounds?
+					if (SerialBuffer[1] & 1) {									// if not check for looping
+						USB_WaitingSoundFiles[1][0] = 2;}					// set the looping flag
+					for (i=0; i<12; i++) {											// copy the filename to the waiting stack
+						USB_WaitingSoundFiles[0][i+1] = SerialBuffer[2+i];}}
+				else {																				// waiting stack not empty
+					if (USB_WaitingSoundFiles[0][0] & 1) {			// is the waiting sound for channel 2?
+						if (SerialBuffer[1] & 1) {								// then copy the sound data to stack position 2
+							USB_WaitingSoundFiles[1][0] = 2;}
+						for (i=0; i<12; i++) {										// copy the filename to the waiting stack
+							USB_WaitingSoundFiles[1][1+i] = SerialBuffer[2+i];}}
+					else {																			// waiting sound is also for channel 1
+						if (USB_WaitingSoundFiles[1][1]) {				// is there a sound is waiting position 2?
+							for (i=0; i<13; i++) {									// if yes move it to position 1 and copy the new sound to position 2
+								USB_WaitingSoundFiles[0][i] = USB_WaitingSoundFiles[1][i];
+								USB_WaitingSoundFiles[1][i+1] = SerialBuffer[2+i];}
+							if (SerialBuffer[1] & 1) {							// handle looping flag
+								USB_WaitingSoundFiles[1][0] = 2;}
+							else {
+								USB_WaitingSoundFiles[1][0] = 0;}}
+						else {																		// no sound at stack position 2
+							if (SerialBuffer[1] & 1) {							// overwrite stack position 1
+								USB_WaitingSoundFiles[0][0] = 2;}
+							else {
+								USB_WaitingSoundFiles[0][0] = 0;}
+							USB_WaitingSoundFiles[0][i+1] = SerialBuffer[2+i];}}}}}
 		else {																						// channel 2
-			PlaySound(50, (char*) SerialBuffer+2);
-			if (SerialBuffer[1] & 1) {											// looping active?
-				for (i=0; i<12; i++) {
-					USB_RepeatSound[i] = SerialBuffer[2+i];}
-				NextSoundName = USB_RepeatSound;
-				AfterSound = PlayNextSound;}
+			if (!USB_WaitSoundTimer) {
+				PlaySound(50, (char*) SerialBuffer+2);
+				USB_WaitSoundTimer = ActivateTimer(15, 0, USB_ResetWaitSoundTimers);
+				if (SerialBuffer[1] & 1) {											// looping active?
+					for (i=0; i<12; i++) {
+						USB_RepeatSound[i] = SerialBuffer[2+i];}
+					NextSoundName = USB_RepeatSound;
+					AfterSound = PlayNextSound;}
+				else {
+					AfterSound = 0;}}
 			else {
-				AfterSound = 0;}}
+				if (!USB_WaitingSoundFiles[0][1]) {						// any waiting sounds?
+					if (SerialBuffer[1] & 1) {									// is not check for looping
+						USB_WaitingSoundFiles[1][0] = 3;}					// set the looping flag
+					else {
+						USB_WaitingSoundFiles[1][0] = 1;}					// or just set the channel 2 flag
+					for (i=0; i<12; i++) {											// copy the filename to the waiting stack
+						USB_WaitingSoundFiles[0][i+1] = SerialBuffer[2+i];}}
+				else {																				// waiting stack not empty
+					if (!(USB_WaitingSoundFiles[0][0] & 1)) {		// is the waiting sound for channel 1?
+						if (SerialBuffer[1] & 1) {								// if not copy the sound data to stack position 2
+							USB_WaitingSoundFiles[1][0] = 3;}				// set the looping flag
+						else {
+							USB_WaitingSoundFiles[1][0] = 1;}				// or just set the channel 2 flag
+						for (i=0; i<12; i++) {										// copy the filename to the waiting stack
+							USB_WaitingSoundFiles[1][1+i] = SerialBuffer[2+i];}}
+					else {																			// waiting sound is also for channel 1
+						if (USB_WaitingSoundFiles[1][1]) {				// is there a sound is waiting at position 2?
+							for (i=0; i<13; i++) {									// if yes move it to position 1 and copy the new sound to position 2
+								USB_WaitingSoundFiles[0][i] = USB_WaitingSoundFiles[1][i];
+								USB_WaitingSoundFiles[1][i+1] = SerialBuffer[2+i];}
+							if (SerialBuffer[1] & 1) {							// handle looping flag
+								USB_WaitingSoundFiles[1][0] = 3;}
+							else {
+								USB_WaitingSoundFiles[1][0] = 1;}}
+						else {																		// no sound at stack position 2
+							if (SerialBuffer[1] & 1) {							// overwrite stack position 1
+								USB_WaitingSoundFiles[0][0] = 3;}
+							else {
+								USB_WaitingSoundFiles[0][0] = 1;}
+							USB_WaitingSoundFiles[0][i+1] = SerialBuffer[2+i];}}}}}
 		break;
 	case 54:																						// sound volume setting
 		APC_settings[Volume] = 2*SerialBuffer[1];					// set system volume
@@ -857,19 +921,37 @@ void USB_SerialCommand() {
 		ShowNumber(31, Command);               						// show command number
 		ShowMessage(3);}}
 
+void USB_ResetWaitSoundTimers(byte Dummy) {						// reset the timer and play waiting sounds
+	UNUSED(Dummy);
+	if (USB_WaitingSoundFiles[0][1]) {									// any waiting sounds?
+		if (USB_WaitingSoundFiles[0][0] & 1) {						// sound for channel 2 waiting?
+			PlaySound(50, (char*) USB_WaitingSoundFiles+1);}
+		else {																						// waiting sound is for channel 1
+			PlayMusic(50, (char*) USB_WaitingSoundFiles+1);}
+		if (USB_WaitingSoundFiles[1][1]) {								// any sound waiting at stack position 2?
+			for (i=0; i<13; i++) {													// if yes move it to position 1 and clear position 2
+				USB_WaitingSoundFiles[0][i] = USB_WaitingSoundFiles[1][i];
+				USB_WaitingSoundFiles[1][i] = 0;}}
+		else {																						// no sound waiting at stack position 2
+			for (i=0; i<13; i++) {													// clear stack position 1
+				USB_WaitingSoundFiles[0][i] = 0;}}
+		USB_WaitSoundTimer = ActivateTimer(15, 0, USB_ResetWaitSoundTimers);}	// start a new timer
+	else {
+		USB_WaitSoundTimer = 0;}}
+
 void USB_FireSolenoid(byte Duration, byte Solenoid) {	// consider solenoid recycling time when activating solenoids
-	if (!USB_SolTimers[Solenoid-1]) {											// recycling time over for this coil?
-		SolChange = false;																	// block IRQ solenoid handling
-		if (Solenoid > 8) {																	// does the solenoid not belong to the first latch?
-			if (Solenoid < 17) {															// does it belong to the second latch?
-				SolBuffer[1] |= 1<<(Solenoid-9);								// latch counts from 0
-				SolLatch |= 2;}																	// select second latch
+	if (!USB_SolTimers[Solenoid-1]) {										// recycling time over for this coil?
+		SolChange = false;																// block IRQ solenoid handling
+		if (Solenoid > 8) {																// does the solenoid not belong to the first latch?
+			if (Solenoid < 17) {														// does it belong to the second latch?
+				SolBuffer[1] |= 1<<(Solenoid-9);							// latch counts from 0
+				SolLatch |= 2;}																// select second latch
 			else {
 				SolBuffer[2] |= 1<<(Solenoid-17);
-				SolLatch |= 4;}}																// select third latch
+				SolLatch |= 4;}}															// select third latch
 		else {
 			SolBuffer[0] |= 1<<(Solenoid-1);
-			SolLatch |= 1;}																		// select first latch
+			SolLatch |= 1;}																	// select first latch
 		USB_SolTimers[Solenoid-1] = ActivateTimer((unsigned int) Duration, Solenoid, USB_ReleaseSolenoid);
 		SolChange = true;}}
 
