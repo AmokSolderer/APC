@@ -34,7 +34,7 @@ byte USB_SolTimers[22];																// stores the sol timer numbers and indic
 byte USB_DisplayProtocol[5];													// stores the selected display protocol
 char USB_RepeatSound[12];															// name of the sound file to be repeated
 char USB_RepeatMusic[12];															// name of the music file to be repeated
-byte USB_WaitingSoundFiles[2][17];										// names of the waiting sound files first byte is for channel and commands
+byte USB_WaitingSoundFiles[2][14];										// names of the waiting sound files first byte is for channel and commands
 byte USB_WaitSoundTimer;															// number of the timer for the sound sequencing
 
 struct SettingTopic USB_setList[4] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
@@ -775,7 +775,7 @@ void USB_SerialCommand() {
 			else {																					// sound wait timer active
 				if (!USB_WaitingSoundFiles[0][1]) {						// any waiting sounds?
 					if (SerialBuffer[1] & 1) {									// if not check for looping
-						USB_WaitingSoundFiles[1][0] = 2;}					// set the looping flag
+						USB_WaitingSoundFiles[0][0] = 2;}					// set the looping flag
 					for (i=0; i<12; i++) {											// copy the filename to the waiting stack
 						USB_WaitingSoundFiles[0][i+1] = SerialBuffer[2+i];}}
 				else {																				// waiting stack not empty
@@ -785,10 +785,11 @@ void USB_SerialCommand() {
 						for (i=0; i<12; i++) {										// copy the filename to the waiting stack
 							USB_WaitingSoundFiles[1][1+i] = SerialBuffer[2+i];}}
 					else {																			// waiting sound is also for channel 1
-						if (USB_WaitingSoundFiles[1][1]) {				// is there a sound is waiting position 2?
-							for (i=0; i<13; i++) {									// if yes move it to position 1 and copy the new sound to position 2
+						if (USB_WaitingSoundFiles[1][1]) {				// is there a sound in waiting position 2?
+							for (i=1; i<13; i++) {									// if yes move it to position 1 and copy the new sound to position 2
 								USB_WaitingSoundFiles[0][i] = USB_WaitingSoundFiles[1][i];
-								USB_WaitingSoundFiles[1][i+1] = SerialBuffer[2+i];}
+								USB_WaitingSoundFiles[1][i] = SerialBuffer[1+i];}
+							USB_WaitingSoundFiles[0][0] = USB_WaitingSoundFiles[1][0];	// copy command byte
 							if (SerialBuffer[1] & 1) {							// handle looping flag
 								USB_WaitingSoundFiles[1][0] = 2;}
 							else {
@@ -798,7 +799,8 @@ void USB_SerialCommand() {
 								USB_WaitingSoundFiles[0][0] = 2;}
 							else {
 								USB_WaitingSoundFiles[0][0] = 0;}
-							USB_WaitingSoundFiles[0][i+1] = SerialBuffer[2+i];}}}}}
+							for (i=0; i<12; i++) {									// copy the filename to the waiting stack
+								USB_WaitingSoundFiles[0][i+1] = SerialBuffer[2+i];}}}}}}
 		else {																						// channel 2
 			if (!USB_WaitSoundTimer) {
 				PlaySound(50, (char*) SerialBuffer+2);
@@ -813,9 +815,9 @@ void USB_SerialCommand() {
 			else {
 				if (!USB_WaitingSoundFiles[0][1]) {						// any waiting sounds?
 					if (SerialBuffer[1] & 1) {									// is not check for looping
-						USB_WaitingSoundFiles[1][0] = 3;}					// set the looping flag
+						USB_WaitingSoundFiles[0][0] = 3;}					// set the looping flag
 					else {
-						USB_WaitingSoundFiles[1][0] = 1;}					// or just set the channel 2 flag
+						USB_WaitingSoundFiles[0][0] = 1;}					// or just set the channel 2 flag
 					for (i=0; i<12; i++) {											// copy the filename to the waiting stack
 						USB_WaitingSoundFiles[0][i+1] = SerialBuffer[2+i];}}
 				else {																				// waiting stack not empty
@@ -826,11 +828,12 @@ void USB_SerialCommand() {
 							USB_WaitingSoundFiles[1][0] = 1;}				// or just set the channel 2 flag
 						for (i=0; i<12; i++) {										// copy the filename to the waiting stack
 							USB_WaitingSoundFiles[1][1+i] = SerialBuffer[2+i];}}
-					else {																			// waiting sound is also for channel 1
+					else {																			// waiting sound is also for channel 2
 						if (USB_WaitingSoundFiles[1][1]) {				// is there a sound is waiting at position 2?
-							for (i=0; i<13; i++) {									// if yes move it to position 1 and copy the new sound to position 2
+							for (i=1; i<13; i++) {									// if yes move it to position 1 and copy the new sound to position 2
 								USB_WaitingSoundFiles[0][i] = USB_WaitingSoundFiles[1][i];
-								USB_WaitingSoundFiles[1][i+1] = SerialBuffer[2+i];}
+								USB_WaitingSoundFiles[1][i] = SerialBuffer[1+i];}
+							USB_WaitingSoundFiles[0][0] = USB_WaitingSoundFiles[1][0];
 							if (SerialBuffer[1] & 1) {							// handle looping flag
 								USB_WaitingSoundFiles[1][0] = 3;}
 							else {
@@ -840,7 +843,8 @@ void USB_SerialCommand() {
 								USB_WaitingSoundFiles[0][0] = 3;}
 							else {
 								USB_WaitingSoundFiles[0][0] = 1;}
-							USB_WaitingSoundFiles[0][i+1] = SerialBuffer[2+i];}}}}}
+							for (i=0; i<12; i++) {									// copy the filename to the waiting stack
+								USB_WaitingSoundFiles[0][i+1] = SerialBuffer[2+i];}}}}}}
 		break;
 	case 54:																						// sound volume setting
 		APC_settings[Volume] = 2*SerialBuffer[1];					// set system volume
