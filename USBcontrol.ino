@@ -32,8 +32,8 @@ byte USB_HWrule_RelSw[16][3];													// hardware rules for released switche
 byte USB_SolRecycleTime[22];													// recycle time for each solenoid
 byte USB_SolTimers[22];																// stores the sol timer numbers and indicates which solenoids are blocked due to active recycling time
 byte USB_DisplayProtocol[5];													// stores the selected display protocol
-char USB_RepeatSound[12];															// name of the sound file to be repeated
-char USB_RepeatMusic[12];															// name of the music file to be repeated
+char USB_RepeatSound[13];															// name of the sound file to be repeated
+char USB_RepeatMusic[13];															// name of the music file to be repeated
 byte USB_WaitingSoundFiles[2][14];										// names of the waiting sound files first byte is for channel and commands
 byte USB_WaitSoundTimer;															// number of the timer for the sound sequencing
 
@@ -929,9 +929,23 @@ void USB_ResetWaitSoundTimers(byte Dummy) {						// reset the timer and play wai
 	UNUSED(Dummy);
 	if (USB_WaitingSoundFiles[0][1]) {									// any waiting sounds?
 		if (USB_WaitingSoundFiles[0][0] & 1) {						// sound for channel 2 waiting?
-			PlaySound(50, (char*) USB_WaitingSoundFiles+1);}
+			PlaySound(50, (char*) USB_WaitingSoundFiles+1);
+			if (USB_WaitingSoundFiles[0][0] & 2) {					// looping active?
+				for (i=0; i<12; i++) {
+					USB_RepeatSound[i] = USB_WaitingSoundFiles[0][1+i];}
+				NextSoundName = USB_RepeatSound;
+				AfterSound = PlayNextSound;}
+			else {
+				AfterSound = 0;}}
 		else {																						// waiting sound is for channel 1
-			PlayMusic(50, (char*) USB_WaitingSoundFiles+1);}
+			PlayMusic(50, (char*) USB_WaitingSoundFiles+1);
+			if (USB_WaitingSoundFiles[0][0] & 2) {					// looping active?
+				for (i=0; i<12; i++) {
+					USB_RepeatMusic[i] = USB_WaitingSoundFiles[0][1+i];}
+				NextMusicName = USB_RepeatMusic;
+				AfterMusic = PlayNextMusic;}
+			else {
+				AfterMusic = 0;}}
 		if (USB_WaitingSoundFiles[1][1]) {								// any sound waiting at stack position 2?
 			for (i=0; i<13; i++) {													// if yes move it to position 1 and clear position 2
 				USB_WaitingSoundFiles[0][i] = USB_WaitingSoundFiles[1][i];
