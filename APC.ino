@@ -401,7 +401,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 		*(DisplayLower) = RightCredit[32 + 2 * ActiveTimers];} // show the number of active timers
 
 	if (APC_settings[DimInserts] || (LampWait == LampPeriod)) { // if inserts have to be dimmed or waiting time has passed
-		REG_PIOC_CODR = AllSelects + AllData;         		// clear all select signals and the data bus
+		REG_PIOC_CODR = AllSelects - Sel5 + AllData;         		// clear all select signals and the data bus
 		REG_PIOC_SODR = 268435456;}                   		// use Sel0 to disable column driver outputs at half time
 
 	// Switches
