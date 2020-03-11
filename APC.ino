@@ -3,6 +3,12 @@ SdFat SD;
 #include <SPI.h>
 #include "Arduino.h"
 #include "Sound.h"
+#define UpDown 53                                			// arduino pin connected to the auto/up - manual/Down button
+#define Blanking  22		                              // arduino pin to control the blanking signal
+#define VolumePin 13																	// arduino pin to control the sound volume
+#define AllSelects 871346688							           	// mask for all port C pins belonging to select signals except special switch select
+#define Sel5 2097152																	// mask for the Sel5 select signal
+#define AllData 510
 
 const char APC_Version[6] = "00.13";                  // Current APC version - includes the other INO files also
 const int SwMax = 72;                                 // number of existing switches (max. 72)
@@ -51,7 +57,6 @@ byte SwitchStack = 0;                                 // determines which switch
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
 byte SwEvents[2];                                     // contains the number of pending switch events in each stack
 uint32_t SwitchRows[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the status of all switch rows
-int SwDrv = 0;                                        // switch driver being accessed at the moment
 const byte *DispRow1;                                 // determines which patterns are to be shown (2 lines with 16 chars each)
 const byte *DispRow2;
 const byte *DispPattern1;
@@ -106,6 +111,7 @@ void (*Switch_Pressed)(byte);                         // Pointer to current beha
 void (*Switch_Released)(byte);                        // Pointer to current behavior mode for released switches
 void (*SerialCommand)();															// Pointer to the serial command handler (0 if serial command mode is off)
 char EnterIni[3];
+byte HwExt_Stack[10][2];															// stack for bytes to be send to the HW_ext interface (first bytes specifies the select line to be activated
 uint16_t *SoundBuffer;																// buffers sound data from SD to be processed by interrupt
 uint16_t *MusicBuffer;																// buffers music data from SD to be processed by interrupt
 uint16_t *Buffer16b;																	// 16bit pointer to the audio DAC buffer
@@ -132,13 +138,6 @@ byte SoundPriority = 0;																// stores the priority of the sound file 
 bool SoundPrio = false;																// indicates which channel has to be processed first
 char *NextSoundName;
 const char TestSounds[3][15] = {{"MUSIC.BIN"},{"SOUND.BIN"},0};
-void ExitSettings(bool change);
-void HandleTextSetting(bool change);
-void HandleNumSetting(bool change);
-void HandleBoolSetting(bool change);
-void RestoreDefaults(bool change);
-void HandleVolumeSetting(bool change);
-void HandleDisplaySetting(bool change);
 
 struct SettingTopic {																	// one topic of a list of settings
 	char Text[17];																			// display text
@@ -221,13 +220,7 @@ byte APC_settings[64];																// system settings to be stored on the SD
 byte game_settings[64];																// game settings to be stored on the SD
 byte *SettingsPointer;																// points to the settings being changed
 const char *SettingsFileName;													// points to the settings file currently being edited
-const int UpDown = 53;                                // arduino pin connected to the auto/up - manual/Down button
-const int Blanking = 22;                              // arduino pin to control the blanking signal
-const byte VolumePin = 13;														// arduino pin to control the sound volume
 const unsigned long SwitchMask[8] = {65536, 16777216, 8388608, 4194304, 64, 16, 8, 4};
-const unsigned long AllSelects = 871346688;           // mask for all port C pins belonging to select signals except special switch select
-const unsigned long Sel5 = 2097152;										// mask for the Sel5 select signal
-const unsigned long AllData = 510;
 uint16_t SwDrvMask = 2;                               // mask for switch row select
 byte SolBuffer[3];                                    // stores the state of the solenoid latches
 
@@ -388,6 +381,7 @@ void EnterAttractMode(byte Event) {                   // Enter the attract mode 
 
 void TC7_Handler() {                                  // interrupt routine - runs every ms
 	TC_GetStatus(TC2, 1);                               // clear status
+	static byte SwDrv = 0;                              // switch driver being accessed at the moment
 	static byte DispCol = 0;                            // display column being illuminated at the moment
 	static byte LampCol = 0;                            // lamp column being illuminated at the moment
 	static uint16_t LampColMask = 2;                    // mask for lamp column select
