@@ -385,7 +385,6 @@ void TC7_Handler() {                                  // interrupt routine - run
 	static byte DispCol = 0;                            // display column being illuminated at the moment
 	static byte LampCol = 0;                            // lamp column being illuminated at the moment
 	static uint16_t LampColMask = 2;                    // mask for lamp column select
-	static bool LEDFlag;																// stores whether Sel5 has to be triggered by the rising or falling edge
 	static byte LEDCount = 0;														// points to the next command byte to be send to the LED exp board
 	int i;                                              // general purpose counter
 	uint32_t Buff;
@@ -395,7 +394,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 		*(DisplayLower) = RightCredit[32 + 2 * ActiveTimers];} // show the number of active timers
 
 	if (APC_settings[DimInserts] || (LampWait == LampPeriod)) { // if inserts have to be dimmed or waiting time has passed
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;         		// clear all select signals and the data bus
+		REG_PIOC_CODR = AllSelects + AllData;         		// clear all select signals and the data bus
 		REG_PIOC_SODR = 268435456;}                   		// use Sel0 to disable column driver outputs at half time
 
 	// Switches
@@ -421,7 +420,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}		// store the switch number to be processed in the main loop
 		i++;}
 	SwDrvMask = SwDrvMask<<1;                  					// and the corresponding select pattern
-	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals except Sel5 and the data bus
+	REG_PIOC_CODR = AllSelects + AllData;        				// clear all select signals and the data bus
 	if (SwDrv < 7) {
 		REG_PIOC_SODR = AllData - SwDrvMask;           		// put select pattern on data bus
 		SwDrv++;                                  				// next switch driver
@@ -458,35 +457,35 @@ void TC7_Handler() {                                  // interrupt routine - run
 	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
 		REG_PIOD_CODR = 15;                               // clear strobe select signals
 		REG_PIOD_SODR = DispCol;                          // set display column
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects + AllData;      				// clear all select signals and the data bus
 		byte Buf = ~(*(DispRow1+2*DispCol));
 		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the upper row
 		REG_PIOC_SODR = 524288;                           // use Sel8
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects + AllData;      				// clear all select signals and the data bus
 		Buf = ~(*(DispRow1+2*DispCol+1));
 		REG_PIOC_SODR = Buf<<1;                           // set 2nd byte of the display pattern for the upper row
 		REG_PIOC_SODR = 262144;                           // use Sel9
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects + AllData;      				// clear all select signals and the data bus
 		Buf = ~(*(DispRow2+2*DispCol));
 		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 131072;                           // use Sel10
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects + AllData;      				// clear all select signals and the data bus
 		Buf = ~(*(DispRow2+2*DispCol+1));
 		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 65536;}                           // use Sel11
 	else {
 		REG_PIOD_CODR = 15;                               // clear strobe select signals
 		REG_PIOD_SODR = DispCol;                          // set display column
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects + AllData;      				// clear all select signals and the data bus
 		REG_PIOC_SODR = *(DispRow1+2*DispCol)<<1;         // set 1st byte of the display pattern for the upper row
 		REG_PIOC_SODR = 524288;                           // use Sel8
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects + AllData;      				// clear all select signals and the data bus
 		REG_PIOC_SODR = *(DispRow1+2*DispCol+1)<<1;       // set 2nd byte of the display pattern for the upper row
 		REG_PIOC_SODR = 262144;                           // use Sel9
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects + AllData;      				// clear all select signals and the data bus
 		REG_PIOC_SODR = *(DispRow2+2*DispCol)<<1;         // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 131072;                           // use Sel10
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects + AllData;      				// clear all select signals and the data bus
 		REG_PIOC_SODR = *(DispRow2+2*DispCol+1)<<1;       // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 65536;}                           // use Sel11
 
@@ -514,18 +513,18 @@ void TC7_Handler() {                                  // interrupt routine - run
 	// Solenoids
 
 	if (SolChange) {                                		// is there a solenoid state to be changed?
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals and the data bus
+		REG_PIOC_CODR = AllSelects + AllData;      // clear all select signals and the data bus
 		if (SolLatch & 1) {
 			c = SolBuffer[0];
 			REG_PIOC_SODR = c<<1;
 			REG_PIOC_SODR = 16777216;}											// select first latch
 		if (SolLatch & 2) {
-			REG_PIOC_CODR = AllSelects - Sel5 + AllData;    // clear all select signals and the data bus
+			REG_PIOC_CODR = AllSelects + AllData;    // clear all select signals and the data bus
 			c = SolBuffer[1];
 			REG_PIOC_SODR = c<<1;
 			REG_PIOC_SODR = 8388608;}												// select second latch
 		if (SolLatch & 4) {
-			REG_PIOC_CODR = AllSelects - Sel5 + AllData;    // clear all select signals and the data bus
+			REG_PIOC_CODR = AllSelects + AllData;    // clear all select signals and the data bus
 			c = SolBuffer[2];
 			REG_PIOC_SODR = c<<1;
 			REG_PIOC_SODR = 4194304;}												// select third latch
@@ -533,7 +532,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 		SolChange = false;}																// reset flag
 
 	REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
-	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals and the data bus
+	REG_PIOC_CODR = AllSelects + AllData;        // clear all select signals and the data bus
 
 	// Lamps
 
@@ -560,19 +559,13 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (LampCol > 19) {                               // 20ms over
 			LampCol = 0;}                                   // start from the beginning
 		if (LampCol < 8) {                                // the first 8 cycles are for transmitting the status of the lamp matrix
-			REG_PIOC_CODR = AllData;
 			c = 2;
 			if (!LampCol){                                  // max column reached?
 				c = LampColumns[LampCol];}
 			else {
 				c = *(LampPattern+LampCol);}
 			REG_PIOC_SODR = c<<1;														// write lamp pattern
-			if (LEDFlag) {
-				LEDFlag = false;
-				REG_PIOC_CODR = Sel5;}                        // activate Sel5 falling edge
-			else {
-				LEDFlag = true;
-				REG_PIOC_SODR = Sel5;}}                       // activate Sel5 rising edge
+			REG_PIOC_SODR = Sel5;}                       		// activate Sel5 rising edge
 		else {                                            // the lamp matrix is already sent
 			if ((LampCol < 13) || LEDCount) {               // still time to send a command or command still running?
 				if (LEDCommandBytes) {                        // are there any pending LED commands?
@@ -582,24 +575,26 @@ void TC7_Handler() {                                  // interrupt routine - run
 					if (LEDCount == LEDCommandBytes) {          // not all command bytes sent?
 						LEDCommandBytes = 0;
 						LEDCount = 0;}
-					if (LEDFlag) {
-						LEDFlag = false;
-						REG_PIOC_CODR = Sel5;}                    // activate Sel5 falling edge
-					else {
-						LEDFlag = true;
-						REG_PIOC_SODR = Sel5;}}}
+					REG_PIOC_SODR = Sel5;}}
 			else {                                          // LampCol > 13
 				if (LampCol == 17) {
 					REG_PIOC_CODR = AllData;
 					REG_PIOC_SODR = 170<<1;                     // time to sync
-					if (LEDFlag) {
-						LEDFlag = false;
-						REG_PIOC_CODR = Sel5;}                    // activate Sel5 falling edge
-					else {
-						LEDFlag = true;
-						REG_PIOC_SODR = Sel5;}}}}
+					REG_PIOC_SODR = Sel5;}}}
 		LampCol++;}
 
+	// Hardware extension interface
+
+	if (HwExt_Stack[0][1]) {
+		REG_PIOC_CODR = AllSelects + AllData;      // clear all select signals and the data bus
+		c = HwExt_Stack[0][0];
+		REG_PIOC_SODR = c<<1;
+		byte x = 0;
+		while (!(HwExt_Stack[0][1] & 1)) {
+			HwExt_Stack[0][1]>>1;
+			x++;}
+
+	}
 	// Sound
 
 	if (g_Sound.next != g_Sound.running) {
