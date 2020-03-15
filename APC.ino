@@ -584,11 +584,11 @@ void TC7_Handler() {                                  // interrupt routine - run
 						WriteToHwExt(LEDCommand[LEDCount], 1);}   // write LED command with Sel5 falling edge
 					else {
 						LEDFlag = true;
-						WriteToHwExt(LEDCommand[LEDCount], 129);}}
-				LEDCount++;                                 	// increase the counter
-				if (LEDCount == LEDCommandBytes) {          	// not all command bytes sent?
-					LEDCommandBytes = 0;
-					LEDCount = 0;}}
+						WriteToHwExt(LEDCommand[LEDCount], 129);}
+					LEDCount++;                                 	// increase the counter
+					if (LEDCount == LEDCommandBytes) {          	// not all command bytes sent?
+						LEDCommandBytes = 0;
+						LEDCount = 0;}}}
 			else {                                          // LampCol > 13
 				if (LampCol == 17) {													// time to sync
 					if (LEDFlag) {
@@ -906,7 +906,7 @@ bool WriteToHwExt(byte Data, byte Selects) {					// write data and selects to ri
 	BufPosition++;
 	if (BufPosition >= HwExtStackPosMax) {							// end of buffer reached?
 		BufPosition = 0;}																	// start from zero
-	if (HwExtIRQpos == HwExtBufPos) {										// ringbuffer full
+	if (HwExtIRQpos == BufPosition) {										// ringbuffer full
 		return false;}																		// return fail signal
 	else {
 		HwExt_Buf[BufPosition][0] = Data;									// write data
