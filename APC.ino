@@ -8,7 +8,9 @@ SdFat SD;
 #define VolumePin 13																	// arduino pin to control the sound volume
 #define AllSelects 871346688							           	// mask for all port C pins belonging to select signals except special switch select
 #define Sel5 2097152																	// mask for the Sel5 select signal
+#define HwExtSels 606077440														// mask for all Hw extension port select signals
 #define AllData 510
+#define HwExtStackPosMax 20														// size of the HwExtBuffer
 
 const char APC_Version[6] = "00.13";                  // Current APC version - includes the other INO files also
 const int SwMax = 72;                                 // number of existing switches (max. 72)
@@ -111,7 +113,9 @@ void (*Switch_Pressed)(byte);                         // Pointer to current beha
 void (*Switch_Released)(byte);                        // Pointer to current behavior mode for released switches
 void (*SerialCommand)();															// Pointer to the serial command handler (0 if serial command mode is off)
 char EnterIni[3];
-byte HwExt_Stack[10][2];															// stack for bytes to be send to the HW_ext interface (first bytes specifies the select line to be activated
+byte HwExt_Buf[20][2];																// ringbuffer for bytes to be send to the HW_ext interface (first bytes specifies the select line to be activated
+byte HwExtIRQpos = 0;																	// next buffer position for the interrupt to work on
+byte HwExtBufPos = 0;																	// next buffer position to be written to
 uint16_t *SoundBuffer;																// buffers sound data from SD to be processed by interrupt
 uint16_t *MusicBuffer;																// buffers music data from SD to be processed by interrupt
 uint16_t *Buffer16b;																	// 16bit pointer to the audio DAC buffer
@@ -385,8 +389,9 @@ void TC7_Handler() {                                  // interrupt routine - run
 	static byte DispCol = 0;                            // display column being illuminated at the moment
 	static byte LampCol = 0;                            // lamp column being illuminated at the moment
 	static uint16_t LampColMask = 2;                    // mask for lamp column select
-	static bool LEDFlag;																// stores whether Sel5 has to be triggered by the rising or falling edge
+	static bool LEDFlag;																// stores whether the select has to be triggered by the rising or falling edge
 	static byte LEDCount = 0;														// points to the next command byte to be send to the LED exp board
+	const uint32_t HwExtSelMask[4] = {2097152, 536870912, 512, 67108864};
 	int i;                                              // general purpose counter
 	uint32_t Buff;
 	uint16_t c;
@@ -395,7 +400,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 		*(DisplayLower) = RightCredit[32 + 2 * ActiveTimers];} // show the number of active timers
 
 	if (APC_settings[DimInserts] || (LampWait == LampPeriod)) { // if inserts have to be dimmed or waiting time has passed
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;         		// clear all select signals and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
 		REG_PIOC_SODR = 268435456;}                   		// use Sel0 to disable column driver outputs at half time
 
 	// Switches
@@ -421,7 +426,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}		// store the switch number to be processed in the main loop
 		i++;}
 	SwDrvMask = SwDrvMask<<1;                  					// and the corresponding select pattern
-	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals except Sel5 and the data bus
+	REG_PIOC_CODR = AllSelects - HwExtSels + AllData;        // clear all select signals except HwExtSels and the data bus
 	if (SwDrv < 7) {
 		REG_PIOC_SODR = AllData - SwDrvMask;           		// put select pattern on data bus
 		SwDrv++;                                  				// next switch driver
@@ -458,35 +463,35 @@ void TC7_Handler() {                                  // interrupt routine - run
 	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
 		REG_PIOD_CODR = 15;                               // clear strobe select signals
 		REG_PIOD_SODR = DispCol;                          // set display column
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		byte Buf = ~(*(DispRow1+2*DispCol));
 		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the upper row
 		REG_PIOC_SODR = 524288;                           // use Sel8
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		Buf = ~(*(DispRow1+2*DispCol+1));
 		REG_PIOC_SODR = Buf<<1;                           // set 2nd byte of the display pattern for the upper row
 		REG_PIOC_SODR = 262144;                           // use Sel9
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		Buf = ~(*(DispRow2+2*DispCol));
 		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 131072;                           // use Sel10
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		Buf = ~(*(DispRow2+2*DispCol+1));
 		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 65536;}                           // use Sel11
 	else {
 		REG_PIOD_CODR = 15;                               // clear strobe select signals
 		REG_PIOD_SODR = DispCol;                          // set display column
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		REG_PIOC_SODR = *(DispRow1+2*DispCol)<<1;         // set 1st byte of the display pattern for the upper row
 		REG_PIOC_SODR = 524288;                           // use Sel8
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		REG_PIOC_SODR = *(DispRow1+2*DispCol+1)<<1;       // set 2nd byte of the display pattern for the upper row
 		REG_PIOC_SODR = 262144;                           // use Sel9
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		REG_PIOC_SODR = *(DispRow2+2*DispCol)<<1;         // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 131072;                           // use Sel10
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		REG_PIOC_SODR = *(DispRow2+2*DispCol+1)<<1;       // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 65536;}                           // use Sel11
 
@@ -514,18 +519,18 @@ void TC7_Handler() {                                  // interrupt routine - run
 	// Solenoids
 
 	if (SolChange) {                                		// is there a solenoid state to be changed?
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
 		if (SolLatch & 1) {
 			c = SolBuffer[0];
 			REG_PIOC_SODR = c<<1;
 			REG_PIOC_SODR = 16777216;}											// select first latch
 		if (SolLatch & 2) {
-			REG_PIOC_CODR = AllSelects - Sel5 + AllData;    // clear all select signals and the data bus
+			REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
 			c = SolBuffer[1];
 			REG_PIOC_SODR = c<<1;
 			REG_PIOC_SODR = 8388608;}												// select second latch
 		if (SolLatch & 4) {
-			REG_PIOC_CODR = AllSelects - Sel5 + AllData;    // clear all select signals and the data bus
+			REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
 			c = SolBuffer[2];
 			REG_PIOC_SODR = c<<1;
 			REG_PIOC_SODR = 4194304;}												// select third latch
@@ -533,7 +538,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 		SolChange = false;}																// reset flag
 
 	REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
-	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals and the data bus
+	REG_PIOC_CODR = AllSelects - HwExtSels + AllData;   // clear all select signals and the data bus
 
 	// Lamps
 
@@ -560,45 +565,59 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (LampCol > 19) {                               // 20ms over
 			LampCol = 0;}                                   // start from the beginning
 		if (LampCol < 8) {                                // the first 8 cycles are for transmitting the status of the lamp matrix
-			REG_PIOC_CODR = AllData;
-			c = 2;
+			byte LampData;
 			if (!LampCol){                                  // max column reached?
-				c = LampColumns[LampCol];}
+				LampData = LampColumns[LampCol];}
 			else {
-				c = *(LampPattern+LampCol);}
-			REG_PIOC_SODR = c<<1;														// write lamp pattern
+				LampData = *(LampPattern+LampCol);}
 			if (LEDFlag) {
 				LEDFlag = false;
-				REG_PIOC_CODR = Sel5;}                        // activate Sel5 falling edge
+				WriteToHwExt(LampData, 1);}                   // write lamp pattern with Sel5 falling edge
 			else {
 				LEDFlag = true;
-				REG_PIOC_SODR = Sel5;}}                       // activate Sel5 rising edge
+				WriteToHwExt(LampData, 129);}}                // activate Sel5 rising edge
 		else {                                            // the lamp matrix is already sent
 			if ((LampCol < 13) || LEDCount) {               // still time to send a command or command still running?
 				if (LEDCommandBytes) {                        // are there any pending LED commands?
-					REG_PIOC_CODR = AllData;
-					REG_PIOC_SODR = (LEDCommand[LEDCount])<<1;  // send the first byte
-					LEDCount++;                                 // increase the counter
-					if (LEDCount == LEDCommandBytes) {          // not all command bytes sent?
-						LEDCommandBytes = 0;
-						LEDCount = 0;}
 					if (LEDFlag) {
 						LEDFlag = false;
-						REG_PIOC_CODR = Sel5;}                    // activate Sel5 falling edge
+						WriteToHwExt(LEDCommand[LEDCount], 1);}   // write LED command with Sel5 falling edge
 					else {
 						LEDFlag = true;
-						REG_PIOC_SODR = Sel5;}}}
+						WriteToHwExt(LEDCommand[LEDCount], 129);}}
+				LEDCount++;                                 	// increase the counter
+				if (LEDCount == LEDCommandBytes) {          	// not all command bytes sent?
+					LEDCommandBytes = 0;
+					LEDCount = 0;}}
 			else {                                          // LampCol > 13
-				if (LampCol == 17) {
-					REG_PIOC_CODR = AllData;
-					REG_PIOC_SODR = 170<<1;                     // time to sync
+				if (LampCol == 17) {													// time to sync
 					if (LEDFlag) {
 						LEDFlag = false;
-						REG_PIOC_CODR = Sel5;}                    // activate Sel5 falling edge
+						WriteToHwExt(170, 1);}                    // write sync command with Sel5 falling edge
 					else {
 						LEDFlag = true;
-						REG_PIOC_SODR = Sel5;}}}}
+						WriteToHwExt(170, 129);}}}}
 		LampCol++;}
+
+	// Hardware extension interface
+
+	while (HwExtIRQpos != HwExtBufPos) {								// for all bytes in the ringbuffer
+		HwExtIRQpos++;																		// go to next task
+		if (HwExtIRQpos >= HwExtStackPosMax) {						// end of buffer reached?
+			HwExtIRQpos = 0;}																// start from zero
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
+		c = HwExt_Buf[HwExtIRQpos][0];										// get data byte
+		REG_PIOC_SODR = c<<1;															// and put it on the data bus
+		if (HwExt_Buf[HwExtIRQpos][1] & 128) {						// rising select edge requested?
+			for (i=0;i<4;i++) {															// for all HwExt selects
+				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
+					REG_PIOC_SODR = HwExtSelMask[i];						// generate a rising edge
+					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}	// shift to the next bit
+		else {																						// falling select edge requested
+			for (i=0;i<4;i++) {															// for all HwExt selects
+				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
+					REG_PIOC_CODR = HwExtSelMask[i];						// generate a falling edge
+					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}}	// shift to the next bit
 
 	// Sound
 
@@ -881,6 +900,19 @@ void KillTimer(byte TimerNo) {
 	TimerValue[TimerNo] = 0;                        		// set counter to 0
 	TimerEvent[TimerNo] = 0;														// clear Timer Event
 	BlockTimers = false;}																// release the IRQ block
+
+bool WriteToHwExt(byte Data, byte Selects) {					// write data and selects to ringbuffer
+	byte BufPosition = HwExtBufPos;
+	BufPosition++;
+	if (BufPosition >= HwExtStackPosMax) {							// end of buffer reached?
+		BufPosition = 0;}																	// start from zero
+	if (HwExtIRQpos == HwExtBufPos) {										// ringbuffer full
+		return false;}																		// return fail signal
+	else {
+		HwExt_Buf[BufPosition][0] = Data;									// write data
+		HwExt_Buf[BufPosition][1] = Selects;							// write selects
+		HwExtBufPos = BufPosition;												// store new buffer position
+		return true;}}																		// return OK signal
 
 byte ConvertNumUpper(byte Number, byte Pattern) {			// convert a number to be shown in the upper row of numerical displays
 	const byte NumMaskUpper[5] = {184,64,4,2,1};				// Bitmasks for the upper row of numerical displays
