@@ -1,0 +1,74 @@
+#show_version=5
+
+- duration: 1
+  lights:
+        l_track_10: 0
+        l_track_13: ff
+- duration: 1
+  lights:
+        l_track_13: 0
+        l_track_6: ff
+- duration: 1
+  lights:
+        l_track_6: 0
+        l_track_4: ff
+- duration: 1
+  lights:
+        l_track_4: 0
+        l_track_1: ff
+- duration: 1
+  lights:
+        l_track_1: 0
+        l_track_2: ff
+- duration: 1
+  lights:
+        l_track_2: 0
+        l_track_3: ff
+- duration: 1
+  lights:
+        l_track_3: 0
+        l_track_5: ff
+- duration: 1
+  lights:
+        l_track_5: 0
+        l_track_7: ff
+- duration: 1
+  lights:
+        l_track_7: 0
+        l_track_9: ff
+- duration: 1
+  lights:
+        l_track_9: 0
+        l_track_10: ff
+- duration: 1
+  lights:
+        l_track_10: 0
+        l_track_11: ff
+- duration: 1
+  lights:
+        l_track_11: 0
+        l_track_8: ff
+- duration: 1
+  lights:
+        l_track_8: 0
+        l_track_15: ff
+- duration: 1
+  lights:
+        l_track_15: 0
+        l_track_17: ff
+- duration: 1
+  lights:
+        l_track_17: 0
+        l_track_16: ff
+- duration: 1
+  lights:
+        l_track_16: 0
+        l_track_14: ff
+- duration: 1
+  lights:
+        l_track_14: 0
+        l_track_12: ff
+- duration: 1
+  lights:
+        l_track_12: 0
+        l_track_10: ff

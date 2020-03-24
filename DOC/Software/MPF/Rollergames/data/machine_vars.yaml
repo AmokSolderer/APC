@@ -1,0 +1,3 @@
+player1_score:
+  expire: !!null 'null'
+  value: 2100

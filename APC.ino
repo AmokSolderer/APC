@@ -4,7 +4,7 @@ SdFat SD;
 #include "Arduino.h"
 #include "Sound.h"
 
-const char APC_Version[6] = "00.11";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "00.12";                  // Current APC version - includes the other INO files also
 const int SwMax = 72;                                 // number of existing switches (max. 72)
 const int LampMax = 64;                               // number of existing lamps (max. 64)
 const int DispColumns = 16;                           // Number of columns of the used display unit
@@ -1093,7 +1093,6 @@ void ScrollUpper(byte Step) {													// call with Step = 0 and the text bei
 		ActivateTimer(50, Step, ScrollUpper);}}						// come back
 
 void AddScrollUpper(byte Step) {											// call with Step = 0 and the text being in DisplayUpper2
-                          // TODO add support for more displays
   if (!Step) {
     Step++;}
 	if (Step > 8) {																			// scroll into the left display?
@@ -1115,7 +1114,6 @@ void AddScrollUpper(byte Step) {											// call with Step = 0 and the text be
 		ActivateTimer(50, Step, AddScrollUpper);}}
 
 void ScrollLower(byte Step) {													// call with Step = 0 and the text being in DisplayLower2
-                        // TODO add support for more displays
     if (!Step) {
     Step++;}
 	if (Step < 8) {																			// do display 3 first
