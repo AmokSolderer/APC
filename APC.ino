@@ -17,15 +17,15 @@ const int SwMax = 72;                                 // number of existing swit
 const int LampMax = 64;                               // number of existing lamps (max. 64)
 const int DispColumns = 16;                           // Number of columns of the used display unit
 
-const byte AlphaUpper[118] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
+const byte AlphaUpper[128] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
 		63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,136,0,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
 		126,4,15,21,57,0,15,17,121,4,120,4,59,4,118,4,0,17,23,0,112,136,49,0,54,10,54,130,63,0, // Pattern A B C D E F G H I J K L M N O
-		124,4,63,128,124,132,107,4,8,17,55,0,48,40,54,160,0,170,0,26,9,40}; // Pattern P Q R S T U V W X Y Z
+		124,4,63,128,124,132,107,4,8,17,55,0,48,40,54,160,0,170,0,26,9,40,0,0,0,0,0,0,0,0,1,0}; // Pattern P Q R S T U V W X Y Z _
 
-const byte AlphaLower[118] = {0,0,0,0,0,0,0,0,182,35,0,0,0,0,0,0,0,0,0,0,2,247,2,35,0,0,2,2,0,0,0,80, // Blank $ * + - / for lower row alphanumeric displays
+const byte AlphaLower[128] = {0,0,0,0,0,0,0,0,182,35,0,0,0,0,0,0,0,0,0,0,2,247,2,35,0,0,2,2,0,0,0,80, // Blank $ * + - / for lower row alphanumeric displays
 		252,0,136,0,122,2,184,2,142,2,182,2,246,2,152,0,254,2,190,2,0,0,0,0,0,68,0,0,0,144,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < > and fill bytes
 		222,2,184,35,116,0,184,33,118,2,86,2,244,2,206,2,0,33,232,0,70,68,100,0,204,192,204,132,252,0, // Pattern A B C D E F G H I J K L M N O
-		94,2,252,4,94,6,182,2,16,33,236,0,68,80,204,20,0,212,0,224,48,80}; // Pattern P Q R S T U V W X Y Z
+		94,2,252,4,94,6,182,2,16,33,236,0,68,80,204,20,0,212,0,224,48,80,0,0,0,0,0,0,0,0,32,0}; // Pattern P Q R S T U V W X Y Z _
 
 const byte NumLower[118] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // Blank and fill bytes for lower row numeric displays
 		252,0,136,0,122,0,186,0,142,0,182,0,246,0,152,0,254,0,190,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 = and fill bytes
