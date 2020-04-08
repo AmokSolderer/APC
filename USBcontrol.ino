@@ -752,6 +752,28 @@ void USB_SerialCommand() {
 		else {
 			Serial.write((byte) 127);}											// no changed switches at all
 		break;
+	case 50:
+		if (SerialBuffer[0] == 1) {												// channel 1?
+			char FileName[9] = "0_00.snd";
+			FileName[2] = 48 + (SerialBuffer[1] >> 4);
+			FileName[3] = 48 + (SerialBuffer[1] & 16);
+			if (SD.exists(FileName)) {
+				PlaySound(50, (char*) FileName);}}
+		else {																						// channel 2
+			if (!SerialBuffer[1]) {
+				break;}
+			if (SerialBuffer[1] > 29 && SerialBuffer[1] < 48) {
+				break;}
+			if (SerialBuffer[1] > 79 && SerialBuffer[1] < 89) {
+				break;}
+			if (SerialBuffer[1] > 95 && SerialBuffer[1] < 115) {
+				break;}
+			char FileName[9] = "1_00.snd";
+			FileName[2] = 48 + (SerialBuffer[1] >> 4);
+			FileName[3] = 48 + (SerialBuffer[1] & 16);
+			if (SD.exists(FileName)) {
+				PlayMusic(50, (char*) FileName);}}
+		break;
 	case 51:																						// stop sound
 		if (SerialBuffer[0] == 1) {												// channel 1?
 			AfterMusic = 0;
