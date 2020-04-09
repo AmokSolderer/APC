@@ -6,7 +6,7 @@ const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 															1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
 															250,250,250,250,250,0,0,2,0,0,		// Length of USB commands from 30 - 39
 															1,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 40 - 49
-															0,1,251,0,2,0,0,0,0,0,	// Length of USB commands from 50 - 59
+															2,1,251,0,2,0,0,0,0,0,	// Length of USB commands from 50 - 59
 															10,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 60 - 69
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 70 - 79
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
@@ -754,13 +754,36 @@ void USB_SerialCommand() {
 		break;
 	case 50:
 		if (SerialBuffer[0] == 1) {												// channel 1?
+			if (!SerialBuffer[1]) {													// stop sound
+				AfterSound = 0;
+				StopPlayingSound();
+				break;}
+			if (SerialBuffer[1] == 85) {										// sound command 0x55
+				break;}
+			if (SerialBuffer[1] == 170) {										// sound command 0xaa
+				break;}
+			if (SerialBuffer[1] == 255) {										// sound command 0xff
+				break;}
 			char FileName[9] = "0_00.snd";
-			FileName[2] = 48 + (SerialBuffer[1] >> 4);
-			FileName[3] = 48 + (SerialBuffer[1] & 16);
+			if ((SerialBuffer[1] >> 4) < 10) {
+				FileName[2] = 48 + (SerialBuffer[1] >> 4);}
+			else {
+				FileName[2] = 55 + (SerialBuffer[1] >> 4);}
+			if ((SerialBuffer[1] & 15) < 10) {
+				FileName[3] = 48 + (SerialBuffer[1] & 15);}
+			else {
+				FileName[3] = 55 + (SerialBuffer[1] & 15);}
 			if (SD.exists(FileName)) {
-				PlaySound(50, (char*) FileName);}}
+				PlaySound(50, (char*) FileName);}
+			else {
+				*(DisplayLower+12) = NumLower[2 * (FileName[2] - 32)]; // show the number of the missing sound
+				*(DisplayLower+13) = NumLower[2 * (FileName[2] - 32) + 1];
+				*(DisplayLower+14) = NumLower[2 * (FileName[3] - 32)];
+				*(DisplayLower+15) = NumLower[2 * (FileName[3] - 32) + 1];}}
 		else {																						// channel 2
-			if (!SerialBuffer[1]) {
+			if (!SerialBuffer[1]) {													// stop music
+				AfterMusic = 0;
+				StopPlayingMusic();
 				break;}
 			if (SerialBuffer[1] > 29 && SerialBuffer[1] < 48) {
 				break;}
@@ -768,11 +791,29 @@ void USB_SerialCommand() {
 				break;}
 			if (SerialBuffer[1] > 95 && SerialBuffer[1] < 115) {
 				break;}
+			if (SerialBuffer[1] == 170) {										// sound command 0xaa
+				break;}
+			if (SerialBuffer[1] == 255) {										// sound command 0xff
+				break;}
 			char FileName[9] = "1_00.snd";
-			FileName[2] = 48 + (SerialBuffer[1] >> 4);
-			FileName[3] = 48 + (SerialBuffer[1] & 16);
+			if ((SerialBuffer[1] >> 4) < 10) {
+				FileName[2] = 48 + (SerialBuffer[1] >> 4);}
+			else {
+				FileName[2] = 55 + (SerialBuffer[1] >> 4);}
+			if ((SerialBuffer[1] & 15) < 10) {
+				FileName[3] = 48 + (SerialBuffer[1] & 15);}
+			else {
+				FileName[3] = 55 + (SerialBuffer[1] & 15);}
 			if (SD.exists(FileName)) {
-				PlayMusic(50, (char*) FileName);}}
+				if (SerialBuffer[1] < 16) {
+					PlayMusic(50, (char*) FileName);}
+				else {
+					PlaySound(50, (char*) FileName);}}
+			else {
+				*(DisplayLower+28) = NumLower[2 * (FileName[2] - 32)]; // show the number of the missing music
+				*(DisplayLower+29) = NumLower[2 * (FileName[2] - 32) + 1];
+				*(DisplayLower+30) = NumLower[2 * (FileName[3] - 32)];
+				*(DisplayLower+31) = NumLower[2 * (FileName[3] - 32) + 1];}}
 		break;
 	case 51:																						// stop sound
 		if (SerialBuffer[0] == 1) {												// channel 1?
