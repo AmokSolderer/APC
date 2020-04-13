@@ -125,6 +125,7 @@ byte MusicIRpos = 0;																	// next block of the music buffer to be rea
 byte StopMusic = 0;																		// last music buffer block with music data
 bool StartMusic = false;															// music startup active -> filling music buffer
 bool PlayingMusic = false;														// StartMusic done -> continuously playing music
+byte MusicVolume = 0;																	// 0 = max volume
 File MusicFile;																				// file handle for the music file (SD)
 byte AfterMusicPending = 0;														// indicates an after music event -> 0 - no event, 1 - event pending, 2 - event is blocked by StopPlayingMusic
 void (*AfterMusic)() = 0;															// program to execute after music file has ended
@@ -625,11 +626,18 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (PlayingMusic) {
 			if (PlayingSound) {															// playing music and sound
 				Buffer16b = (uint16_t *) g_Sound.next;				// get address of the next DAC buffer part to be filled
-				for (i=0; i<64; i++) {
-					*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i);	// write channel 1
-					Buffer16b++;
-					*Buffer16b = *(SoundBuffer+SoundIRpos*128+2*i) | 4096;  // write channel 2
-					Buffer16b++;}
+				if (MusicVolume) {														// reduce the music volume?
+					for (i=0; i<64; i++) {
+						*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume;	// write channel 1
+						Buffer16b++;
+						*Buffer16b = *(SoundBuffer+SoundIRpos*128+2*i) | 4096;  // write channel 2
+						Buffer16b++;}}
+				else {																				// full volume
+					for (i=0; i<64; i++) {
+						*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i);	// write channel 1
+						Buffer16b++;
+						*Buffer16b = *(SoundBuffer+SoundIRpos*128+2*i) | 4096;  // write channel 2
+						Buffer16b++;}}
 				g_Sound.next = (uint32_t *) Buffer16b;				// write back the updated address
 				g_Sound.enqueue();
 				MusicIRpos++;																	// increase the IRQ read pointer for the music buffer
@@ -660,11 +668,18 @@ void TC7_Handler() {                                  // interrupt routine - run
 							AfterSoundPending = 0;}}}}
 			else {																					// playing music only
 				Buffer16b = (uint16_t *) g_Sound.next;				// same as above but music only
-				for (i=0; i<64; i++) {
-					*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i);
-					Buffer16b++;
-					*Buffer16b = 6144;  												// 2048 | 4096
-					Buffer16b++;}
+				if (MusicVolume) {														// reduce the music volume?
+					for (i=0; i<64; i++) {
+						*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume;
+						Buffer16b++;
+						*Buffer16b = 6144;  											// 2048 | 4096
+						Buffer16b++;}}
+				else {																				// full volume
+					for (i=0; i<64; i++) {
+						*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i);
+						Buffer16b++;
+						*Buffer16b = 6144;  											// 2048 | 4096
+						Buffer16b++;}}
 				g_Sound.next = (uint32_t *) Buffer16b;
 				g_Sound.enqueue();
 				MusicIRpos++;

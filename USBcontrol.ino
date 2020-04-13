@@ -570,6 +570,7 @@ void USB_SerialCommand() {
 					break;}
 		break;
 	case 33:																						// set display 3 to
+		break;
 		switch (APC_settings[DisplayType]) {						// which display is used?
 		case 0:																					// 4 ALPHA+CREDIT
 			switch (USB_DisplayProtocol[3]) {							// which protocol shall be used?
@@ -651,6 +652,7 @@ void USB_SerialCommand() {
 					break;}
 		break;
 	case 34:																						// set display 4 to
+		break;
 		switch (APC_settings[DisplayType]) {						// which display is used?
 		case 0:																					// 4 ALPHA+CREDIT
 			switch (USB_DisplayProtocol[4]) {							// which protocol shall be used?
@@ -774,6 +776,10 @@ void USB_SerialCommand() {
 			else {
 				FileName[3] = 55 + (SerialBuffer[1] & 15);}
 			if (SD.exists(FileName)) {
+				*(DisplayLower+2) = NumLower[2 * (FileName[2] - 32)]; // show the number of the sound to be played
+				*(DisplayLower+3) = NumLower[2 * (FileName[2] - 32) + 1];
+				*(DisplayLower+4) = NumLower[2 * (FileName[3] - 32)];
+				*(DisplayLower+5) = NumLower[2 * (FileName[3] - 32) + 1];
 				PlaySound(50, (char*) FileName);}
 			else {
 				*(DisplayLower+12) = NumLower[2 * (FileName[2] - 32)]; // show the number of the missing sound
@@ -789,7 +795,8 @@ void USB_SerialCommand() {
 				break;}
 			if (SerialBuffer[1] > 79 && SerialBuffer[1] < 89) {
 				break;}
-			if (SerialBuffer[1] > 95 && SerialBuffer[1] < 115) {
+			if (SerialBuffer[1] > 95 && SerialBuffer[1] < 100) { // music volume command 0x6X
+				MusicVolume = SerialBuffer[1] - 96;
 				break;}
 			if (SerialBuffer[1] == 170) {										// sound command 0xaa
 				break;}
@@ -805,7 +812,11 @@ void USB_SerialCommand() {
 			else {
 				FileName[3] = 55 + (SerialBuffer[1] & 15);}
 			if (SD.exists(FileName)) {
-				if (SerialBuffer[1] < 16) {
+				*(DisplayLower+18) = NumLower[2 * (FileName[2] - 32)]; // show the number of the music to be played
+				*(DisplayLower+19) = NumLower[2 * (FileName[2] - 32) + 1];
+				*(DisplayLower+20) = NumLower[2 * (FileName[3] - 32)];
+				*(DisplayLower+21) = NumLower[2 * (FileName[3] - 32) + 1];
+				if ((SerialBuffer[1] < 128)) {
 					PlayMusic(50, (char*) FileName);}
 				else {
 					PlaySound(50, (char*) FileName);}}
