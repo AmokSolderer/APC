@@ -74,7 +74,7 @@ void loop() {
 					RecByte = RecByte>>1;}}
 			else {																						// selected lamps get the selected color immediately
 				for (i=0;i<8;i++) {															// for the 8 lamps currently being processed
-					if (RecByte & 1) {
+					if (RecByte & 1) {														// lamp set?
 						for (c=0;c<5;c++) {													// and 5 brightness levels
 							TurnOff[c][Sync*8+i] = false;							// stop all fading
 							TurnOn[c][Sync*8+i] = false;}

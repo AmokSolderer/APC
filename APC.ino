@@ -392,7 +392,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 	static uint16_t LampColMask = 2;                    // mask for lamp column select
 	static bool LEDFlag;																// stores whether the select has to be triggered by the rising or falling edge
 	static byte LEDCount = 0;														// points to the next command byte to be send to the LED exp board
-	const uint32_t HwExtSelMask[4] = {2097152, 536870912, 512, 67108864};
+	const uint32_t HwExtSelMask[4] = {2097152, 536870912, 512, 67108864}; // mask for sel5, sel6, sel7, SPI_CS1
 	int i;                                              // general purpose counter
 	uint32_t Buff;
 	uint16_t c;
