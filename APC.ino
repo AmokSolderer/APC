@@ -1696,12 +1696,12 @@ void StrobeLights(byte State) {
 	StrobeLightsTimer = ActivateTimer(30, State, StrobeLights);}
 
 void PlayMusic(byte Priority, const char* Filename) {
-	if (StartMusic) {																	// already in startup phase?
-		MusicFile.close();															// close the previous file
-		StartMusic = 0;																	// cancel the startup
-		MBP = 0;}																				// and neglect its data
-	if (!PlayingMusic) {															// no music in play at the moment?
-		MusicFile = SD.open(Filename);									// open file
+	if (StartMusic) {																		// already in startup phase?
+		MusicFile.close();																// close the previous file
+		StartMusic = 0;																		// cancel the startup
+		MBP = 0;}																					// and neglect its data
+	if (!PlayingMusic) {																// no music in play at the moment?
+		MusicFile = SD.open(Filename);										// open file
 		if (!MusicFile) {
 			ShowFileNotFound(Filename);}
 		else {
@@ -1709,30 +1709,32 @@ void PlayMusic(byte Priority, const char* Filename) {
 				MusicPriority = Priority -100;}
 			else {
 				MusicPriority = Priority;}
-			MusicFile.read(MusicBuffer, 2*128);						// read first block
-			StartMusic = true;														// indicate the startup phase
-			MBP++;}}																			// increase read pointer
-	else {																						// music already playing
-		if (Priority > 99) {														// Priority > 99 means new prio has to be larger (not equal) to play
+			MusicFile.read(MusicBuffer, 2*128);							// read first block
+			StartMusic = true;															// indicate the startup phase
+			MBP++;}}																				// increase read pointer
+	else {																							// music already playing
+		if (Priority > 99) {															// Priority > 99 means new prio has to be larger (not equal) to play
 			Priority = Priority - 100;
 			if (Priority > MusicPriority) {
 				MusicPriority = Priority;
-				MusicFile.close();													// close the old file
-				MusicFile = SD.open(Filename);							// open the new one
+				MusicFile.close();														// close the old file
+				MusicFile = SD.open(Filename);								// open the new one
 				if (!MusicFile) {
 					ShowFileNotFound(Filename);}
 				else {
-					if (!PlayingMusic) {											// neglect old data if still in the startup phase
+					StopMusic = 0;															// cancel a previous stop command
+					if (!PlayingMusic) {												// neglect old data if still in the startup phase
 						MBP = 0;}}}}
 		else {
 			if (Priority >= MusicPriority) {
 				MusicPriority = Priority;
-				MusicFile.close();													// close the old file
-				MusicFile = SD.open(Filename);							// open the new one
+				MusicFile.close();														// close the old file
+				MusicFile = SD.open(Filename);								// open the new one
 				if (!MusicFile) {
 					ShowFileNotFound(Filename);}
 				else {
-					if (!PlayingMusic) {											// neglect old data if still in the startup phase
+					StopMusic = 0;															// cancel a previous stop command
+					if (!PlayingMusic) {												// neglect old data if still in the startup phase
 						MBP = 0;}}}}}}
 
 void StopPlayingMusic() {
@@ -1765,8 +1767,8 @@ void PlaySound(byte Priority, const char* Filename) {
 		SoundFile.close();
 		StartSound = 0;
 		SBP = 0;}
-	if (!PlayingSound) {															// no sound in play at the moment?
-		SoundFile = SD.open(Filename);									// open file
+	if (!PlayingSound) {																// no sound in play at the moment?
+		SoundFile = SD.open(Filename);										// open file
 		if (!SoundFile) {
 			ShowFileNotFound(Filename);}
 		else {
@@ -1774,30 +1776,32 @@ void PlaySound(byte Priority, const char* Filename) {
 				SoundPriority = Priority -100;}
 			else {
 				SoundPriority = Priority;}
-			SoundFile.read(SoundBuffer, 2*128);						// read first block
-			StartSound = true;														// indicate the startup phase
-			SBP++;}}																			// increase read pointer
-	else {																						// music already playing
-		if (Priority > 99) {														// Priority > 99 means new prio has to be larger (not equal) to play
+			SoundFile.read(SoundBuffer, 2*128);							// read first block
+			StartSound = true;															// indicate the startup phase
+			SBP++;}}																				// increase read pointer
+	else {																							// music already playing
+		if (Priority > 99) {															// Priority > 99 means new prio has to be larger (not equal) to play
 			Priority = Priority - 100;
 			if (Priority > SoundPriority) {
 				SoundPriority = Priority;
-				SoundFile.close();													// close the old file
-				SoundFile = SD.open(Filename);							// open the new one
+				SoundFile.close();														// close the old file
+				SoundFile = SD.open(Filename);								// open the new one
 				if (!SoundFile) {
 					ShowFileNotFound(Filename);}
 				else {
-					if (!PlayingSound) {											// neglect old data if still in the startup phase
+					StopSound = 0;															// cancel a previous stop command
+					if (!PlayingSound) {												// neglect old data if still in the startup phase
 						SBP = 0;}}}}
 		else {
 			if (Priority >= SoundPriority) {
 				SoundPriority = Priority;
-				SoundFile.close();													// close the old file
-				SoundFile = SD.open(Filename);							// open the new one
+				SoundFile.close();														// close the old file
+				SoundFile = SD.open(Filename);								// open the new one
 				if (!SoundFile) {
 					ShowFileNotFound(Filename);}
 				else {
-					if (!PlayingSound) {											// neglect old data if still in the startup phase
+					StopSound = 0;															// cancel a previous stop command
+					if (!PlayingSound) {												// neglect old data if still in the startup phase
 						SBP = 0;}}}}}}
 
 void StopPlayingSound() {

@@ -762,6 +762,8 @@ void USB_SerialCommand() {
 				break;}
 			if (SerialBuffer[1] == 85) {										// sound command 0x55
 				break;}
+			if (SerialBuffer[1] == 105) { 									// strange misplaced sound during multiball
+				break;}
 			if (SerialBuffer[1] == 170) {										// sound command 0xaa
 				break;}
 			if (SerialBuffer[1] == 255) {										// sound command 0xff
@@ -787,20 +789,24 @@ void USB_SerialCommand() {
 				*(DisplayLower+14) = NumLower[2 * (FileName[3] - 32)];
 				*(DisplayLower+15) = NumLower[2 * (FileName[3] - 32) + 1];}}
 		else {																						// channel 2
-			if (!SerialBuffer[1]) {													// stop music
+			if (!SerialBuffer[1]) {													// sound command 0x00 - stop music
 				AfterMusic = 0;
 				StopPlayingMusic();
 				break;}
-			if (SerialBuffer[1] > 29 && SerialBuffer[1] < 48) {
+			if (SerialBuffer[1] == 127) {									// sound command 0x7f - stop sound
+				AfterSound = 0;
+				StopPlayingSound();
 				break;}
-			if (SerialBuffer[1] > 79 && SerialBuffer[1] < 89) {
+			if (SerialBuffer[1] > 29 && SerialBuffer[1] < 48) {	// unknown sound commands 0x1d to 0x30
+				break;}
+			if (SerialBuffer[1] > 79 && SerialBuffer[1] < 89) {	// unknown sound commands 0x4f to 0x59
 				break;}
 			if (SerialBuffer[1] > 95 && SerialBuffer[1] < 100) { // music volume command 0x6X
 				MusicVolume = SerialBuffer[1] - 96;
 				break;}
-			if (SerialBuffer[1] == 170) {										// sound command 0xaa
+			if (SerialBuffer[1] == 170) {										// unknown sound command 0xaa
 				break;}
-			if (SerialBuffer[1] == 255) {										// sound command 0xff
+			if (SerialBuffer[1] == 255) {										// unknown sound command 0xff
 				break;}
 			char FileName[9] = "1_00.snd";
 			if ((SerialBuffer[1] >> 4) < 10) {
