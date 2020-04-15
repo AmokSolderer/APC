@@ -15,7 +15,8 @@ const byte USB_DisplayDigitNum[8][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0
 const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
 
 																											// offsets of settings in the settings array
-const byte USB_Watchdog = 0;													// watchdog enable setting
+#define USB_Watchdog 0																// watchdog enable setting
+#define USB_Debug 1																		// USB debug mode
 
 const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
@@ -37,7 +38,10 @@ char USB_RepeatMusic[13];															// name of the music file to be repeated
 byte USB_WaitingSoundFiles[2][14];										// names of the waiting sound files first byte is for channel and commands
 byte USB_WaitSoundTimer;															// number of the timer for the sound sequencing
 
-struct SettingTopic USB_setList[4] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
+
+struct SettingTopic USB_setList[5] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+		{" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS",ExitSettings,0,0,0},
 		{"",NULL,0,0,0}};
@@ -239,7 +243,7 @@ void USB_SerialCommand() {
 			return;}}
 	CommandPending = false;
 	BufferPointer = 0;
-	if (APC_settings[DebugMode]) {
+	if (game_settings[USB_Debug] == 1) {
 		for (i=1; i<24; i++) {                        		// move all characters in the lower display row 4 chars to the left
 			DisplayLower[i] = DisplayLower[i+8];}
 		*(DisplayLower+30) = DispPattern2[32 + 2 * (Command % 10)]; // and insert the command number to the right of the row
@@ -401,39 +405,39 @@ void USB_SerialCommand() {
 				break;}
 		break;
 	case 31:																						// set display 1 to
-		switch (APC_settings[DisplayType]) {						// which display is used?
-		case 0:																					// 4 ALPHA+CREDIT
-		case 1:																					// Sys11 Pinbot
-		case 2:																					// Sys11 F-14
-			switch (USB_DisplayProtocol[1]) {							// which protocol shall be used?
-			case 1:																				// BCD
+		switch (APC_settings[DisplayType]) {							// which display is used?
+		case 0:																						// 4 ALPHA+CREDIT
+		case 1:																						// Sys11 Pinbot
+		case 2:																						// Sys11 F-14
+			switch (USB_DisplayProtocol[1]) {								// which protocol shall be used?
+			case 1:																					// BCD
 				for (i=0; i<7; i++) {
 					*(DisplayUpper+2*i+2) = DispPattern1[32+2*SerialBuffer[i]];
 					*(DisplayUpper+2*i+3) = DispPattern1[33+2*SerialBuffer[i]];}
 				break;
-			case 2:																				// BCD with comma
+			case 2:																					// BCD with comma
 				for (i=0; i<7; i++) {
-					if (SerialBuffer[i] & 128) {							// comma set?
+					if (SerialBuffer[i] & 128) {								// comma set?
 						*(DisplayUpper+2*i+2) = 128 | DispPattern1[32+2*(SerialBuffer[i] & 15)];
 						*(DisplayUpper+2*i+3) = 64 | DispPattern1[33+2*(SerialBuffer[i] & 15)];}
 					else {
 						*(DisplayUpper+2*i+2) = DispPattern1[32+2*SerialBuffer[i]];
 						*(DisplayUpper+2*i+3) = DispPattern1[33+2*SerialBuffer[i]];}}
 				break;
-			case 3:																				// 7 segment pattern (1 byte)
+			case 3:																					// 7 segment pattern (1 byte)
 				for (i=0; i<7; i++) {
 					*(DisplayUpper+2*i+2) = SerialBuffer[i];
-					if (SerialBuffer[i] & 64) {								// g segment set?
-						*(DisplayUpper+2*i+3) = 4;}							// turn on m segment of alpha display
+					if (SerialBuffer[i] & 64) {									// g segment set?
+						*(DisplayUpper+2*i+3) = 4;}								// turn on m segment of alpha display
 					else {
 						*(DisplayUpper+2*i+1) = 0;}}
 				break;
-			case 4:																				// 14 segment pattern (2 bytes)
+			case 4:																					// 14 segment pattern (2 bytes)
 				for (i=0; i<14; i++) {
 					*(DisplayUpper+i+2) = SerialBuffer[i];}
 				break;
-			case 5:																				// ASCII
-			case 6:																				// ASCII with comma
+			case 5:																					// ASCII
+			case 6:																					// ASCII with comma
 				WritePlayerDisplay((char*)SerialBuffer, 1);
 				break;}
 			break;
@@ -471,264 +475,265 @@ void USB_SerialCommand() {
 					WritePlayerDisplay((char*)SerialBuffer, 1);
 					break;}
 				break;
-				case 6:																					// Sys3 - 6 display
+				case 6:																				// Sys3 - 6 display
 
 					break;
-				case 7:																					// Sys7 + 9 display
-					switch (USB_DisplayProtocol[1]) {							// which protocol shall be used?
-					case 1:																				// BCD
-					case 2:																				// BCD with comma
+				case 7:																				// Sys7 + 9 display
+					switch (USB_DisplayProtocol[1]) {						// which protocol shall be used?
+					case 1:																			// BCD
+					case 2:																			// BCD with comma
 						DisplayBCD(1, SerialBuffer);
 						break;
-					case 5:																				// ASCII
-					case 6:																				// ASCII with comma
+					case 5:																			// ASCII
+					case 6:																			// ASCII with comma
 						WritePlayerDisplay((char*)SerialBuffer, 1);
 						break;}
 					break;}
 		break;
 	case 32:																						// set display 2 to
-		switch (APC_settings[DisplayType]) {						// which display is used?
-		case 0:																					// 4 ALPHA+CREDIT
-		case 1:																					// Sys11 Pinbot
-		case 2:																					// Sys11 F-14
-			switch (USB_DisplayProtocol[2]) {							// which protocol shall be used?
-			case 1:																				// BCD
+		switch (APC_settings[DisplayType]) {							// which display is used?
+		case 0:																						// 4 ALPHA+CREDIT
+		case 1:																						// Sys11 Pinbot
+		case 2:																						// Sys11 F-14
+			switch (USB_DisplayProtocol[2]) {								// which protocol shall be used?
+			case 1:																					// BCD
 				for (i=0; i<7; i++) {
 					*(DisplayUpper+2*i+18) = DispPattern1[32+2*SerialBuffer[i]];
 					*(DisplayUpper+2*i+19) = DispPattern1[33+2*SerialBuffer[i]];}
 				break;
-			case 2:																				// BCD with comma
+			case 2:																					// BCD with comma
 				for (i=0; i<7; i++) {
-					if (SerialBuffer[i] & 128) {							// comma set?
+					if (SerialBuffer[i] & 128) {								// comma set?
 						*(DisplayUpper+2*i+18) = 128 | DispPattern1[32+2*(SerialBuffer[i] & 15)];
 						*(DisplayUpper+2*i+19) = 64 | DispPattern1[33+2*(SerialBuffer[i] & 15)];}
 					else {
 						*(DisplayUpper+2*i+18) = DispPattern1[32+2*SerialBuffer[i]];
 						*(DisplayUpper+2*i+19) = DispPattern1[33+2*SerialBuffer[i]];}}
 				break;
-			case 3:																				// 7 segment pattern (1 byte)
+			case 3:																					// 7 segment pattern (1 byte)
 				for (i=0; i<7; i++) {
 					*(DisplayUpper+2*i+18) = SerialBuffer[i];
-					if (SerialBuffer[i] & 64) {								// g segment set?
-						*(DisplayUpper+2*i+19) = 4;}						// turn on m segment of alpha display
+					if (SerialBuffer[i] & 64) {									// g segment set?
+						*(DisplayUpper+2*i+19) = 4;}							// turn on m segment of alpha display
 					else {
 						*(DisplayUpper+2*i+19) = 0;}}
 				break;
-			case 4:																				// 14 segment pattern (2 bytes)
+			case 4:																					// 14 segment pattern (2 bytes)
 				for (i=0; i<14; i++) {
 					*(DisplayUpper+i+18) = SerialBuffer[i];}
 				break;
-			case 5:																				// ASCII
-			case 6:																				// ASCII with comma
+			case 5:																					// ASCII
+			case 6:																					// ASCII with comma
 				WritePlayerDisplay((char*)SerialBuffer, 2);
 				break;}
 			break;
 			case 3:																					// Sys11 BK2K
 			case 4:																					// Sys11 Taxi
-				switch (USB_DisplayProtocol[2]) {							// which protocol shall be used?
-				case 1:																				// BCD
-					for (i=0; i<16; i++) {
-						*(DisplayLower+2*i) = DispPattern2[32+2*SerialBuffer[i]];
-						*(DisplayLower+2*i+1) = DispPattern2[33+2*SerialBuffer[i]];}
-					break;
-				case 2:																				// BCD with comma
-					for (i=0; i<16; i++) {
-						if (SerialBuffer[i] & 128) {							// comma set?
-							*(DisplayLower+2*i) = 1 | DispPattern2[32+2*(SerialBuffer[i] & 15)];
-							*(DisplayLower+2*i+1) = 8 | DispPattern2[33+2*(SerialBuffer[i] & 15)];}
-						else {
+				if (!game_settings[USB_Debug]) {							// display can be used for debug information
+					switch (USB_DisplayProtocol[2]) {						// which protocol shall be used?
+					case 1:																			// BCD
+						for (i=0; i<16; i++) {
 							*(DisplayLower+2*i) = DispPattern2[32+2*SerialBuffer[i]];
-							*(DisplayLower+2*i+1) = DispPattern2[33+2*SerialBuffer[i]];}}
-					break;
-				case 3:																				// 7 segment pattern (1 byte)
-					for (i=0; i<16; i++) {
-						*(DisplayLower+2*i) = ConvertPattern(0, SerialBuffer[i]);}
-					break;
-				case 4:																				// 14 segment pattern (2 bytes)
-					for (i=0; i<16; i++) {
-						*(DisplayLower+2*i) = ConvertPattern(0, SerialBuffer[2*i]);
-						*(DisplayLower+2*i+1) = ConvertPattern(1, SerialBuffer[2*i+1]);}
-					break;
-				case 5:																				// ASCII
-				case 6:																				// ASCII with comma
-					WritePlayerDisplay((char*)SerialBuffer, 2);
-					break;}
-				break;
-				case 6:																					// Sys3 - 6 display
-
-					break;
-				case 7:																					// Sys7 + 9 display
-					switch (USB_DisplayProtocol[2]) {							// which protocol shall be used?
-					case 1:																				// BCD
-					case 2:																				// BCD with comma
-						DisplayBCD(2, SerialBuffer);
+							*(DisplayLower+2*i+1) = DispPattern2[33+2*SerialBuffer[i]];}
 						break;
-					case 5:																				// ASCII
-					case 6:																				// ASCII with comma
+					case 2:																			// BCD with comma
+						for (i=0; i<16; i++) {
+							if (SerialBuffer[i] & 128) {						// comma set?
+								*(DisplayLower+2*i) = 1 | DispPattern2[32+2*(SerialBuffer[i] & 15)];
+								*(DisplayLower+2*i+1) = 8 | DispPattern2[33+2*(SerialBuffer[i] & 15)];}
+							else {
+								*(DisplayLower+2*i) = DispPattern2[32+2*SerialBuffer[i]];
+								*(DisplayLower+2*i+1) = DispPattern2[33+2*SerialBuffer[i]];}}
+						break;
+					case 3:																			// 7 segment pattern (1 byte)
+						for (i=0; i<16; i++) {
+							*(DisplayLower+2*i) = ConvertPattern(0, SerialBuffer[i]);}
+						break;
+					case 4:																			// 14 segment pattern (2 bytes)
+						for (i=0; i<16; i++) {
+							*(DisplayLower+2*i) = ConvertPattern(0, SerialBuffer[2*i]);
+							*(DisplayLower+2*i+1) = ConvertPattern(1, SerialBuffer[2*i+1]);}
+						break;
+					case 5:																			// ASCII
+					case 6:																			// ASCII with comma
 						WritePlayerDisplay((char*)SerialBuffer, 2);
 						break;}
-					break;}
+					break;
+					case 6:																			// Sys3 - 6 display
+
+						break;
+					case 7:																			// Sys7 + 9 display
+						switch (USB_DisplayProtocol[2]) {					// which protocol shall be used?
+						case 1:																		// BCD
+						case 2:																		// BCD with comma
+							DisplayBCD(2, SerialBuffer);
+							break;
+						case 5:																		// ASCII
+						case 6:																		// ASCII with comma
+							WritePlayerDisplay((char*)SerialBuffer, 2);
+							break;}
+						break;}}
 		break;
 	case 33:																						// set display 3 to
-		break;
-		switch (APC_settings[DisplayType]) {						// which display is used?
-		case 0:																					// 4 ALPHA+CREDIT
-			switch (USB_DisplayProtocol[3]) {							// which protocol shall be used?
-			case 1:																				// BCD
-				for (i=0; i<7; i++) {
-					*(DisplayLower+2*i+2) = DispPattern2[32+2*SerialBuffer[i]];
-					*(DisplayLower+2*i+3) = DispPattern2[33+2*SerialBuffer[i]];}
-				break;
-			case 2:																				// BCD with comma
-				for (i=0; i<7; i++) {
-					if (SerialBuffer[i] & 128) {							// comma set?
-						*(DisplayLower+2*i+2) = 1 | DispPattern2[32+2*(SerialBuffer[i] & 15)];
-						*(DisplayLower+2*i+3) = 8 | DispPattern2[33+2*(SerialBuffer[i] & 15)];}
-					else {
-						*(DisplayLower+2*i+2) = DispPattern2[32+2*SerialBuffer[i]];
-						*(DisplayLower+2*i+3) = DispPattern2[33+2*SerialBuffer[i]];}}
-				break;
-			case 3:																				// 7 segment pattern (1 byte)
-				for (i=0; i<7; i++) {
-					*(DisplayUpper+2*i+2) = ConvertPattern(0, SerialBuffer[i]);
-					if (SerialBuffer[i] & 64) {								// g segment set?
-						*(DisplayLower+2*i+3) = 2;}							// turn on m segment of alpha display
-					else {
-						*(DisplayLower+2*i+3) = 0;}}
-				break;
-			case 4:																				// 14 segment pattern (2 bytes)
-				for (i=0; i<14; i++) {
-					*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[2*i]);
-					*(DisplayLower+2*i+3) = ConvertPattern(1, SerialBuffer[2*i+1]);}
-				break;
-			case 5:																				// ASCII
-			case 6:																				// ASCII with comma
-				WritePlayerDisplay((char*)SerialBuffer, 3);
-				break;}
-			break;
-			case 1:																					// Sys11 Pinbot
-			case 2:																					// Sys11 F-14
+		if (!game_settings[USB_Debug]) {									// display can be used for debug information
+			switch (APC_settings[DisplayType]) {						// which display is used?
+			case 0:																					// 4 ALPHA+CREDIT
 				switch (USB_DisplayProtocol[3]) {							// which protocol shall be used?
 				case 1:																				// BCD
 					for (i=0; i<7; i++) {
-						*(DisplayLower+2*i+2) = DispPattern2[32+2*SerialBuffer[i]];}
+						*(DisplayLower+2*i+2) = DispPattern2[32+2*SerialBuffer[i]];
+						*(DisplayLower+2*i+3) = DispPattern2[33+2*SerialBuffer[i]];}
 					break;
 				case 2:																				// BCD with comma
 					for (i=0; i<7; i++) {
 						if (SerialBuffer[i] & 128) {							// comma set?
-							*(DisplayLower+2*i+2) = 1 | DispPattern2[32+2*(SerialBuffer[i] & 15)];}
+							*(DisplayLower+2*i+2) = 1 | DispPattern2[32+2*(SerialBuffer[i] & 15)];
+							*(DisplayLower+2*i+3) = 8 | DispPattern2[33+2*(SerialBuffer[i] & 15)];}
 						else {
-							*(DisplayLower+2*i+2) = DispPattern2[32+2*SerialBuffer[i]];}}
+							*(DisplayLower+2*i+2) = DispPattern2[32+2*SerialBuffer[i]];
+							*(DisplayLower+2*i+3) = DispPattern2[33+2*SerialBuffer[i]];}}
 					break;
 				case 3:																				// 7 segment pattern (1 byte)
 					for (i=0; i<7; i++) {
-						*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[i]);}
+						*(DisplayUpper+2*i+2) = ConvertPattern(0, SerialBuffer[i]);
+						if (SerialBuffer[i] & 64) {								// g segment set?
+							*(DisplayLower+2*i+3) = 2;}							// turn on m segment of alpha display
+						else {
+							*(DisplayLower+2*i+3) = 0;}}
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
 					for (i=0; i<14; i++) {
-						*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[i]);}
+						*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[2*i]);
+						*(DisplayLower+2*i+3) = ConvertPattern(1, SerialBuffer[2*i+1]);}
 					break;
 				case 5:																				// ASCII
 				case 6:																				// ASCII with comma
 					WritePlayerDisplay((char*)SerialBuffer, 3);
 					break;}
 				break;
-				case 4:																					// Sys11 Taxi
-
-					break;
-				case 6:																					// Sys3 - 6 display
-
-					break;
-				case 7:																					// Sys7 + 9 display
-					switch (USB_DisplayProtocol[3]) {							// which protocol shall be used?
-					case 1:																				// BCD
-					case 2:																				// BCD with comma
-						DisplayBCD(3, SerialBuffer);
+				case 1:																				// Sys11 Pinbot
+				case 2:																				// Sys11 F-14
+					switch (USB_DisplayProtocol[3]) {						// which protocol shall be used?
+					case 1:																			// BCD
+						for (i=0; i<7; i++) {
+							*(DisplayLower+2*i+2) = DispPattern2[32+2*SerialBuffer[i]];}
 						break;
-					case 5:																				// ASCII
-					case 6:																				// ASCII with comma
+					case 2:																			// BCD with comma
+						for (i=0; i<7; i++) {
+							if (SerialBuffer[i] & 128) {						// comma set?
+								*(DisplayLower+2*i+2) = 1 | DispPattern2[32+2*(SerialBuffer[i] & 15)];}
+							else {
+								*(DisplayLower+2*i+2) = DispPattern2[32+2*SerialBuffer[i]];}}
+						break;
+					case 3:																			// 7 segment pattern (1 byte)
+						for (i=0; i<7; i++) {
+							*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[i]);}
+						break;
+					case 4:																			// 14 segment pattern (2 bytes)
+						for (i=0; i<14; i++) {
+							*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[i]);}
+						break;
+					case 5:																			// ASCII
+					case 6:																			// ASCII with comma
 						WritePlayerDisplay((char*)SerialBuffer, 3);
 						break;}
-					break;}
+					break;
+					case 4:																			// Sys11 Taxi
+
+						break;
+					case 6:																			// Sys3 - 6 display
+
+						break;
+					case 7:																			// Sys7 + 9 display
+						switch (USB_DisplayProtocol[3]) {					// which protocol shall be used?
+						case 1:																		// BCD
+						case 2:																		// BCD with comma
+							DisplayBCD(3, SerialBuffer);
+							break;
+						case 5:																		// ASCII
+						case 6:																		// ASCII with comma
+							WritePlayerDisplay((char*)SerialBuffer, 3);
+							break;}
+						break;}}
 		break;
 	case 34:																						// set display 4 to
-		break;
-		switch (APC_settings[DisplayType]) {						// which display is used?
-		case 0:																					// 4 ALPHA+CREDIT
-			switch (USB_DisplayProtocol[4]) {							// which protocol shall be used?
-			case 1:																				// BCD
-				for (i=0; i<7; i++) {
-					*(DisplayLower+2*i+18) = DispPattern2[32+2*SerialBuffer[i]];
-					*(DisplayLower+2*i+19) = DispPattern2[33+2*SerialBuffer[i]];}
-				break;
-			case 2:																				// BCD with comma
-				for (i=0; i<7; i++) {
-					if (SerialBuffer[i] & 128) {							// comma set?
-						*(DisplayLower+2*i+18) = 1 | DispPattern2[32+2*(SerialBuffer[i] & 15)];
-						*(DisplayLower+2*i+19) = 8 | DispPattern2[33+2*(SerialBuffer[i] & 15)];}
-					else {
-						*(DisplayLower+2*i+18) = DispPattern2[32+2*SerialBuffer[i]];
-						*(DisplayLower+2*i+19) = DispPattern2[33+2*SerialBuffer[i]];}}
-				break;
-			case 3:																				// 7 segment pattern (1 byte)
-				for (i=0; i<7; i++) {
-					*(DisplayUpper+2*i+18) = ConvertPattern(0, SerialBuffer[i]);
-					if (SerialBuffer[i] & 64) {								// g segment set?
-						*(DisplayLower+2*i+19) = 2;}						// turn on m segment of alpha display
-					else {
-						*(DisplayLower+2*i+19) = 0;}}
-				break;
-			case 4:																				// 14 segment pattern (2 bytes)
-				for (i=0; i<14; i++) {
-					*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[2*i]);
-					*(DisplayLower+2*i+3) = ConvertPattern(1, SerialBuffer[2*i+1]);}
-				break;
-			case 5:																				// ASCII
-			case 6:																				// ASCII with comma
-				WritePlayerDisplay((char*)SerialBuffer, 4);
-				break;}
-			break;
-			case 1:																					// Sys11 Pinbot
-			case 2:																					// Sys11 F-14
+		if (!game_settings[USB_Debug]) {									// display can be used for debug information
+			switch (APC_settings[DisplayType]) {						// which display is used?
+			case 0:																					// 4 ALPHA+CREDIT
 				switch (USB_DisplayProtocol[4]) {							// which protocol shall be used?
 				case 1:																				// BCD
 					for (i=0; i<7; i++) {
-						*(DisplayLower+2*i+18) = DispPattern2[32+2*SerialBuffer[i]];}
+						*(DisplayLower+2*i+18) = DispPattern2[32+2*SerialBuffer[i]];
+						*(DisplayLower+2*i+19) = DispPattern2[33+2*SerialBuffer[i]];}
 					break;
 				case 2:																				// BCD with comma
 					for (i=0; i<7; i++) {
 						if (SerialBuffer[i] & 128) {							// comma set?
-							*(DisplayLower+2*i+18) = 16 | DispPattern2[32+2*(SerialBuffer[i] & 15)];}
+							*(DisplayLower+2*i+18) = 1 | DispPattern2[32+2*(SerialBuffer[i] & 15)];
+							*(DisplayLower+2*i+19) = 8 | DispPattern2[33+2*(SerialBuffer[i] & 15)];}
 						else {
-							*(DisplayLower+2*i+18) = DispPattern2[32+2*SerialBuffer[i]];}}
+							*(DisplayLower+2*i+18) = DispPattern2[32+2*SerialBuffer[i]];
+							*(DisplayLower+2*i+19) = DispPattern2[33+2*SerialBuffer[i]];}}
 					break;
 				case 3:																				// 7 segment pattern (1 byte)
 					for (i=0; i<7; i++) {
-						*(DisplayLower+2*i+18) = ConvertPattern(0, SerialBuffer[i]);}
+						*(DisplayUpper+2*i+18) = ConvertPattern(0, SerialBuffer[i]);
+						if (SerialBuffer[i] & 64) {								// g segment set?
+							*(DisplayLower+2*i+19) = 2;}						// turn on m segment of alpha display
+						else {
+							*(DisplayLower+2*i+19) = 0;}}
 					break;
 				case 4:																				// 14 segment pattern (2 bytes)
 					for (i=0; i<14; i++) {
-						*(DisplayLower+2*i+18) = ConvertPattern(0, SerialBuffer[i]);}
+						*(DisplayLower+2*i+2) = ConvertPattern(0, SerialBuffer[2*i]);
+						*(DisplayLower+2*i+3) = ConvertPattern(1, SerialBuffer[2*i+1]);}
 					break;
 				case 5:																				// ASCII
 				case 6:																				// ASCII with comma
 					WritePlayerDisplay((char*)SerialBuffer, 4);
 					break;}
 				break;
-				case 6:																					// Sys3 - 6 display
-
-					break;
-				case 7:																					// Sys7 + 9 display
-					switch (USB_DisplayProtocol[4]) {							// which protocol shall be used?
-					case 1:																				// BCD
-					case 2:																				// BCD with comma
-						DisplayBCD(4, SerialBuffer);
+				case 1:																				// Sys11 Pinbot
+				case 2:																				// Sys11 F-14
+					switch (USB_DisplayProtocol[4]) {						// which protocol shall be used?
+					case 1:																			// BCD
+						for (i=0; i<7; i++) {
+							*(DisplayLower+2*i+18) = DispPattern2[32+2*SerialBuffer[i]];}
 						break;
-					case 5:																				// ASCII
-					case 6:																				// ASCII with comma
+					case 2:																			// BCD with comma
+						for (i=0; i<7; i++) {
+							if (SerialBuffer[i] & 128) {						// comma set?
+								*(DisplayLower+2*i+18) = 16 | DispPattern2[32+2*(SerialBuffer[i] & 15)];}
+							else {
+								*(DisplayLower+2*i+18) = DispPattern2[32+2*SerialBuffer[i]];}}
+						break;
+					case 3:																			// 7 segment pattern (1 byte)
+						for (i=0; i<7; i++) {
+							*(DisplayLower+2*i+18) = ConvertPattern(0, SerialBuffer[i]);}
+						break;
+					case 4:																			// 14 segment pattern (2 bytes)
+						for (i=0; i<14; i++) {
+							*(DisplayLower+2*i+18) = ConvertPattern(0, SerialBuffer[i]);}
+						break;
+					case 5:																			// ASCII
+					case 6:																			// ASCII with comma
 						WritePlayerDisplay((char*)SerialBuffer, 4);
 						break;}
-					break;}
+					break;
+					case 6:																			// Sys3 - 6 display
+
+						break;
+					case 7:																			// Sys7 + 9 display
+						switch (USB_DisplayProtocol[4]) {					// which protocol shall be used?
+						case 1:																		// BCD
+						case 2:																		// BCD with comma
+							DisplayBCD(4, SerialBuffer);
+							break;
+						case 5:																		// ASCII
+						case 6:																		// ASCII with comma
+							WritePlayerDisplay((char*)SerialBuffer, 4);
+							break;}
+						break;}}
 		break;
 	case 37:																						// select display protocol
 		if (SerialBuffer[0] < 5) {
@@ -778,11 +783,15 @@ void USB_SerialCommand() {
 			else {
 				FileName[3] = 55 + (SerialBuffer[1] & 15);}
 			if (SD.exists(FileName)) {
-				*(DisplayLower+2) = NumLower[2 * (FileName[2] - 32)]; // show the number of the sound to be played
-				*(DisplayLower+3) = NumLower[2 * (FileName[2] - 32) + 1];
-				*(DisplayLower+4) = NumLower[2 * (FileName[3] - 32)];
-				*(DisplayLower+5) = NumLower[2 * (FileName[3] - 32) + 1];
-				PlaySound(50, (char*) FileName);}
+				if (game_settings[USB_Debug] == 2) {					// display can be used for debug information
+					*(DisplayLower+2) = NumLower[2 * (FileName[2] - 32)]; // show the number of the sound to be played
+					*(DisplayLower+3) = NumLower[2 * (FileName[2] - 32) + 1];
+					*(DisplayLower+4) = NumLower[2 * (FileName[3] - 32)];
+					*(DisplayLower+5) = NumLower[2 * (FileName[3] - 32) + 1];}
+				if (SerialBuffer[1] < 128) {									// play speech with a higher priority
+					PlaySound(50, (char*) FileName);}
+				else {
+					PlaySound(51, (char*) FileName);}}
 			else {
 				*(DisplayLower+12) = NumLower[2 * (FileName[2] - 32)]; // show the number of the missing sound
 				*(DisplayLower+13) = NumLower[2 * (FileName[2] - 32) + 1];
@@ -793,7 +802,7 @@ void USB_SerialCommand() {
 				AfterMusic = 0;
 				StopPlayingMusic();
 				break;}
-			if (SerialBuffer[1] == 127) {									// sound command 0x7f - stop sound
+			if (SerialBuffer[1] == 127) {										// sound command 0x7f - stop sound
 				AfterSound = 0;
 				StopPlayingSound();
 				break;}
@@ -818,11 +827,12 @@ void USB_SerialCommand() {
 			else {
 				FileName[3] = 55 + (SerialBuffer[1] & 15);}
 			if (SD.exists(FileName)) {
-				*(DisplayLower+18) = NumLower[2 * (FileName[2] - 32)]; // show the number of the music to be played
-				*(DisplayLower+19) = NumLower[2 * (FileName[2] - 32) + 1];
-				*(DisplayLower+20) = NumLower[2 * (FileName[3] - 32)];
-				*(DisplayLower+21) = NumLower[2 * (FileName[3] - 32) + 1];
-				if ((SerialBuffer[1] < 128)) {
+				if (game_settings[USB_Debug] == 2) {					// display can be used for debug information
+					*(DisplayLower+18) = NumLower[2 * (FileName[2] - 32)]; // show the number of the music to be played
+					*(DisplayLower+19) = NumLower[2 * (FileName[2] - 32) + 1];
+					*(DisplayLower+20) = NumLower[2 * (FileName[3] - 32)];
+					*(DisplayLower+21) = NumLower[2 * (FileName[3] - 32) + 1];}
+				if ((SerialBuffer[1] < 128)) {								// play sounds > 127 on the sound channel
 					PlayMusic(50, (char*) FileName);}
 				else {
 					PlaySound(50, (char*) FileName);}}
@@ -885,7 +895,7 @@ void USB_SerialCommand() {
 			if (!USB_WaitSoundTimer) {
 				PlaySound(50, (char*) SerialBuffer+2);
 				USB_WaitSoundTimer = ActivateTimer(15, 0, USB_ResetWaitSoundTimers);
-				if (SerialBuffer[1] & 1) {											// looping active?
+				if (SerialBuffer[1] & 1) {										// looping active?
 					for (i=0; i<12; i++) {
 						USB_RepeatSound[i] = SerialBuffer[2+i];}
 					NextSoundName = USB_RepeatSound;
@@ -934,7 +944,7 @@ void USB_SerialCommand() {
 		i = 0;
 		c = 0;
 		if (!SerialBuffer[7] && !SerialBuffer[8] && !SerialBuffer[9]) { // all flags zero means disable rules
-			while (USB_HWrule_ActSw[i][0]) {									// check for HW activation rules for this switch
+			while (USB_HWrule_ActSw[i][0]) {								// check for HW activation rules for this switch
 				if (USB_HWrule_ActSw[i][1] == SerialBuffer[0]) { // rule for this solenoid found?
 					c = i;
 					byte x;
