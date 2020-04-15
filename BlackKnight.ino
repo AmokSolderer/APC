@@ -24,11 +24,12 @@ const byte BallSearchCoils[12] = {1,8,10,9,2,3,4,5,7,19,15,0}; // coils to fire 
 const unsigned int BK_SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,0,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
 const char BK_TestSounds[21][15] = {{"BK_E01.BIN"},{"BK_E02.BIN"},{"BK_E03.BIN"},{"BK_E04.BIN"},{"BK_E05.BIN"},{"BK_E06.BIN"},{"BK_E07.BIN"},{"BK_E08.BIN"},
 		{"BK_E09.BIN"},{"BK_E10.BIN"},{"BK_E11.BIN"},{"BK_E12.BIN"},{"BK_E13.BIN"},{"BK_E14.BIN"},{"BK_E15.BIN"},{"BK_E16.BIN"},{"BK_E17.BIN"},{"BK_E18.BIN"},{"BK_E18a.BIN"},{"BK_E19.BIN"},0};
+
 																											// offsets of settings in the settings array
-const byte TimedMagna = 0;                            // Timed Magna saves?
-const byte ReplayScore = 1;														// without credits being implemented just show some respect
-const byte MultiballJackpot = 2;											// optional multiball jackpot
-const byte BK_MultiballVolume = 3;
+#define TimedMagna 0                            			// Timed Magna saves?
+#define ReplayScore 1																	// without credits being implemented just show some respect
+#define MultiballJackpot 2														// optional multiball jackpot
+#define BK_MultiballVolume 3													// increase volume during multiball
 
 const byte BK_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 											  			0,0,0,0,0,0,0,0,

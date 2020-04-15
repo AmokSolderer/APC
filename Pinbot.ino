@@ -170,11 +170,11 @@ const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
                                    15,0b10000,0b10000,0b10000,0b10000,0b10000,0};
 
 																											// offsets of settings in the settings array
-const byte PB_DropTime = 0;														// drop target down time setting
-const byte PB_ReachPlanet = 1;												// target planet setting
-const byte PB_EnergyTimer = 2;												// energy timer setting
-const byte PB_MultiballVolume = 3;										// volume increase for the multiball
-const byte PB_BallSaver = 4;													// ball saver for the outlanes
+#define PB_DropTime 0																	// drop target down time setting
+#define PB_ReachPlanet 1															// target planet setting
+#define PB_EnergyTimer 2															// energy timer setting
+#define PB_MultiballVolume 3													// volume increase for the multiball
+#define PB_BallSaver 4																// ball saver for the outlanes
 
 const byte PB_defaults[64] = {5,6,15,0,0,0,0,0,		 		// game default settings
 											  			0,0,0,0,0,0,0,0,
@@ -1717,7 +1717,7 @@ void PB_Testmode(byte Select) {
 				if (!AppByte2) {
 					WriteUpper(" LATESTEDGES  ");
 					AppByte2 = 1;
-					break;}
+					break;} // @suppress("No break at end of case")
 			default:																				// all other switches
 				for (i=1; i<24; i++) {                        // move all characters in the lower display row 4 chars to the left
 					DisplayLower[i] = DisplayLower[i+8];}
