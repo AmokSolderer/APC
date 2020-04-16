@@ -14,7 +14,9 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards, at a price of well below 100€ per board. A more detailed calculation of the costs can be found in the [APC wiki](https://github.com/AmokSolderer/APC/wiki/Home).
 
-At the moment the APC cannot run the original Williams EPROM software, but we're working on a solution to conntect the APC via USB to PinMame. However, this board is mainly meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an API providing the necessary commands to make this a lot easier, but you still have to code the game specific part by yourself. But the new USB control mode is not only meant for PinMame, but also for the [Mission Pinball Framework](http://missionpinball.org/), which would be an alternative to coding.
+The APC by itself cannot run the original Williams EPROM software, but there is a small additional board available from the [Lisy project](https://lisy.dev) which is called Lisy_Mini. This board can be conntected to the APC via USB and runs PinMame on a Raspberry Pi. For more information please have a look at my PinMame page.
+However, this board is mainly meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to make this a lot easier. It's still a lot of effort to program a game completely from scratch, but you could run your game in PinMame and only use the API to do changes or extensions to the original rules.
+But the USB control mode is not only meant for PinMame, but also for the [Mission Pinball Framework](http://missionpinball.org/), which would be an alternative to coding.
 
 To see the APC in action take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
 
@@ -53,9 +55,10 @@ Please note that I have equipped my Black Knight with a [special kind of display
 
 To make it easier to start doing your own game I did a Base Code which provides basic pinball funtionality and should work in all machines with only small adaptions.
 
-## Current Status (September 2019)
+## Current Status (April 2020)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/wiki#cable-extensions).
+The PinMame support is still under development, so please refer to the PinMame page for details.
 
 | System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
@@ -64,7 +67,7 @@ The following table gives an overview about the various system generations the A
 |6| Not yet | Not yet | Yes | Needs an additional wire |
 |7| Yes | Not yet | Yes | Needs three additional wires |
 |9| Yes | soon | Yes |  |
-|11| Yes | Not yet | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
+|11| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
 |11a| Yes | Not yet | Yes |  |
 |11b| Not yet | Not yet | Yes |  |
 |11c| Yes | Not yet | Yes | The wires of three connectors must be extended |
