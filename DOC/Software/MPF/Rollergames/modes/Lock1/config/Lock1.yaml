@@ -2,29 +2,32 @@
 
 mode:
     start_events: drop_target_bank_war_drop_targets_down
-    stop_events: mode2_stop
+    stop_events: multiball_normal_multiball_ended
     priority: 200
     
 shots:
     lock1_shot:
         switch: s_lock_ramp_entry
         show_tokens:
-            light: l_team_2
+            light: l_lock
         profile: flash_profile
     
 multiball_locks:
     lock:
-        balls_to_lock: 3
+        balls_to_lock: 2
         balls_to_replace: 2
-        #locked_ball_counting_strategy: min_virtual_physical
         lock_devices: bd_lock
-        debug: yes
+        reset_count_for_current_player_events: multiball_normal_multiball_ended
+        disable_events: multiball_normal_multiball_started
+        #debug: yes
             
 multiballs:
     normal_multiball:
         ball_count: 3
         ball_locks: bd_lock
-        start_events: multiball_lock_lock_full
-        #replace_balls_in_play: true
-        debug: yes
+        #reset_events: multiball_normal_multiball_ended
+        enable_events: multiball_lock_lock_full
+        start_events: s_lock_ramp_entry_active
+        shoot_again: 5s
+        #debug: yes
         

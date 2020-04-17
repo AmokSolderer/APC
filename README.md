@@ -14,11 +14,32 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards, at a price of well below 100€ per board. A more detailed calculation of the costs can be found in the [APC wiki](https://github.com/AmokSolderer/APC/wiki/Home).
 
-The APC by itself cannot run the original Williams EPROM software, but there is a small additional board available from the [Lisy project](https://lisy.dev) which is called Lisy_Mini. This board can be conntected to the APC via USB and runs PinMame on a Raspberry Pi. For more information please have a look at my PinMame page.
-However, this board is mainly meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to make this a lot easier. It's still a lot of effort to program a game completely from scratch, but you could run your game in PinMame and only use the API to do changes or extensions to the original rules.
-But the USB control mode is not only meant for PinMame, but also for the [Mission Pinball Framework](http://missionpinball.org/), which would be an alternative to coding.
+The picture below shows an APC prototype in my Pinbot.
+
+![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
 
 To see the APC in action take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
+
+The APC by itself cannot run the original Williams EPROM software, but there is a small additional board available from the [Lisy project](https://lisy.dev) which is called Lisy_Mini. This board can be conntected to the APC via USB and runs PinMame on a Raspberry Pi. For more information please have a look at my [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md
+).
+
+However, this board is mainly meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to make this a lot easier. It's still a lot of effort to program a game completely from scratch, but you could run your game in PinMame and only use the API to do changes or extensions to the original rules.
+
+If you want to do your own game you don't necessarily have to bother with C coding, you could also use the [Mission Pinball Framework](http://missionpinball.org/). It can run on a PC or on the above mentioned Mini_Lisy and controls the APC via USB.
+
+I did a short video with some basic [MPF setup](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/MPF) to test that everything is working:
+
+[MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw)
+
+<iframe width="679" height="382" src="https://www.youtube.com/embed/w4Po8OE5Zkw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+### Hardware
+
+The APC hardware status is mature. I have version 2.0 in use since January 2018 without anything to complain about. Beginning of march 2019 You can find the schematics, BOM and layout data in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware). There have been some minor HW updates which are explained in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md).
+
+The APC features an HW extensions interface which is an 8 bit bus with several enable signals. At the moment there're two extension board available, but you could use it for all kinds of additional hardware.
+
+The first board is an LED expansion board to control WS2812 based LED-Strips with the APC. In this case it's used just as an example. For more information about this board please refer to the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware).
 
 The following picture shows the APC 2.0 in a Black Knight with the LED Expansion board connected to the hardware extensions interface.
 
@@ -28,21 +49,9 @@ A short video with this setup can be found here :
 
 [Hardware extensions interface video](https://youtu.be/8BnVTpKq-2Y)
 
-The LED expansion board is a self made board to control WS2812 based LED-Strips with the APC. In this case it's used just as an example. For more information about this board please refer to the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware).
+The second board is a driver for 8 additional solenoids. It is not yet tested and should therefore be handled with caution.
 
-Basically the hardware extensions interface is an 8 bit bus with several enable signals which can be used for all kinds of additional hardware.
-
-### Hardware
-
-The APC hardware status is mature. I have version 2.0 in use for more than a year now without anything to complain about. Beginning of march 2019 I built a version 2.1 board which spared some components and had some slight layout changes. The version in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware) is 2.3 which has the Display Segments 1 connector enlarged to 12 pins to ease the use of System7 and System9 displays.
-
-I have tested the APC in a Black Knight (System 7), a Pinbot (System 11a) and a Rollergames (System 11c), but I checked the connector pinouts and it should work with System 3,4,6 and 9 as well as the compatible Data East machines also.
-
-In the Pinbot I had to cut some cable ties and open up the wiring harness a bit in order to make the cable connectors reach their corresponding counterparts on the board. This is necessary as the APC is much smaller than the original circuit boards and the location of the connectors differs from System to System.
-
-![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
-
-Later System11 machines with an auxiliary power and interconnect board need 3 cable extensions, see the preparation section in [the wiki](https://github.com/AmokSolderer/APC/wiki) for details.
+I use special alphanumerical displays in my Black Knight which can also be found there as well as a replacement for the original System7 numerical displays.
 
 ### Software
 
@@ -52,8 +61,6 @@ The software consists of two parts: the operating system APC.ino and the game sp
 I have written game codes for my Black Knight and Pinbot. They are still not final, but good enough to have fun with and to use as a reference when writing own code. Additionally there's a Base Code which should serve as a starting point for you to do your own game. It contains the very basics of a pinball game and it can be easily adapted to your machine. As a startup guide how to start writing game code I have written a short tutorial in the [wiki](https://github.com/AmokSolderer/APC/wiki) section.
 
 Please note that I have equipped my Black Knight with a [special kind of display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha) and that advanced APC commands like scrolling are currently not usable with pre System11 displays. This is because I think that these displays are not suited for homebrew machines. If you do all the work needed to do your own game code, you'd for sure want to have a display with letters, otherwise you wouldn't be able to even have a decent high score list. Additionally it would be quite cumbersome to debug some game software without the display being able to show letters. Therfore I recommend to use an early System11 display which has at least one row with alphanumeric displays (or build my System7Alpha). However, the basic software support is implemented, which means you can use the old displays without any restrictions you just have to do a bit more coding to get all the features. And if you just want to use them with PinMame to replace your old boards these displays will work perfectly well as soon as the PinMame support is completely done.
-
-To make it easier to start doing your own game I did a Base Code which provides basic pinball funtionality and should work in all machines with only small adaptions.
 
 ## Current Status (April 2020)
 
