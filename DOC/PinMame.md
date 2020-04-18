@@ -20,7 +20,7 @@ To make this possible, it is necessary that PinMame and the APC can play sounds 
 
 The drawback of this is that you have to extract the music files from PinMame. Furthermore we have to understand how the audio boards work and emulate their behaviour. The first task is easy assuming we find a place to store the files somewhere in the internet, because then this work must only be done once for each game. For System 3 - 9 games I expect this to be easy anyway, as they have a very limited sound performance. You could use the Audio Debug Mode which is explained later to find out which sounds to extract.
 
-At the moment the list of available sound packages has only one entry, but we see the extraction of the sound files as a community task.
+At the moment the list of available sound packages has only one entry, but we see the extraction of the sound files as a community task. Of course it would be great if you'd share you sound package with the rest of us. 
 
 |System|Game|URL|Comments|
 |--|--|--|--|
@@ -28,7 +28,7 @@ At the moment the list of available sound packages has only one entry, but we se
 
 ## Audio boards
 
-Understanding the audio boards is the second. Again I expect this to be easy for games prior to System 11, but it took me roughly a week before I was satified with the sounds of my Pinbot. Of course I started from scratch, so it's going to be easier for the next one doing this, but System 11 features various audio boards and I don't know how much they differ from the Pinbot's. For this reason I'm going to maintain a list here where all PinMame relevant information about the various systems are listed.
+Understanding the audio boards is the second task at hand. Again I expect this to be easy for games prior to System 11, but it took me roughly a week before I was satified with the sounds of my Pinbot. Of course I started from scratch, so it's going to be easier for the next one doing this, but System 11 features various audio boards and I don't know how much they differ from the Pinbot's. For this reason I'm going to maintain a second list here where all PinMame relevant information about the various systems are listed.
 
 ### System 11
 
@@ -44,7 +44,7 @@ So if you have additional information to fill these gaps please tell us and we'r
 |00|aa|Unknown command, currently ignored|
 |00|ff|Unknown command, currently ignored|
 |01|00|Stop Music|
-|01|01 - 08|Music tracks, which are probably looped - not yet implemented|
+|01|01 - 08|Music tracks, which are probably looped - looping not yet implemented|
 |01|1d - 30|Unknown commands, currently ignored|
 |01|40 - 42|Transistions and endings for looped music|
 |01|4f - 59|Unknown commands, currently ignored|
@@ -52,6 +52,8 @@ So if you have additional information to fill these gaps please tell us and we'r
 |01|6X|Music volume setting 0x60 is full volume 0x64 is almost nothing|
 |01|aa|Unknown command, currently ignored|
 |01|ff|Unknown command, currently ignored|
+
+Prefix 01 plays music and sounds simultaneously. It looks like sound numbers below 0x80 are for music and the rest is for sounds. As the APC has only two independent sound channels, only the music of prefix 01 is played on the APC's music channel while the sounds are being forwarded to the sound channel.
 
 ## Recording the sounds
 
@@ -79,7 +81,7 @@ In this case sound 0x79 of prefix (board) 0 shall be played which means you have
 
 ### Finding out which sounds are still missing
 
-After you have extracted most of the files, there'll be the point when only a few files are still missing and you need to find out it's numbers. Of course you could still scan the Lisy log for unknown sound numbers, but in this stage it might be easier to use the 'Audio Debug Mode' of the APC.
+After you have extracted most of the files, there'll be the point when only a few files are still missing and you need to find out their numbers. Of course you could still scan the Lisy log for unknown sound numbers, but in this stage it might be easier to use the 'Audio Debug Mode' of the APC.
 
 You can activate this mode in the game settings. To do this you have to press Advance for more than a second to enter the settings. Use Advance to change from system to game settings and press the start button to enter those. Use Advance to proceed to the 'Debug Mode' setting, then change it to 'AUDIO' by pressing the start button. Go to 'Exit Settings' by pressing Advance and the Start button to confirm.
 

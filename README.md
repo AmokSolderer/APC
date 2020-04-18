@@ -25,7 +25,7 @@ The APC by itself cannot run the original Williams EPROM software, but there is 
 
 However, the APC is mainly meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to make this a lot easier. It's still a lot of effort to program a game completely from scratch, but you could run your game in PinMame and only use the API to do changes or extensions to the original rules.
 
-If you want to do your own game you don't necessarily have to bother with C coding, you could also use the [Mission Pinball Framework](http://missionpinball.org/). It can run on a PC or on the above mentioned Mini_Lisy and controls the APC via USB.
+Even if you want to do your own game you don't necessarily have to bother with C coding, but you could also use the [Mission Pinball Framework](http://missionpinball.org/). It can run on a PC or on the above mentioned Mini_Lisy and controls the APC via USB.
 
 I did a short video with some basic [MPF setup](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/MPF) to test that everything is working:
 
