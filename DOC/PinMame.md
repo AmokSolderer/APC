@@ -3,11 +3,11 @@ Bringing PinMame and the APC together was only possible with the help of the Lis
 
 We have started our PinMame experiments with my old trusty Pinbot which is running quite well as you can see in the following video:
 
-Pinbot video
+[Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw)
 
 PinMame support is still in it's early stages. As you can see the Pinbot is already working quite well, but it's not yet perfect. The main challenges when adding support for more machines are sound related. This has to do with the way we did the sound implementation which offers a lot more than just playing the original sounds and music, but requires a bit more work to do so. 
 
-## The Sound
+## The Sounds
 
 Our current setup is not using the Raspberry Pi to generate the PinMame sounds. Instead all sound and music files have to be created once and stored on the SD card of the APC. Of course this requires some work, but we think the benefits are worth it.
 
@@ -18,18 +18,23 @@ A good example is a local fellow who wants his System 3 'Disco Fever' to play so
 
 To make this possible, it is necessary that PinMame and the APC can play sounds simultaneously and to avoid an additional HW sound mixer which mixes both sound channels together, we decided to let the APC do the complete sound handling with PinMame just telling him which sound to play when.
 
-The drawback of this is that you have to extract the music files from PinMame. Furthermore we have to understand how the audio boards work and emulate their behaviour. The first task is easy assuming we find a place to store the files somewhere in the internet, because then this work must only be done once for each game.
+The drawback of this is that you have to extract the music files from PinMame. Furthermore we have to understand how the audio boards work and emulate their behaviour. The first task is easy assuming we find a place to store the files somewhere in the internet, because then this work must only be done once for each game. For System 3 - 9 games I expect this to be easy anyway, as they have a very limited sound performance. You could use the Audio Debug Mode which is explained later to find out which sounds to extract.
 
-For System 3 - 9 games I expect this to be quite easy, as they have a very limited sound performance. You could use the Audio Debug Mode which is explained later to find out which sounds to extract.
-As start you can find our Pinbot sound files HERE. The quality of the sounds is good, but I personally find the PinMame sounds when opening and closing the visor quite lousy. So, if someone finds the time to record these sounds from the audio board, you are welcome to send them to me and I'm going to add them. As we have them on the SD card we can just replace them as we like.
+At the moment the list of available sound packages has only one entry, but we see the extraction of the sound files as a community task.
 
-Understanding the audio boards is a similar story. Again I expect this to be easy for games prior to System 11, but it took me roughly a week before I was satified with the sounds of my Pinbot. Of course I started from scratch, so it's going to be easier for the next one doing this, but System 11 features various audio boards and I don't know how much they differ from the Pinbot's. For this reason I'm going to maintain a list here where all PinMame relevant information about the relevant systems are listed.
+|System|Game|URL|Comments|
+|--|--|--|--|
+|11|Pinbot| URL| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW. No looping implemented yet - if you wait long enough, some sounds will just run out|
+
+## Audio boards
+
+Understanding the audio boards is the second. Again I expect this to be easy for games prior to System 11, but it took me roughly a week before I was satified with the sounds of my Pinbot. Of course I started from scratch, so it's going to be easier for the next one doing this, but System 11 features various audio boards and I don't know how much they differ from the Pinbot's. For this reason I'm going to maintain a list here where all PinMame relevant information about the various systems are listed.
 
 ### System 11
 
-In case of the Pinbot, PinMame distinguishes two audio prefixes which can be selected by 00 and 01 in PinMame's 'Sound Command Mode'. We're not sure whether these prefixes match to the two sound boards that are present in the Pinbot with one being on the CPU board and one extra board. Both of these prefixes offer different sound commands. Our current status of what we know about these sound commands are listed below. There're still lots of gaps, but we didn't want to spend too much effort in investigating these boards. We see this more as a community task and there's probably plenty of people out there with a lot more knowledge about this stuff than we have.
+In case of the Pinbot, PinMame distinguishes two audio prefixes which can be selected by 00 and 01 in PinMame's 'Sound Command Mode'. These prefixes might fit to the two sound boards that are present in the Pinbot with one being on the CPU board and one extra board. Both of these prefixes offer different sound commands. Our current status of what we know about these sound commands is listed below. There're still lots of gaps, but we didn't want to spend too much effort in investigating these boards. We see this more as a community task and there's probably plenty of people out there with a lot more knowledge about this stuff than we have.
 
-So if you have additional information to fill these gaps please tell us and I'm going to include it.
+So if you have additional information to fill these gaps please tell us and we're going to include it.
 
 |Prefix|Command / Hex|Comment|
 |--|--|--|
@@ -39,7 +44,9 @@ So if you have additional information to fill these gaps please tell us and I'm 
 |00|aa|Unknown command, currently ignored|
 |00|ff|Unknown command, currently ignored|
 |01|00|Stop Music|
+|01|01 - 08|Music tracks, which are probably looped - not yet implemented|
 |01|1d - 30|Unknown commands, currently ignored|
+|01|40 - 42|Transistions and endings for looped music|
 |01|4f - 59|Unknown commands, currently ignored|
 |01|7f|Stop sounds of prefix 01|
 |01|6X|Music volume setting 0x60 is full volume 0x64 is almost nothing|
@@ -60,7 +67,7 @@ In order for the APC to find the right sound, all sounds have to be named with t
 
 When you start from scratch you should play your game with Lisy being in Debug Mode. Set DIP 7 and the sound jumper to make it log only sound related commands.
 
-When you're done playing press the shutdown switch on your Lisy_Mini board to make it exit the emulation and store the log file to the SD card. The file will be located on the PI's SD card in the folder lisy/lisy_m/debug.
+When you're done playing, press the shutdown switch on your Lisy_Mini board to make it exit the emulation and store the log file to the SD card. The file will be located on the PI's SD card in the folder lisy/lisy_m/debug.
 
 In lisy_m_debug.txt playing a sound looks like
 
@@ -72,7 +79,7 @@ In this case sound 0x79 of prefix (board) 0 shall be played which means you have
 
 ### Finding out which sounds are still missing
 
-After you have extracted most of the files, there'll be the point when only few files are still missing and you need to find out it's number. Of course you could still scan the Lisy log for unknown sound numbers, but in this stage it might be easier to use the 'Audio Debug Mode' of the APC.
+After you have extracted most of the files, there'll be the point when only a few files are still missing and you need to find out it's numbers. Of course you could still scan the Lisy log for unknown sound numbers, but in this stage it might be easier to use the 'Audio Debug Mode' of the APC.
 
 You can activate this mode in the game settings. To do this you have to press Advance for more than a second to enter the settings. Use Advance to change from system to game settings and press the start button to enter those. Use Advance to proceed to the 'Debug Mode' setting, then change it to 'AUDIO' by pressing the start button. Go to 'Exit Settings' by pressing Advance and the Start button to confirm.
 

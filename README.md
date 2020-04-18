@@ -12,7 +12,7 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 * Audio amplifier with two channels (to play music and sound effects simultaneously / can be changed to single channel stereo)
 * Hardware extensions interface (the pinout is compatible to the Sound Overlay Solenoid Board used in games like Whirlwind, but it is upgraded a bit to support all kind of self made hardware)
 
-To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards, at a price of well below 100€ per board. A more detailed calculation of the costs can be found in the [APC wiki](https://github.com/AmokSolderer/APC/wiki/Home).
+To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards at a price of well below 100€ per board. A more detailed calculation of the costs can be found in the [APC wiki](https://github.com/AmokSolderer/APC/wiki/Home).
 
 The picture below shows an APC prototype in my Pinbot.
 
@@ -23,7 +23,7 @@ To see the APC in action take a look at my [Black Knight game video](https://you
 The APC by itself cannot run the original Williams EPROM software, but there is a small additional board available from the [Lisy project](https://lisy.dev) which is called Lisy_Mini. This board can be conntected to the APC via USB and runs PinMame on a Raspberry Pi. For more information please have a look at my [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md
 ).
 
-However, this board is mainly meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to make this a lot easier. It's still a lot of effort to program a game completely from scratch, but you could run your game in PinMame and only use the API to do changes or extensions to the original rules.
+However, the APC is mainly meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to make this a lot easier. It's still a lot of effort to program a game completely from scratch, but you could run your game in PinMame and only use the API to do changes or extensions to the original rules.
 
 If you want to do your own game you don't necessarily have to bother with C coding, you could also use the [Mission Pinball Framework](http://missionpinball.org/). It can run on a PC or on the above mentioned Mini_Lisy and controls the APC via USB.
 
@@ -31,15 +31,13 @@ I did a short video with some basic [MPF setup](https://github.com/AmokSolderer/
 
 [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw)
 
-<iframe width="679" height="382" src="https://www.youtube.com/embed/w4Po8OE5Zkw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
 ### Hardware
 
-The APC hardware status is mature. I have version 2.0 in use since January 2018 without anything to complain about. Beginning of march 2019 You can find the schematics, BOM and layout data in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware). There have been some minor HW updates which are explained in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md).
+The APC hardware status is mature. I have version 2.0 in use since January 2018 without anything to complain about. You can find the schematics, BOM and layout data in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware). There have been some minor HW updates which are explained in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md).
 
 The APC features an HW extensions interface which is an 8 bit bus with several enable signals. At the moment there're two extension board available, but you could use it for all kinds of additional hardware.
 
-The first board is an LED expansion board to control WS2812 based LED-Strips with the APC. In this case it's used just as an example. For more information about this board please refer to the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware).
+The first board is an LED expansion board to control WS2812 based LED-Strips with the APC. For more information about this board please refer to the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware).
 
 The following picture shows the APC 2.0 in a Black Knight with the LED Expansion board connected to the hardware extensions interface.
 
@@ -51,7 +49,7 @@ A short video with this setup can be found here :
 
 The second board is a driver for 8 additional solenoids. It is not yet tested and should therefore be handled with caution.
 
-I use special alphanumerical displays in my Black Knight which can also be found there as well as a replacement for the original System7 numerical displays.
+I use special alphanumerical displays in my Black Knight which can also be found in the HW section as well as an LED replacement for the original System7 numerical displays.
 
 ### Software
 
@@ -65,7 +63,8 @@ Please note that I have equipped my Black Knight with a [special kind of display
 ## Current Status (April 2020)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/wiki#cable-extensions).
-The PinMame support is still under development, so please refer to the PinMame page for details.
+
+The PinMame support is still under development and even if a generation is basically supported you still need the audio files for your particular game. A list of available audio files and a description how to extract your own files can be found on the [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md).
 
 | System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
@@ -78,6 +77,8 @@ The PinMame support is still under development, so please refer to the PinMame p
 |11a| Yes | Not yet | Yes |  |
 |11b| Not yet | Not yet | Yes |  |
 |11c| Yes | Not yet | Yes | The wires of three connectors must be extended |
+
+Some generations need cable extensions or an additional wire to work. Details about that can be found in the [Wiki](https://github.com/AmokSolderer/APC/wiki)
 
 ## Changes / What's new?
 
