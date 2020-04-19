@@ -2,7 +2,11 @@
 
 ## April 2020
 
-PinMame is working. Watch the
+PinMame is working.
+
+![PinMame](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/PinMame.jpg)
+
+Watch the
 
 [Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw)
 
@@ -14,7 +18,7 @@ A new [Solenoid expander](https://github.com/AmokSolderer/APC/tree/master/DOC/Ha
 
 ### New SW Version V0.13
 
-The SW comes up in USBcontrol mode now instead of the BaseCode. The reason for this is that people are using the APC with MPF, but without having any displays connected to it. This makes it quite cumbersome to change the game mode, so the default was changed.
+The SW comes up in USBcontrol mode now instead of the BaseCode. The reason for this is that some people are using the APC with MPF, but without having any displays connected to it. This makes it quite cumbersome to change the game mode, so the default was changed accordingly.
 
 Some changes have been implemented for PinMame support, especially concerning the sound handling.
 
