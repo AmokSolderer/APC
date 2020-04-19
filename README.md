@@ -14,6 +14,8 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards at a price of well below 100€ per board. A more detailed calculation of the costs can be found in the [APC wiki](https://github.com/AmokSolderer/APC/wiki/Home).
 
+Note that Jokerz! has a unique audio board which uses seperate audio channels for the cabinet and the backbox speakers. The APC HW is capable of generating two independent sound channels, but you need at least DC-blocks (capacitors) when connecting the speakers of the Jokerz!
+
 The picture below shows an APC prototype in my Pinbot.
 
 ![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
@@ -73,12 +75,10 @@ The PinMame support is still under development and even if a generation is basic
 |6| Not yet | Not yet | Yes | Needs an additional wire |
 |7| Yes | Not yet | Yes | Needs three additional wires |
 |9| Yes | soon | Yes |  |
-|11| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
-|11a| Yes | Not yet | Yes |  |
+|11| Yes | Not yet | Yes |  |
+|11a| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
 |11b| Not yet | Not yet | Yes |  |
 |11c| Yes | Not yet | Yes | The wires of three connectors must be extended |
-
-Some generations need cable extensions or an additional wire to work. Details about that can be found in the [Wiki](https://github.com/AmokSolderer/APC/wiki)
 
 ## Changes / What's new?
 

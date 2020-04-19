@@ -1,5 +1,6 @@
 # The APC and PinMame
-Bringing PinMame and the APC together was only possible with the help of the Lisy project. In the APC case we're using the Lisy_Mini board, but Lisy offers much more especially for Bally and Gottlieb fans. Please visit the [Lisy homepage](https://lisy.dev) for more.
+
+Bringing PinMame and the APC together was only possible with the help of the Lisy project. In case of the APC we're using the [Lisy_Mini](https://lisy.dev/lisy_mini.html) board, but Lisy offers much more especially for Bally and Gottlieb fans. Please visit the [Lisy homepage](https://lisy.dev) for more.
 
 We have started our PinMame experiments with my old trusty Pinbot which is running quite well as you can see in the following video:
 
@@ -22,9 +23,11 @@ The drawback of this is that you have to extract the music files from PinMame. F
 
 At the moment the list of available sound packages has only one entry, but we see the extraction of the sound files as a community task. Of course it would be great if you'd share you sound package with the rest of us. 
 
-|System|Game|URL|Comments|
+For most of the game generations you could also install the original audio board. Of course you cannot do any sound related changes then. For System 3 - 6, the sound board is controlled by some reserved solenoid drivers. System 7 and System 11c need an adapter for connecting the audio board to the HW extension interface of the APC. System 9, 11, 11a and 11b are having some sound related circuitry on the CPU, so their audio boards cannot be used any more.
+
+|System|Game| Sound File URL|Comments|
 |--|--|--|--|
-|11|Pinbot| URL| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW. No looping implemented yet - if you wait long enough, some sounds will just run out|
+|11a|Pinbot| URL| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW. No looping implemented yet - if you wait long enough, some sounds will just run out|
 
 ## Audio boards
 
