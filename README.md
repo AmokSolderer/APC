@@ -14,7 +14,7 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards at a price of well below 100€ per board. A more detailed calculation of the costs can be found in the [APC wiki](https://github.com/AmokSolderer/APC/wiki/Home).
 
-Note that Jokerz! has a unique audio board which uses seperate audio channels for the cabinet and the backbox speakers. The APC HW is capable of generating two independent sound channels, but you need at least DC-blocks (capacitors) when connecting the speakers of the Jokerz!
+Note that Jokerz! has a unique audio board which uses seperate audio channels for the cabinet and the backbox speakers. The APC HW is capable of generating two independent sound channels, but you need at least DC-blocks (capacitors) when connecting it to the speakers of the Jokerz!
 
 The picture below shows an APC prototype in my Pinbot.
 
@@ -27,7 +27,7 @@ The APC by itself cannot run the original Williams EPROM software, but there is 
 
 However, the APC is mainly meant to be a platform for people who want to program their own rules and features. Therefore the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to make this a lot easier. It's still a lot of effort to program a game completely from scratch, but you could run your game in PinMame and only use the API to do changes or extensions to the original rules.
 
-Even if you want to do your own game you don't necessarily have to bother with C coding, but you could also use the [Mission Pinball Framework](http://missionpinball.org/). It can run on a PC or on the above mentioned Mini_Lisy and controls the APC via USB.
+Even if you want to do your own game you don't necessarily have to bother with C coding, but you could also use the [Mission Pinball Framework](http://missionpinball.org/). It can run on a PC or on the above mentioned Lisy_Mini and controls the APC via USB.
 
 I did a short video with some basic [MPF setup](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/MPF) to test that everything is working:
 

@@ -1,5 +1,25 @@
 # APC News and Changelog
 
+## April 2020
+
+PinMame is working. Watch the
+
+[Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw)
+
+video to see my old Pinbot under PinMame control.
+
+There's still some work to be done, but with this setup you can do much more than just playing the original game. See my [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md) for details.
+
+A new [Solenoid expander](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_Solenoid_exp) is available. The board can be connected to the HW extension port of the APC and can drive 8 additional solenoids. Up to now it is untested, so take care when you test it.
+
+### New SW Version V0.13
+
+The SW comes up in USBcontrol mode now instead of the BaseCode. The reason for this is that people are using the APC with MPF, but without having any displays connected to it. This makes it quite cumbersome to change the game mode, so the default was changed.
+
+Some changes have been implemented for PinMame support, especially concerning the sound handling.
+
+The Black Knight game SW has been upgraded to implement more sounds and effects. Contact me if you're interested in getting the corresponding sound files.
+
 ## Sep 2019
 
 It has required some additional changes in the SW to make the sound work completely with MPF, but now it's done.
