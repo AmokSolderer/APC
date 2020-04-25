@@ -7,7 +7,7 @@ const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 															250,250,250,250,250,0,0,2,0,0,		// Length of USB commands from 30 - 39
 															1,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 40 - 49
 															2,1,251,0,2,0,0,0,0,0,	// Length of USB commands from 50 - 59
-															10,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 60 - 69
+															10,0,0,0,2,3,0,0,0,0,		// Length of USB commands from 60 - 69
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 70 - 79
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
 															0,0,0,0,0,0,0,0,0,0,0,0};	// Length of USB commands from 90 - 101
@@ -999,6 +999,18 @@ void USB_SerialCommand() {
 							USB_HWrule_ActSw[c][1] = SerialBuffer[0];	// store coil number
 							USB_HWrule_ActSw[c][2] = 0;}}						// store pulse duration 0 (means coil release)
 					i++;}}}
+		break;
+	case 64:																						// read setting from APC
+		if (SerialBuffer[0]) {														// game setting selected
+			Serial.write((byte) game_settings[SerialBuffer[1]]);}
+		else {																						// APC settings selected
+			Serial.write((byte) APC_settings[SerialBuffer[1]]);}
+		break;
+	case 65:																						// write setting to APC
+		if (SerialBuffer[0]) {														// game setting selected
+			game_settings[SerialBuffer[1]] = SerialBuffer[2];}
+		else {																						// APC settings selected
+			APC_settings[SerialBuffer[1]] = SerialBuffer[2];}
 		break;
 	case 100:																						// init
 		USB_WatchdogHandler(1);

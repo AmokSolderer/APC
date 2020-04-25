@@ -161,14 +161,14 @@ const byte APC_defaults[64] =  {0,3,3,1,0,0,0,0,		 	// system default settings
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0};
 
-const byte DisplayType = 0;														// which display is used?
-const byte ActiveGame = 1;														// Select the active game
-const byte NofBalls = 2;															// Balls per game
-const byte FreeGame = 3;															// Free game mode?
-const byte DimInserts = 4;                            // Reduce lighting time of playfield lamps by 50%
-const byte Volume = 5;                             		// Volume of the speaker
-const byte LEDsetting = 6;                            // Setting for the APC_LED_EXP board
-const byte DebugMode = 7;                             // debug mode enabled?
+#define DisplayType 0																	// which display is used?
+#define ActiveGame  1																	// Select the active game
+#define NofBalls  2																		// Balls per game
+#define FreeGame  3																		// Free game mode?
+#define DimInserts  4                       		     	// Reduce lighting time of playfield lamps by 50%
+#define Volume  5                         		    		// Volume of the speaker
+#define LEDsetting  6                         		   	// Setting for the APC_LED_EXP board
+#define DebugMode  7                            		 	// debug mode enabled?
 
 char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "},{"   TUTORIAL     "}};
 char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
