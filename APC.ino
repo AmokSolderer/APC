@@ -3,21 +3,29 @@ SdFat SD;
 #include <SPI.h>
 #include "Arduino.h"
 #include "Sound.h"
+#define UpDown 53                                			// arduino pin connected to the auto/up - manual/Down button
+#define Blanking  22		                              // arduino pin to control the blanking signal
+#define VolumePin 13																	// arduino pin to control the sound volume
+#define AllSelects 871346688							           	// mask for all port C pins belonging to select signals except special switch select
+#define Sel5 2097152																	// mask for the Sel5 select signal
+#define HwExtSels 606077440														// mask for all Hw extension port select signals
+#define AllData 510
+#define HwExtStackPosMax 20														// size of the HwExtBuffer
 
-const char APC_Version[6] = "00.12";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "00.13";                  // Current APC version - includes the other INO files also
 const int SwMax = 72;                                 // number of existing switches (max. 72)
 const int LampMax = 64;                               // number of existing lamps (max. 64)
 const int DispColumns = 16;                           // Number of columns of the used display unit
 
-const byte AlphaUpper[118] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
+const byte AlphaUpper[128] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
 		63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,136,0,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
 		126,4,15,21,57,0,15,17,121,4,120,4,59,4,118,4,0,17,23,0,112,136,49,0,54,10,54,130,63,0, // Pattern A B C D E F G H I J K L M N O
-		124,4,63,128,124,132,107,4,8,17,55,0,48,40,54,160,0,170,0,26,9,40}; // Pattern P Q R S T U V W X Y Z
+		124,4,63,128,124,132,107,4,8,17,55,0,48,40,54,160,0,170,0,26,9,40,0,0,0,0,0,0,0,0,1,0}; // Pattern P Q R S T U V W X Y Z _
 
-const byte AlphaLower[118] = {0,0,0,0,0,0,0,0,182,35,0,0,0,0,0,0,0,0,0,0,2,247,2,35,0,0,2,2,0,0,0,80, // Blank $ * + - / for lower row alphanumeric displays
+const byte AlphaLower[128] = {0,0,0,0,0,0,0,0,182,35,0,0,0,0,0,0,0,0,0,0,2,247,2,35,0,0,2,2,0,0,0,80, // Blank $ * + - / for lower row alphanumeric displays
 		252,0,136,0,122,2,184,2,142,2,182,2,246,2,152,0,254,2,190,2,0,0,0,0,0,68,0,0,0,144,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < > and fill bytes
 		222,2,184,35,116,0,184,33,118,2,86,2,244,2,206,2,0,33,232,0,70,68,100,0,204,192,204,132,252,0, // Pattern A B C D E F G H I J K L M N O
-		94,2,252,4,94,6,182,2,16,33,236,0,68,80,204,20,0,212,0,224,48,80}; // Pattern P Q R S T U V W X Y Z
+		94,2,252,4,94,6,182,2,16,33,236,0,68,80,204,20,0,212,0,224,48,80,0,0,0,0,0,0,0,0,32,0}; // Pattern P Q R S T U V W X Y Z _
 
 const byte NumLower[118] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // Blank and fill bytes for lower row numeric displays
 		252,0,136,0,122,0,186,0,142,0,182,0,246,0,152,0,254,0,190,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 = and fill bytes
@@ -51,13 +59,10 @@ byte SwitchStack = 0;                                 // determines which switch
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
 byte SwEvents[2];                                     // contains the number of pending switch events in each stack
 uint32_t SwitchRows[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the status of all switch rows
-int SwDrv = 0;                                        // switch driver being accessed at the moment
 const byte *DispRow1;                                 // determines which patterns are to be shown (2 lines with 16 chars each)
 const byte *DispRow2;
 const byte *DispPattern1;
 const byte *DispPattern2;
-const byte NumMaskUpper[5] = {184,64,4,2,1};					// Bitmasks for the upper row of numerical displays
-const byte NumMaskLower[5] = {71,16,8,128,32};				// Bitmasks for the lower row of numerical displays
 byte DisplayUpper[32];                                // changeable display buffer
 byte DisplayLower[32];
 byte DisplayUpper2[32];                               // second changeable display buffer
@@ -85,15 +90,12 @@ bool BlinkState[65];                                  // current state of the la
 unsigned int BlinkPeriod[65];                         // blink period for this timer
 byte BlinkingLamps[65][65];                           // [BlinkTimer] used by these [lamps]
 bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
-byte SolNumber = 0;                                   // Determines which solenoid is to be changed ...
-bool SolState = false;                                // and what the desired state is
-byte SolDelayed[20];                                  // Queue for waiting solenoid requests
+byte SolLatch = 0;																		// Indicates which solenoid latches must be updated
 bool C_BankActive = false;														// A/C relay currently doing C bank?
 byte SolWaiting[64][2];																// list of waiting A/C solenoid requests
 byte ACselectRelay = 0;																// solenoid number of the A/C select relay
 byte ActSolSlot = 0;																	// currently processed slot in SolWaiting
 byte NextSolSlot = 0;																	// next free slot in SolWaiting
-unsigned int DurDelayed[20];                          // duration values for waiting solenoid requests
 byte SettingsRepeatTimer = 0;													// number of the timer of the key repeat function in the settings function
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte CheckReleaseTimer = 0;														// number of the timer for the ball release check
@@ -111,6 +113,9 @@ void (*Switch_Pressed)(byte);                         // Pointer to current beha
 void (*Switch_Released)(byte);                        // Pointer to current behavior mode for released switches
 void (*SerialCommand)();															// Pointer to the serial command handler (0 if serial command mode is off)
 char EnterIni[3];
+byte HwExt_Buf[20][2];																// ringbuffer for bytes to be send to the HW_ext interface (first bytes specifies the select line to be activated
+byte HwExtIRQpos = 0;																	// next buffer position for the interrupt to work on
+byte HwExtBufPos = 0;																	// next buffer position to be written to
 uint16_t *SoundBuffer;																// buffers sound data from SD to be processed by interrupt
 uint16_t *MusicBuffer;																// buffers music data from SD to be processed by interrupt
 uint16_t *Buffer16b;																	// 16bit pointer to the audio DAC buffer
@@ -120,8 +125,9 @@ byte MusicIRpos = 0;																	// next block of the music buffer to be rea
 byte StopMusic = 0;																		// last music buffer block with music data
 bool StartMusic = false;															// music startup active -> filling music buffer
 bool PlayingMusic = false;														// StartMusic done -> continuously playing music
+byte MusicVolume = 0;																	// 0 = max volume
 File MusicFile;																				// file handle for the music file (SD)
-bool AfterMusicPending = false;												// indicates that there's an after music event to be executed
+byte AfterMusicPending = 0;														// indicates an after music event -> 0 - no event, 1 - event pending, 2 - event is blocked by StopPlayingMusic
 void (*AfterMusic)() = 0;															// program to execute after music file has ended
 const char *NextMusicName;														// points to the name of the next music file to be played (if any)
 byte MusicPriority = 0;																// stores the priority of the music file currently being played
@@ -131,19 +137,12 @@ byte StopSound = 0;																		// last sound buffer block with sound data
 bool StartSound = false;															// sound startup active -> filling sound buffer
 bool PlayingSound = false;														// StartSound done -> continuously playing sound
 File SoundFile;																				// file handle for the sound file (SD)
-bool AfterSoundPending = false;												// indicates that there's an after sound event to be executed
+byte AfterSoundPending = 0;														// indicates an after sound event -> 0 - no event, 1 - event pending, 2 - event is blocked by StopPlayingSound
 void (*AfterSound)() = 0;															// program to execute after sound file has ended
 byte SoundPriority = 0;																// stores the priority of the sound file currently being played
 bool SoundPrio = false;																// indicates which channel has to be processed first
 char *NextSoundName;
 const char TestSounds[3][15] = {{"MUSIC.BIN"},{"SOUND.BIN"},0};
-void ExitSettings(bool change);
-void HandleTextSetting(bool change);
-void HandleNumSetting(bool change);
-void HandleBoolSetting(bool change);
-void RestoreDefaults(bool change);
-void HandleVolumeSetting(bool change);
-void HandleDisplaySetting(bool change);
 
 struct SettingTopic {																	// one topic of a list of settings
 	char Text[17];																			// display text
@@ -153,7 +152,7 @@ struct SettingTopic {																	// one topic of a list of settings
 	byte UpperLimit;};																	// if text setting -> amount of text entries -1 / if num setting -> upper limit of selection value
 
 const char APC_set_file_name[13] = "APC_SET.BIN";
-const byte APC_defaults[64] =  {0,0,3,1,0,0,0,0,		 	// system default settings
+const byte APC_defaults[64] =  {0,3,3,1,0,0,0,0,		 	// system default settings
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
@@ -162,14 +161,14 @@ const byte APC_defaults[64] =  {0,0,3,1,0,0,0,0,		 	// system default settings
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0};
 
-const byte DisplayType = 0;														// which display is used?
-const byte ActiveGame = 1;														// Select the active game
-const byte NofBalls = 2;															// Balls per game
-const byte FreeGame = 3;															// Free game mode?
-const byte DimInserts = 4;                            // Reduce lighting time of playfield lamps by 50%
-const byte Volume = 5;                             		// Volume of the speaker
-const byte LEDsetting = 6;                            // Setting for the APC_LED_EXP board
-const byte DebugMode = 7;                             // debug mode enabled?
+#define DisplayType 0																	// which display is used?
+#define ActiveGame  1																	// Select the active game
+#define NofBalls  2																		// Balls per game
+#define FreeGame  3																		// Free game mode?
+#define DimInserts  4                       		     	// Reduce lighting time of playfield lamps by 50%
+#define Volume  5                         		    		// Volume of the speaker
+#define LEDsetting  6                         		   	// Setting for the APC_LED_EXP board
+#define DebugMode  7                            		 	// debug mode enabled?
 
 char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "},{"   TUTORIAL     "}};
 char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
@@ -226,13 +225,7 @@ byte APC_settings[64];																// system settings to be stored on the SD
 byte game_settings[64];																// game settings to be stored on the SD
 byte *SettingsPointer;																// points to the settings being changed
 const char *SettingsFileName;													// points to the settings file currently being edited
-const int UpDown = 53;                                // arduino pin connected to the auto/up - manual/Down button
-const int Blanking = 22;                              // arduino pin to control the blanking signal
-const byte VolumePin = 13;														// arduino pin to control the sound volume
 const unsigned long SwitchMask[8] = {65536, 16777216, 8388608, 4194304, 64, 16, 8, 4};
-const unsigned long AllSelects = 871346688;           // mask for all port C pins belonging to select signals except special switch select
-const unsigned long Sel5 = 2097152;										// mask for the Sel5 select signal
-const unsigned long AllData = 510;
 uint16_t SwDrvMask = 2;                               // mask for switch row select
 byte SolBuffer[3];                                    // stores the state of the solenoid latches
 
@@ -393,11 +386,13 @@ void EnterAttractMode(byte Event) {                   // Enter the attract mode 
 
 void TC7_Handler() {                                  // interrupt routine - runs every ms
 	TC_GetStatus(TC2, 1);                               // clear status
+	static byte SwDrv = 0;                              // switch driver being accessed at the moment
 	static byte DispCol = 0;                            // display column being illuminated at the moment
 	static byte LampCol = 0;                            // lamp column being illuminated at the moment
 	static uint16_t LampColMask = 2;                    // mask for lamp column select
-	static bool LEDFlag;																// stores whether Sel5 has to be triggered by the rising or falling edge
+	static bool LEDFlag;																// stores whether the select has to be triggered by the rising or falling edge
 	static byte LEDCount = 0;														// points to the next command byte to be send to the LED exp board
+	const uint32_t HwExtSelMask[4] = {2097152, 536870912, 512, 67108864}; // mask for sel5, sel6, sel7, SPI_CS1
 	int i;                                              // general purpose counter
 	uint32_t Buff;
 	uint16_t c;
@@ -406,7 +401,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 		*(DisplayLower) = RightCredit[32 + 2 * ActiveTimers];} // show the number of active timers
 
 	if (APC_settings[DimInserts] || (LampWait == LampPeriod)) { // if inserts have to be dimmed or waiting time has passed
-		REG_PIOC_CODR = AllSelects + AllData;         		// clear all select signals and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
 		REG_PIOC_SODR = 268435456;}                   		// use Sel0 to disable column driver outputs at half time
 
 	// Switches
@@ -432,7 +427,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 				ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}		// store the switch number to be processed in the main loop
 		i++;}
 	SwDrvMask = SwDrvMask<<1;                  					// and the corresponding select pattern
-	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals except Sel5 and the data bus
+	REG_PIOC_CODR = AllSelects - HwExtSels + AllData;        // clear all select signals except HwExtSels and the data bus
 	if (SwDrv < 7) {
 		REG_PIOC_SODR = AllData - SwDrvMask;           		// put select pattern on data bus
 		SwDrv++;                                  				// next switch driver
@@ -469,35 +464,35 @@ void TC7_Handler() {                                  // interrupt routine - run
 	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
 		REG_PIOD_CODR = 15;                               // clear strobe select signals
 		REG_PIOD_SODR = DispCol;                          // set display column
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		byte Buf = ~(*(DispRow1+2*DispCol));
 		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the upper row
 		REG_PIOC_SODR = 524288;                           // use Sel8
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		Buf = ~(*(DispRow1+2*DispCol+1));
 		REG_PIOC_SODR = Buf<<1;                           // set 2nd byte of the display pattern for the upper row
 		REG_PIOC_SODR = 262144;                           // use Sel9
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		Buf = ~(*(DispRow2+2*DispCol));
 		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 131072;                           // use Sel10
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		Buf = ~(*(DispRow2+2*DispCol+1));
 		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 65536;}                           // use Sel11
 	else {
 		REG_PIOD_CODR = 15;                               // clear strobe select signals
 		REG_PIOD_SODR = DispCol;                          // set display column
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		REG_PIOC_SODR = *(DispRow1+2*DispCol)<<1;         // set 1st byte of the display pattern for the upper row
 		REG_PIOC_SODR = 524288;                           // use Sel8
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		REG_PIOC_SODR = *(DispRow1+2*DispCol+1)<<1;       // set 2nd byte of the display pattern for the upper row
 		REG_PIOC_SODR = 262144;                           // use Sel9
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		REG_PIOC_SODR = *(DispRow2+2*DispCol)<<1;         // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 131072;                           // use Sel10
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals except Sel5 and the data bus
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
 		REG_PIOC_SODR = *(DispRow2+2*DispCol+1)<<1;       // set 1st byte of the display pattern for the lower row
 		REG_PIOC_SODR = 65536;}                           // use Sel11
 
@@ -525,30 +520,26 @@ void TC7_Handler() {                                  // interrupt routine - run
 	// Solenoids
 
 	if (SolChange) {                                		// is there a solenoid state to be changed?
-		REG_PIOC_CODR = AllSelects - Sel5 + AllData;      // clear all select signals and the data bus
-		if (SolNumber > 8) {                          		// does the solenoid not belong to the first latch?
-			if (SolNumber < 17) {                       		// does it belong to the second latch?
-				c = 1;
-				i = 8388608;                              		// select second latch
-				SolNumber = SolNumber-8;}                 		// and reduce the solenoid number accordingly
-			else {                                      		// it belongs to the third latch
-				c = 2;
-				i = 4194304;                  								// select third latch
-				SolNumber = SolNumber-16;}}               		// and match the solenoid number
-		else {
-			c = 0;
-			i = 16777216;}
-		SolNumber--;                                  		// latch counts from 0
-		if (SolState) {
-			SolBuffer[c] = SolBuffer[c] | 1<<SolNumber;}
-		else {
-			SolBuffer[c] = SolBuffer[c] & (255-(1<<SolNumber));}
-		REG_PIOC_SODR = SolBuffer[c]<<1;
-		SolChange = false;																// reset flag
-		REG_PIOC_SODR = i;}                           		// trigger latch
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
+		if (SolLatch & 1) {
+			c = SolBuffer[0];
+			REG_PIOC_SODR = c<<1;
+			REG_PIOC_SODR = 16777216;}											// select first latch
+		if (SolLatch & 2) {
+			REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
+			c = SolBuffer[1];
+			REG_PIOC_SODR = c<<1;
+			REG_PIOC_SODR = 8388608;}												// select second latch
+		if (SolLatch & 4) {
+			REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
+			c = SolBuffer[2];
+			REG_PIOC_SODR = c<<1;
+			REG_PIOC_SODR = 4194304;}												// select third latch
+		SolLatch = 0;
+		SolChange = false;}																// reset flag
 
 	REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
-	REG_PIOC_CODR = AllSelects - Sel5 + AllData;        // clear all select signals and the data bus
+	REG_PIOC_CODR = AllSelects - HwExtSels + AllData;   // clear all select signals and the data bus
 
 	// Lamps
 
@@ -575,45 +566,59 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (LampCol > 19) {                               // 20ms over
 			LampCol = 0;}                                   // start from the beginning
 		if (LampCol < 8) {                                // the first 8 cycles are for transmitting the status of the lamp matrix
-			REG_PIOC_CODR = AllData;
-			c = 2;
+			byte LampData;
 			if (!LampCol){                                  // max column reached?
-				c = LampColumns[LampCol];}
+				LampData = LampColumns[LampCol];}
 			else {
-				c = *(LampPattern+LampCol);}
-			REG_PIOC_SODR = c<<1;														// write lamp pattern
+				LampData = *(LampPattern+LampCol);}
 			if (LEDFlag) {
 				LEDFlag = false;
-				REG_PIOC_CODR = Sel5;}                        // activate Sel5 falling edge
+				WriteToHwExt(LampData, 1);}                   // write lamp pattern with Sel5 falling edge
 			else {
 				LEDFlag = true;
-				REG_PIOC_SODR = Sel5;}}                       // activate Sel5 rising edge
+				WriteToHwExt(LampData, 129);}}                // activate Sel5 rising edge
 		else {                                            // the lamp matrix is already sent
 			if ((LampCol < 13) || LEDCount) {               // still time to send a command or command still running?
 				if (LEDCommandBytes) {                        // are there any pending LED commands?
-					REG_PIOC_CODR = AllData;
-					REG_PIOC_SODR = (LEDCommand[LEDCount])<<1;  // send the first byte
-					LEDCount++;                                 // increase the counter
-					if (LEDCount == LEDCommandBytes) {          // not all command bytes sent?
+					if (LEDFlag) {
+						LEDFlag = false;
+						WriteToHwExt(LEDCommand[LEDCount], 1);}   // write LED command with Sel5 falling edge
+					else {
+						LEDFlag = true;
+						WriteToHwExt(LEDCommand[LEDCount], 129);}
+					LEDCount++;                                 	// increase the counter
+					if (LEDCount == LEDCommandBytes) {          	// not all command bytes sent?
 						LEDCommandBytes = 0;
-						LEDCount = 0;}
-					if (LEDFlag) {
-						LEDFlag = false;
-						REG_PIOC_CODR = Sel5;}                    // activate Sel5 falling edge
-					else {
-						LEDFlag = true;
-						REG_PIOC_SODR = Sel5;}}}
+						LEDCount = 0;}}}
 			else {                                          // LampCol > 13
-				if (LampCol == 17) {
-					REG_PIOC_CODR = AllData;
-					REG_PIOC_SODR = 170<<1;                     // time to sync
+				if (LampCol == 17) {													// time to sync
 					if (LEDFlag) {
 						LEDFlag = false;
-						REG_PIOC_CODR = Sel5;}                    // activate Sel5 falling edge
+						WriteToHwExt(170, 1);}                    // write sync command with Sel5 falling edge
 					else {
 						LEDFlag = true;
-						REG_PIOC_SODR = Sel5;}}}}
+						WriteToHwExt(170, 129);}}}}
 		LampCol++;}
+
+	// Hardware extension interface
+
+	while (HwExtIRQpos != HwExtBufPos) {								// for all bytes in the ringbuffer
+		HwExtIRQpos++;																		// go to next task
+		if (HwExtIRQpos >= HwExtStackPosMax) {						// end of buffer reached?
+			HwExtIRQpos = 0;}																// start from zero
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
+		c = HwExt_Buf[HwExtIRQpos][0];										// get data byte
+		REG_PIOC_SODR = c<<1;															// and put it on the data bus
+		if (HwExt_Buf[HwExtIRQpos][1] & 128) {						// rising select edge requested?
+			for (i=0;i<4;i++) {															// for all HwExt selects
+				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
+					REG_PIOC_SODR = HwExtSelMask[i];						// generate a rising edge
+					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}	// shift to the next bit
+		else {																						// falling select edge requested
+			for (i=0;i<4;i++) {															// for all HwExt selects
+				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
+					REG_PIOC_CODR = HwExtSelMask[i];						// generate a falling edge
+					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}}	// shift to the next bit
 
 	// Sound
 
@@ -621,11 +626,18 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (PlayingMusic) {
 			if (PlayingSound) {															// playing music and sound
 				Buffer16b = (uint16_t *) g_Sound.next;				// get address of the next DAC buffer part to be filled
-				for (i=0; i<64; i++) {
-					*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i);	// write channel 1
-					Buffer16b++;
-					*Buffer16b = *(SoundBuffer+SoundIRpos*128+2*i) | 4096;  // write channel 2
-					Buffer16b++;}
+				if (MusicVolume) {														// reduce the music volume?
+					for (i=0; i<64; i++) {
+						*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume;	// write channel 1
+						Buffer16b++;
+						*Buffer16b = *(SoundBuffer+SoundIRpos*128+2*i) | 4096;  // write channel 2
+						Buffer16b++;}}
+				else {																				// full volume
+					for (i=0; i<64; i++) {
+						*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i);	// write channel 1
+						Buffer16b++;
+						*Buffer16b = *(SoundBuffer+SoundIRpos*128+2*i) | 4096;  // write channel 2
+						Buffer16b++;}}
 				g_Sound.next = (uint32_t *) Buffer16b;				// write back the updated address
 				g_Sound.enqueue();
 				MusicIRpos++;																	// increase the IRQ read pointer for the music buffer
@@ -640,23 +652,34 @@ void TC7_Handler() {                                  // interrupt routine - run
 						MBP = 0;																	// reset write pointer
 						MusicIRpos = 0;														// reset read pointer
 						StopMusic = 0;														// mark stop sequence as completed
-						if (AfterMusic) {													// anything to do after the music?
-							AfterMusicPending = true;}}}						// indicate now is the time to do so
+						if (AfterMusic && AfterMusicPending != 2) {	// anything to do after the music?
+							AfterMusicPending = 1;}									// indicate now is the time to do so
+						else {
+							AfterMusicPending = 0;}}}
 				if (StopSound) {															// end of sound file reached?
 					if (SoundIRpos == SBP) {										// remaining sound data played?
 						PlayingSound = false;											// stop playing sound
 						SBP = 0;																	// reset write pointer
 						SoundIRpos = 0;														// reset read pointer
 						StopSound = 0;														// mark stop sequence as completed
-						if (AfterSound) {													// anything to do after the sound?
-							AfterSoundPending = true;}}}}						// indicate now is the time to do so
+						if (AfterSound && AfterSoundPending != 2) {	// anything to do after the sound and not blocked by StopPlayingSound?
+							AfterSoundPending = 1;}									// indicate now is the time to do so
+						else {
+							AfterSoundPending = 0;}}}}
 			else {																					// playing music only
 				Buffer16b = (uint16_t *) g_Sound.next;				// same as above but music only
-				for (i=0; i<64; i++) {
-					*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i);
-					Buffer16b++;
-					*Buffer16b = 6144;  												// 2048 | 4096
-					Buffer16b++;}
+				if (MusicVolume) {														// reduce the music volume?
+					for (i=0; i<64; i++) {
+						*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume;
+						Buffer16b++;
+						*Buffer16b = 6144;  											// 2048 | 4096
+						Buffer16b++;}}
+				else {																				// full volume
+					for (i=0; i<64; i++) {
+						*Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i);
+						Buffer16b++;
+						*Buffer16b = 6144;  											// 2048 | 4096
+						Buffer16b++;}}
 				g_Sound.next = (uint32_t *) Buffer16b;
 				g_Sound.enqueue();
 				MusicIRpos++;
@@ -668,8 +691,10 @@ void TC7_Handler() {                                  // interrupt routine - run
 						MBP = 0;
 						MusicIRpos = 0;
 						StopMusic = 0;
-						if (AfterMusic) {
-							AfterMusicPending = true;}}}}}
+						if (AfterMusic && AfterMusicPending != 2) {
+							AfterMusicPending = 1;}
+						else {
+							AfterMusicPending = 0;}}}}}
 		else {																						// not playing music
 			if (PlayingSound) {															// playing sound only
 				Buffer16b = (uint16_t *) g_Sound.next;				// same as above but sound only
@@ -689,8 +714,10 @@ void TC7_Handler() {                                  // interrupt routine - run
 						SBP = 0;
 						SoundIRpos = 0;
 						StopSound = 0;
-						if (AfterSound) {
-							AfterSoundPending = true;}}}}
+						if (AfterSound && AfterSoundPending != 2) {
+							AfterSoundPending = 1;}
+						else {
+							AfterSoundPending = 0;}}}}
 			else {																					// neither sound nor music
 				Buffer32b = g_Sound.next;
 				for (i=0; i<64; i++) {
@@ -735,31 +762,31 @@ void loop() {
 		if (!StopSound && (SBP != SoundIRpos)) {					// still sound data to read?
 			ReadSound();}																		// read it
 		else {																						// no sound data?
-			if (AfterSoundPending) {												// is there an after sound event pending?
-				AfterSoundPending = false;										// reset the flag
+			if (AfterSoundPending == 1) {										// is there an after sound event pending?
+				AfterSoundPending = 0;												// reset the flag
 				if (AfterSound) {															// really?
 					AfterSound();}}															// call it
 			else {																					// no after sound event
 				if (!StopMusic && (MBP != MusicIRpos)) {			// proceed with music
 					ReadMusic();}
 				else {																				// no music data?
-					if (AfterMusicPending) {										// is there an after music event pending?
-						AfterMusicPending = false;								// reset the flag
+					if (AfterMusicPending == 1) {								// is there an after music event pending?
+						AfterMusicPending = 0;										// reset the flag
 						if (AfterMusic) {													// really?
 							AfterMusic();}}}}}}											// call it
 	else {																							// same as above but with the priority on music
 		if (!StopMusic && (MBP != MusicIRpos)) {
 			ReadMusic();}
 		else {
-			if (AfterMusicPending) {
-				AfterMusicPending = false;
+			if (AfterMusicPending == 1) {
+				AfterMusicPending = 0;
 				if (AfterMusic) {
 					AfterMusic();}}
 			else {
 				if (!StopSound && (SBP != SoundIRpos)) {
 					ReadSound();}
-				if (AfterSoundPending) {
-					AfterSoundPending = false;
+				if (AfterSoundPending == 1) {
+					AfterSoundPending = 0;
 					if (AfterSound) {
 						AfterSound();}}}}}
 	if (SerialCommand && Serial.available()) {					// USB command mode
@@ -889,7 +916,21 @@ void KillTimer(byte TimerNo) {
 	TimerEvent[TimerNo] = 0;														// clear Timer Event
 	BlockTimers = false;}																// release the IRQ block
 
+bool WriteToHwExt(byte Data, byte Selects) {					// write data and selects to ringbuffer
+	byte BufPosition = HwExtBufPos;
+	BufPosition++;
+	if (BufPosition >= HwExtStackPosMax) {							// end of buffer reached?
+		BufPosition = 0;}																	// start from zero
+	if (HwExtIRQpos == BufPosition) {										// ringbuffer full
+		return false;}																		// return fail signal
+	else {
+		HwExt_Buf[BufPosition][0] = Data;									// write data
+		HwExt_Buf[BufPosition][1] = Selects;							// write selects
+		HwExtBufPos = BufPosition;												// store new buffer position
+		return true;}}																		// return OK signal
+
 byte ConvertNumUpper(byte Number, byte Pattern) {			// convert a number to be shown in the upper row of numerical displays
+	const byte NumMaskUpper[5] = {184,64,4,2,1};				// Bitmasks for the upper row of numerical displays
 	byte Mask = 1;
 	Pattern &= NumMaskUpper[0];													// clear all bits belonging to this digit
 	for (byte c=1;c<5;c++) {														// for 4 bit
@@ -899,6 +940,7 @@ byte ConvertNumUpper(byte Number, byte Pattern) {			// convert a number to be sh
 	return Pattern;}
 
 byte ConvertNumLower(byte Number, byte Pattern) {			// convert a number to be shown in the lower row of numerical displays
+	const byte NumMaskLower[5] = {71,16,8,128,32};			// Bitmasks for the lower row of numerical displays
 	byte Mask = 1;
 	Pattern &= NumMaskLower[0];													// clear all bits belonging to this digit
 	for (byte c=1;c<5;c++) {														// for 4 bit
@@ -1165,33 +1207,22 @@ void ShowMessage(byte Seconds) {                      // switch to the second di
 		SwitchDisplay(1);}}                               // switch back to DispRow1
 
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
-	if (!SolChange) {                               		// change request for another solenoid pending?
-		if (!Duration) {
-			Duration = *(GameDefinition.SolTimes+Solenoid-1);} // if no duration is specified use the solenoid specific default
-		SolNumber = Solenoid;                         		// activate solenoid
-		SolState = true;
-		if (Duration) {                               		// duration = 0 means solenoid is permanently on
-			ActivateTimer(Duration, Solenoid, ReleaseSolenoid);} // otherwise use a timer to turn it off again
-		SolChange = true;}
-	else {                                        			// if a change request is already pending
-		i = 0;
-		while (SolDelayed[i]) {                     			// look for a free slot in the list of solenoids to be processed later
-			i++;
-			if (i > 20) {
-				ErrorHandler(31,Solenoid,Duration);
-				break;}}
-		SolDelayed[i] = Solenoid;                   			// insert the solenoid number
-		DurDelayed[i] = Duration;                   			// and its duration into the list
-		ActivateTimer(25, Solenoid, ActivateLater);}}			// and try again later
-
-void ActivateLater(byte Solenoid) {               		// handle delayed solenoid change requests
-	byte i = 0;
-	unsigned int Duration;
-	while (SolDelayed[i] != Solenoid) {             		// search the list of delayed solenoid requests
-		i++;}
-	SolDelayed[i] = 0;                              		// remove its entry
-	Duration = DurDelayed[i];                       		// get the duration
-	ActivateSolenoid(Duration, Solenoid);}         	 		// and try again to activate it
+	SolChange = false;																	// block IRQ solenoid handling
+	if (Solenoid > 8) {																	// does the solenoid not belong to the first latch?
+		if (Solenoid < 17) {															// does it belong to the second latch?
+			SolBuffer[1] |= 1<<(Solenoid-9);								// latch counts from 0
+			SolLatch |= 2;}																	// select second latch
+		else {
+			SolBuffer[2] |= 1<<(Solenoid-17);
+			SolLatch |= 4;}}																// select third latch
+	else {
+		SolBuffer[0] |= 1<<(Solenoid-1);
+		SolLatch |= 1;}																		// select first latch
+	if (!Duration) {
+		Duration = *(GameDefinition.SolTimes+Solenoid-1);} // if no duration is specified use the solenoid specific default
+	if (Duration) {                               			// duration = 0 means solenoid is permanently on
+		ActivateTimer(Duration, Solenoid, ReleaseSolenoid);} // otherwise use a timer to turn it off again
+	SolChange = true;}
 
 void DelaySolenoid(byte Solenoid) {                   // activate solenoid after delay time
 	ActivateSolenoid(0, Solenoid);}
@@ -1204,16 +1235,22 @@ void ReleaseAllSolenoids() {
 	ReleaseSolenoid(17);}
 
 void ReleaseSolenoid(byte Solenoid) {
-	if (!SolChange) {                               		// change request for another solenoid pending?
-		SolNumber = Solenoid;                         		// if not process it
-		SolState = false;
-		SolChange = true;}
-	else {                                          		// if yes
-		ActivateTimer(1, Solenoid, ReleaseSolenoid);}}		// try again later
+	SolChange = false;																	// block IRQ solenoid handling
+	if (Solenoid > 8) {																	// does the solenoid not belong to the first latch?
+		if (Solenoid < 17) {															// does it belong to the second latch?
+			SolBuffer[1] &= 255-(1<<(Solenoid-9));					// latch counts from 0
+			SolLatch |= 2;}																	// select second latch
+		else {
+			SolBuffer[2] &= 255-(1<<(Solenoid-17));
+			SolLatch |= 4;}}																// select third latch
+	else {
+		SolBuffer[0] &= 255-(1<<(Solenoid-1));
+		SolLatch |= 1;}																		// select first latch
+	SolChange = true;}
 
 bool QuerySolenoid(byte Solenoid) {                  	// determine the current state of a solenoid
 	Solenoid--;
-	return SolBuffer[Solenoid / 8] & (1<<(Solenoid % 8));}
+	return SolBuffer[(Solenoid - (Solenoid % 8)) / 8] & (1<<(Solenoid % 8));}
 
 void ActA_BankSol(byte Solenoid) {
 	if (!SolWaiting[NextSolSlot][0]) {
@@ -1264,7 +1301,7 @@ void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
 				else {
 					ActivateSolenoid(0, ACselectRelay);					// switch to C
 					C_BankActive = true;}												// signal it
-				ActivateTimer(50, 1, ActSolenoid);}					  // wait 500ms for the relay to settle
+				ActivateTimer(50, 1, ActSolenoid);}					  // wait 50ms for the relay to settle
 			else {
 				if (SolWaiting[ActSolSlot][0] < 25) {
 					ActivateSolenoid(0, SolWaiting[ActSolSlot][0]);}
@@ -1279,7 +1316,7 @@ void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
 				if (ActSolSlot > 63) {												// array end reached?
 					ActSolSlot = 0;}}														// start from zero
 			State = 1;}																			// set routing state to active
-		else if (C_BankActive){														// nothing more to do any relay still active?
+		else if (C_BankActive){														// nothing more to do and relay still active?
 			ReleaseSolenoid(ACselectRelay);									// reset it
 			C_BankActive = false;
 			State = 1;
@@ -1625,26 +1662,29 @@ void ShowFileNotFound(String Filename) {							// show file not found message
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being one - stop with step being zero
 	static byte Timer = 0;
-	unsigned int Buffer = (PatPointer+Step-1)->Duration;  // buffer the duration for the current pattern
-	if (!Step) {																				// kill signal received?
-		if (Timer) {
-			KillTimer(Timer);
-			Timer = 0;}}
-	else {																							// no kill signal
+	if ((Step > 1) || (Step ==1 && !Timer)) {						// no kill signal
+		if (Step == 1) {
+			Step++;}
+		unsigned int Buffer = (PatPointer+Step-2)->Duration;  // buffer the duration for the current pattern
 		if (StrobeLightsTimer) {
-			LampBuffer = ((PatPointer+Step-1)->Pattern)-1;} // show the pattern
+			LampBuffer = ((PatPointer+Step-2)->Pattern)-1;} // show the pattern
 		else {
-			LampPattern = ((PatPointer+Step-1)->Pattern)-1;}// show the pattern
+			LampPattern = ((PatPointer+Step-2)->Pattern)-1;}// show the pattern
 		Step++;                                           // increase the pattern number
-		if (!((PatPointer+Step-1)->Duration)) {           // if the duration for the next pattern is 0
-			Step = 1;                                       // reset the pattern
+		if (!((PatPointer+Step-2)->Duration)) {           // if the duration for the next pattern is 0
+			Step = 2;                                       // reset the pattern
 			FlowRepeat--;                                   // decrease the number of repetitions
 			if (!FlowRepeat) {                              // if no more repetitions pending
 				Timer = 0;																		// indicate that the process has stopped
 				if (LampReturn) {                             // is a return pointer given?
 					LampReturn(0);}                             // call the procedure
 				return;}}                                     // otherwise just quit
-		Timer = ActivateTimer(Buffer, Step, ShowLampPatterns);}} // come back after the given duration
+		Timer = ActivateTimer(Buffer, Step, ShowLampPatterns);}	// come back after the given duration
+	else {																							// kill signal
+		if (!Step) {
+			if (Timer) {
+				KillTimer(Timer);
+				Timer = 0;}}}}
 
 void StrobeLights(byte State) {
 	if (State) {
@@ -1656,46 +1696,56 @@ void StrobeLights(byte State) {
 	StrobeLightsTimer = ActivateTimer(30, State, StrobeLights);}
 
 void PlayMusic(byte Priority, const char* Filename) {
-	if (!StartMusic) {
-		if (!PlayingMusic) {															// no music in play at the moment?
-			MusicFile = SD.open(Filename);									// open file
-			if (!MusicFile) {
-				ShowFileNotFound(Filename);}
+	if (StartMusic) {																		// already in startup phase?
+		MusicFile.close();																// close the previous file
+		StartMusic = 0;																		// cancel the startup
+		MBP = 0;}																					// and neglect its data
+	if (!PlayingMusic) {																// no music in play at the moment?
+		MusicFile = SD.open(Filename);										// open file
+		if (!MusicFile) {
+			ShowFileNotFound(Filename);}
+		else {
+			if (Priority > 99) {
+				MusicPriority = Priority -100;}
 			else {
-				if (Priority > 99) {
-					MusicPriority = Priority -100;}
+				MusicPriority = Priority;}
+			MusicFile.read(MusicBuffer, 2*128);							// read first block
+			StartMusic = true;															// indicate the startup phase
+			MBP++;}}																				// increase read pointer
+	else {																							// music already playing
+		if (Priority > 99) {															// Priority > 99 means new prio has to be larger (not equal) to play
+			Priority = Priority - 100;
+			if (Priority > MusicPriority) {
+				MusicPriority = Priority;
+				MusicFile.close();														// close the old file
+				MusicFile = SD.open(Filename);								// open the new one
+				if (!MusicFile) {
+					ShowFileNotFound(Filename);}
 				else {
-					MusicPriority = Priority;}
-				MusicFile.read(MusicBuffer, 2*128);						// read first block
-				StartMusic = true;														// indicate the startup phase
-				MBP++;}}																			// increase read pointer
-		else {																						// music already playing
-			if (Priority > 99) {														// Priority > 99 means new prio has to be larger (not equal) to play
-				Priority = Priority - 100;
-				if (Priority > MusicPriority) {
-					MusicPriority = Priority;
-					MusicFile.close();													// close the old file
-					MusicFile = SD.open(Filename);							// open the new one
-					if (!MusicFile) {
-						ShowFileNotFound(Filename);}
-					else {
-						if (!PlayingMusic) {											// neglect old data if still in the startup phase
-							MBP = 0;}}}}
-			else {
-				if (Priority >= MusicPriority) {
-					MusicPriority = Priority;
-					MusicFile.close();													// close the old file
-					MusicFile = SD.open(Filename);							// open the new one
-					if (!MusicFile) {
-						ShowFileNotFound(Filename);}
-					else {
-						if (!PlayingMusic) {											// neglect old data if still in the startup phase
-							MBP = 0;}}}}}}}
+					StopMusic = 0;															// cancel a previous stop command
+					if (!PlayingMusic) {												// neglect old data if still in the startup phase
+						MBP = 0;}}}}
+		else {
+			if (Priority >= MusicPriority) {
+				MusicPriority = Priority;
+				MusicFile.close();														// close the old file
+				MusicFile = SD.open(Filename);								// open the new one
+				if (!MusicFile) {
+					ShowFileNotFound(Filename);}
+				else {
+					StopMusic = 0;															// cancel a previous stop command
+					if (!PlayingMusic) {												// neglect old data if still in the startup phase
+						MBP = 0;}}}}}}
 
 void StopPlayingMusic() {
 	if (StartMusic || PlayingMusic) {
 		MusicFile.close();
-		StopMusic = MBP;}}
+		if (StartMusic) {																	// during startup
+			StartMusic = 0;																	// cancel startup
+			MBP = 0;}																				// neglect data
+		else {
+			AfterMusicPending = 2;													// no AfterMusicEvent shall be executed
+			StopMusic = MBP;}}}															// play the remaining data
 
 void PlayRandomMusic(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
@@ -1713,46 +1763,56 @@ void FadeOutMusic(byte Speed) {
 		StopPlayingMusic();}}
 
 void PlaySound(byte Priority, const char* Filename) {
-	if (!StartSound) {
-		if (!PlayingSound) {															// no sound in play at the moment?
-			SoundFile = SD.open(Filename);									// open file
-			if (!SoundFile) {
-				ShowFileNotFound(Filename);}
+	if (StartSound) {
+		SoundFile.close();
+		StartSound = 0;
+		SBP = 0;}
+	if (!PlayingSound) {																// no sound in play at the moment?
+		SoundFile = SD.open(Filename);										// open file
+		if (!SoundFile) {
+			ShowFileNotFound(Filename);}
+		else {
+			if (Priority > 99) {
+				SoundPriority = Priority -100;}
 			else {
-				if (Priority > 99) {
-					SoundPriority = Priority -100;}
+				SoundPriority = Priority;}
+			SoundFile.read(SoundBuffer, 2*128);							// read first block
+			StartSound = true;															// indicate the startup phase
+			SBP++;}}																				// increase read pointer
+	else {																							// music already playing
+		if (Priority > 99) {															// Priority > 99 means new prio has to be larger (not equal) to play
+			Priority = Priority - 100;
+			if (Priority > SoundPriority) {
+				SoundPriority = Priority;
+				SoundFile.close();														// close the old file
+				SoundFile = SD.open(Filename);								// open the new one
+				if (!SoundFile) {
+					ShowFileNotFound(Filename);}
 				else {
-					SoundPriority = Priority;}
-				SoundFile.read(SoundBuffer, 2*128);						// read first block
-				StartSound = true;														// indicate the startup phase
-				SBP++;}}																			// increase read pointer
-		else {																						// music already playing
-			if (Priority > 99) {														// Priority > 99 means new prio has to be larger (not equal) to play
-				Priority = Priority - 100;
-				if (Priority > SoundPriority) {
-					SoundPriority = Priority;
-					SoundFile.close();													// close the old file
-					SoundFile = SD.open(Filename);							// open the new one
-					if (!SoundFile) {
-						ShowFileNotFound(Filename);}
-					else {
-						if (!PlayingSound) {											// neglect old data if still in the startup phase
+					StopSound = 0;															// cancel a previous stop command
+					if (!PlayingSound) {												// neglect old data if still in the startup phase
 						SBP = 0;}}}}
-			else {
-				if (Priority >= SoundPriority) {
-					SoundPriority = Priority;
-					SoundFile.close();													// close the old file
-					SoundFile = SD.open(Filename);							// open the new one
-					if (!SoundFile) {
-						ShowFileNotFound(Filename);}
-					else {
-						if (!PlayingSound) {											// neglect old data if still in the startup phase
-							SBP = 0;}}}}}}}
+		else {
+			if (Priority >= SoundPriority) {
+				SoundPriority = Priority;
+				SoundFile.close();														// close the old file
+				SoundFile = SD.open(Filename);								// open the new one
+				if (!SoundFile) {
+					ShowFileNotFound(Filename);}
+				else {
+					StopSound = 0;															// cancel a previous stop command
+					if (!PlayingSound) {												// neglect old data if still in the startup phase
+						SBP = 0;}}}}}}
 
 void StopPlayingSound() {
 	if (StartSound || PlayingSound) {
 		SoundFile.close();
-		StopSound = SBP;}}
+		if (StartSound) {																	// during startup
+			StartSound = 0;																	// cancel startup
+			SBP = 0;}																				// neglect data
+		else {
+			AfterSoundPending = 2;													// no AfterSoundEvent shall be executed
+			StopSound = SBP;}}}
 
 void PlayRandomSound(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
@@ -1958,7 +2018,7 @@ void HandleTextSetting(bool change) {									// handling method for text settin
 void HandleVolumeSetting(bool change) {
 	HandleNumSetting(change);
 	if (!change) {
-		PlayMusic(50, "MUSIC.BIN");}
+		PlayMusic(90, "MUSIC.BIN");}
 	analogWrite(VolumePin,255-APC_settings[Volume]);}   // adjust PWM to volume setting
 
 byte HandleHighScores(unsigned int Score) {

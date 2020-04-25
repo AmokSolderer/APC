@@ -170,11 +170,11 @@ const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
                                    15,0b10000,0b10000,0b10000,0b10000,0b10000,0};
 
 																											// offsets of settings in the settings array
-const byte PB_DropTime = 0;														// drop target down time setting
-const byte PB_ReachPlanet = 1;												// target planet setting
-const byte PB_EnergyTimer = 2;												// energy timer setting
-const byte PB_MultiballVolume = 3;										// volume increase for the multiball
-const byte PB_BallSaver = 4;													// ball saver for the outlanes
+#define PB_DropTime 0																	// drop target down time setting
+#define PB_ReachPlanet 1															// target planet setting
+#define PB_EnergyTimer 2															// energy timer setting
+#define PB_MultiballVolume 3													// volume increase for the multiball
+#define PB_BallSaver 4																// ball saver for the outlanes
 
 const byte PB_defaults[64] = {5,6,15,0,0,0,0,0,		 		// game default settings
 											  			0,0,0,0,0,0,0,0,
@@ -666,8 +666,6 @@ void PB_GameMain(byte Switch) {
 		Serial.println((unsigned int)&PB_SearchBall);
 		Serial.print("PB_ChestLightHandler = ");
 		Serial.println((unsigned int)&PB_ChestLightHandler);
-		Serial.print("ActivateLater = ");
-		Serial.println((unsigned int)&ActivateLater);
 		Serial.print("BlinkScore = ");
 		Serial.println((unsigned int)&BlinkScore);
 		Serial.print("BlinkLamps = ");
@@ -720,6 +718,12 @@ void PB_GameMain(byte Switch) {
 		Serial.println((unsigned int)&PB_EnergyOff);
 		Serial.print("PB_ResetDropTargets = ");
 		Serial.println((unsigned int)&PB_ResetDropTargets);
+		Serial.print("InLock = ");
+		Serial.println((unsigned int)InLock);
+		Serial.print("Multiballs = ");
+		Serial.println((unsigned int)Multiballs);
+		Serial.print("PB_ChestMode = ");
+		Serial.println((unsigned int)PB_ChestMode);
 		c=0;
 		i=1;
 		while (c<ActiveTimers) {													// list all active timers
@@ -1228,7 +1232,7 @@ void PB_HandleLock(byte State) {
 						PB_EyeBlink(0);														// turn off eye blinking
 						ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
 						ActivateSolenoid(0, 13);                  // start visor motor
-						PB_SolarValueTimer = ActivateTimer(8000, 0,PB_ReopenVisor);} // 8s to score the solar value
+						PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
 					else {                                      // multiball not yet running
 						PlaySound(150, "BS_S02.BIN");
 						PB_GiveBall(1);}}                         // give second ball
@@ -1662,10 +1666,11 @@ void PB_ResetHighScores(bool change) {                // delete the high scores 
 		WriteLower(" SCORES       ");}}
 
 void PB_HandleVolumeSetting(bool change) {
-	HandleNumSetting(change);
-	if (!change) {
-		PlayMusic(50, "BS_M04.BIN");}
-	analogWrite(VolumePin,255-APC_settings[Volume]-SettingsPointer[AppByte]);}  // adjust PWM to volume setting
+	if (APC_settings[Volume]) {
+		HandleNumSetting(change);
+		if (!change) {
+			PlayMusic(50, "BS_M04.BIN");}
+		analogWrite(VolumePin,255-APC_settings[Volume]-SettingsPointer[AppByte]);}}  // adjust PWM to volume setting
 
 void PB_Testmode(byte Select) {
 	Switch_Pressed = PB_Testmode;
@@ -1712,7 +1717,7 @@ void PB_Testmode(byte Select) {
 				if (!AppByte2) {
 					WriteUpper(" LATESTEDGES  ");
 					AppByte2 = 1;
-					break;}
+					break;} // @suppress("No break at end of case")
 			default:																				// all other switches
 				for (i=1; i<24; i++) {                        // move all characters in the lower display row 4 chars to the left
 					DisplayLower[i] = DisplayLower[i+8];}
