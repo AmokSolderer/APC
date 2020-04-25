@@ -4,7 +4,7 @@
 
 First of all you need a [Lisy_Mini](https://lisy.dev/lisy_mini.html) and an [APC](https://github.com/AmokSolderer/APC/wiki) board and write the [Lisy software](https://lisy.dev/software.html) to the SD card of your Raspberry PI.
 
-Set the S2 DIP switches to your game number.
+Set the S2 DIP switches to your game number. The numbers can be found in the Lisy_Mini documentation.
 
 Connect the power connector K8 of your Lisy_Mini board to the 5V supply of your pinball machine. (You can also supply Lisy_Mini by the micro USB port of the PI. In this case you need a 2A capable power supply and you should power up Lisy after the APC and connect the USB cable then.)
 

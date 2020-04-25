@@ -21,13 +21,13 @@ A good example is a local fellow who wants his System 3 'Disco Fever' to play so
 
 To make this possible, it is necessary that PinMame and the APC can play sounds simultaneously which would normally require an additional HW sound mixer which mixes both sound channels together. In order to avoid this we decided to let the APC do the complete sound handling with PinMame just telling him which sound to play when.
 
-The drawback of this is that you have to extract the music files from PinMame. Furthermore we have to understand how the audio boards work and emulate their behaviour. The first task is easy, assuming we find a place to store the files somewhere in the internet, because then this work must only be done once for each game. For System 3 - 9 games I expect this to be easy anyway, as they have a very limited sound performance. You could use the Audio Debug Mode which is explained later to find out which sounds to extract.
+The drawback of this is that you have to extract the music files from PinMame. Furthermore we have to understand how the audio boards work and emulate their behaviour. The first task is easy and if we find some server space to store the files somewhere in the internet then this work must only be done once for each game. For System 3 - 9 games I expect this to be easy anyway, as they have a very limited sound performance. You could use the Audio Debug Mode which is explained later to find out which sounds to extract.
 
-At the moment the list of available sound packages has only one entry, but we see the extraction of the sound files as a community task. Of course it would be great if you'd share you sound package with the rest of us. 
+At the moment the list of available sound packages has only one entry, but we see the extraction of the sound files as a community task. Of course it would be great if you'd share you sound package with the rest of us. Up to now we haven't found some server space to store the files on, so send me a PM via Pinside or Flippertreff (see the feedback section on the main page), and I'll store my Pinbot files somewhere and send the link back to you.
 
 |System|Game| Sound File URL|Comments|
 |--|--|--|--|
-|11a|Pinbot| URL| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW. No looping implemented yet - if you wait long enough, some sounds will just run out|
+|11a|Pinbot| URL available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW. No looping implemented yet - if you wait long enough, some sounds will just run out|
 
 ## Audio boards
 
