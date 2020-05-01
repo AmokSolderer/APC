@@ -2,8 +2,8 @@
 # mode2 config file
 
 mode:
-    start_events: mode2_start
-    stop_events: mode2_stop
+    start_events: Right_Inlane_start
+    stop_events: Right_Inlane_stop
     priority: 200
 
 # widgets:
@@ -19,18 +19,18 @@ mode:
     # mode_mode2_started: mode2_start_banner
 
 variable_player:
-    my_first_shot_mode2_flashing_hit:
+    sh_LeftOrbit_flashing_hit:
        score: 10000
-    my_first_shot_mode2_lit_hit:
+    sh_LeftOrbit_lit_hit:
         score: 100
         
-shots:
-    my_first_shot_mode2:
-        switch: s_right_inlane
-        profile: mode2
+# shots:
+    # sh_Right_Inlane:
+        # switch: s_right_inlane
+        # profile: Right_Inlane
         
 shot_profiles:
-    mode2:
+    Right_Inlane:
         states:
           - name: flashing
             show: flash

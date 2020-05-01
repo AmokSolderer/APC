@@ -9,44 +9,53 @@ segment_display_player:
             text: "{players[0].score:d}"
             
 hardware_sound_player:
-    sh_s_skate_s_hit:
+    skate_targets_unlit_hit:
         "SOUND.BIN":
             track: 2
             action: play_file
-    sh_s_skate_k_hit:
-        "SOUND.BIN":
-            track: 2
-            action: play_file
-    sh_s_skate_a_hit:
-        "SOUND.BIN":
-            track: 2
-            action: play_file
-    sh_s_skate_t_hit:
-        "SOUND.BIN":
-            track: 2
-            action: play_file
-    sh_s_skate_e_hit:
-        "SOUND.BIN":
-            track: 2
-            action: play_file
+    # sh_s_skate_k_hit:
+        # "SOUND.BIN":
+            # track: 2
+            # action: play_file
+    # sh_s_skate_a_hit:
+        # "SOUND.BIN":
+            # track: 2
+            # action: play_file
+    # sh_s_skate_t_hit:
+        # "SOUND.BIN":
+            # track: 2
+            # action: play_file
+    # sh_s_skate_e_hit:
+        # "SOUND.BIN":
+            # track: 2
+            # action: play_file
                  
 variable_player:
-    sh_s_skate_s_hit:
+    skate_targets_unlit_hit:
         score: 100
-    sh_s_skate_k_hit:
-        score: 200
-    sh_s_skate_a_hit:
-        score: 300
-    sh_s_skate_t_hit:
-        score: 400
-    sh_s_skate_e_hit:
-        score: 500
-    my_first_shot_my_first_profile_unlit_hit:
-        score: 100
-    my_first_shot_my_first_profile_flashing_hit:
-        score: 1000
+    # sh_s_skate_k_hit:
+        # score: 200
+    # sh_s_skate_a_hit:
+        # score: 300
+    # sh_s_skate_t_hit:
+        # score: 400
+    # sh_s_skate_e_hit:
+        # score: 500
+    # my_first_shot_my_first_profile_unlit_hit:
+        # score: 100
+    # my_first_shot_my_first_profile_flashing_hit:
+        # score: 1000
+    
     lock1_shot_hit:
         v_balls_locked: 1
+    #multiball_normal_multiball_ended:
+    #    v_balls_locked:
+    #        int: 0
+    #        action: set
+    #    lock_locked_balls:
+    #        int: 0
+    #        action: set
+            
         
 shots:
     sh_w_drop_target:
@@ -64,11 +73,6 @@ shots:
         reset_events: drop_target_bank_war_drop_targets_down, ball_will_end
         show_tokens:
             light: l_drop_target_R
-    my_first_shot:
-        switch: s_right_inlane
-        show_tokens:
-            light: l_left_orbit
-        profile: my_first_profile
     sh_s_skate_s:
         switch: s_5bank_S
         show_tokens:
@@ -89,5 +93,198 @@ shots:
         switch: s_5bank_E
         show_tokens:
             light: l_5bank_E
-
+    sh_lane_j:
+        switch: s_lane_rollover_J
+        show_tokens:
+            light: l_lane_J
+    sh_lane_e:
+        switch: s_lane_rollover_E
+        show_tokens:
+            light: l_lane_E
+    sh_lane_t:
+        switch: s_lane_rollover_T
+        show_tokens:
+            light: l_lane_T
+    sh_abc_a:
+        switch: s_standup_A
+        show_tokens:
+            light: l_standup_A
+    sh_abc_b:
+        switch: s_standup_B
+        show_tokens:
+            light: l_standup_B
+    sh_abc_c:
+        switch: s_standup_C
+        show_tokens:
+            light: l_standup_C
+            
+sequence_shots:
+    sh_left_orbit:
+        switch_sequence: s_right_inlane, s_left_spinner
+        sequence_timeout: 5s
+    sh_right_orbit:
+        switch_sequence: s_left_inlane, s_right_spinner
+        sequence_timeout: 5s
+            
+shot_groups:
+    jet_lanes:
+        shots: sh_lane_j, sh_lane_e, sh_lane_t
+        rotate_left_events: s_left_lane_change_active
+        rotate_right_events: s_right_lane_change_active
+        reset_events: jet_lanes_complete
+        # enable_events: ball_starting
+        # disable_events: ball_ending
+    skate_targets:
+        shots: sh_s_skate_s, sh_s_skate_k, sh_s_skate_a, sh_s_skate_t, sh_s_skate_e
+        reset_events: skate_targets_complete
+        # enable_events: ball_starting
+        # disable_events: ball_ending
+    abc_targets:
+        shots: sh_abc_a, sh_abc_b, sh_abc_c
+        reset_events: abc_targets_complete
+        # enable_events: ball_starting
+        # disable_events: ball_ending
         
+show_player:
+    s_right_inlane_active:
+        lane_flash:
+            show_tokens:
+                light: l_left_orbit
+            speed: 5
+    sh_left_orbit_timeout:
+        lane_flash:
+            show_tokens:
+                light: l_left_orbit
+            action: stop
+    sh_left_orbit_hit:
+        lane_flash:
+            show_tokens:
+                light: l_left_orbit
+            action: stop
+    s_left_inlane_active:
+        lane_flash:
+            show_tokens:
+                light: l_right_orbit
+            speed: 5
+    sh_right_orbit_timeout:
+        lane_flash:
+            show_tokens:
+                light: l_right_orbit
+            action: stop
+    sh_right_orbit_hit:
+        lane_flash:
+            show_tokens:
+                light: l_right_orbit
+            action: stop
+    ball_started{is_extra_ball}:
+        lane_flash:
+            show_tokens:
+                light: l_skate_again
+            speed: 5
+
+shows:
+    lane_flash:
+      - time: 0
+        lights:
+            (light): 0
+      - time: +1
+        lights:
+            (light): ff
+            
+state_machines:
+    teams:
+        states:
+            start:
+                label: state_start
+                show_when_active:
+                    show: flash
+                    speed: 5
+                    show_tokens:
+                        light: l_team_1
+                events_when_started: state_start_start
+                events_when_stopped: state_start_stopped
+            team2:
+                label: state_team2
+                show_when_active:
+                    show: flash
+                    speed: 5
+                    show_tokens:
+                        light: l_team_2
+                events_when_started: state_team2_start
+                events_when_stopped: state_team2_stopped
+            team3:
+                label: state_team3
+                show_when_active:
+                    show: flash
+                    speed: 5
+                    show_tokens:
+                        light: l_team_3
+                events_when_started: state_team3_start
+                events_when_stopped: state_team3_stopped
+            team4:
+                label: state_team4
+                show_when_active:
+                    show: flash
+                    speed: 5
+                    show_tokens:
+                        light: l_team_4
+                events_when_started: state_team4_start
+                events_when_stopped: state_team4_stopped
+            team5:
+                label: state_team5
+                show_when_active:
+                    show: flash
+                    speed: 5
+                    show_tokens:
+                        light: l_team_5
+                events_when_started: state_team5_start
+                events_when_stopped: state_team5_stopped
+            team6:
+                label: state_team6
+                show_when_active:
+                    show: flash
+                    speed: 5
+                    show_tokens:
+                        light: l_team_6
+                events_when_started: state_team6_start
+                events_when_stopped: state_team6_stopped
+            team6_complete:
+                label: state_team6_complete
+                show_when_active:
+                    show: flash
+                    speed: 5
+                    show_tokens:
+                        light: l_extra_ball
+                events_when_started: state_team6_complete
+                events_when_stopped: state_team_reset
+        transitions:
+          - source: start
+            target: team3
+            events: ball_started{current_player.ball==1 and not is_extra_ball}
+          - source: start
+            target: team2
+            events: sh_left_orbit_hit, sh_right_orbit_hit
+          - source: team2
+            target: team3
+            events: sh_left_orbit_hit, sh_right_orbit_hit
+          - source: team3
+            target: team4
+            events: sh_left_orbit_hit, sh_right_orbit_hit
+          - source: team4
+            target: team5
+            events: sh_left_orbit_hit, sh_right_orbit_hit
+          - source: team5
+            target: team6
+            events: sh_left_orbit_hit, sh_right_orbit_hit
+          - source: team6
+            target: team6_complete
+            events: sh_left_orbit_hit, sh_right_orbit_hit
+          - source: team6_complete
+            target: start
+            events: s_extra_ball_active
+            
+extra_balls:
+    teams_extra_ball:
+        award_events: state_team_reset
+        debug: yes
+            
