@@ -12,7 +12,7 @@ SdFat SD;
 #define AllData 510
 #define HwExtStackPosMax 20														// size of the HwExtBuffer
 
-const char APC_Version[6] = "00.13";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "00.14";                  // Current APC version - includes the other INO files also
 const int SwMax = 72;                                 // number of existing switches (max. 72)
 const int LampMax = 64;                               // number of existing lamps (max. 64)
 const int DispColumns = 16;                           // Number of columns of the used display unit

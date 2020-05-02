@@ -734,7 +734,7 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 			*(DisplayLower+31) = DispPattern2[(' '-32)*2+1];
 			if (QuerySwitch(73)) {													// Up/Down switch pressed?
 				Solenoid++;                                   // increase the solenoid counter
-				if (Solenoid == 22) {                         // maximum reached?
+				if (Solenoid > 22) {                         	// maximum reached?
 					Solenoid = 1;}}}}                           // then start again
 	AppByte2 = ActivateTimer(1000, Solenoid, BC_FireSolenoids);}   // come back in one second
 
