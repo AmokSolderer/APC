@@ -8,7 +8,7 @@ const byte BC_OutholeKicker = 1;											// solenoid number of the outhole kic
 const byte BC_ShooterLaneFeeder = 2;									// solenoid number of the shooter lane feeder
 const byte BC_InstalledBalls = 3;											// number of balls installed in the game
 const byte BC_SearchCoils[15] = {1,4,6,8,13,15,16,17,18,19,20,21,22,14,0}; // coils to fire when the ball watchdog timer runs out - has to end with a zero
-const unsigned int BC_SolTimes[32] = {30,30,50,50,50,50,30,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,100,100,100,100,100,100,100,100}; // Activation times for solenoids
+const unsigned int BC_SolTimes[32] = {30,30,50,50,50,50,30,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,0,0,100,100,100,100,100,100,100,100}; // Activation times for solenoids
 
 const byte BC_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
