@@ -40,8 +40,11 @@ byte USB_WaitSoundTimer;															// number of the timer for the sound sequ
 
 char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
 
-struct SettingTopic USB_setList[5] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+struct SettingTopic USB_setList[8] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
+		{"  LISY  MODE    ",HandleNumSetting,0,1,5},
+		{"PINMAME GAME    ",HandleNumSetting,0,1,5},
+		{"  LISY  DEBUG   ",HandleNumSetting,0,1,5},
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS",ExitSettings,0,0,0},
 		{"",NULL,0,0,0}};
@@ -81,7 +84,7 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 	static byte USB_WatchdogTimer;
 	byte i=0;
 	if (!Event) {																				// reset watchdog
-		Serial.write((byte) 0);														// send OK
+		USB_WriteByte((byte) 0);														// send OK
 		if (USB_WatchdogTimer) {
 			KillTimer(USB_WatchdogTimer);}									// restart timer
 		if (game_settings[USB_Watchdog]) {								// watchdog enabled?
@@ -101,7 +104,7 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 				for (i=0; i<16; i++) {												// delete all HW rules
 					USB_HWrule_ActSw[i][0] = 0;
 					USB_HWrule_RelSw[i][0] = 0;}
-				Serial.write((byte) 0);}											// send OK
+				USB_WriteByte((byte) 0);}											// send OK
 			else {																					// timer has run out
 				if (!game_settings[USB_Watchdog]) {						// watchdog disabled?
 					USB_WatchdogTimer = 0;
@@ -169,6 +172,24 @@ void USB_Testmode(byte Dummy) {												// enter system settings if advance b
 		SerialCommand = 0;
 		Settings_Enter();}}
 
+byte USB_ReadByte() {																	// read a byte from the selected interface
+	if (APC_settings[ConnType] == 1) {
+		return Wire.read();}
+	else {
+		return Serial.read();}}
+
+void USB_WriteByte(byte Data) {												// write a byte to the selected interface
+	if (APC_settings[ConnType] == 1) {
+		Wire.write(Data);}
+	else {
+		Serial.write(Data);}}
+
+byte USB_Available() {
+	if (APC_settings[ConnType] == 1) {
+		return Wire.available();}
+	else {
+		return Serial.available();}}
+
 void USB_SerialCommand() {
 	static byte Command;
 	static bool CommandPending;
@@ -177,41 +198,41 @@ void USB_SerialCommand() {
 	byte c = 0;
 	byte i = 0;
 	if (!CommandPending) {															// any unfinished business?
-		Command = Serial.read();}													// if not read new command
+		Command = USB_ReadByte();}													// if not read new command
 	if (USB_CommandLength[Command] > 249) {							// command doesn't have a constant length
 		switch (USB_CommandLength[Command]) {
 		case 250:																					// argument length is stored in the first byte
 			if (BufferPointer) {														// length byte already stored?
 				c = SerialBuffer[0];}													// read previously stored argument length
 			else {
-				if (Serial.available()) {											// length byte available?
+				if (USB_Available()) {											// length byte available?
 					BufferPointer = 1;													// indicated that the length is read
-					c = Serial.read();}													// read argument length
+					c = USB_ReadByte();}													// read argument length
 				else {
 					BufferPointer = 0;
 					CommandPending = true;											// command not finished
 					return;}}
-			if (Serial.available() >= c) { 									// enough bytes in the serial buffer?
+			if (USB_Available() >= c) { 									// enough bytes in the serial buffer?
 				for (i=0; i<c; i++) {													// read the required amount of bytes
-					SerialBuffer[i] = Serial.read();}}
+					SerialBuffer[i] = USB_ReadByte();}}
 			else {																					// not enough bytes in the buffer
 				CommandPending = true;												// command not finished
 				SerialBuffer[0] = c;													// store argument length for next round
 				return;}
 			break;
 		case 251:
-			c = Serial.available();
+			c = USB_Available();
 			i = BufferPointer;
 			if (!BufferPointer) {														// first run?
 				if (c < 3) {																	// 3 bytes needed at least
 					CommandPending = true;
 					return;}
-				SerialBuffer[0] = Serial.read();							// store track number
+				SerialBuffer[0] = USB_ReadByte();							// store track number
 				i++;
-				SerialBuffer[1] = Serial.read();							// store options byte
+				SerialBuffer[1] = USB_ReadByte();							// store options byte
 				i++;}
 			do {																						// receive bytes
-				SerialBuffer[i] = Serial.read();							// and store them
+				SerialBuffer[i] = USB_ReadByte();							// and store them
 				i++;}
 			while ((SerialBuffer[i-1]) && ((i - BufferPointer) < c)); // until a 0 is read or serial buffer is empty
 			if (SerialBuffer[i-1]) {												// last byte not zero
@@ -220,13 +241,13 @@ void USB_SerialCommand() {
 				return;}
 			break;
 		case 255:																					// argument is terminated by a zero byte
-			c = Serial.available();
+			c = USB_Available();
 			i = BufferPointer;
 			if (!c) {																				// no further received bytes
 				CommandPending = true;
 				return;}
 			do {																						// receive bytes
-				SerialBuffer[i] = Serial.read();							// and store them
+				SerialBuffer[i] = USB_ReadByte();							// and store them
 				i++;}
 			while ((SerialBuffer[i-1]) && ((i - BufferPointer) < c)); // until a 0 is read or serial buffer is empty
 			if (SerialBuffer[i-1]) {												// last byte not zero
@@ -235,9 +256,9 @@ void USB_SerialCommand() {
 				return;}
 			break;}}
 	else {																							// argument has a specific length
-		if (Serial.available() >= USB_CommandLength[Command]) { // enough bytes in the serial buffer?
+		if (USB_Available() >= USB_CommandLength[Command]) { // enough bytes in the serial buffer?
 			for (i=0; i<USB_CommandLength[Command]; i++) {	// read the required amount of bytes
-				SerialBuffer[i] = Serial.read();}}
+				SerialBuffer[i] = USB_ReadByte();}}
 		else {																						// not enough bytes in the buffer
 			CommandPending = true;													// command not finished
 			return;}}
@@ -254,22 +275,31 @@ void USB_SerialCommand() {
 		*(DisplayLower+27) = DispPattern2[33 + 2 * (Command - (Command % 100)) / 100];}
 	switch (Command) {																	// execute command if complete
 	case 0:																							// get connected hardware
-		Serial.print("APC");
-		Serial.write((byte) 0);
+		if (APC_settings[ConnType] == 1) {
+			Wire.print("APC");}
+		else {
+			Serial.print("APC");}
+		USB_WriteByte((byte) 0);
 		break;
 	case 1:																							// get firmware version
-		Serial.print(APC_Version);
-		Serial.write((byte) 0);
+		if (APC_settings[ConnType] == 1) {
+			Wire.print(APC_Version);}
+		else {
+			Serial.print(APC_Version);}
+		USB_WriteByte((byte) 0);
 		break;
 	case 2:																							// get API version
-		Serial.print("0.09");
-		Serial.write((byte) 0);
+		if (APC_settings[ConnType] == 1) {
+			Wire.print("0.10");}
+		else {
+			Serial.print("0.10");}
+		USB_WriteByte((byte) 0);
 		break;
 	case 3:																							// get number of lamps
-		Serial.write((byte) 65);
+		USB_WriteByte((byte) 65);
 		break;
 	case 4:																							// get number of solenoids
-		Serial.write((byte) 25);
+		USB_WriteByte((byte) 25);
 		break;
 	case 6:																							// get number of displays
 		switch (APC_settings[DisplayType]) {
@@ -279,30 +309,30 @@ void USB_SerialCommand() {
 		case 5:																						// Sys11 Riverboat Gambler
 		case 6:																						// Sys3 - 6
 		case 7:																						// Sys7 + 9
-			Serial.write((byte) 5);
+			USB_WriteByte((byte) 5);
 			break;
 		case 3:																						// Sys11 BK2K
-			Serial.write((byte) 3);
+			USB_WriteByte((byte) 3);
 			break;
 		case 4:																						// Sys11 Taxi
-			Serial.write((byte) 4);
+			USB_WriteByte((byte) 4);
 			break;
 		default:																					// unknown display type
-			Serial.write((byte) 0);
+			USB_WriteByte((byte) 0);
 			break;}
 		break;
 	case 7:																							// Display details
-		Serial.write((byte) USB_DisplayTypes[APC_settings[DisplayType]][SerialBuffer[0]]);
-		Serial.write((byte) USB_DisplayDigitNum[APC_settings[DisplayType]][SerialBuffer[0]]);
+		USB_WriteByte((byte) USB_DisplayTypes[APC_settings[DisplayType]][SerialBuffer[0]]);
+		USB_WriteByte((byte) USB_DisplayDigitNum[APC_settings[DisplayType]][SerialBuffer[0]]);
 		break;
 	case 9:																							// get number of switches
-		Serial.write((byte) 73);
+		USB_WriteByte((byte) 73);
 		break;
 	case 10:																						// get status of lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
-			Serial.write((byte) QueryLamp(SerialBuffer[0]));}
+			USB_WriteByte((byte) QueryLamp(SerialBuffer[0]));}
 		else {
-			Serial.write((byte) 2);}
+			USB_WriteByte((byte) 2);}
 		break;
 	case 11:																						// turn on lamp
 		if (SerialBuffer[0] < 65) {												// max 64 lamps
@@ -313,11 +343,11 @@ void USB_SerialCommand() {
 			TurnOffLamp(SerialBuffer[0]);}
 		break;
 	case 19:																						// get number of modern lights
-		Serial.write((byte) 0);
+		USB_WriteByte((byte) 0);
 		break;
 	case 20:																						// get status of solenoid
 		if (SerialBuffer[0] < 26) {												// max 24 solenoids
-			Serial.write((byte) QuerySolenoid(SerialBuffer[0]));}
+			USB_WriteByte((byte) QuerySolenoid(SerialBuffer[0]));}
 		break;
 	case 21:																						// set solenoid # to on
 		if (SerialBuffer[0] < 25) {												// max 24 solenoids
@@ -742,22 +772,22 @@ void USB_SerialCommand() {
 	case 40:																						// get status of switch #
 		if (SerialBuffer[0] < 74) {												// max 73 switches
 			if (QuerySwitch(SerialBuffer[0])) {							// query state
-				Serial.write((byte) 1);}
+				USB_WriteByte((byte) 1);}
 			else {
-				Serial.write((byte) 0);}}
+				USB_WriteByte((byte) 0);}}
 		else {
-			Serial.write((byte) 2);}
+			USB_WriteByte((byte) 2);}
 		break;
 	case 41:																						// get changed switches
 		if (USB_ChangedSwitches[0]) {											// any changed switches?
 			i = 0;
-			Serial.write((byte) USB_ChangedSwitches[0]);		// send it
+			USB_WriteByte((byte) USB_ChangedSwitches[0]);		// send it
 			do {
 				USB_ChangedSwitches[i] = USB_ChangedSwitches[i+1];
 				i++;}
 			while (USB_ChangedSwitches[i]);} 								// still more changed switches?
 		else {
-			Serial.write((byte) 127);}											// no changed switches at all
+			USB_WriteByte((byte) 127);}											// no changed switches at all
 		break;
 	case 50:
 		if (SerialBuffer[0] == 1) {												// channel 1?
@@ -1002,9 +1032,9 @@ void USB_SerialCommand() {
 		break;
 	case 64:																						// read setting from APC
 		if (SerialBuffer[0]) {														// game setting selected
-			Serial.write((byte) game_settings[SerialBuffer[1]]);}
+			USB_WriteByte((byte) game_settings[SerialBuffer[1]]);}
 		else {																						// APC settings selected
-			Serial.write((byte) APC_settings[SerialBuffer[1]]);}
+			USB_WriteByte((byte) APC_settings[SerialBuffer[1]]);}
 		break;
 	case 65:																						// write setting to APC
 		if (SerialBuffer[0]) {														// game setting selected

@@ -1,6 +1,7 @@
 #include <SdFat.h>																		// APC.ino is the operating system for the Arduino Pinball Controller
 SdFat SD;
 #include <SPI.h>
+#include <Wire.h>
 #include "Arduino.h"
 #include "Sound.h"
 #define UpDown 53                                			// arduino pin connected to the auto/up - manual/Down button
@@ -152,7 +153,7 @@ struct SettingTopic {																	// one topic of a list of settings
 	byte UpperLimit;};																	// if text setting -> amount of text entries -1 / if num setting -> upper limit of selection value
 
 const char APC_set_file_name[13] = "APC_SET.BIN";
-const byte APC_defaults[64] =  {0,3,3,1,0,0,0,0,		 	// system default settings
+const byte APC_defaults[64] =  {0,3,3,1,1,0,0,0,		 	// system default settings
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
@@ -165,20 +166,23 @@ const byte APC_defaults[64] =  {0,3,3,1,0,0,0,0,		 	// system default settings
 #define ActiveGame  1																	// Select the active game
 #define NofBalls  2																		// Balls per game
 #define FreeGame  3																		// Free game mode?
-#define DimInserts  4                       		     	// Reduce lighting time of playfield lamps by 50%
-#define Volume  5                         		    		// Volume of the speaker
-#define LEDsetting  6                         		   	// Setting for the APC_LED_EXP board
-#define DebugMode  7                            		 	// debug mode enabled?
+#define ConnType  4																		// Remote control mode?
+#define DimInserts  5                       		     	// Reduce lighting time of playfield lamps by 50%
+#define Volume  6                         		    		// Volume of the speaker
+#define LEDsetting  7                         		   	// Setting for the APC_LED_EXP board
+#define DebugMode  8                            		 	// debug mode enabled?
 
 char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "},{"   TUTORIAL     "}};
 char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
 char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{"123456123456    "},{"12345671234567  "}};
+char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 
-struct SettingTopic APC_setList[11] = {
+struct SettingTopic APC_setList[12] = {
 		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,6},
 		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
 		{" NO OF  BALLS   ",HandleNumSetting,0,1,5},
 		{"  FREE  GAME    ",HandleBoolSetting,0,0,0},
+		{"CONNECT TYPE    ",HandleTextSetting,&TxTConType[0][0],0,3},
 		{"  DIM  INSERTS  ",HandleBoolSetting,0,0,0},
 		{"SPEAKER VOLUME  ",HandleVolumeSetting,0,0,255},
 		{"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,2},
@@ -235,8 +239,9 @@ void setup() {
 	digitalWrite(Blanking, LOW);                        // and activate the blanking
 	digitalWrite(VolumePin, HIGH);                      // set volume to 0
 	pinMode(UpDown, INPUT);                          		// initialize Up/Down pin
-	Serial.begin(115200);
-	SPI.begin();
+	Serial.begin(115200);																// needed for USB and serial communication
+	SPI.begin();																				// needed for SD card handling
+	Wire.begin(68);																			// start I2C handling
 	REG_PIOC_PER = 871363582;                           // set required Port C pins to controlled In/Out
 	REG_PIOC_PUDR = 871363582;                          // disable Pull-ups
 	REG_PIOC_OER = 871363582;                           // set pins to outputs
@@ -789,8 +794,13 @@ void loop() {
 					AfterSoundPending = 0;
 					if (AfterSound) {
 						AfterSound();}}}}}
-	if (SerialCommand && Serial.available()) {					// USB command mode
-		SerialCommand();}}																// use the first received byte as a command
+	if (SerialCommand && APC_settings[ConnType]) { 			// Remote mode?
+		if (APC_settings[ConnType] == 1) {								// I2C selected?
+			if (Wire.available()) {													// any bytes received at the I2C interface?
+				SerialCommand();}}
+		else {																						// USB selected
+			if (Serial.available()) {												// any bytes received at the USB port?
+				SerialCommand();}}}}													// use the first received byte as a command
 
 void ReadMusic() {																		// read music data from SD
 	if (MusicFile.available() > 255) {									// enough data remaining in file to fill one block?
