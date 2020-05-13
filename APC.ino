@@ -7,6 +7,9 @@ SdFat SD;
 #define UpDown 53                                			// arduino pin connected to the auto/up - manual/Down button
 #define Blanking  22		                              // arduino pin to control the blanking signal
 #define VolumePin 13																	// arduino pin to control the sound volume
+#define SwMax 72                                 			// number of existing switches (max. 72)
+#define LampMax 64                               			// number of existing lamps (max. 64)
+#define DispColumns 16                           			// Number of columns of the used display unit
 #define AllSelects 871346688							           	// mask for all port C pins belonging to select signals except special switch select
 #define Sel5 2097152																	// mask for the Sel5 select signal
 #define HwExtSels 606077440														// mask for all Hw extension port select signals
@@ -14,9 +17,13 @@ SdFat SD;
 #define HwExtStackPosMax 20														// size of the HwExtBuffer
 
 const char APC_Version[6] = "00.14";                  // Current APC version - includes the other INO files also
-const int SwMax = 72;                                 // number of existing switches (max. 72)
-const int LampMax = 64;                               // number of existing lamps (max. 64)
-const int DispColumns = 16;                           // Number of columns of the used display unit
+
+void HandleBoolSetting(bool change);
+void HandleTextSetting(bool change);
+void HandleNumSetting(bool change);
+void HandleVolumeSetting(bool change);
+void RestoreDefaults(bool change);
+void ExitSettings(bool change);
 
 const byte AlphaUpper[128] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
 		63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,136,0,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
