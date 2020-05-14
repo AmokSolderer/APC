@@ -1,5 +1,7 @@
 // USB interface for APC based pinball machines
 
+#define USB_I2C_TxBuffer_Size 16
+
 unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
 const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB commands from 0 - 9
 															1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
@@ -37,6 +39,9 @@ char USB_RepeatSound[13];															// name of the sound file to be repeated
 char USB_RepeatMusic[13];															// name of the music file to be repeated
 byte USB_WaitingSoundFiles[2][14];										// names of the waiting sound files first byte is for channel and commands
 byte USB_WaitSoundTimer;															// number of the timer for the sound sequencing
+byte USB_I2C_TxBuffer[16];														// transmit buffer for the I2C interface
+byte USB_I2C_TxWritePointer = 0;											// pointer to the current write position in the TxBuffer
+byte USB_I2C_TxReadPointer = 0;												// pointer to the current read position in the TxBuffer
 
 char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
 
@@ -180,7 +185,12 @@ byte USB_ReadByte() {																	// read a byte from the selected interface
 
 void USB_WriteByte(byte Data) {												// write a byte to the selected interface
 	if (APC_settings[ConnType] == 1) {
-		Wire.write(Data);}
+		USB_I2C_TxBuffer[USB_I2C_TxWritePointer] = Data;
+		USB_I2C_TxWritePointer++;
+		if (USB_I2C_TxWritePointer > USB_I2C_TxBuffer_Size) {
+			USB_I2C_TxWritePointer = 0;}
+		if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) {
+			ErrorHandler(31,0,USB_I2C_TxReadPointer);}}
 	else {
 		Serial.write(Data);}}
 
@@ -189,6 +199,19 @@ byte USB_Available() {
 		return Wire.available();}
 	else {
 		return Serial.available();}}
+
+void I2C_receive(int Dummy) {
+	UNUSED(Dummy);
+	if (APC_settings[ConnType] == 1) {
+		USB_SerialCommand();}}
+
+void I2C_transmit() {
+	if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) {
+		ErrorHandler(30,0,USB_I2C_TxReadPointer);}
+	Wire.write(USB_I2C_TxBuffer[USB_I2C_TxReadPointer]);
+	USB_I2C_TxReadPointer++;
+	if (USB_I2C_TxReadPointer > USB_I2C_TxBuffer_Size) {
+		USB_I2C_TxReadPointer = 0;}}
 
 void USB_SerialCommand() {
 	static byte Command;
@@ -276,21 +299,30 @@ void USB_SerialCommand() {
 	switch (Command) {																	// execute command if complete
 	case 0:																							// get connected hardware
 		if (APC_settings[ConnType] == 1) {
-			Wire.print("APC");}
+			USB_WriteByte('A');
+			USB_WriteByte('P');
+			USB_WriteByte('C');}
 		else {
 			Serial.print("APC");}
 		USB_WriteByte((byte) 0);
 		break;
 	case 1:																							// get firmware version
 		if (APC_settings[ConnType] == 1) {
-			Wire.print(APC_Version);}
+			USB_WriteByte('0');
+			USB_WriteByte('0');
+			USB_WriteByte('.');
+			USB_WriteByte('1');
+			USB_WriteByte('4');}
 		else {
 			Serial.print(APC_Version);}
 		USB_WriteByte((byte) 0);
 		break;
 	case 2:																							// get API version
 		if (APC_settings[ConnType] == 1) {
-			Wire.print("0.10");}
+			USB_WriteByte('0');
+			USB_WriteByte('.');
+			USB_WriteByte('1');
+			USB_WriteByte('0');}
 		else {
 			Serial.print("0.10");}
 		USB_WriteByte((byte) 0);

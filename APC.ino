@@ -249,6 +249,8 @@ void setup() {
 	Serial.begin(115200);																// needed for USB and serial communication
 	SPI.begin();																				// needed for SD card handling
 	Wire.begin(68);																			// start I2C handling
+	Wire.onReceive(I2C_receive);												// define I2C receive function
+	Wire.onRequest(I2C_transmit);												// define I2C transmit function
 	REG_PIOC_PER = 871363582;                           // set required Port C pins to controlled In/Out
 	REG_PIOC_PUDR = 871363582;                          // disable Pull-ups
 	REG_PIOC_OER = 871363582;                           // set pins to outputs
@@ -802,12 +804,8 @@ void loop() {
 					if (AfterSound) {
 						AfterSound();}}}}}
 	if (SerialCommand && APC_settings[ConnType]) { 			// Remote mode?
-		if (APC_settings[ConnType] == 1) {								// I2C selected?
-			if (Wire.available()) {													// any bytes received at the I2C interface?
-				SerialCommand();}}
-		else {																						// USB selected
-			if (Serial.available()) {												// any bytes received at the USB port?
-				SerialCommand();}}}}													// use the first received byte as a command
+		if ((APC_settings[ConnType] < 1) && Serial.available()) {	// USB selected?
+			SerialCommand();}}}															// use the first received byte as a command
 
 void ReadMusic() {																		// read music data from SD
 	if (MusicFile.available() > 255) {									// enough data remaining in file to fill one block?
