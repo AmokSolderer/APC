@@ -248,9 +248,9 @@ void setup() {
 	pinMode(UpDown, INPUT);                          		// initialize Up/Down pin
 	Serial.begin(115200);																// needed for USB and serial communication
 	SPI.begin();																				// needed for SD card handling
-	Wire.begin(68);																			// start I2C handling
-	Wire.onReceive(I2C_receive);												// define I2C receive function
-	Wire.onRequest(I2C_transmit);												// define I2C transmit function
+	Wire1.begin(68);																		// start I2C handling
+	Wire1.onReceive(I2C_receive);												// define I2C receive function
+	Wire1.onRequest(I2C_transmit);											// define I2C transmit function
 	REG_PIOC_PER = 871363582;                           // set required Port C pins to controlled In/Out
 	REG_PIOC_PUDR = 871363582;                          // disable Pull-ups
 	REG_PIOC_OER = 871363582;                           // set pins to outputs

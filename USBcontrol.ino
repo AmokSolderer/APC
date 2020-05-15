@@ -178,42 +178,42 @@ void USB_Testmode(byte Dummy) {												// enter system settings if advance b
 		Settings_Enter();}}
 
 byte USB_ReadByte() {																	// read a byte from the selected interface
-	if (APC_settings[ConnType] == 1) {
-		return Wire.read();}
-	else {
+	if (APC_settings[ConnType] == 1) {									// I2C selected?
+		return Wire1.read();}
+	else {																							// USB selected
 		return Serial.read();}}
 
 void USB_WriteByte(byte Data) {												// write a byte to the selected interface
-	if (APC_settings[ConnType] == 1) {
-		USB_I2C_TxBuffer[USB_I2C_TxWritePointer] = Data;
-		USB_I2C_TxWritePointer++;
-		if (USB_I2C_TxWritePointer > USB_I2C_TxBuffer_Size) {
-			USB_I2C_TxWritePointer = 0;}
-		if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) {
-			ErrorHandler(31,0,USB_I2C_TxReadPointer);}}
-	else {
+	if (APC_settings[ConnType] == 1) {									// I2C selected?
+		USB_I2C_TxBuffer[USB_I2C_TxWritePointer] = Data;	// send byte
+		USB_I2C_TxWritePointer++;													// increase buffer pointer
+		if (USB_I2C_TxWritePointer > USB_I2C_TxBuffer_Size) {	// end of buffer reached?
+			USB_I2C_TxWritePointer = 0;}										// start from 0
+		if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) { // buffer read pointer = buffer write pointer?
+			ErrorHandler(31,0,USB_I2C_TxReadPointer);}}			// buffer full
+	else {																							// USB selected
 		Serial.write(Data);}}
 
 byte USB_Available() {
-	if (APC_settings[ConnType] == 1) {
-		return Wire.available();}
-	else {
+	if (APC_settings[ConnType] == 1) {									// I2C selected?
+		return Wire1.available();}
+	else {																							// USB selected
 		return Serial.available();}}
 
-void I2C_receive(int Dummy) {
+void I2C_receive(int Dummy) {													// receive a byte on request (I2C)
 	UNUSED(Dummy);
-	if (APC_settings[ConnType] == 1) {
+	if (APC_settings[ConnType] == 1) {									// I2C selected?
 		USB_SerialCommand();}}
 
-void I2C_transmit() {
-	if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) {
+void I2C_transmit() {																	// send a byte on master request (I2C)
+	if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) {	// no data in buffer
 		ErrorHandler(30,0,USB_I2C_TxReadPointer);}
-	Wire.write(USB_I2C_TxBuffer[USB_I2C_TxReadPointer]);
-	USB_I2C_TxReadPointer++;
-	if (USB_I2C_TxReadPointer > USB_I2C_TxBuffer_Size) {
-		USB_I2C_TxReadPointer = 0;}}
+	Wire1.write(USB_I2C_TxBuffer[USB_I2C_TxReadPointer]);	// send byte
+	USB_I2C_TxReadPointer++;														// increase buffer pointer
+	if (USB_I2C_TxReadPointer > USB_I2C_TxBuffer_Size) {	// end of buffer reached?
+		USB_I2C_TxReadPointer = 0;}}											// start from 0
 
-void USB_SerialCommand() {
+void USB_SerialCommand() {														// process a received command
 	static byte Command;
 	static bool CommandPending;
 	static byte SerialBuffer[128];
@@ -821,7 +821,7 @@ void USB_SerialCommand() {
 		else {
 			USB_WriteByte((byte) 127);}											// no changed switches at all
 		break;
-	case 50:
+	case 50:																						// play sound #
 		if (SerialBuffer[0] == 1) {												// channel 1?
 			if (!SerialBuffer[1]) {													// stop sound
 				AfterSound = 0;
