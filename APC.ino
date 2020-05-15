@@ -804,7 +804,7 @@ void loop() {
 					if (AfterSound) {
 						AfterSound();}}}}}
 	if (SerialCommand && APC_settings[ConnType]) { 			// Remote mode?
-		if ((APC_settings[ConnType] < 1) && Serial.available()) {	// USB selected?
+		if ((APC_settings[ConnType] > 1) && Serial.available()) {	// USB selected?
 			SerialCommand();}}}															// use the first received byte as a command
 
 void ReadMusic() {																		// read music data from SD
