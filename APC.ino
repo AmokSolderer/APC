@@ -69,7 +69,7 @@ byte SwEvents[2];                                     // contains the number of 
 uint32_t SwitchRows[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the status of all switch rows
 const byte *DispRow1;                                 // determines which patterns are to be shown (2 lines with 16 chars each)
 const byte *DispRow2;
-const byte *DispPattern1;
+const byte *DispPattern1;															// points to the correct character patterns for this kind of display
 const byte *DispPattern2;
 byte DisplayUpper[32];                                // changeable display buffer
 byte DisplayLower[32];
