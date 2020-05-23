@@ -19,6 +19,9 @@ const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 																											// offsets of settings in the settings array
 #define USB_Watchdog 0																// watchdog enable setting
 #define USB_Debug 1																		// USB debug mode
+#define USB_LisyMode 2																//
+#define USB_PinMameGame 3															// number of the game to be run in PinMame
+#define USB_LisyDebug																	// selected debug mode
 
 const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
@@ -218,24 +221,25 @@ void USB_SerialCommand() {														// process a received command
 	static bool CommandPending;
 	static byte SerialBuffer[128];
 	static byte BufferPointer;
+	static byte SoundSeries[2];													// buffer to handle pre system11 sound series
 	byte c = 0;
 	byte i = 0;
 	if (!CommandPending) {															// any unfinished business?
-		Command = USB_ReadByte();}													// if not read new command
+		Command = USB_ReadByte();}												// if not read new command
 	if (USB_CommandLength[Command] > 249) {							// command doesn't have a constant length
 		switch (USB_CommandLength[Command]) {
 		case 250:																					// argument length is stored in the first byte
 			if (BufferPointer) {														// length byte already stored?
 				c = SerialBuffer[0];}													// read previously stored argument length
 			else {
-				if (USB_Available()) {											// length byte available?
+				if (USB_Available()) {												// length byte available?
 					BufferPointer = 1;													// indicated that the length is read
-					c = USB_ReadByte();}													// read argument length
+					c = USB_ReadByte();}												// read argument length
 				else {
 					BufferPointer = 0;
 					CommandPending = true;											// command not finished
 					return;}}
-			if (USB_Available() >= c) { 									// enough bytes in the serial buffer?
+			if (USB_Available() >= c) { 										// enough bytes in the serial buffer?
 				for (i=0; i<c; i++) {													// read the required amount of bytes
 					SerialBuffer[i] = USB_ReadByte();}}
 			else {																					// not enough bytes in the buffer
@@ -823,42 +827,104 @@ void USB_SerialCommand() {														// process a received command
 		break;
 	case 50:																						// play sound #
 		if (SerialBuffer[0] == 1) {												// channel 1?
-			if (!SerialBuffer[1]) {													// stop sound
-				AfterSound = 0;
-				StopPlayingSound();
-				break;}
-			if (SerialBuffer[1] == 85) {										// sound command 0x55
-				break;}
-			if (SerialBuffer[1] == 105) { 									// strange misplaced sound during multiball
-				break;}
-			if (SerialBuffer[1] == 170) {										// sound command 0xaa
-				break;}
-			if (SerialBuffer[1] == 255) {										// sound command 0xff
-				break;}
-			char FileName[9] = "0_00.snd";
-			if ((SerialBuffer[1] >> 4) < 10) {
-				FileName[2] = 48 + (SerialBuffer[1] >> 4);}
-			else {
-				FileName[2] = 55 + (SerialBuffer[1] >> 4);}
-			if ((SerialBuffer[1] & 15) < 10) {
-				FileName[3] = 48 + (SerialBuffer[1] & 15);}
-			else {
-				FileName[3] = 55 + (SerialBuffer[1] & 15);}
-			if (SD.exists(FileName)) {
-				if (game_settings[USB_Debug] == 2) {					// display can be used for debug information
-					*(DisplayLower+2) = NumLower[2 * (FileName[2] - 32)]; // show the number of the sound to be played
-					*(DisplayLower+3) = NumLower[2 * (FileName[2] - 32) + 1];
-					*(DisplayLower+4) = NumLower[2 * (FileName[3] - 32)];
-					*(DisplayLower+5) = NumLower[2 * (FileName[3] - 32) + 1];}
-				if (SerialBuffer[1] < 128) {									// play speech with a higher priority
-					PlaySound(50, (char*) FileName);}
+			if (game_settings[USB_PinMameGame] < 40) {			// pre system11 game?
+				if (SerialBuffer[1] == 127) {									// sound command 0x7f
+					break;}
+				if (SerialBuffer[1] == 44) {									// sound command 0x2c - stop sound
+					AfterSound = 0;
+					SoundSeries[0] = 0;
+					StopPlayingSound();
+					break;}
+				if (SerialBuffer[1] == 45) {									// sound command 0x2d - sound series
+					if (SoundSeries[0] != 45) {
+						SoundSeries[0] = 45;
+						SoundSeries[1] = 0;}
+					SoundSeries[1]++;
+					char FileName[13] = "0_2d_000.snd";
+					FileName[7] = (SoundSeries[1] % 10);
+					FileName[6] = ((SoundSeries[1] % 100) - FileName[7]) / 10;
+					FileName[5] = (SoundSeries[1] - FileName[6]) / 100;
+					PlaySound(50, (char*) FileName);
+					break;}
+				if (SerialBuffer[1] == 46) {									// sound command 0x2e - sound series
+					if (SoundSeries[0] != 46) {
+						SoundSeries[0] = 46;
+						SoundSeries[1] = 0;}
+					SoundSeries[1]++;
+					char FileName[13] = "0_2e_000.snd";
+					FileName[7] = (SoundSeries[1] % 10);
+					FileName[6] = ((SoundSeries[1] % 100) - FileName[7]) / 10;
+					FileName[5] = (SoundSeries[1] - FileName[6]) / 100;
+					for (i=0; i<12; i++) {
+						USB_RepeatSound[i] = FileName[i];}
+					NextSoundName = USB_RepeatSound;
+					AfterSound = PlayNextSound;
+					PlaySound(50, (char*) FileName);
+					break;}
+				if (SerialBuffer[1] == 52) {									// sound command 0x34 - sound series
+					if (SoundSeries[0] != 52) {
+						SoundSeries[0] = 52;
+						SoundSeries[1] = 0;}
+					SoundSeries[1]++;
+					char FileName[13] = "0_34_000.snd";
+					FileName[7] = (SoundSeries[1] % 10);
+					FileName[6] = ((SoundSeries[1] % 100) - FileName[7]) / 10;
+					FileName[5] = (SoundSeries[1] - FileName[6]) / 100;
+					PlaySound(50, (char*) FileName);
+					break;}
+				char FileName[9] = "0_00.snd";
+				if ((SerialBuffer[1] >> 4) < 10) {
+					FileName[2] = 48 + (SerialBuffer[1] >> 4);}
 				else {
-					PlaySound(51, (char*) FileName);}}
-			else {
-				*(DisplayLower+12) = NumLower[2 * (FileName[2] - 32)]; // show the number of the missing sound
-				*(DisplayLower+13) = NumLower[2 * (FileName[2] - 32) + 1];
-				*(DisplayLower+14) = NumLower[2 * (FileName[3] - 32)];
-				*(DisplayLower+15) = NumLower[2 * (FileName[3] - 32) + 1];}}
+					FileName[2] = 55 + (SerialBuffer[1] >> 4);}
+				if ((SerialBuffer[1] & 15) < 10) {
+					FileName[3] = 48 + (SerialBuffer[1] & 15);}
+				else {
+					FileName[3] = 55 + (SerialBuffer[1] & 15);}
+				if (SD.exists(FileName)) {
+					if (game_settings[USB_Debug] == 2) {				// display can be used for debug information
+						*(DisplayLower+2) = NumLower[2 * (FileName[2] - 32)]; // show the number of the sound to be played
+						*(DisplayLower+3) = NumLower[2 * (FileName[2] - 32) + 1];
+						*(DisplayLower+4) = NumLower[2 * (FileName[3] - 32)];
+						*(DisplayLower+5) = NumLower[2 * (FileName[3] - 32) + 1];}
+					PlaySound(50, (char*) FileName);}}
+			else {																					// system11 game
+				if (!SerialBuffer[1]) {												// stop sound
+					AfterSound = 0;
+					StopPlayingSound();
+					break;}
+				if (SerialBuffer[1] == 85) {									// sound command 0x55
+					break;}
+				if (SerialBuffer[1] == 105) { 								// strange misplaced sound during multiball
+					break;}
+				if (SerialBuffer[1] == 170) {									// sound command 0xaa
+					break;}
+				if (SerialBuffer[1] == 255) {									// sound command 0xff
+					break;}
+				char FileName[9] = "0_00.snd";
+				if ((SerialBuffer[1] >> 4) < 10) {
+					FileName[2] = 48 + (SerialBuffer[1] >> 4);}
+				else {
+					FileName[2] = 55 + (SerialBuffer[1] >> 4);}
+				if ((SerialBuffer[1] & 15) < 10) {
+					FileName[3] = 48 + (SerialBuffer[1] & 15);}
+				else {
+					FileName[3] = 55 + (SerialBuffer[1] & 15);}
+				if (SD.exists(FileName)) {
+					if (game_settings[USB_Debug] == 2) {				// display can be used for debug information
+						*(DisplayLower+2) = NumLower[2 * (FileName[2] - 32)]; // show the number of the sound to be played
+						*(DisplayLower+3) = NumLower[2 * (FileName[2] - 32) + 1];
+						*(DisplayLower+4) = NumLower[2 * (FileName[3] - 32)];
+						*(DisplayLower+5) = NumLower[2 * (FileName[3] - 32) + 1];}
+					if (SerialBuffer[1] < 128) {								// play speech with a higher priority
+						PlaySound(50, (char*) FileName);}
+					else {
+						PlaySound(51, (char*) FileName);}}
+				else {
+					*(DisplayLower+12) = NumLower[2 * (FileName[2] - 32)]; // show the number of the missing sound
+					*(DisplayLower+13) = NumLower[2 * (FileName[2] - 32) + 1];
+					*(DisplayLower+14) = NumLower[2 * (FileName[3] - 32)];
+					*(DisplayLower+15) = NumLower[2 * (FileName[3] - 32) + 1];}}}
 		else {																						// channel 2
 			if (!SerialBuffer[1]) {													// sound command 0x00 - stop music
 				AfterMusic = 0;
