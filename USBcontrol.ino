@@ -51,7 +51,7 @@ char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        
 struct SettingTopic USB_setList[8] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
 		{"  LISY  MODE    ",HandleNumSetting,0,1,5},
-		{"PINMAME GAME    ",HandleNumSetting,0,1,5},
+		{"PINMAME GAME    ",HandleNumSetting,0,0,72},
 		{"  LISY  DEBUG   ",HandleNumSetting,0,1,5},
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS",ExitSettings,0,0,0},
