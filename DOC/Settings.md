@@ -3,7 +3,7 @@
 ## System settings
 
 | Number | Text  | Item Nr | Item Text | Default | Comment |
-|--|--|--|--|--|
+|--|--|--|--|--|--|
 | 1 | Display Type | 1 | 4 Alpha+Credit | X | 4x 7 digit alphanumeric + credit |
 | 1 |  | 2 | Sys11 Pinbot | - | 2x 7 digit alphanumeric + 2x 7 digit numeric + credit |
 | 1 |  | 3 | Sys11 F-14 | - | 2x 7 digit alphanumeric + 2x 7 digit numeric |
@@ -29,11 +29,11 @@
 ## Game settings in USBcontrol mode
 
 | Number | Text  | Item Nr | Item Text | Default | Comment |
-|--|--|--|--|--|
+|--|--|--|--|--|--|
 | 1 | USB watchdog | - | - | No | Bool settings - disables all solenoids when no watchdog reset command is received for 1s |
 | 2 | Lisy Mode | 1 | Start Lisy | X | Start Lisy |
 | 2 | | 2 | Freeplay | - | Start Lisy in freeplay mode |
 | 2 | | 3 | Debug | - | Start Lisy with debug |
 | 2 | | 4 | Debug Freeplay | - | Start Lisy with debug in freeplay mode |
-| 3 | PinMame game | - | - | - | Numerical setting - PinMame game number |
+| 3 | PinMame game | - | - | 0 | Numerical setting - PinMame game number |
 | 4 | Lisy Debug | 1 |  | - | Start Lisy in freeplay mode |
