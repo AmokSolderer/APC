@@ -155,7 +155,7 @@ const char TestSounds[3][15] = {{"MUSIC.BIN"},{"SOUND.BIN"},0};
 struct SettingTopic {																	// one topic of a list of settings
 	char Text[17];																			// display text
 	void (*EventPointer)(bool);													// Pointer to the subroutine to process this topic
-	char *TxTpointer;																		// if text setting -> pointer to a text array
+	const char *TxTpointer;															// if text setting -> pointer to a text array
 	byte LowerLimit;																		// if num setting -> lower limit of selection value
 	byte UpperLimit;};																	// if text setting -> amount of text entries -1 / if num setting -> upper limit of selection value
 
@@ -179,12 +179,12 @@ const byte APC_defaults[64] =  {0,3,3,1,1,0,0,0,		 	// system default settings
 #define LEDsetting  7                         		   	// Setting for the APC_LED_EXP board
 #define DebugMode  8                            		 	// debug mode enabled?
 
-char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "},{"   TUTORIAL     "}};
-char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
-char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{"123456123456    "},{"12345671234567  "}};
-char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
+const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "},{"   TUTORIAL     "}};
+const char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
+const char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{"123456123456    "},{"12345671234567  "}};
+const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 
-struct SettingTopic APC_setList[12] = {
+const struct SettingTopic APC_setList[12] = {
 		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,6},
 		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
 		{" NO OF  BALLS   ",HandleNumSetting,0,1,5},
@@ -199,7 +199,7 @@ struct SettingTopic APC_setList[12] = {
 		{"",NULL,0,0,0}};
 
 struct GameDef {
-	struct SettingTopic *GameSettingsList;							// points to the settings definition of the current game
+	const struct SettingTopic *GameSettingsList;				// points to the settings definition of the current game
 	byte *GameDefaultsPointer;													// points to the default settings of the selected game
 	const char *GameSettingsFileName;										// points to the name of the settings file for the selected game
 	const char *HighScoresFileName;											// contains the name of the high scores file for the selected game
@@ -208,7 +208,7 @@ struct GameDef {
 };
 
 struct GameDef GameDefinition;												// invoke a game definition structure
-struct SettingTopic *SettingsList;										// points to the current settings menu list
+const struct SettingTopic *SettingsList;							// points to the current settings menu list
 
 // game variables
 

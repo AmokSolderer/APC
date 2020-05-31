@@ -21,7 +21,8 @@ const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 #define USB_Debug 1																		// USB debug mode
 #define USB_LisyMode 2																//
 #define USB_PinMameGame 3															// number of the game to be run in PinMame
-#define USB_LisyDebug																	// selected debug mode
+#define USB_LisyDebug	4																// selected debug mode
+#define USB_PinMameSound 5														// use APC sound HW or old sound board?
 
 const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
@@ -46,13 +47,15 @@ byte USB_I2C_TxBuffer[16];														// transmit buffer for the I2C interface
 byte USB_I2C_TxWritePointer = 0;											// pointer to the current write position in the TxBuffer
 byte USB_I2C_TxReadPointer = 0;												// pointer to the current read position in the TxBuffer
 
-char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
+const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
+const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
 
-struct SettingTopic USB_setList[8] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+const struct SettingTopic USB_setList[9] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
 		{"  LISY  MODE    ",HandleNumSetting,0,1,5},
 		{"PINMAME GAME    ",HandleNumSetting,0,0,72},
 		{"  LISY  DEBUG   ",HandleNumSetting,0,1,5},
+		{"PINMAME SOUND   ",HandleTextSetting,0,0,1},
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS",ExitSettings,0,0,0},
 		{"",NULL,0,0,0}};
@@ -828,67 +831,78 @@ void USB_SerialCommand() {														// process a received command
 	case 50:																						// play sound #
 		if (SerialBuffer[0] == 1) {												// channel 1?
 			if (game_settings[USB_PinMameGame] < 40) {			// pre system11 game?
-				if (SerialBuffer[1] == 127) {									// sound command 0x7f
-					break;}
-				if (SerialBuffer[1] == 44) {									// sound command 0x2c - stop sound
-					AfterSound = 0;
-					SoundSeries[0] = 0;
-					StopPlayingSound();
-					break;}
-				if (SerialBuffer[1] == 45) {									// sound command 0x2d - sound series
-					if (SoundSeries[0] != 45) {
-						SoundSeries[0] = 45;
-						SoundSeries[1] = 0;}
-					SoundSeries[1]++;
-					char FileName[13] = "0_2d_000.snd";
-					FileName[7] = 48 + (SoundSeries[1] % 10);
-					FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
-					FileName[5] = 48 + SoundSeries[1] / 100;
-					PlaySound(50, (char*) FileName);
-					break;}
-				if (SerialBuffer[1] == 46) {									// sound command 0x2e - sound series
-					if (SoundSeries[0] != 46) {
-						SoundSeries[0] = 46;
-						SoundSeries[1] = 0;}
-					SoundSeries[1]++;
-					char FileName[13] = "0_2e_000.snd";
-					FileName[7] = 48 + (SoundSeries[1] % 10);
-					FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
-					FileName[5] = 48 + SoundSeries[1] / 100;
-					for (i=0; i<12; i++) {
-						USB_RepeatSound[i] = FileName[i];}
-					NextSoundName = USB_RepeatSound;
-					AfterSound = PlayNextSound;
-					PlaySound(50, (char*) FileName);
-					break;}
-				if (SerialBuffer[1] == 52) {									// sound command 0x34 - sound series
-					if (SoundSeries[0] != 52) {
+				if (game_settings[USB_PinMameSound]) {				// use old audio board
+					WriteToHwExt(SerialBuffer[1], 129);
+					WriteToHwExt(SerialBuffer[1], 1);}
+				else {																				// use APC sound HW
+					if (SerialBuffer[1] == 127) {								// sound command 0x7f
+						break;}
+					if (SerialBuffer[1] == 56) {								// sound command 0x38
+						break;}
+					if (SerialBuffer[1] == 44) {								// sound command 0x2c - stop sound
 						AfterSound = 0;
-						SoundSeries[0] = 52;
-						SoundSeries[1] = 0;}
-					SoundSeries[1]++;
-					char FileName[13] = "0_34_000.snd";
-					FileName[7] = 48 + (SoundSeries[1] % 10);
-					FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
-					FileName[5] = 48 + SoundSeries[1] / 100;
-					PlaySound(50, (char*) FileName);
-					break;}
-				char FileName[9] = "0_00.snd";
-				if ((SerialBuffer[1] >> 4) < 10) {
-					FileName[2] = 48 + (SerialBuffer[1] >> 4);}
-				else {
-					FileName[2] = 55 + (SerialBuffer[1] >> 4);}
-				if ((SerialBuffer[1] & 15) < 10) {
-					FileName[3] = 48 + (SerialBuffer[1] & 15);}
-				else {
-					FileName[3] = 55 + (SerialBuffer[1] & 15);}
-				if (SD.exists(FileName)) {
-					if (game_settings[USB_Debug] == 2) {				// display can be used for debug information
-						*(DisplayLower+2) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the sound to be played
-						*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
-						*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
-						*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
-					PlaySound(50, (char*) FileName);}}
+						SoundSeries[0] = 0;
+						StopPlayingSound();
+						break;}
+					if (SerialBuffer[1] == 45) {								// sound command 0x2d - sound series
+						if (SoundSeries[0] != 45) {
+							SoundSeries[0] = 45;
+							SoundSeries[1] = 0;}
+						SoundSeries[1]++;
+						char FileName[13] = "0_2d_000.snd";
+						FileName[7] = 48 + (SoundSeries[1] % 10);
+						FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
+						FileName[5] = 48 + SoundSeries[1] / 100;
+						PlaySound(50, (char*) FileName);
+						break;}
+					if (SerialBuffer[1] == 46) {								// sound command 0x2e - sound series
+						if (SoundSeries[0] != 46) {
+							SoundSeries[0] = 46;
+							SoundSeries[1] = 0;}
+						SoundSeries[1]++;
+						char FileName[13] = "0_2e_000.snd";
+						FileName[7] = 48 + (SoundSeries[1] % 10);
+						FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
+						FileName[5] = 48 + SoundSeries[1] / 100;
+						for (i=0; i<12; i++) {
+							USB_RepeatSound[i] = FileName[i];}
+						NextSoundName = USB_RepeatSound;
+						AfterSound = PlayNextSound;
+						PlaySound(50, (char*) FileName);
+						break;}
+					if (SerialBuffer[1] == 52) {								// sound command 0x34 - sound series
+						if (SoundSeries[0] != 52) {
+							AfterSound = 0;
+							SoundSeries[0] = 52;
+							SoundSeries[1] = 0;}
+						SoundSeries[1]++;
+						char FileName[13] = "0_34_000.snd";
+						FileName[7] = 48 + (SoundSeries[1] % 10);
+						FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
+						FileName[5] = 48 + SoundSeries[1] / 100;
+						PlaySound(50, (char*) FileName);
+						break;}
+					char FileName[9] = "0_00.snd";
+					if ((SerialBuffer[1] >> 4) < 10) {
+						FileName[2] = 48 + (SerialBuffer[1] >> 4);}
+					else {
+						FileName[2] = 55 + (SerialBuffer[1] >> 4);}
+					if ((SerialBuffer[1] & 15) < 10) {
+						FileName[3] = 48 + (SerialBuffer[1] & 15);}
+					else {
+						FileName[3] = 55 + (SerialBuffer[1] & 15);}
+					if (SD.exists(FileName)) {
+						if (game_settings[USB_Debug] == 2) {			// display can be used for debug information
+							*(DisplayLower+2) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the sound to be played
+							*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
+							*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
+							*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
+						PlaySound(50, (char*) FileName);}
+					else {
+						*(DisplayLower+12) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing sound
+						*(DisplayLower+13) = DispPattern2[2 * (FileName[2] - 32) + 1];
+						*(DisplayLower+14) = DispPattern2[2 * (FileName[3] - 32)];
+						*(DisplayLower+15) = DispPattern2[2 * (FileName[3] - 32) + 1];}}}
 			else {																					// system11 game
 				if (!SerialBuffer[1]) {												// stop sound
 					AfterSound = 0;

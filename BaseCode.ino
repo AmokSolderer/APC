@@ -19,7 +19,7 @@ const byte BC_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0};
 
-struct SettingTopic BC_setList[5] = {{"  GOD   MODE  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+const struct SettingTopic BC_setList[5] = {{"  GOD   MODE  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{" RESET  HIGH  ",BC_ResetHighScores,0,0,0},
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS",ExitSettings,0,0,0},

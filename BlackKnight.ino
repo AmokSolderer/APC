@@ -40,10 +40,10 @@ const byte BK_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0};
 
-char TxTJackpot[4][17] = {{"           OFF  "},{"        500000  "},{"        750000  "},{"       1000000  "}};
-char TxTReplayScore[4][17] = {{"       1000000  "},{"       1500000  "},{"       2000000  "},{"       2500000  "}};
+const char TxTJackpot[4][17] = {{"           OFF  "},{"        500000  "},{"        750000  "},{"       1000000  "}};
+const char TxTReplayScore[4][17] = {{"       1000000  "},{"       1500000  "},{"       2000000  "},{"       2500000  "}};
 
-struct SettingTopic BK_setList[8] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
+const struct SettingTopic BK_setList[8] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
 																		{" REPLAY SCORE ",HandleTextSetting,&TxTReplayScore[0][0],0,3},
 																		{" MBALL JACKPOT",HandleTextSetting,&TxTJackpot[0][0],0,3},
 																		{"MULTBALVOLUME ",BK_HandleVolumeSetting,0,0,30},

@@ -39,7 +39,7 @@ const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
 const char PB_GameMusic[6][12] = {{"BS_M03.BIN"},{"BS_M05.BIN"},{"BS_M06.BIN"},{"BS_M07.BIN"},{"BS_M08.BIN"},{"BS_M09.BIN"}};
 const byte PB_ACselectRelay = 14;											// solenoid number of the A/C select relay
 
-struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
+const struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
 		{" REACH PLANET ",HandleNumSetting,0,1,9},
 		{" ENERGY TIMER ",HandleNumSetting,0,1,90},
 		{"MULTBALVOLUME ",PB_HandleVolumeSetting,0,0,30},
