@@ -225,6 +225,7 @@ void USB_SerialCommand() {														// process a received command
 	static byte SerialBuffer[128];
 	static byte BufferPointer;
 	static byte SoundSeries[2];													// buffer to handle pre system11 sound series
+	static byte LastCh1Sound;														// preSys11: stores the number of the last sound that has been played on Ch1
 	byte c = 0;
 	byte i = 0;
 	if (!CommandPending) {															// any unfinished business?
@@ -837,7 +838,19 @@ void USB_SerialCommand() {														// process a received command
 				else {																				// use APC sound HW
 					if (SerialBuffer[1] == 127) {								// sound command 0x7f
 						break;}
+					if (SerialBuffer[1] == 48) {								// sound command 0x30
+						if (QuerySolenoid(11)) {
+							PlaySound(151, "0_30_001.snd");
+							break;}}
 					if (SerialBuffer[1] == 56) {								// sound command 0x38
+						if (QuerySolenoid(11)) {
+							if (LastCh1Sound != 56) {
+								AfterSound = 0;
+								LastCh1Sound = SerialBuffer[1];				// buffer sound number
+								PlaySound(50, "0_38_001.snd");}
+							break;}}
+					if (SerialBuffer[1] == 61) {								// sound command 0x3d
+						PlaySound(151, "0_3d.snd");
 						break;}
 					if (SerialBuffer[1] == 44) {								// sound command 0x2c - stop sound
 						AfterSound = 0;
@@ -853,6 +866,7 @@ void USB_SerialCommand() {														// process a received command
 						FileName[7] = 48 + (SoundSeries[1] % 10);
 						FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
 						FileName[5] = 48 + SoundSeries[1] / 100;
+						LastCh1Sound = SerialBuffer[1];						// buffer sound number
 						PlaySound(50, (char*) FileName);
 						break;}
 					if (SerialBuffer[1] == 46) {								// sound command 0x2e - sound series
@@ -868,19 +882,14 @@ void USB_SerialCommand() {														// process a received command
 							USB_RepeatSound[i] = FileName[i];}
 						NextSoundName = USB_RepeatSound;
 						AfterSound = PlayNextSound;
+						LastCh1Sound = SerialBuffer[1];						// buffer sound number
 						PlaySound(50, (char*) FileName);
 						break;}
 					if (SerialBuffer[1] == 52) {								// sound command 0x34 - sound series
-						if (SoundSeries[0] != 52) {
-							AfterSound = 0;
-							SoundSeries[0] = 52;
-							SoundSeries[1] = 0;}
-						SoundSeries[1]++;
-						char FileName[13] = "0_34_000.snd";
-						FileName[7] = 48 + (SoundSeries[1] % 10);
-						FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
-						FileName[5] = 48 + SoundSeries[1] / 100;
-						PlaySound(50, (char*) FileName);
+						AfterSound = 0;
+						if (LastCh1Sound != 52) {
+							LastCh1Sound = SerialBuffer[1];					// buffer sound number
+							PlaySound(50, "0_34_001.snd");}
 						break;}
 					char FileName[9] = "0_00.snd";
 					if ((SerialBuffer[1] >> 4) < 10) {
@@ -897,6 +906,7 @@ void USB_SerialCommand() {														// process a received command
 							*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
 							*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
 							*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
+						LastCh1Sound = SerialBuffer[1];						// buffer sound number
 						PlaySound(50, (char*) FileName);}
 					else {
 						*(DisplayLower+12) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing sound

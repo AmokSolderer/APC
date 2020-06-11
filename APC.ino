@@ -1795,7 +1795,7 @@ void PlaySound(byte Priority, const char* Filename) {
 			StartSound = true;															// indicate the startup phase
 			SBP++;}}																				// increase read pointer
 	else {																							// music already playing
-		if (Priority > 99) {															// Priority > 99 means new prio has to be larger (not equal) to play
+		if (Priority > 99) {															// Priority > 99 means new prio has to be higher (not equal) to play
 			Priority = Priority - 100;
 			if (Priority > SoundPriority) {
 				SoundPriority = Priority;
