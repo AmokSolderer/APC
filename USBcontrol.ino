@@ -55,7 +55,7 @@ const struct SettingTopic USB_setList[9] = {{"USB WATCHDOG  ",HandleBoolSetting,
 		{"  LISY  MODE    ",HandleNumSetting,0,1,5},
 		{"PINMAME GAME    ",HandleNumSetting,0,0,72},
 		{"  LISY  DEBUG   ",HandleNumSetting,0,1,5},
-		{"PINMAME SOUND   ",HandleTextSetting,0,0,1},
+		{"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS",ExitSettings,0,0,0},
 		{"",NULL,0,0,0}};
