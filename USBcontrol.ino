@@ -850,9 +850,6 @@ void USB_SerialCommand() {														// process a received command
 								LastCh1Sound = SerialBuffer[1];				// buffer sound number
 								PlaySound(51, "0_38_001.snd");}				// play multiball start sequence
 							break;}}
-//					if (SerialBuffer[1] == 61) {								// sound command 0x3d - drop target down
-//						PlayMusic(150, "0_3d.snd");
-//						break;}
 					if (SerialBuffer[1] == 43) {								// sound command 0x2b - start game
 						PlayRandomSound(52, 5, (char *)USB_BK_NewGameSounds);
 						break;}
@@ -892,8 +889,7 @@ void USB_SerialCommand() {														// process a received command
 					if (SerialBuffer[1] == 52) {								// sound command 0x34 - bonus count
 						AfterSound = 0;
 						if (!QueryLamp(49) && !QueryLamp(57) && !QueryLamp(61)) { // only bonus lamp 1 lit?
-							StopPlayingSound();
-							PlaySound(50, "0_34_002.snd");
+							PlaySound(51, "0_34_002.snd");
 							break;}
 						if (LastCh1Sound != 52) {
 							LastCh1Sound = SerialBuffer[1];					// buffer sound number
