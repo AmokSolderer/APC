@@ -1794,7 +1794,7 @@ void PlaySound(byte Priority, const char* Filename) {
 			SoundFile.read(SoundBuffer, 2*128);							// read first block
 			StartSound = true;															// indicate the startup phase
 			SBP++;}}																				// increase read pointer
-	else {																							// music already playing
+	else {																							// sound already playing
 		if (Priority > 99) {															// Priority > 99 means new prio has to be higher (not equal) to play
 			Priority = Priority - 100;
 			if (Priority > SoundPriority) {
@@ -1831,7 +1831,7 @@ void StopPlayingSound() {
 
 void PlayRandomSound(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
-	PlaySound(Priority, List+Amount*12);}
+	PlaySound(Priority, List+Amount*13);}
 
 void PlayNextSound() {
 	PlaySound(50, NextSoundName);}

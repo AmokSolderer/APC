@@ -15,6 +15,7 @@ const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 															0,0,0,0,0,0,0,0,0,0,0,0};	// Length of USB commands from 90 - 101
 const byte USB_DisplayDigitNum[8][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
 const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
+const char USB_BK_NewGameSounds[5][13] = {{"0_2b_001.snd"},{"0_2b_002.snd"},{"0_2b_003.snd"},{"0_2b_004.snd"},{"0_2b_005.snd"}}; // sounds for the BK game start
 
 																											// offsets of settings in the settings array
 #define USB_Watchdog 0																// watchdog enable setting
@@ -836,28 +837,31 @@ void USB_SerialCommand() {														// process a received command
 					WriteToHwExt(SerialBuffer[1], 129);
 					WriteToHwExt(SerialBuffer[1], 1);}
 				else {																				// use APC sound HW
-					if (SerialBuffer[1] == 127) {								// sound command 0x7f
+					if (SerialBuffer[1] == 127) {								// sound command 0x7f - audio bus init - not relevant for APC sound
 						break;}
 					if (SerialBuffer[1] == 48) {								// sound command 0x30
-						if (QuerySolenoid(11)) {
-							PlaySound(151, "0_30_001.snd");
+						if (QuerySolenoid(11)) {									// GI off?
+							PlaySound(152, "0_30_001.snd");					// play multiball ball release sequence
 							break;}}
 					if (SerialBuffer[1] == 56) {								// sound command 0x38
-						if (QuerySolenoid(11)) {
-							if (LastCh1Sound != 56) {
+						if (QuerySolenoid(11)) {									// GI off?
+							if (LastCh1Sound != 56) {								// ignore all subsequent 0x38 commands
 								AfterSound = 0;
 								LastCh1Sound = SerialBuffer[1];				// buffer sound number
-								PlaySound(50, "0_38_001.snd");}
+								PlaySound(51, "0_38_001.snd");}				// play multiball start sequence
 							break;}}
-					if (SerialBuffer[1] == 61) {								// sound command 0x3d
-						PlaySound(151, "0_3d.snd");
+//					if (SerialBuffer[1] == 61) {								// sound command 0x3d - drop target down
+//						PlayMusic(150, "0_3d.snd");
+//						break;}
+					if (SerialBuffer[1] == 43) {								// sound command 0x2b - start game
+						PlayRandomSound(52, 5, (char *)USB_BK_NewGameSounds);
 						break;}
 					if (SerialBuffer[1] == 44) {								// sound command 0x2c - stop sound
 						AfterSound = 0;
 						SoundSeries[0] = 0;
 						StopPlayingSound();
 						break;}
-					if (SerialBuffer[1] == 45) {								// sound command 0x2d - sound series
+					if (SerialBuffer[1] == 45) {								// sound command 0x2d - activated spinner - sound series
 						if (SoundSeries[0] != 45) {
 							SoundSeries[0] = 45;
 							SoundSeries[1] = 0;}
@@ -867,9 +871,9 @@ void USB_SerialCommand() {														// process a received command
 						FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
 						FileName[5] = 48 + SoundSeries[1] / 100;
 						LastCh1Sound = SerialBuffer[1];						// buffer sound number
-						PlaySound(50, (char*) FileName);
+						PlaySound(51, (char*) FileName);
 						break;}
-					if (SerialBuffer[1] == 46) {								// sound command 0x2e - sound series
+					if (SerialBuffer[1] == 46) {								// sound command 0x2e - background sound - sound series
 						if (SoundSeries[0] != 46) {
 							SoundSeries[0] = 46;
 							SoundSeries[1] = 0;}
@@ -883,13 +887,17 @@ void USB_SerialCommand() {														// process a received command
 						NextSoundName = USB_RepeatSound;
 						AfterSound = PlayNextSound;
 						LastCh1Sound = SerialBuffer[1];						// buffer sound number
-						PlaySound(50, (char*) FileName);
+						PlaySound(51, (char*) FileName);
 						break;}
-					if (SerialBuffer[1] == 52) {								// sound command 0x34 - sound series
+					if (SerialBuffer[1] == 52) {								// sound command 0x34 - bonus count
 						AfterSound = 0;
+						if (!QueryLamp(49) && !QueryLamp(57) && !QueryLamp(61)) { // only bonus lamp 1 lit?
+							StopPlayingSound();
+							PlaySound(50, "0_34_002.snd");
+							break;}
 						if (LastCh1Sound != 52) {
 							LastCh1Sound = SerialBuffer[1];					// buffer sound number
-							PlaySound(50, "0_34_001.snd");}
+							PlaySound(51, "0_34_001.snd");}
 						break;}
 					char FileName[9] = "0_00.snd";
 					if ((SerialBuffer[1] >> 4) < 10) {
@@ -907,7 +915,7 @@ void USB_SerialCommand() {														// process a received command
 							*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
 							*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
 						LastCh1Sound = SerialBuffer[1];						// buffer sound number
-						PlaySound(50, (char*) FileName);}
+						PlaySound(51, (char*) FileName);}
 					else {
 						*(DisplayLower+12) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing sound
 						*(DisplayLower+13) = DispPattern2[2 * (FileName[2] - 32) + 1];
