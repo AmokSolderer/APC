@@ -1755,6 +1755,7 @@ void PlayMusic(byte Priority, const char* Filename) {
 void StopPlayingMusic() {
 	if (StartMusic || PlayingMusic) {
 		MusicFile.close();
+		MusicPriority = 0;
 		if (StartMusic) {																	// during startup
 			StartMusic = 0;																	// cancel startup
 			MBP = 0;}																				// neglect data
@@ -1822,6 +1823,7 @@ void PlaySound(byte Priority, const char* Filename) {
 void StopPlayingSound() {
 	if (StartSound || PlayingSound) {
 		SoundFile.close();
+		SoundPriority = 0;
 		if (StartSound) {																	// during startup
 			StartSound = 0;																	// cancel startup
 			SBP = 0;}																				// neglect data

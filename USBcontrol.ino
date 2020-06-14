@@ -22,8 +22,12 @@ const char USB_BK_NewGameSounds[5][13] = {{"0_2b_001.snd"},{"0_2b_002.snd"},{"0_
 #define USB_Debug 1																		// USB debug mode
 #define USB_LisyMode 2																//
 #define USB_PinMameGame 3															// number of the game to be run in PinMame
-#define USB_LisyDebug	4																// selected debug mode
-#define USB_PinMameSound 5														// use APC sound HW or old sound board?
+#define USB_DebugDisplay	4														// selected debug mode
+#define USB_DebugSwitch	5															// selected debug mode
+#define USB_DebugLamp	6																// selected debug mode
+#define USB_DebugCoil	7																// selected debug mode
+#define USB_DebugSound	8															// selected debug mode
+#define USB_PinMameSound 9														// use APC sound HW or old sound board?
 
 const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
@@ -49,13 +53,18 @@ byte USB_I2C_TxWritePointer = 0;											// pointer to the current write posit
 byte USB_I2C_TxReadPointer = 0;												// pointer to the current read position in the TxBuffer
 
 const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
+const char TxTUSB_LisyMode[4][17] = {{"       PINMAME  "},{"        MPF     "},{"       CONTROL  "},{"        DEBUG   "}};
 const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
 
-const struct SettingTopic USB_setList[9] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+const struct SettingTopic USB_setList[13] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
-		{"  LISY  MODE    ",HandleNumSetting,0,1,5},
+		{"  LISY  MODE    ",HandleTextSetting,&TxTUSB_LisyMode[0][0],0,3},
 		{"PINMAME GAME    ",HandleNumSetting,0,0,72},
-		{"  LISY  DEBUG   ",HandleNumSetting,0,1,5},
+		{" DEBUG DISPLAY  ",HandleBoolSetting,0,0,0},
+		{" DEBUG SWITCH   ",HandleBoolSetting,0,0,0},
+		{" DEBUG  LAMP    ",HandleBoolSetting,0,0,0},
+		{" DEBUG  COIL    ",HandleBoolSetting,0,0,0},
+		{" DEBUG  SOUND   ",HandleBoolSetting,0,0,0},
 		{"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS",ExitSettings,0,0,0},

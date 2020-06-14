@@ -36,9 +36,20 @@
 | Number | Text  | Item Nr | Item Text | Default | Comment |
 |--|--|--|--|--|--|
 | 1 | USB watchdog | - | - | No | Bool settings - disables all solenoids when no watchdog reset command is received for 1s |
-| 2 | Lisy Mode | 1 | Start Lisy | X | Start Lisy |
-| 2 | | 2 | Freeplay | - | Start Lisy in freeplay mode |
-| 2 | | 3 | Debug | - | Start Lisy with debug |
-| 2 | | 4 | Debug Freeplay | - | Start Lisy with debug in freeplay mode |
-| 3 | PinMame game | - | - | 0 | Numerical setting - PinMame game number |
-| 4 | Lisy Debug | 1 |  | - | Start Lisy in freeplay mode |
+| 2 | Debug Mode | 1 | Off | X | No debugging |
+| 2 |  | 2 | USB | - | Shows the received USB/I2C commands in the displays |
+| 2 |  | 3 | Audio | - | Audio debug mode for PinMame Sounds |
+| 3 | Lisy Mode | 1 | PinMame | X | Start PinMame |
+| 3 | | 2 | MPF | - | Start MPF |
+| 3 | | 3 | Control | - | Start LISYcontrol |
+| 3 | | 4 | Debug | - | Start Lisy with debug |
+| 4 | PinMame game | - | - | 0 | Numerical setting - PinMame game number |
+| 5 | Debug Display | - | - | No | Enable Lisy Display debugging |
+| 6 | Debug Switch | - | - | No | Enable Lisy Switch debugging |
+| 7 | Debug Lamp | - | - | No | Enable Lisy Lamp debugging |
+| 8 | Debug coil | - | - | No | Enable Lisy Solenoid debugging |
+| 9 | Debug Sound | - | - | No | Enable Lisy Sound debugging |
+| 10 | PinMame Sound | 1 | APC | X | PinMame sounds are played on the APC sound HW |
+| 10 | | 2 | Board | - | PinMame sounds are played on the external audio board |
+| 11 | RestoreDefault | - | - | - | No setting - restores the default settings |
+| 12 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
