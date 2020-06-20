@@ -234,7 +234,7 @@ void USB_SerialCommand() {														// process a received command
 	static bool CommandPending;
 	static byte SerialBuffer[128];
 	static byte BufferPointer;
-	static byte SoundSeries[2];													// buffer to handle pre system11 sound series
+	static byte SoundSeries[3] = {0,0,1};								// buffer to handle pre system11 sound series
 	static byte LastCh1Sound;														// preSys11: stores the number of the last sound that has been played on Ch1
 	byte c = 0;
 	byte i = 0;
@@ -865,6 +865,7 @@ void USB_SerialCommand() {														// process a received command
 					if (SerialBuffer[1] == 44) {								// sound command 0x2c - stop sound
 						AfterSound = 0;
 						SoundSeries[0] = 0;
+						SoundSeries[2] = 1;												// Reset BG sound
 						StopPlayingSound();
 						break;}
 					if (SerialBuffer[1] == 45) {								// sound command 0x2d - activated spinner - sound series
@@ -880,14 +881,13 @@ void USB_SerialCommand() {														// process a received command
 						PlaySound(51, (char*) FileName);
 						break;}
 					if (SerialBuffer[1] == 46) {								// sound command 0x2e - background sound - sound series
-						if (SoundSeries[0] != 46) {
-							SoundSeries[0] = 46;
-							SoundSeries[1] = 0;}
-						SoundSeries[1]++;
+						SoundSeries[0] = 0;
+						if (SoundSeries[2] < 29)
+							SoundSeries[2]++;
 						char FileName[13] = "0_2e_000.snd";
-						FileName[7] = 48 + (SoundSeries[1] % 10);
-						FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
-						FileName[5] = 48 + SoundSeries[1] / 100;
+						FileName[7] = 48 + (SoundSeries[2] % 10);
+						FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
+						FileName[5] = 48 + SoundSeries[2] / 100;
 						for (i=0; i<12; i++) {
 							USB_RepeatSound[i] = FileName[i];}
 						NextSoundName = USB_RepeatSound;
@@ -902,7 +902,11 @@ void USB_SerialCommand() {														// process a received command
 							break;}
 						if (LastCh1Sound != 52) {
 							LastCh1Sound = SerialBuffer[1];					// buffer sound number
+							SoundSeries[2] = 1;											// Reset BG sound
 							PlaySound(51, "0_34_001.snd");}
+						break;}
+					if (SerialBuffer[1] == 58) {								// sound command 0x3a
+						PlaySound(152, "0_3a.snd");								// play multiball ball release sequence
 						break;}
 					char FileName[9] = "0_00.snd";
 					if ((SerialBuffer[1] >> 4) < 10) {
