@@ -185,7 +185,7 @@ const char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 
 const struct SettingTopic APC_setList[12] = {
-		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,6},
+		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,7},
 		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
 		{" NO OF  BALLS   ",HandleNumSetting,0,1,5},
 		{"  FREE  GAME    ",HandleBoolSetting,0,0,0},
