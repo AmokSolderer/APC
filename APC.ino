@@ -946,22 +946,28 @@ bool WriteToHwExt(byte Data, byte Selects) {					// write data and selects to ri
 
 byte ConvertNumUpper(byte Number, byte Pattern) {			// convert a number to be shown in the upper row of numerical displays
 	const byte NumMaskUpper[5] = {184,64,4,2,1};				// Bitmasks for the upper row of numerical displays
-	byte Mask = 1;
-	Pattern &= NumMaskUpper[0];													// clear all bits belonging to this digit
-	for (byte c=1;c<5;c++) {														// for 4 bit
-		if (Number & Mask) {															// check bits from number
-			Pattern |= NumMaskUpper[c];}										// apply the corresponding bitmask
-		Mask = Mask << 1;}
+	if (Number > 200) {																	// show blank?
+		Pattern |= (255 - NumMaskUpper[0]);}							// set all bits belonging to this digit
+	else {																							// no blank
+		byte Mask = 1;
+		Pattern &= NumMaskUpper[0];												// clear all bits belonging to this digit
+		for (byte c=1;c<5;c++) {													// for 4 bit
+			if (Number & Mask) {														// check bits from number
+				Pattern |= NumMaskUpper[c];}									// apply the corresponding bitmask
+			Mask = Mask << 1;}}
 	return Pattern;}
 
 byte ConvertNumLower(byte Number, byte Pattern) {			// convert a number to be shown in the lower row of numerical displays
 	const byte NumMaskLower[5] = {71,16,8,128,32};			// Bitmasks for the lower row of numerical displays
-	byte Mask = 1;
-	Pattern &= NumMaskLower[0];													// clear all bits belonging to this digit
-	for (byte c=1;c<5;c++) {														// for 4 bit
-		if (Number & Mask) {															// check bits from number
-			Pattern |= NumMaskLower[c];}										// apply the corresponding bitmask
-		Mask = Mask << 1;}
+	if (Number > 200) {																	// show blank
+		Pattern |= (255 - NumMaskLower[0]);}							// set all bits belonging to this digit
+	else {																							// no blank
+		byte Mask = 1;
+		Pattern &= NumMaskLower[0];												// clear all bits belonging to this digit
+		for (byte c=1;c<5;c++) {													// for 4 bit
+			if (Number & Mask) {														// check bits from number
+				Pattern |= NumMaskLower[c];}									// apply the corresponding bitmask
+			Mask = Mask << 1;}}
 	return Pattern;}
 
 byte ConvertPattern(byte Select, byte Pattern) {			// convert the main display pattern to those of the lower row etc
@@ -1033,19 +1039,19 @@ void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to
 				for (i=0;i<7;i++) {														// for all digits
 					if (*(DisplayText+i) & 128) {								// comma set?
 						*(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) (*(DisplayText+i) & 127)-48,(byte) *(DisplayLower+2+16*Player+2*i));
-						*(DisplayLower+3+16*Player+2*i) = 128;}
+						*(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) | 1;}
 					else {
 						*(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));
-						*(DisplayLower+3+16*Player+2*i) = 0;}}}
+						*(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) & 254;}}}
 			else {																					// lower row
 				Player = Player - 3;
 				for (i=0;i<7;i++) {														// for all digits
 					if (*(DisplayText+i) & 128) {								// comma set?
 						*(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) (*(DisplayText+i) & 127)-48,(byte) *(DisplayLower+2+16*Player+2*i));
-						*(DisplayLower+3+16*Player+2*i) = 1;}
+						*(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) | 128;}
 					else {
 						*(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));
-						*(DisplayLower+3+16*Player+2*i) = 0;}}}}
+						*(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) & 127;}}}}
 		else {																						// credit display
 			*(DisplayLower) = ConvertNumUpper((byte) *(DisplayText)-48,(byte) *(DisplayLower));
 			*(DisplayLower+16) = ConvertNumUpper((byte) *(DisplayText+1)-48,(byte) *(DisplayLower+16));
