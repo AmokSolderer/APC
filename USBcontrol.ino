@@ -931,10 +931,17 @@ void USB_SerialCommand() {														// process a received command
 						LastCh1Sound = SerialBuffer[1];						// buffer sound number
 						PlaySound(51, (char*) FileName);}
 					else {
-						*(DisplayLower+12) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing sound
-						*(DisplayLower+13) = DispPattern2[2 * (FileName[2] - 32) + 1];
-						*(DisplayLower+14) = DispPattern2[2 * (FileName[3] - 32)];
-						*(DisplayLower+15) = DispPattern2[2 * (FileName[3] - 32) + 1];}}}
+						if (APC_settings[DisplayType] < 7) {			// Sys11 type display?
+							*(DisplayLower+12) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing sound
+							*(DisplayLower+13) = DispPattern2[2 * (FileName[2] - 32) + 1];
+							*(DisplayLower+14) = DispPattern2[2 * (FileName[3] - 32)];
+							*(DisplayLower+15) = DispPattern2[2 * (FileName[3] - 32) + 1];}
+						else {																		// Sys3 - 7 type display
+							*(DisplayLower+10) = ConvertNumLower(SerialBuffer[1]/100,(byte) *(DisplayLower+10));
+							SerialBuffer[1] = SerialBuffer[1] - SerialBuffer[1]/100;
+							*(DisplayLower+12) = ConvertNumLower(SerialBuffer[1]/10,(byte) *(DisplayLower+12));
+							SerialBuffer[1] = SerialBuffer[1] - SerialBuffer[1]/10;
+							*(DisplayLower+14) = ConvertNumLower(SerialBuffer[1],(byte) *(DisplayLower+14));}}}}
 			else {																					// system11 game
 				if (!SerialBuffer[1]) {												// stop sound
 					AfterSound = 0;

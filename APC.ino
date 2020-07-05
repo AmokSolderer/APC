@@ -418,6 +418,27 @@ void TC7_Handler() {                                  // interrupt routine - run
 		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
 		REG_PIOC_SODR = 268435456;}                   		// use Sel0 to disable column driver outputs at half time
 
+	// Display columns
+
+	//REG_PIOA_SODR = 524288;                            // disable latch outputs to hide writing cycle
+	if (APC_settings[DisplayType] < 6) {								// Sys11 display
+		if (APC_settings[DisplayType] == 3)								// BK2K type display with inverted segments
+			REG_PIOC_SODR = AllData;
+		else																							// all other Sys11 displays
+			REG_PIOC_CODR = AllData;
+		REG_PIOC_SODR = 983040;}													// use Sel8 - 11
+	else {																							// Sys7 - 9 display
+		REG_PIOC_SODR = AllData;
+		REG_PIOC_SODR = 131072;                           // use Sel10
+		REG_PIOC_CODR = AllData;
+		REG_PIOC_SODR = 65536;}                           // use Sel11
+	if (DispCol == (DispColumns-1)) {               		// last display column reached?
+		DispCol = 0;}                                 		// start again from column 0
+	else {
+		DispCol++;}                                   		// prepare for next column
+	REG_PIOD_CODR = 15;                               	// clear strobe select signals
+	REG_PIOD_SODR = DispCol;                          	// set display column
+
 	// Switches
 
 	i = 0;
@@ -468,48 +489,6 @@ void TC7_Handler() {                                  // interrupt routine - run
 			SwDrv = 0;
 			REG_PIOC_SODR = 32768+16384;}}                	// use Sel12 and disable Sel13
 
-	// Display
-
-	REG_PIOA_SODR = 524288;                             // disable latch outputs to hide writing cycle
-	if (DispCol == (DispColumns-1)) {               		// last display column reached?
-		DispCol = 0;}                                 		// start again from column 0
-	else {
-		DispCol++;}                                   		// prepare for next column
-	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
-		REG_PIOD_CODR = 15;                               // clear strobe select signals
-		REG_PIOD_SODR = DispCol;                          // set display column
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		byte Buf = ~(*(DispRow1+2*DispCol));
-		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the upper row
-		REG_PIOC_SODR = 524288;                           // use Sel8
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		Buf = ~(*(DispRow1+2*DispCol+1));
-		REG_PIOC_SODR = Buf<<1;                           // set 2nd byte of the display pattern for the upper row
-		REG_PIOC_SODR = 262144;                           // use Sel9
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		Buf = ~(*(DispRow2+2*DispCol));
-		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
-		REG_PIOC_SODR = 131072;                           // use Sel10
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		Buf = ~(*(DispRow2+2*DispCol+1));
-		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
-		REG_PIOC_SODR = 65536;}                           // use Sel11
-	else {
-		REG_PIOD_CODR = 15;                               // clear strobe select signals
-		REG_PIOD_SODR = DispCol;                          // set display column
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		REG_PIOC_SODR = *(DispRow1+2*DispCol)<<1;         // set 1st byte of the display pattern for the upper row
-		REG_PIOC_SODR = 524288;                           // use Sel8
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		REG_PIOC_SODR = *(DispRow1+2*DispCol+1)<<1;       // set 2nd byte of the display pattern for the upper row
-		REG_PIOC_SODR = 262144;                           // use Sel9
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		REG_PIOC_SODR = *(DispRow2+2*DispCol)<<1;         // set 1st byte of the display pattern for the lower row
-		REG_PIOC_SODR = 131072;                           // use Sel10
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		REG_PIOC_SODR = *(DispRow2+2*DispCol+1)<<1;       // set 1st byte of the display pattern for the lower row
-		REG_PIOC_SODR = 65536;}                           // use Sel11
-
 	// Timers
 
 	if (!BlockTimers) {
@@ -552,8 +531,44 @@ void TC7_Handler() {                                  // interrupt routine - run
 		SolLatch = 0;
 		SolChange = false;}																// reset flag
 
-	REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
+	// REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
 	REG_PIOC_CODR = AllSelects - HwExtSels + AllData;   // clear all select signals and the data bus
+
+	// Display segments
+
+	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		byte Buf = ~(*(DispRow1+2*DispCol));
+		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the upper row
+		REG_PIOC_SODR = 524288;                           // use Sel8
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		Buf = ~(*(DispRow1+2*DispCol+1));
+		REG_PIOC_SODR = Buf<<1;                           // set 2nd byte of the display pattern for the upper row
+		REG_PIOC_SODR = 262144;                           // use Sel9
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		Buf = ~(*(DispRow2+2*DispCol));
+		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 131072;                           // use Sel10
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		Buf = ~(*(DispRow2+2*DispCol+1));
+		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 65536;}                           // use Sel11
+	else {
+		//REG_PIOD_CODR = 15;                               // clear strobe select signals
+		//REG_PIOD_SODR = DispCol;                          // set display column
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		REG_PIOC_SODR = *(DispRow1+2*DispCol)<<1;         // set 1st byte of the display pattern for the upper row
+		REG_PIOC_SODR = 524288;                           // use Sel8
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		REG_PIOC_SODR = *(DispRow1+2*DispCol+1)<<1;       // set 2nd byte of the display pattern for the upper row
+		REG_PIOC_SODR = 262144;                           // use Sel9
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		REG_PIOC_SODR = *(DispRow2+2*DispCol)<<1;         // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 131072;                           // use Sel10
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		REG_PIOC_SODR = *(DispRow2+2*DispCol+1)<<1;       // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 65536;}                           // use Sel11
+	REG_PIOC_CODR = AllSelects - HwExtSels + AllData; 	// clear all select signals and the data bus
 
 	// Lamps
 
@@ -1527,7 +1542,7 @@ void DisplayScore (byte Position, unsigned int Score) {
 						*(DisplayLower+Buffer1+10) = ConvertNumLower(0, (byte) *(DisplayLower+Buffer1+12));}}
 				break;}}
 
-void ShowNumber(byte Position, unsigned int Number) {
+void ShowNumber(byte Position, unsigned int Number) {	// write a number into the second display buffer
 	byte Buffer = 0;
 	byte i = 0;
 	if (Number) {
