@@ -1954,13 +1954,13 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 	case 0:																							// show the current setting
 		if (APC_settings[DisplayType] != 3) {							// not a Sys11c display?
 			if (APC_settings[DisplayType] > 5) {						// numerical display?
-				*(DisplayLower) = ConvertNumLower((byte) ((AppByte+1) - ((AppByte+1) % 10)) / 10,(byte) *(DisplayLower));
-				*(DisplayLower+16) = ConvertNumLower((byte) ((AppByte+1) % 10),(byte) *(DisplayLower+16));}
+				*(DisplayLower) = ConvertNumLower((byte) ((AppByte) - ((AppByte) % 10)) / 10,(byte) *(DisplayLower));
+				*(DisplayLower+16) = ConvertNumLower((byte) ((AppByte) % 10),(byte) *(DisplayLower+16));}
 			else {
-				*(DisplayLower) = RightCredit[32+2*(((AppByte+1) - ((AppByte+1) % 10)) / 10)];
-				*(DisplayLower+1) = RightCredit[32+2*(((AppByte+1) - ((AppByte+1) % 10)) / 10)+1];
-				*(DisplayLower+16) = RightCredit[32+2*((AppByte+1) % 10)];
-				*(DisplayLower+17) = RightCredit[32+2*((AppByte+1) % 10)+1];}}
+				*(DisplayLower) = RightCredit[32+2*(((AppByte) - ((AppByte) % 10)) / 10)];
+				*(DisplayLower+1) = RightCredit[32+2*(((AppByte) - ((AppByte) % 10)) / 10)+1];
+				*(DisplayLower+16) = RightCredit[32+2*((AppByte) % 10)];
+				*(DisplayLower+17) = RightCredit[32+2*((AppByte) % 10)+1];}}
 		WriteUpper( SettingsList[AppByte].Text);					// show the text
 		SettingsList[AppByte].EventPointer(false);				// call the corresponding method and indicate no changes
 		break;
