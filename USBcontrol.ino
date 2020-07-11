@@ -16,6 +16,7 @@ const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 const byte USB_DisplayDigitNum[8][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
 const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
 const char USB_BK_NewGameSounds[5][13] = {{"0_2b_001.snd"},{"0_2b_002.snd"},{"0_2b_003.snd"},{"0_2b_004.snd"},{"0_2b_005.snd"}}; // sounds for the BK game start
+const char USB_JL_NewGameSounds[5][13] = {{"0_26_001.snd"},{"0_26_002.snd"},{"0_26_003.snd"},{"0_26_004.snd"}}; // sounds for the JL game start
 
 																											// offsets of settings in the settings array
 #define USB_Watchdog 0																// watchdog enable setting
@@ -852,6 +853,12 @@ void USB_SerialCommand() {														// process a received command
 				else {																				// use APC sound HW
 					if (SerialBuffer[1] == 127) {								// sound command 0x7f - audio bus init - not relevant for APC sound
 						break;}
+					if (SerialBuffer[1] == 44) {								// sound command 0x2c - stop sound
+						AfterSound = 0;
+						SoundSeries[0] = 0;
+						SoundSeries[2] = 1;												// Reset BG sound
+						StopPlayingSound();
+						break;}
 					if (game_settings[USB_PinMameGame] == 34) {	// game = Black Knight
 						if (SerialBuffer[1] == 48) {							// sound command 0x30
 							if (QuerySolenoid(11)) {								// GI off?
@@ -866,12 +873,6 @@ void USB_SerialCommand() {														// process a received command
 								break;}}
 						if (SerialBuffer[1] == 43) {							// sound command 0x2b - start game
 							PlayRandomSound(52, 5, (char *)USB_BK_NewGameSounds);
-							break;}
-						if (SerialBuffer[1] == 44) {							// sound command 0x2c - stop sound
-							AfterSound = 0;
-							SoundSeries[0] = 0;
-							SoundSeries[2] = 1;											// Reset BG sound
-							StopPlayingSound();
 							break;}
 						if (SerialBuffer[1] == 45) {							// sound command 0x2d - activated spinner - sound series
 							if (SoundSeries[0] != 45) {
@@ -913,6 +914,38 @@ void USB_SerialCommand() {														// process a received command
 						if (SerialBuffer[1] == 58) {							// sound command 0x3a
 							PlaySound(152, "0_3a.snd");							// play multiball ball release sequence
 							break;}}
+					else if (game_settings[USB_PinMameGame] == 20) {	// game = Jungle Lord
+						if (SerialBuffer[1] == 38) {							// sound command 0x26 - start game
+							PlayRandomSound(52, 4, (char *)USB_JL_NewGameSounds);
+							break;}
+						if (SerialBuffer[1] == 42) {							// sound command 0x2a - background sound - sound series
+							SoundSeries[0] = 0;
+							if (SoundSeries[2] < 29)
+								SoundSeries[2]++;
+							char FileName[13] = "0_2a_000.snd";
+							FileName[7] = 48 + (SoundSeries[2] % 10);
+							FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
+							FileName[5] = 48 + SoundSeries[2] / 100;
+							for (i=0; i<12; i++) {
+								USB_RepeatSound[i] = FileName[i];}
+							NextSoundName = USB_RepeatSound;
+							AfterSound = PlayNextSound;
+							LastCh1Sound = SerialBuffer[1];					// buffer sound number
+							PlaySound(51, (char*) FileName);
+							break;}
+						if (SerialBuffer[1] == 45) {							// sound command 0x2d - activated spinner - sound series
+							if (SoundSeries[0] != 45) {
+								SoundSeries[0] = 45;
+								SoundSeries[1] = 0;}
+							SoundSeries[1]++;
+							char FileName[13] = "0_2d_000.snd";
+							FileName[7] = 48 + (SoundSeries[1] % 10);
+							FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
+							FileName[5] = 48 + SoundSeries[1] / 100;
+							LastCh1Sound = SerialBuffer[1];					// buffer sound number
+							PlaySound(51, (char*) FileName);
+							break;}
+					}
 					char FileName[9] = "0_00.snd";
 					if ((SerialBuffer[1] >> 4) < 10) {
 						FileName[2] = 48 + (SerialBuffer[1] >> 4);}
