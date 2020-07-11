@@ -144,6 +144,8 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 void USB_SwitchHandler(byte Switch) {
 	byte i = 0;
 	switch (Switch) {
+	case 7:																							// Slam Tilt
+		break;
 	case 8:                                             // high score reset
 		digitalWrite(Blanking, LOW);                      // invoke the blanking
 		break;
@@ -170,6 +172,8 @@ void USB_SwitchHandler(byte Switch) {
 
 void USB_ReleasedSwitches(byte Switch) {
 	switch (Switch) {
+	case 7:																							// Slam Tilt
+		break;
 	case 8:                                             // high score reset
 		break;
 	case 72:
@@ -937,11 +941,8 @@ void USB_SerialCommand() {														// process a received command
 							*(DisplayLower+14) = DispPattern2[2 * (FileName[3] - 32)];
 							*(DisplayLower+15) = DispPattern2[2 * (FileName[3] - 32) + 1];}
 						else {																		// Sys3 - 7 type display
-							*(DisplayLower+10) = ConvertNumLower(SerialBuffer[1]/100,(byte) *(DisplayLower+10));
-							SerialBuffer[1] = SerialBuffer[1] - SerialBuffer[1]/100;
-							*(DisplayLower+12) = ConvertNumLower(SerialBuffer[1]/10,(byte) *(DisplayLower+12));
-							SerialBuffer[1] = SerialBuffer[1] - SerialBuffer[1]/10;
-							*(DisplayLower+14) = ConvertNumLower(SerialBuffer[1],(byte) *(DisplayLower+14));}}}}
+							*(DisplayLower+12) = ConvertNumLower(SerialBuffer[1] / 10,(byte) *(DisplayLower+12));
+							*(DisplayLower+14) = ConvertNumLower(SerialBuffer[1] % 10,(byte) *(DisplayLower+14));}}}}
 			else {																					// system11 game
 				if (!SerialBuffer[1]) {												// stop sound
 					AfterSound = 0;
