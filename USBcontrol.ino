@@ -937,11 +937,14 @@ void USB_SerialCommand() {														// process a received command
 							LastCh1Sound = SerialBuffer[1];					// buffer sound number
 							PlaySound(51, (char*) FileName);
 							break;}
-						if (SerialBuffer[1] == 45) {							// sound command 0x2d - activated spinner - sound series
+						if (SerialBuffer[1] == 45) {							// sound command 0x2d - multiball start - sound series
 							if (SoundSeries[0] != 45) {
 								SoundSeries[0] = 45;
 								SoundSeries[1] = 0;}
-							SoundSeries[1]++;
+							if (SoundSeries[1] < 31)
+								SoundSeries[1]++;
+							else
+								SoundSeries[1] = 1;
 							char FileName[13] = "0_2d_000.snd";
 							FileName[7] = 48 + (SoundSeries[1] % 10);
 							FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
@@ -961,10 +964,14 @@ void USB_SerialCommand() {														// process a received command
 						FileName[3] = 55 + (SerialBuffer[1] & 15);}
 					if (SD.exists(FileName)) {
 						if (game_settings[USB_Debug] == 2) {			// display can be used for debug information
-							*(DisplayLower+2) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the sound to be played
-							*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
-							*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
-							*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
+							if (APC_settings[DisplayType] < 7) {			// Sys11 type display?
+								*(DisplayLower+2) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the sound to be played
+								*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
+								*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
+								*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
+							else {																		// Sys3 - 7 type display
+								*(DisplayLower+2) = ConvertNumLower(SerialBuffer[1] / 10,(byte) *(DisplayLower+2));
+								*(DisplayLower+4) = ConvertNumLower(SerialBuffer[1] % 10,(byte) *(DisplayLower+4));}}
 						LastCh1Sound = SerialBuffer[1];						// buffer sound number
 						PlaySound(51, (char*) FileName);}
 					else {
