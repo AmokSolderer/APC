@@ -189,7 +189,7 @@ const struct SettingTopic APC_setList[12] = {
 		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
 		{" NO OF  BALLS   ",HandleNumSetting,0,1,5},
 		{"  FREE  GAME    ",HandleBoolSetting,0,0,0},
-		{"CONNECT TYPE    ",HandleTextSetting,&TxTConType[0][0],0,3},
+		{"CONNECT TYPE    ",HandleTextSetting,&TxTConType[0][0],0,2},
 		{"  DIM  INSERTS  ",HandleBoolSetting,0,0,0},
 		{"SPEAKER VOLUME  ",HandleVolumeSetting,0,0,255},
 		{"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,2},

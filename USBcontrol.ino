@@ -145,8 +145,6 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 void USB_SwitchHandler(byte Switch) {
 	byte i = 0;
 	switch (Switch) {
-	case 7:																							// Slam Tilt
-		break;
 	case 8:                                             // high score reset
 		digitalWrite(Blanking, LOW);                      // invoke the blanking
 		break;
@@ -173,8 +171,6 @@ void USB_SwitchHandler(byte Switch) {
 
 void USB_ReleasedSwitches(byte Switch) {
 	switch (Switch) {
-	case 7:																							// Slam Tilt
-		break;
 	case 8:                                             // high score reset
 		break;
 	case 72:
