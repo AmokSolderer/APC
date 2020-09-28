@@ -60,9 +60,9 @@ const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   
 
 const struct SettingTopic USB_setList[13] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
-		{"  LISY  MODE    ",HandleTextSetting,&TxTUSB_LisyMode[0][0],0,3},
+		{"  LISY  MODE    ",HandleNumSetting,0,0,255},			//HandleTextSetting,&TxTUSB_LisyMode[0][0],0,3},
 		{"PINMAME GAME    ",HandleNumSetting,0,0,72},
-		{" DEBUG DISPLAY  ",HandleBoolSetting,0,0,0},
+		{" DEBUG SELECT  	",HandleNumSetting,0,0,255},			//{" DEBUG DISPLAY  ",HandleBoolSetting,0,0,0},
 		{" DEBUG SWITCH   ",HandleBoolSetting,0,0,0},
 		{" DEBUG  LAMP    ",HandleBoolSetting,0,0,0},
 		{" DEBUG  COIL    ",HandleBoolSetting,0,0,0},

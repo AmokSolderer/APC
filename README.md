@@ -18,26 +18,26 @@ Note that Jokerz! has a unique audio board which uses seperate audio channels fo
 
 ## Documentation contents
 
-### 1 [How to start](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md) - If you want to start using the APC you should read this page first.
-### 1.1 [Board Assembly help](https://github.com/AmokSolderer/APC/blob/master/DOC/BoardAssembly.md) - Decribes how to populate your board and do the necessary tests.
-### 1.2 [Useful software tools](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md) - Simple tools for audio data conversion and so on
-### 1.3 [APC settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) - a table of the settings and how to use them
-### 1.4 [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build
+1 [How to start](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md) - If you want to start using the APC you should read this page first.
+1.1 [Board Assembly help](https://github.com/AmokSolderer/APC/blob/master/DOC/BoardAssembly.md) - Decribes how to populate your board and do the necessary tests.
+1.2 [Useful software tools](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md) - Simple tools for audio data conversion and so on
+1.3 [APC settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) - a table of the settings and how to use them
+1.4 [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build
 
-### 2 [Game code tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md) - You want to program your own game in C? Then read this.
-### 2.1 [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) - All commands of the API in a nutshell
+2 [Game code tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md) - You want to program your own game in C? Then read this.
+2.1 [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) - All commands of the API in a nutshell
 
-### 3 [The APC and PinMame](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame
-### 3.1 [PinMame howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that
+3 [The APC and PinMame](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame
+3.1 [PinMame howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that
 
-### 4 Additional APC hardware - boards that might come in handy with the APC
-### 4.1 APC LED expansion board - a board to control WS2812 based LED strips with the APC
-### 4.2 APC solenoid expansion board - use this to control 8 more solenoids with your APC
-### 4.3 System 7 alphanumeric display - to have alphanumerical displays in a pre System 11 machine
+4 Additional APC hardware - boards that might come in handy with the APC
+4.1 APC LED expansion board - a board to control WS2812 based LED strips with the APC
+4.2 APC solenoid expansion board - use this to control 8 more solenoids with your APC
+4.3 System 7 alphanumeric display - to have alphanumerical displays in a pre System 11 machine
 
-### 5 Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC
-### 5.1 System 7 LED display - an LED replacement display for System 7, purely numerical
-### 5.2 System 11a LED display - an LED replacement display for System 11a
+5 Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC
+5.1 System 7 LED display - an LED replacement display for System 7, purely numerical
+5.2 System 11a LED display - an LED replacement display for System 11a
 
 The picture below shows an APC prototype in my Pinbot.
 
