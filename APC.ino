@@ -160,7 +160,7 @@ struct SettingTopic {																	// one topic of a list of settings
 	byte UpperLimit;};																	// if text setting -> amount of text entries -1 / if num setting -> upper limit of selection value
 
 const char APC_set_file_name[13] = "APC_SET.BIN";
-const byte APC_defaults[64] =  {0,3,3,1,1,0,0,0,		 	// system default settings
+const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,		 	// system default settings
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
