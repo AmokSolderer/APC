@@ -13,6 +13,7 @@ SdFat SD;
 #define AllSelects 871346688							           	// mask for all port C pins belonging to select signals except special switch select
 #define Sel5 2097152																	// mask for the Sel5 select signal
 #define HwExtSels 606077440														// mask for all Hw extension port select signals
+#define Sel14 8192																		// mask for the Sel14 select signal
 #define AllData 510
 #define HwExtStackPosMax 20														// size of the HwExtBuffer
 
@@ -615,8 +616,8 @@ void TC7_Handler() {                                  // interrupt routine - run
 					else {
 						LEDFlag = true;
 						WriteToHwExt(LEDCommand[LEDCount], 129);}
-					LEDCount++;                                 	// increase the counter
-					if (LEDCount == LEDCommandBytes) {          	// not all command bytes sent?
+					LEDCount++;                                 // increase the counter
+					if (LEDCount == LEDCommandBytes) {          // not all command bytes sent?
 						LEDCommandBytes = 0;
 						LEDCount = 0;}}}
 			else {                                          // LampCol > 13

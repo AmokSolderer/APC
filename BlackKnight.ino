@@ -405,7 +405,7 @@ void AddPlayer() {
 		Points[NoPlayers] = 0;                            // delete the points of the new player
 		ShowPoints(NoPlayers);}}                          // and show them
 
-void NewBall(byte Balls) {                            // release ball (Event = expected balls on ramp)
+void NewBall(byte Balls) {                            // release ball (Balls = expected balls on ramp)
 	ShowAllPoints(0);
 	ShowBonus();
 	if (!((Player == 1) && (Ball == 1) && !InLock)) {		// skip for the first ball of the game to wait for speech sequence
@@ -504,10 +504,7 @@ void SearchBall(byte Counter) {												// ball watchdog timer has run out
 		else {  																					// if ball is really missing
 			byte c = CountBallsInTrunk();										// recount all balls
 			if (c == 3) {																		// found 3 balls in trunk?
-				if (BlockOuthole) {														// is the outhole blocked
-					BallEnd(0);}																// then it was probably a ball loss gone wrong
-				else {
-					ActivateTimer(1000, 3, NewBall);}}					// otherwise try it with a new ball
+				BallEnd(0);}																	// ball has probably jumped over the outhole switch
 			else {
 				byte c2 = 0;
 				for (i=0; i<3; i++) {                         // count balls in lock
@@ -523,6 +520,8 @@ void SearchBall(byte Counter) {												// ball watchdog timer has run out
 						HandleLock(0);														// lock them
 						BallWatchdogTimer = ActivateTimer(30000, 0, SearchBall);}
 					else {
+						if (c + c2 == 3) {												// all balls found
+							BallEnd(0);}														// ball has probably jumped over the outhole switch
 						WriteUpper("  BALL  SEARCH");
 						ActivateSolenoid(0, BallSearchCoils[Counter]); // fire coil to get ball free
 						Counter++;

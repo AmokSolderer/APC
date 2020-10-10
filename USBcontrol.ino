@@ -231,12 +231,13 @@ void I2C_receive(int Dummy) {													// receive a byte on request (I2C)
 		USB_SerialCommand();}}
 
 void I2C_transmit() {																	// send a byte on master request (I2C)
-	if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) {	// no data in buffer
-		ErrorHandler(30,0,USB_I2C_TxReadPointer);}
-	Wire1.write(USB_I2C_TxBuffer[USB_I2C_TxReadPointer]);	// send byte
-	USB_I2C_TxReadPointer++;														// increase buffer pointer
-	if (USB_I2C_TxReadPointer > USB_I2C_TxBuffer_Size) {	// end of buffer reached?
-		USB_I2C_TxReadPointer = 0;}}											// start from 0
+	if (APC_settings[ConnType] == 1 && APC_settings[ActiveGame] == 3) {	// I2C selected and USBcontrol active?
+		if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) {	// no data in buffer
+			ErrorHandler(40,0,USB_I2C_TxReadPointer);}
+		Wire1.write(USB_I2C_TxBuffer[USB_I2C_TxReadPointer]);	// send byte
+		USB_I2C_TxReadPointer++;													// increase buffer pointer
+		if (USB_I2C_TxReadPointer > USB_I2C_TxBuffer_Size) {	// end of buffer reached?
+			USB_I2C_TxReadPointer = 0;}}}										// start from 0
 
 void USB_SerialCommand() {														// process a received command
 	static byte Command;
