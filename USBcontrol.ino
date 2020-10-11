@@ -231,7 +231,7 @@ void I2C_receive(int Dummy) {													// receive a byte on request (I2C)
 		USB_SerialCommand();}}
 
 void I2C_transmit() {																	// send a byte on master request (I2C)
-	if (APC_settings[ConnType] == 1 && APC_settings[ActiveGame] == 3) {	// I2C selected and USBcontrol active?
+	if ((APC_settings[ConnType] == 1) && (APC_settings[ActiveGame] == 3)) {	// I2C selected and USBcontrol active?
 		if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) {	// no data in buffer
 			ErrorHandler(40,0,USB_I2C_TxReadPointer);}
 		Wire1.write(USB_I2C_TxBuffer[USB_I2C_TxReadPointer]);	// send byte
@@ -849,8 +849,8 @@ void USB_SerialCommand() {														// process a received command
 		if (SerialBuffer[0] == 1) {												// channel 1?
 			if (game_settings[USB_PinMameGame] < 40) {			// pre system11 game?
 				if (game_settings[USB_PinMameSound]) {				// use old audio board
-					WriteToHwExt(SerialBuffer[1], 129);
-					WriteToHwExt(SerialBuffer[1], 1);}
+					WriteToHwExt(SerialBuffer[1], 128+16);			// turn on Sel14
+					WriteToHwExt(SerialBuffer[1], 16);}					// turn off Sel14
 				else {																				// use APC sound HW
 					if (SerialBuffer[1] == 127) {								// sound command 0x7f - audio bus init - not relevant for APC sound
 						break;}

@@ -10,10 +10,11 @@ SdFat SD;
 #define SwMax 72                                 			// number of existing switches (max. 72)
 #define LampMax 64                               			// number of existing lamps (max. 64)
 #define DispColumns 16                           			// Number of columns of the used display unit
-#define AllSelects 871346688							           	// mask for all port C pins belonging to select signals except special switch select
+#define AllSelects 871338496							           	// mask for all port C pins belonging to select signals except special switch Sel13 and HW_ext latch select Sel14
 #define Sel5 2097152																	// mask for the Sel5 select signal
 #define HwExtSels 606077440														// mask for all Hw extension port select signals
 #define Sel14 8192																		// mask for the Sel14 select signal
+#define Sel13 16384																		// mask for the Sel13 select signal
 #define AllData 510
 #define HwExtStackPosMax 20														// size of the HwExtBuffer
 
@@ -264,7 +265,7 @@ void setup() {
 	REG_PIOD_OER = 15;                            			// set pins to outputs
 	REG_PIOD_CODR = 15;                               	// clear strobe select signals
 	REG_PIOC_CODR = AllSelects;                       	// clear all select signals
-	REG_PIOC_SODR = 16384;                            	// set the special switch select (low active)
+	REG_PIOC_SODR = Sel13 + Sel14;                      // set the special switch select (Sel13 - low active) and the Hw_ext_latch (Sel14)
 	REG_PIOC_CODR = AllSelects + AllData;               // clear all select signals and the data bus
 	REG_PIOC_SODR = AllData - SwDrvMask;                // put select pattern on data bus
 	REG_PIOC_SODR = 32768;                              // use Sel12
@@ -407,7 +408,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 	static uint16_t LampColMask = 2;                    // mask for lamp column select
 	static bool LEDFlag;																// stores whether the select has to be triggered by the rising or falling edge
 	static byte LEDCount = 0;														// points to the next command byte to be send to the LED exp board
-	const uint32_t HwExtSelMask[4] = {2097152, 536870912, 512, 67108864}; // mask for sel5, sel6, sel7, SPI_CS1
+	const uint32_t HwExtSelMask[5] = {2097152, 536870912, 512, 67108864, 8192}; // mask for sel5, sel6, sel7, SPI_CS1, Sel14
 	int i;                                              // general purpose counter
 	uint32_t Buff;
 	uint16_t c;
@@ -640,12 +641,12 @@ void TC7_Handler() {                                  // interrupt routine - run
 		c = HwExt_Buf[HwExtIRQpos][0];										// get data byte
 		REG_PIOC_SODR = c<<1;															// and put it on the data bus
 		if (HwExt_Buf[HwExtIRQpos][1] & 128) {						// rising select edge requested?
-			for (i=0;i<4;i++) {															// for all HwExt selects
+			for (i=0;i<5;i++) {															// for all HwExt selects
 				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
 					REG_PIOC_SODR = HwExtSelMask[i];						// generate a rising edge
 					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}	// shift to the next bit
 		else {																						// falling select edge requested
-			for (i=0;i<4;i++) {															// for all HwExt selects
+			for (i=0;i<5;i++) {															// for all HwExt selects
 				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
 					REG_PIOC_CODR = HwExtSelMask[i];						// generate a falling edge
 					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}}	// shift to the next bit
@@ -819,7 +820,7 @@ void loop() {
 					AfterSoundPending = 0;
 					if (AfterSound) {
 						AfterSound();}}}}}
-	if (SerialCommand && APC_settings[ConnType]) { 			// Remote mode?
+	if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) { 	// Remote mode?
 		if ((APC_settings[ConnType] > 1) && Serial.available()) {	// USB selected?
 			SerialCommand();}}}															// use the first received byte as a command
 
