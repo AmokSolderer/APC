@@ -1385,12 +1385,13 @@ void PB_CycleDropLights(byte State) {									// State = 0 -> Stop / State = 1 -
 				PB_DropBlinkLamp++;}													// increase number of currently blinking lamp
 			Timer = ActivateTimer(3000, 2, PB_CycleDropLights);}}
 	else {
-		if (Timer) {
-			KillTimer(Timer);
-			Timer = 0;}
-		if (PB_DropBlinkLamp) {														// blink lamp active?
-			RemoveBlinkLamp(PB_DropBlinkLamp);
-			PB_DropBlinkLamp = 0;}}}
+		if (!State) {																			// stop command
+			if (Timer) {
+				KillTimer(Timer);
+				Timer = 0;}
+			if (PB_DropBlinkLamp) {													// blink lamp active?
+				RemoveBlinkLamp(PB_DropBlinkLamp);
+				PB_DropBlinkLamp = 0;}}}}
 
 void PB_PlayGameMusic() {
 	PlayRandomMusic(50, 6, (char *)PB_GameMusic);}
