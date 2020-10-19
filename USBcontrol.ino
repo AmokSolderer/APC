@@ -51,8 +51,9 @@ byte USB_WaitingSoundFiles[2][14];										// names of the waiting sound files 
 byte USB_WaitSoundTimer;															// number of the timer for the sound sequencing
 byte USB_Enter_TestmodeTimer;													// number of the timer to determine whether the Advance button has been held down
 byte USB_I2C_TxBuffer[16];														// transmit buffer for the I2C interface
-byte USB_I2C_TxWritePointer = 0;											// pointer to the current write position in the TxBuffer
-byte USB_I2C_TxReadPointer = 0;												// pointer to the current read position in the TxBuffer
+byte USB_I2C_TxPointer = 0;														// pointer to the current write position in the TxBuffer
+byte USB_I2C_CountBytes = 0;													// number of received bytes
+volatile byte USB_I2C_ReadBytes = 0;									// number of bytes read as the last command - only set after the command has been executed
 
 const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
 const char TxTUSB_LisyMode[4][17] = {{"       PINMAME  "},{"        MPF     "},{"       CONTROL  "},{"        DEBUG   "}};
@@ -204,18 +205,17 @@ void USB_Testmode(byte Dummy) {												// enter system settings if advance b
 
 byte USB_ReadByte() {																	// read a byte from the selected interface
 	if (APC_settings[ConnType] == 1) {									// I2C selected?
+		USB_I2C_CountBytes++;															// count received bytes
 		return Wire1.read();}
 	else {																							// USB selected
 		return Serial.read();}}
 
 void USB_WriteByte(byte Data) {												// write a byte to the selected interface
 	if (APC_settings[ConnType] == 1) {									// I2C selected?
-		USB_I2C_TxBuffer[USB_I2C_TxWritePointer] = Data;	// send byte
-		USB_I2C_TxWritePointer++;													// increase buffer pointer
-		if (USB_I2C_TxWritePointer > USB_I2C_TxBuffer_Size) {	// end of buffer reached?
-			USB_I2C_TxWritePointer = 0;}										// start from 0
-		if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) { // buffer read pointer = buffer write pointer?
-			ErrorHandler(31,0,USB_I2C_TxReadPointer);}}			// buffer full
+		USB_I2C_TxBuffer[USB_I2C_TxPointer] = Data;				// send byte
+		USB_I2C_TxPointer++;															// increase buffer pointer
+		if (USB_I2C_TxPointer > USB_I2C_TxBuffer_Size) {	// end of buffer reached?
+			ErrorHandler(40,0,USB_I2C_TxPointer);}}					// start from 0
 	else {																							// USB selected
 		Serial.write(Data);}}
 
@@ -228,16 +228,22 @@ byte USB_Available() {
 void I2C_receive(int Dummy) {													// receive a byte on request (I2C)
 	UNUSED(Dummy);
 	if (APC_settings[ConnType] == 1) {									// I2C selected?
+		USB_I2C_ReadBytes = 0;														// indicate that a command is in progress
+		USB_I2C_TxPointer = 0;															// reset pointer to Tx buffer
 		USB_SerialCommand();}}
 
 void I2C_transmit() {																	// send a byte on master request (I2C)
 	if ((APC_settings[ConnType] == 1) && (APC_settings[ActiveGame] == 3)) {	// I2C selected and USBcontrol active?
-		if (USB_I2C_TxReadPointer == USB_I2C_TxWritePointer) {	// no data in buffer
-			ErrorHandler(40,0,USB_I2C_TxReadPointer);}
-		Wire1.write(USB_I2C_TxBuffer[USB_I2C_TxReadPointer]);	// send byte
-		USB_I2C_TxReadPointer++;													// increase buffer pointer
-		if (USB_I2C_TxReadPointer > USB_I2C_TxBuffer_Size) {	// end of buffer reached?
-			USB_I2C_TxReadPointer = 0;}}}										// start from 0
+		if (USB_I2C_ReadBytes) {													// command execution finished?
+			if (USB_I2C_TxPointer) {												// first write request?
+				Wire1.write(USB_I2C_TxBuffer[USB_I2C_TxPointer-1]);	// send byte
+				if (USB_I2C_TxPointer > USB_I2C_TxBuffer_Size+1) {	// end of buffer reached?
+					ErrorHandler(41,0,USB_I2C_TxPointer);}}
+			else {																					// first write request
+				Wire1.write(USB_I2C_ReadBytes);}							// write amount of received bytes of last command
+			USB_I2C_TxPointer++;}														// increase buffer pointer
+		else {
+			Wire1.write(0);}}}
 
 void USB_SerialCommand() {														// process a received command
 	static byte Command;
@@ -1245,7 +1251,8 @@ void USB_SerialCommand() {														// process a received command
 			WriteUpper2("UNKNOWNCOMMAND  ");}
 		WriteLower2("                ");
 		ShowNumber(31, Command);               						// show command number
-		ShowMessage(3);}}
+		ShowMessage(3);}
+	USB_I2C_ReadBytes = USB_I2C_CountBytes;}						// indicate that the command is complete
 
 void USB_ResetWaitSoundTimers(byte Dummy) {						// reset the timer and play waiting sounds
 	UNUSED(Dummy);
