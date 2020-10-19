@@ -103,7 +103,8 @@ void USB_AttractMode() {                              // Attract Mode
 	Switch_Released = USB_ReleasedSwitches;
 	for (byte i=0; i<5; i++) {
 		USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
-	USB_WatchdogHandler(1);															// initiate reset and start watchdog
+	if (game_settings[USB_Watchdog]) {									// watchdog enabled?
+		USB_WatchdogHandler(1);}													// initiate reset and start watchdog
 	WriteUpper("  USB  CONTROL  ");
 	WriteLower("                ");}
 
@@ -232,7 +233,6 @@ void I2C_receive(int Dummy) {													// receive a byte on request (I2C)
 	UNUSED(Dummy);
 	if (APC_settings[ConnType] == 1) {									// I2C selected?
 		USB_I2C_ReadBytes = 0;														// indicate that a command is in progress
-		USB_I2C_TxPointer = 0;														// reset pointer to Tx buffer
 		USB_ReceiveCommand();}}
 
 void I2C_transmit() {																	// send a byte on master request (I2C)
@@ -249,15 +249,14 @@ void I2C_transmit() {																	// send a byte on master request (I2C)
 			Wire1.write(0);}}}
 
 void USB_ReceiveCommand() {
-	static byte ReceivedCommand;
 	static byte USB_BufferPointer;											// pointer for the SerialBuffer
 	static bool CommandPending;
 	byte c = 0;
 	byte i = 0;
 	if (!CommandPending) {															// any unfinished business?
-		ReceivedCommand = USB_ReadByte();}												// if not read new command
-	if (USB_CommandLength[ReceivedCommand] > 249) {							// command doesn't have a constant length
-		switch (USB_CommandLength[ReceivedCommand]) {
+		Command = USB_ReadByte();}												// if not read new command
+	if (USB_CommandLength[Command] > 249) {							// command doesn't have a constant length
+		switch (USB_CommandLength[Command]) {
 		case 250:																					// argument length is stored in the first byte
 			if (USB_BufferPointer) {														// length byte already stored?
 				c = USB_SerialBuffer[0];}													// read previously stored argument length
@@ -313,15 +312,16 @@ void USB_ReceiveCommand() {
 				return;}
 			break;}}
 	else {																							// argument has a specific length
-		if (USB_Available() >= USB_CommandLength[ReceivedCommand]) { // enough bytes in the serial buffer?
-			for (i=0; i<USB_CommandLength[ReceivedCommand]; i++) {	// read the required amount of bytes
+		if (USB_Available() >= USB_CommandLength[Command]) { // enough bytes in the serial buffer?
+			for (i=0; i<USB_CommandLength[Command]; i++) {	// read the required amount of bytes
 				USB_SerialBuffer[i] = USB_ReadByte();}}
 		else {																						// not enough bytes in the buffer
 			CommandPending = true;													// command not finished
 			return;}}
 	CommandPending = false;
 	USB_BufferPointer = 0;
-	Command = ReceivedCommand;}
+	USB_I2C_TxPointer = 0;															// reset pointer to Tx buffer
+	CommandFlag = true;}
 
 void USB_ExecuteCommand(byte Command) {								// process a received command
 	static byte SoundSeries[3] = {0,0,1};								// buffer to handle pre system11 sound series
@@ -1259,7 +1259,10 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 		WriteLower2("                ");
 		ShowNumber(31, Command);               						// show command number
 		ShowMessage(3);}
-	USB_I2C_ReadBytes = USB_I2C_CountBytes;}						// indicate that the command is complete
+	USB_I2C_TxPointer = 0;															// reset pointer to Tx buffer
+	byte Buf = USB_I2C_CountBytes;
+	USB_I2C_CountBytes = 0;
+	USB_I2C_ReadBytes = Buf;}														// indicate that the command is complete
 
 void USB_ResetWaitSoundTimers(byte Dummy) {						// reset the timer and play waiting sounds
 	UNUSED(Dummy);

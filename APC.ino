@@ -126,7 +126,8 @@ char EnterIni[3];
 byte HwExt_Buf[20][2];																// ringbuffer for bytes to be send to the HW_ext interface (first bytes specifies the select line to be activated
 byte HwExtIRQpos = 0;																	// next buffer position for the interrupt to work on
 byte HwExtBufPos = 0;																	// next buffer position to be written to
-volatile byte Command = 0;														// Received command
+byte Command = 0;																			// Received command
+volatile bool CommandFlag = false;										// indicates that a valid command has been received
 uint16_t *SoundBuffer;																// buffers sound data from SD to be processed by interrupt
 uint16_t *MusicBuffer;																// buffers music data from SD to be processed by interrupt
 uint16_t *Buffer16b;																	// 16bit pointer to the audio DAC buffer
@@ -822,12 +823,13 @@ void loop() {
 					if (AfterSound) {
 						AfterSound();}}}}}
 	if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) { 	// Remote mode?
-		if ((APC_settings[ConnType] > 1) && Serial.available()) {	// USB selected?
-			SerialCommand(Command);}}												// use the first received byte as a command
-	else {																							// I2C mode
-		if (Command) {																		// command received?
-			SerialCommand(Command);
-			Command = 0;}}}
+		if (APC_settings[ConnType] > 1) {									// USB mode?
+			if(Serial.available()) {
+				SerialCommand(Command);}}											// use the first received byte as a command
+		else {																						// I2C mode
+			if (CommandFlag) {															// command received?
+				SerialCommand(Command);
+				CommandFlag = false;}}}}
 
 void ReadMusic() {																		// read music data from SD
 	if (MusicFile.available() > 255) {									// enough data remaining in file to fill one block?
