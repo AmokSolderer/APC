@@ -121,11 +121,12 @@ void (*TimerEvent[64])(byte);                         // pointers to the procedu
 void (*TimerBuffer)(byte);
 void (*Switch_Pressed)(byte);                         // Pointer to current behavior mode for activated switches
 void (*Switch_Released)(byte);                        // Pointer to current behavior mode for released switches
-void (*SerialCommand)();															// Pointer to the serial command handler (0 if serial command mode is off)
+void (*SerialCommand)(byte);													// Pointer to the serial command handler (0 if serial command mode is off)
 char EnterIni[3];
 byte HwExt_Buf[20][2];																// ringbuffer for bytes to be send to the HW_ext interface (first bytes specifies the select line to be activated
 byte HwExtIRQpos = 0;																	// next buffer position for the interrupt to work on
 byte HwExtBufPos = 0;																	// next buffer position to be written to
+volatile byte Command = 0;														// Received command
 uint16_t *SoundBuffer;																// buffers sound data from SD to be processed by interrupt
 uint16_t *MusicBuffer;																// buffers music data from SD to be processed by interrupt
 uint16_t *Buffer16b;																	// 16bit pointer to the audio DAC buffer
@@ -822,7 +823,11 @@ void loop() {
 						AfterSound();}}}}}
 	if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) { 	// Remote mode?
 		if ((APC_settings[ConnType] > 1) && Serial.available()) {	// USB selected?
-			SerialCommand();}}}															// use the first received byte as a command
+			SerialCommand(Command);}}												// use the first received byte as a command
+	else {																							// I2C mode
+		if (Command) {																		// command received?
+			SerialCommand(Command);
+			Command = 0;}}}
 
 void ReadMusic() {																		// read music data from SD
 	if (MusicFile.available() > 255) {									// enough data remaining in file to fill one block?
