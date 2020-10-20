@@ -85,7 +85,6 @@ struct GameDef USB_GameDefinition = {
 		USB_SolTimes};																		// Default activation times of solenoids
 
 void USB_init() {
-	SerialCommand = USB_ExecuteCommand;
 	Switch_Pressed = DummyProcess;
 	GameDefinition = USB_GameDefinition;}								// read the game specific settings and highscores
 
@@ -202,7 +201,6 @@ void USB_Testmode(byte Dummy) {												// enter system settings if advance b
 	UNUSED(Dummy);
 	USB_Enter_TestmodeTimer = 0;
 	USB_WatchdogHandler(3);															// stop USB watchdog
-	SerialCommand = 0;
 	for (byte i=0; i<5; i++) {
 		USB_DisplayProtocol[i] = 6;} 											// use ASCII protocol for displays
 	Settings_Enter();}
