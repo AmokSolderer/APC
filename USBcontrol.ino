@@ -11,7 +11,7 @@ const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 															2,1,251,0,2,0,0,0,0,0,	// Length of USB commands from 50 - 59
 															10,0,0,0,2,3,0,0,0,0,		// Length of USB commands from 60 - 69
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 70 - 79
-															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
+															2,1,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
 															0,0,0,0,0,0,0,0,0,0,0,0};	// Length of USB commands from 90 - 101
 const byte USB_DisplayDigitNum[8][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
 const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
@@ -324,6 +324,7 @@ void USB_ReceiveCommand() {
 void USB_ExecuteCommand(byte Command) {								// process a received command
 	static byte SoundSeries[3] = {0,0,1};								// buffer to handle pre system11 sound series
 	static byte LastCh1Sound;														// preSys11: stores the number of the last sound that has been played on Ch1
+	static byte LEDCommandCounter;											// for sending LED command via USB
 	byte c = 0;
 	byte i = 0;
 	if (game_settings[USB_Debug] == 1) {
@@ -1243,6 +1244,17 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 		else {																						// APC settings selected
 			APC_settings[USB_SerialBuffer[1]] = USB_SerialBuffer[2];}
 		Init_System2(1);
+		break;
+	case 80:																						// send command to HW_ext interface
+		WriteToHwExt(USB_SerialBuffer[0], USB_SerialBuffer[1]);
+		break;
+	case 81:																						// queue LED command
+		LEDCommand[LEDCommandCounter] = USB_SerialBuffer[0];
+		LEDCommandCounter++;
+		break;
+	case 82:																						// send queue
+		LEDCommandBytes = LEDCommandCounter;
+		LEDCommandCounter = 0;
 		break;
 	case 100:																						// init
 		USB_WatchdogHandler(1);
