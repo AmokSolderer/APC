@@ -347,7 +347,7 @@ void Init_System() {
 	delay(2000);
 	Init_System2(0);}
 
-void Init_System2(byte State) {
+void Init_System2(byte State) {												// state = 0 will restore the settings if no card is found
 	switch(APC_settings[ActiveGame]) {									// init calls for all valid games
 	case 0:
 		BC_init();

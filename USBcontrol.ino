@@ -256,11 +256,11 @@ void USB_ReceiveCommand() {
 	if (USB_CommandLength[Command] > 249) {							// command doesn't have a constant length
 		switch (USB_CommandLength[Command]) {
 		case 250:																					// argument length is stored in the first byte
-			if (USB_BufferPointer) {														// length byte already stored?
-				c = USB_SerialBuffer[0];}													// read previously stored argument length
+			if (USB_BufferPointer) {												// length byte already stored?
+				c = USB_SerialBuffer[0];}											// read previously stored argument length
 			else {
 				if (USB_Available()) {												// length byte available?
-					USB_BufferPointer = 1;													// indicated that the length is read
+					USB_BufferPointer = 1;											// indicated that the length is read
 					c = USB_ReadByte();}												// read argument length
 				else {
 					USB_BufferPointer = 0;
@@ -271,25 +271,25 @@ void USB_ReceiveCommand() {
 					USB_SerialBuffer[i] = USB_ReadByte();}}
 			else {																					// not enough bytes in the buffer
 				CommandPending = true;												// command not finished
-				USB_SerialBuffer[0] = c;													// store argument length for next round
+				USB_SerialBuffer[0] = c;											// store argument length for next round
 				return;}
 			break;
 		case 251:
 			c = USB_Available();
 			i = USB_BufferPointer;
-			if (!USB_BufferPointer) {														// first run?
+			if (!USB_BufferPointer) {												// first run?
 				if (c < 3) {																	// 3 bytes needed at least
 					CommandPending = true;
 					return;}
-				USB_SerialBuffer[0] = USB_ReadByte();							// store track number
+				USB_SerialBuffer[0] = USB_ReadByte();					// store track number
 				i++;
-				USB_SerialBuffer[1] = USB_ReadByte();							// store options byte
+				USB_SerialBuffer[1] = USB_ReadByte();					// store options byte
 				i++;}
 			do {																						// receive bytes
-				USB_SerialBuffer[i] = USB_ReadByte();							// and store them
+				USB_SerialBuffer[i] = USB_ReadByte();					// and store them
 				i++;}
 			while ((USB_SerialBuffer[i-1]) && ((i - USB_BufferPointer) < c)); // until a 0 is read or serial buffer is empty
-			if (USB_SerialBuffer[i-1]) {												// last byte not zero
+			if (USB_SerialBuffer[i-1]) {										// last byte not zero
 				CommandPending = true;												// command not finished
 				USB_BufferPointer = i;
 				return;}
@@ -301,10 +301,10 @@ void USB_ReceiveCommand() {
 				CommandPending = true;
 				return;}
 			do {																						// receive bytes
-				USB_SerialBuffer[i] = USB_ReadByte();							// and store them
+				USB_SerialBuffer[i] = USB_ReadByte();					// and store them
 				i++;}
 			while ((USB_SerialBuffer[i-1]) && ((i - USB_BufferPointer) < c)); // until a 0 is read or serial buffer is empty
-			if (USB_SerialBuffer[i-1]) {												// last byte not zero
+			if (USB_SerialBuffer[i-1]) {										// last byte not zero
 				CommandPending = true;												// command not finished
 				USB_BufferPointer = i;
 				return;}
@@ -400,32 +400,32 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 		USB_WriteByte((byte) 73);
 		break;
 	case 10:																						// get status of lamp
-		if (USB_SerialBuffer[0] < 65) {												// max 64 lamps
+		if (USB_SerialBuffer[0] < 65) {										// max 64 lamps
 			USB_WriteByte((byte) QueryLamp(USB_SerialBuffer[0]));}
 		else {
 			USB_WriteByte((byte) 2);}
 		break;
 	case 11:																						// turn on lamp
-		if (USB_SerialBuffer[0] < 65) {												// max 64 lamps
+		if (USB_SerialBuffer[0] < 65) {										// max 64 lamps
 			TurnOnLamp(USB_SerialBuffer[0]);}
 		break;
 	case 12:																						// turn off lamp
-		if (USB_SerialBuffer[0] < 65) {												// max 64 lamps
+		if (USB_SerialBuffer[0] < 65) {										// max 64 lamps
 			TurnOffLamp(USB_SerialBuffer[0]);}
 		break;
 	case 19:																						// get number of modern lights
 		USB_WriteByte((byte) 0);
 		break;
 	case 20:																						// get status of solenoid
-		if (USB_SerialBuffer[0] < 26) {												// max 24 solenoids
+		if (USB_SerialBuffer[0] < 26) {										// max 24 solenoids
 			USB_WriteByte((byte) QuerySolenoid(USB_SerialBuffer[0]));}
 		break;
 	case 21:																						// set solenoid # to on
-		if (USB_SerialBuffer[0] < 25) {												// max 24 solenoids
-			if (!USB_SolTimers[USB_SerialBuffer[0]-1]) {				// recycling time over for this coil?
+		if (USB_SerialBuffer[0] < 25) {										// max 24 solenoids
+			if (!USB_SolTimers[USB_SerialBuffer[0]-1]) {		// recycling time over for this coil?
 				SolChange = false;														// block IRQ solenoid handling
-				if (USB_SerialBuffer[0] > 8) {										// does the solenoid not belong to the first latch?
-					if (USB_SerialBuffer[0] < 17) {									// does it belong to the second latch?
+				if (USB_SerialBuffer[0] > 8) {								// does the solenoid not belong to the first latch?
+					if (USB_SerialBuffer[0] < 17) {							// does it belong to the second latch?
 						SolBuffer[1] |= 1<<(USB_SerialBuffer[0]-9);		// latch counts from 0
 						SolLatch |= 2;}														// select second latch
 					else {
@@ -435,23 +435,23 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					SolBuffer[0] |= 1<<(USB_SerialBuffer[0]-1);
 					SolLatch |= 1;}															// select first latch
 				SolChange = true;}}
-		else if (USB_SerialBuffer[0] == 25) {									// 25 is a shortcut for both flipper fingers
+		else if (USB_SerialBuffer[0] == 25) {							// 25 is a shortcut for both flipper fingers
 			ActivateSolenoid(0, 23);												// enable both flipper fingers
 			ActivateSolenoid(0, 24);}
 		break;
 	case 22:																						// set solenoid # to off
-		if (USB_SerialBuffer[0] < 25) {												// max 24 solenoids
+		if (USB_SerialBuffer[0] < 25) {										// max 24 solenoids
 			USB_KillSolenoid(USB_SerialBuffer[0]);}
-		else if (USB_SerialBuffer[0] == 25) {									// 25 is a shortcut for both flipper fingers
+		else if (USB_SerialBuffer[0] == 25) {							// 25 is a shortcut for both flipper fingers
 			ReleaseSolenoid(23);														// disable both flipper fingers
 			ReleaseSolenoid(24);}
 		break;
 	case 23:																						// pulse solenoid
-		if (USB_SerialBuffer[0] < 25) {												// max 24 solenoids
+		if (USB_SerialBuffer[0] < 25) {										// max 24 solenoids
 			USB_FireSolenoid(USB_SolTimes[USB_SerialBuffer[0]-1], USB_SerialBuffer[0]);}
 		break;
 	case 24:																						// set solenoid pulse time
-		if (USB_SerialBuffer[0] < 25) {												// max 24 solenoids
+		if (USB_SerialBuffer[0] < 25) {										// max 24 solenoids
 			USB_SolTimes[USB_SerialBuffer[0]-1] = USB_SerialBuffer[1];}
 		break;
 	case 25:																						// set solenoid recycle time
@@ -514,7 +514,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 				break;
 			case 2:																					// BCD with comma
 				for (i=0; i<7; i++) {
-					if (USB_SerialBuffer[i] & 128) {								// comma set?
+					if (USB_SerialBuffer[i] & 128) {						// comma set?
 						*(DisplayUpper+2*i+2) = 128 | DispPattern1[32+2*(USB_SerialBuffer[i] & 15)];
 						*(DisplayUpper+2*i+3) = 64 | DispPattern1[33+2*(USB_SerialBuffer[i] & 15)];}
 					else {
@@ -524,7 +524,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 			case 3:																					// 7 segment pattern (1 byte)
 				for (i=0; i<7; i++) {
 					*(DisplayUpper+2*i+2) = USB_SerialBuffer[i];
-					if (USB_SerialBuffer[i] & 64) {									// g segment set?
+					if (USB_SerialBuffer[i] & 64) {							// g segment set?
 						*(DisplayUpper+2*i+3) = 4;}								// turn on m segment of alpha display
 					else {
 						*(DisplayUpper+2*i+1) = 0;}}
@@ -548,7 +548,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 				break;
 			case 2:																					// BCD with comma
 				for (i=0; i<16; i++) {
-					if (USB_SerialBuffer[i] & 128) {								// comma set?
+					if (USB_SerialBuffer[i] & 128) {						// comma set?
 						*(DisplayUpper+2*i) = 128 | DispPattern1[32+2*(USB_SerialBuffer[i] & 15)];
 						*(DisplayUpper+2*i+1) = 64 | DispPattern1[33+2*(USB_SerialBuffer[i] & 15)];}
 					else {
@@ -558,7 +558,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 			case 3:																					// 7 segment pattern (1 byte)
 				for (i=0; i<16; i++) {
 					*(DisplayUpper+2*i) = USB_SerialBuffer[i];
-					if (USB_SerialBuffer[i] & 64) {									// g segment set?
+					if (USB_SerialBuffer[i] & 64) {							// g segment set?
 						*(DisplayUpper+2*i+1) = 4;}								// turn on m segment of alpha display
 					else {
 						*(DisplayUpper+2*i+1) = 0;}}
@@ -600,7 +600,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 				break;
 			case 2:																					// BCD with comma
 				for (i=0; i<7; i++) {
-					if (USB_SerialBuffer[i] & 128) {								// comma set?
+					if (USB_SerialBuffer[i] & 128) {						// comma set?
 						*(DisplayUpper+2*i+18) = 128 | DispPattern1[32+2*(USB_SerialBuffer[i] & 15)];
 						*(DisplayUpper+2*i+19) = 64 | DispPattern1[33+2*(USB_SerialBuffer[i] & 15)];}
 					else {
@@ -610,7 +610,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 			case 3:																					// 7 segment pattern (1 byte)
 				for (i=0; i<7; i++) {
 					*(DisplayUpper+2*i+18) = USB_SerialBuffer[i];
-					if (USB_SerialBuffer[i] & 64) {									// g segment set?
+					if (USB_SerialBuffer[i] & 64) {							// g segment set?
 						*(DisplayUpper+2*i+19) = 4;}							// turn on m segment of alpha display
 					else {
 						*(DisplayUpper+2*i+19) = 0;}}
@@ -635,7 +635,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					break;
 				case 2:																				// BCD with comma
 					for (i=0; i<16; i++) {
-						if (USB_SerialBuffer[i] & 128) {							// comma set?
+						if (USB_SerialBuffer[i] & 128) {					// comma set?
 							*(DisplayLower+2*i) = 1 | DispPattern2[32+2*(USB_SerialBuffer[i] & 15)];
 							*(DisplayLower+2*i+1) = 8 | DispPattern2[33+2*(USB_SerialBuffer[i] & 15)];}
 						else {
@@ -683,7 +683,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					break;
 				case 2:																				// BCD with comma
 					for (i=0; i<7; i++) {
-						if (USB_SerialBuffer[i] & 128) {							// comma set?
+						if (USB_SerialBuffer[i] & 128) {					// comma set?
 							*(DisplayLower+2*i+2) = 1 | DispPattern2[32+2*(USB_SerialBuffer[i] & 15)];
 							*(DisplayLower+2*i+3) = 8 | DispPattern2[33+2*(USB_SerialBuffer[i] & 15)];}
 						else {
@@ -693,7 +693,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 				case 3:																				// 7 segment pattern (1 byte)
 					for (i=0; i<7; i++) {
 						*(DisplayUpper+2*i+2) = ConvertPattern(0, USB_SerialBuffer[i]);
-						if (USB_SerialBuffer[i] & 64) {								// g segment set?
+						if (USB_SerialBuffer[i] & 64) {						// g segment set?
 							*(DisplayLower+2*i+3) = 2;}							// turn on m segment of alpha display
 						else {
 							*(DisplayLower+2*i+3) = 0;}}
@@ -717,7 +717,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					break;
 				case 2:																				// BCD with comma
 					for (i=0; i<7; i++) {
-						if (USB_SerialBuffer[i] & 128) {							// comma set?
+						if (USB_SerialBuffer[i] & 128) {					// comma set?
 							*(DisplayLower+2*i+2) = 1 | DispPattern2[32+2*(USB_SerialBuffer[i] & 15)];}
 						else {
 							*(DisplayLower+2*i+2) = DispPattern2[32+2*USB_SerialBuffer[i]];}}
@@ -765,7 +765,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					break;
 				case 2:																				// BCD with comma
 					for (i=0; i<7; i++) {
-						if (USB_SerialBuffer[i] & 128) {							// comma set?
+						if (USB_SerialBuffer[i] & 128) {					// comma set?
 							*(DisplayLower+2*i+18) = 1 | DispPattern2[32+2*(USB_SerialBuffer[i] & 15)];
 							*(DisplayLower+2*i+19) = 8 | DispPattern2[33+2*(USB_SerialBuffer[i] & 15)];}
 						else {
@@ -775,7 +775,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 				case 3:																				// 7 segment pattern (1 byte)
 					for (i=0; i<7; i++) {
 						*(DisplayUpper+2*i+18) = ConvertPattern(0, USB_SerialBuffer[i]);
-						if (USB_SerialBuffer[i] & 64) {								// g segment set?
+						if (USB_SerialBuffer[i] & 64) {						// g segment set?
 							*(DisplayLower+2*i+19) = 2;}						// turn on m segment of alpha display
 						else {
 							*(DisplayLower+2*i+19) = 0;}}
@@ -799,7 +799,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					break;
 				case 2:																				// BCD with comma
 					for (i=0; i<7; i++) {
-						if (USB_SerialBuffer[i] & 128) {							// comma set?
+						if (USB_SerialBuffer[i] & 128) {					// comma set?
 							*(DisplayLower+2*i+18) = 16 | DispPattern2[32+2*(USB_SerialBuffer[i] & 15)];}
 						else {
 							*(DisplayLower+2*i+18) = DispPattern2[32+2*USB_SerialBuffer[i]];}}
@@ -837,8 +837,8 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 			USB_DisplayProtocol[USB_SerialBuffer[0]] = USB_SerialBuffer[1];}
 		break;
 	case 40:																						// get status of switch #
-		if (USB_SerialBuffer[0] < 74) {												// max 73 switches
-			if (QuerySwitch(USB_SerialBuffer[0])) {							// query state
+		if (USB_SerialBuffer[0] < 74) {										// max 73 switches
+			if (QuerySwitch(USB_SerialBuffer[0])) {					// query state
 				USB_WriteByte((byte) 1);}
 			else {
 				USB_WriteByte((byte) 0);}}
@@ -857,36 +857,36 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 			USB_WriteByte((byte) 127);}											// no changed switches at all
 		break;
 	case 50:																						// play sound #
-		if (USB_SerialBuffer[0] == 1) {												// channel 1?
+		if (USB_SerialBuffer[0] == 1) {										// channel 1?
 			if (game_settings[USB_PinMameGame] < 40) {			// pre system11 game?
 				if (game_settings[USB_PinMameSound]) {				// use old audio board
-					WriteToHwExt(USB_SerialBuffer[1], 128+16);			// turn on Sel14
-					WriteToHwExt(USB_SerialBuffer[1], 16);}					// turn off Sel14
+					WriteToHwExt(USB_SerialBuffer[1], 128+16);	// turn on Sel14
+					WriteToHwExt(USB_SerialBuffer[1], 16);}			// turn off Sel14
 				else {																				// use APC sound HW
-					if (USB_SerialBuffer[1] == 127) {								// sound command 0x7f - audio bus init - not relevant for APC sound
+					if (USB_SerialBuffer[1] == 127) {						// sound command 0x7f - audio bus init - not relevant for APC sound
 						break;}
-					if (USB_SerialBuffer[1] == 44) {								// sound command 0x2c - stop sound
+					if (USB_SerialBuffer[1] == 44) {						// sound command 0x2c - stop sound
 						AfterSound = 0;
 						SoundSeries[0] = 0;
 						SoundSeries[2] = 1;												// Reset BG sound
 						StopPlayingSound();
 						break;}
 					if (game_settings[USB_PinMameGame] == 34) {	// game = Black Knight
-						if (USB_SerialBuffer[1] == 48) {							// sound command 0x30
+						if (USB_SerialBuffer[1] == 48) {					// sound command 0x30
 							if (QuerySolenoid(11)) {								// GI off?
 								PlaySound(152, "0_30_001.snd");				// play multiball ball release sequence
 								break;}}
-						if (USB_SerialBuffer[1] == 56) {							// sound command 0x38
+						if (USB_SerialBuffer[1] == 56) {					// sound command 0x38
 							if (QuerySolenoid(11)) {								// GI off?
 								if (LastCh1Sound != 56) {							// ignore all subsequent 0x38 commands
 									AfterSound = 0;
-									LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
+									LastCh1Sound = USB_SerialBuffer[1];	// buffer sound number
 									PlaySound(51, "0_38_001.snd");}			// play multiball start sequence
 								break;}}
-						if (USB_SerialBuffer[1] == 43) {							// sound command 0x2b - start game
+						if (USB_SerialBuffer[1] == 43) {					// sound command 0x2b - start game
 							PlayRandomSound(52, 5, (char *)USB_BK_NewGameSounds);
 							break;}
-						if (USB_SerialBuffer[1] == 45) {							// sound command 0x2d - activated spinner - sound series
+						if (USB_SerialBuffer[1] == 45) {					// sound command 0x2d - activated spinner - sound series
 							if (SoundSeries[0] != 45) {
 								SoundSeries[0] = 45;
 								SoundSeries[1] = 0;}
@@ -895,10 +895,10 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 							FileName[7] = 48 + (SoundSeries[1] % 10);
 							FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
 							FileName[5] = 48 + SoundSeries[1] / 100;
-							LastCh1Sound = USB_SerialBuffer[1];					// buffer sound number
+							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
 							PlaySound(51, (char*) FileName);
 							break;}
-						if (USB_SerialBuffer[1] == 46) {							// sound command 0x2e - background sound - sound series
+						if (USB_SerialBuffer[1] == 46) {					// sound command 0x2e - background sound - sound series
 							SoundSeries[0] = 0;
 							if (SoundSeries[2] < 29)
 								SoundSeries[2]++;
@@ -910,27 +910,27 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 								USB_RepeatSound[i] = FileName[i];}
 							NextSoundName = USB_RepeatSound;
 							AfterSound = PlayNextSound;
-							LastCh1Sound = USB_SerialBuffer[1];					// buffer sound number
+							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
 							PlaySound(51, (char*) FileName);
 							break;}
-						if (USB_SerialBuffer[1] == 52) {							// sound command 0x34 - bonus count
+						if (USB_SerialBuffer[1] == 52) {					// sound command 0x34 - bonus count
 							AfterSound = 0;
 							if (!QueryLamp(49) && !QueryLamp(57) && !QueryLamp(61)) { // only bonus lamp 1 lit?
 								PlaySound(51, "0_34_002.snd");
 								break;}
 							if (LastCh1Sound != 52) {
-								LastCh1Sound = USB_SerialBuffer[1];				// buffer sound number
+								LastCh1Sound = USB_SerialBuffer[1];		// buffer sound number
 								SoundSeries[2] = 1;										// Reset BG sound
 								PlaySound(51, "0_34_001.snd");}
 							break;}
-						if (USB_SerialBuffer[1] == 58) {							// sound command 0x3a
+						if (USB_SerialBuffer[1] == 58) {					// sound command 0x3a
 							PlaySound(152, "0_3a.snd");							// play multiball ball release sequence
 							break;}}
 					else if (game_settings[USB_PinMameGame] == 20) {	// game = Jungle Lord
-						if (USB_SerialBuffer[1] == 38) {							// sound command 0x26 - start game
+						if (USB_SerialBuffer[1] == 38) {					// sound command 0x26 - start game
 							PlayRandomSound(52, 4, (char *)USB_JL_NewGameSounds);
 							break;}
-						if (USB_SerialBuffer[1] == 42) {							// sound command 0x2a - background sound - sound series
+						if (USB_SerialBuffer[1] == 42) {					// sound command 0x2a - background sound - sound series
 							SoundSeries[0] = 0;
 							if (SoundSeries[2] < 29)
 								SoundSeries[2]++;
@@ -942,10 +942,10 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 								USB_RepeatSound[i] = FileName[i];}
 							NextSoundName = USB_RepeatSound;
 							AfterSound = PlayNextSound;
-							LastCh1Sound = USB_SerialBuffer[1];					// buffer sound number
+							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
 							PlaySound(51, (char*) FileName);
 							break;}
-						if (USB_SerialBuffer[1] == 45) {							// sound command 0x2d - multiball start - sound series
+						if (USB_SerialBuffer[1] == 45) {					// sound command 0x2d - multiball start - sound series
 							if (SoundSeries[0] != 45) {
 								SoundSeries[0] = 45;
 								SoundSeries[1] = 0;}
@@ -957,7 +957,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 							FileName[7] = 48 + (SoundSeries[1] % 10);
 							FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
 							FileName[5] = 48 + SoundSeries[1] / 100;
-							LastCh1Sound = USB_SerialBuffer[1];					// buffer sound number
+							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
 							PlaySound(51, (char*) FileName);
 							break;}
 					}
@@ -972,15 +972,15 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 						FileName[3] = 55 + (USB_SerialBuffer[1] & 15);}
 					if (SD.exists(FileName)) {
 						if (game_settings[USB_Debug] == 2) {			// display can be used for debug information
-							if (APC_settings[DisplayType] < 7) {			// Sys11 type display?
+							if (APC_settings[DisplayType] < 7) {		// Sys11 type display?
 								*(DisplayLower+2) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the sound to be played
 								*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
 								*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
 								*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
-							else {																		// Sys3 - 7 type display
+							else {																	// Sys3 - 7 type display
 								*(DisplayLower+2) = ConvertNumLower(USB_SerialBuffer[1] / 10,(byte) *(DisplayLower+2));
 								*(DisplayLower+4) = ConvertNumLower(USB_SerialBuffer[1] % 10,(byte) *(DisplayLower+4));}}
-						LastCh1Sound = USB_SerialBuffer[1];						// buffer sound number
+						LastCh1Sound = USB_SerialBuffer[1];				// buffer sound number
 						PlaySound(51, (char*) FileName);}
 					else {
 						if (APC_settings[DisplayType] < 7) {			// Sys11 type display?
@@ -992,17 +992,17 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 							*(DisplayLower+12) = ConvertNumLower(USB_SerialBuffer[1] / 10,(byte) *(DisplayLower+12));
 							*(DisplayLower+14) = ConvertNumLower(USB_SerialBuffer[1] % 10,(byte) *(DisplayLower+14));}}}}
 			else {																					// system11 game
-				if (!USB_SerialBuffer[1]) {												// stop sound
+				if (!USB_SerialBuffer[1]) {										// stop sound
 					AfterSound = 0;
 					StopPlayingSound();
 					break;}
-				if (USB_SerialBuffer[1] == 85) {									// sound command 0x55
+				if (USB_SerialBuffer[1] == 85) {							// sound command 0x55
 					break;}
-				if (USB_SerialBuffer[1] == 105) { 								// strange misplaced sound during multiball
+				if (USB_SerialBuffer[1] == 105) { 						// strange misplaced sound during multiball
 					break;}
-				if (USB_SerialBuffer[1] == 170) {									// sound command 0xaa
+				if (USB_SerialBuffer[1] == 170) {							// sound command 0xaa
 					break;}
-				if (USB_SerialBuffer[1] == 255) {									// sound command 0xff
+				if (USB_SerialBuffer[1] == 255) {							// sound command 0xff
 					break;}
 				char FileName[9] = "0_00.snd";
 				if ((USB_SerialBuffer[1] >> 4) < 10) {
@@ -1019,7 +1019,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 						*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
 						*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
 						*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
-					if (USB_SerialBuffer[1] < 128) {								// play speech with a higher priority
+					if (USB_SerialBuffer[1] < 128) {						// play speech with a higher priority
 						PlaySound(50, (char*) FileName);}
 					else {
 						PlaySound(51, (char*) FileName);}}
@@ -1029,11 +1029,11 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					*(DisplayLower+14) = DispPattern2[2 * (FileName[3] - 32)];
 					*(DisplayLower+15) = DispPattern2[2 * (FileName[3] - 32) + 1];}}}
 		else {																						// channel 2
-			if (!USB_SerialBuffer[1]) {													// sound command 0x00 - stop music
+			if (!USB_SerialBuffer[1]) {											// sound command 0x00 - stop music
 				AfterMusic = 0;
 				StopPlayingMusic();
 				break;}
-			if (USB_SerialBuffer[1] == 127) {										// sound command 0x7f - stop sound
+			if (USB_SerialBuffer[1] == 127) {								// sound command 0x7f - stop sound
 				AfterSound = 0;
 				StopPlayingSound();
 				break;}
@@ -1044,9 +1044,9 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 			if (USB_SerialBuffer[1] > 95 && USB_SerialBuffer[1] < 100) { // music volume command 0x6X
 				MusicVolume = USB_SerialBuffer[1] - 96;
 				break;}
-			if (USB_SerialBuffer[1] == 170) {										// unknown sound command 0xaa
+			if (USB_SerialBuffer[1] == 170) {								// unknown sound command 0xaa
 				break;}
-			if (USB_SerialBuffer[1] == 255) {										// unknown sound command 0xff
+			if (USB_SerialBuffer[1] == 255) {								// unknown sound command 0xff
 				break;}
 			char FileName[9] = "1_00.snd";
 			if ((USB_SerialBuffer[1] >> 4) < 10) {
@@ -1063,7 +1063,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					*(DisplayLower+19) = DispPattern2[2 * (FileName[2] - 32) + 1];
 					*(DisplayLower+20) = DispPattern2[2 * (FileName[3] - 32)];
 					*(DisplayLower+21) = DispPattern2[2 * (FileName[3] - 32) + 1];}
-				if ((USB_SerialBuffer[1] < 128)) {								// play sounds > 127 on the sound channel
+				if ((USB_SerialBuffer[1] < 128)) {						// play sounds > 127 on the sound channel
 					PlayMusic(50, (char*) FileName);}
 				else {
 					PlaySound(50, (char*) FileName);}}
@@ -1074,7 +1074,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 				*(DisplayLower+31) = DispPattern2[2 * (FileName[3] - 32) + 1];}}
 		break;
 	case 51:																						// stop sound
-		if (USB_SerialBuffer[0] == 1) {												// channel 1?
+		if (USB_SerialBuffer[0] == 1) {										// channel 1?
 			AfterMusic = 0;
 			StopPlayingMusic();}
 		else {
@@ -1082,11 +1082,11 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 			StopPlayingSound();}
 		break;
 	case 52:																						// play soundfile
-		if (USB_SerialBuffer[0] == 1) {												// channel 1?
+		if (USB_SerialBuffer[0] == 1) {										// channel 1?
 			if (!USB_WaitSoundTimer) {											// no sound wait timer active?
-				PlayMusic(50, (char*) USB_SerialBuffer+2);				// play the sound
+				PlayMusic(50, (char*) USB_SerialBuffer+2);		// play the sound
 				USB_WaitSoundTimer = ActivateTimer(15, 0, USB_ResetWaitSoundTimers); // start a timer
-				if (USB_SerialBuffer[1] & 1) {										// looping active?
+				if (USB_SerialBuffer[1] & 1) {								// looping active?
 					for (i=0; i<12; i++) {
 						USB_RepeatMusic[i] = USB_SerialBuffer[2+i];}
 					NextMusicName = USB_RepeatMusic;
@@ -1095,13 +1095,13 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					AfterMusic = 0;}}
 			else {																					// sound wait timer active
 				if (!USB_WaitingSoundFiles[0][1]) {						// any waiting sounds?
-					if (USB_SerialBuffer[1] & 1) {									// if not check for looping
+					if (USB_SerialBuffer[1] & 1) {							// if not check for looping
 						USB_WaitingSoundFiles[0][0] = 2;}					// set the looping flag
 					for (i=0; i<12; i++) {											// copy the filename to the waiting stack
 						USB_WaitingSoundFiles[0][i+1] = USB_SerialBuffer[2+i];}}
 				else {																				// waiting stack not empty
 					if (USB_WaitingSoundFiles[0][0] & 1) {			// is the waiting sound for channel 2?
-						if (USB_SerialBuffer[1] & 1) {								// then copy the sound data to stack position 2
+						if (USB_SerialBuffer[1] & 1) {						// then copy the sound data to stack position 2
 							USB_WaitingSoundFiles[1][0] = 2;}
 						for (i=0; i<12; i++) {										// copy the filename to the waiting stack
 							USB_WaitingSoundFiles[1][1+i] = USB_SerialBuffer[2+i];}}
@@ -1111,12 +1111,12 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 								USB_WaitingSoundFiles[0][i] = USB_WaitingSoundFiles[1][i];
 								USB_WaitingSoundFiles[1][i] = USB_SerialBuffer[1+i];}
 							USB_WaitingSoundFiles[0][0] = USB_WaitingSoundFiles[1][0];	// copy command byte
-							if (USB_SerialBuffer[1] & 1) {							// handle looping flag
+							if (USB_SerialBuffer[1] & 1) {					// handle looping flag
 								USB_WaitingSoundFiles[1][0] = 2;}
 							else {
 								USB_WaitingSoundFiles[1][0] = 0;}}
 						else {																		// no sound at stack position 2
-							if (USB_SerialBuffer[1] & 1) {							// overwrite stack position 1
+							if (USB_SerialBuffer[1] & 1) {					// overwrite stack position 1
 								USB_WaitingSoundFiles[0][0] = 2;}
 							else {
 								USB_WaitingSoundFiles[0][0] = 0;}
@@ -1135,7 +1135,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					AfterSound = 0;}}
 			else {
 				if (!USB_WaitingSoundFiles[0][1]) {						// any waiting sounds?
-					if (USB_SerialBuffer[1] & 1) {									// is not check for looping
+					if (USB_SerialBuffer[1] & 1) {							// is not check for looping
 						USB_WaitingSoundFiles[0][0] = 3;}					// set the looping flag
 					else {
 						USB_WaitingSoundFiles[0][0] = 1;}					// or just set the channel 2 flag
@@ -1143,7 +1143,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 						USB_WaitingSoundFiles[0][i+1] = USB_SerialBuffer[2+i];}}
 				else {																				// waiting stack not empty
 					if (!(USB_WaitingSoundFiles[0][0] & 1)) {		// is the waiting sound for channel 1?
-						if (USB_SerialBuffer[1] & 1) {								// if not copy the sound data to stack position 2
+						if (USB_SerialBuffer[1] & 1) {						// if not copy the sound data to stack position 2
 							USB_WaitingSoundFiles[1][0] = 3;}				// set the looping flag
 						else {
 							USB_WaitingSoundFiles[1][0] = 1;}				// or just set the channel 2 flag
@@ -1155,12 +1155,12 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 								USB_WaitingSoundFiles[0][i] = USB_WaitingSoundFiles[1][i];
 								USB_WaitingSoundFiles[1][i] = USB_SerialBuffer[1+i];}
 							USB_WaitingSoundFiles[0][0] = USB_WaitingSoundFiles[1][0];
-							if (USB_SerialBuffer[1] & 1) {							// handle looping flag
+							if (USB_SerialBuffer[1] & 1) {					// handle looping flag
 								USB_WaitingSoundFiles[1][0] = 3;}
 							else {
 								USB_WaitingSoundFiles[1][0] = 1;}}
 						else {																		// no sound at stack position 2
-							if (USB_SerialBuffer[1] & 1) {							// overwrite stack position 1
+							if (USB_SerialBuffer[1] & 1) {					// overwrite stack position 1
 								USB_WaitingSoundFiles[0][0] = 3;}
 							else {
 								USB_WaitingSoundFiles[0][0] = 1;}
@@ -1168,7 +1168,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 								USB_WaitingSoundFiles[0][i+1] = USB_SerialBuffer[2+i];}}}}}}
 		break;
 	case 54:																						// sound volume setting
-		APC_settings[Volume] = 2*USB_SerialBuffer[1];					// set system volume
+		APC_settings[Volume] = 2*USB_SerialBuffer[1];			// set system volume
 		analogWrite(VolumePin,255-APC_settings[Volume]);	// and apply it
 		break;
 	case 60:																						// configure hardware rule for solenoid
@@ -1197,17 +1197,17 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 				else {
 					i++;}}}
 		else {																						// create new HW rule
-			if (USB_SerialBuffer[4]) {													// pulse time > 0?
+			if (USB_SerialBuffer[4]) {											// pulse time > 0?
 				while ((USB_SerialBuffer[1+i] != 127) && (i<3)) {	// stop on a non active switch
-					if (USB_SerialBuffer[1+i] < 127) {							// non inverted switch
-						if (USB_SerialBuffer[7+i] & 1) {							// activate coil on switch?
+					if (USB_SerialBuffer[1+i] < 127) {					// non inverted switch
+						if (USB_SerialBuffer[7+i] & 1) {					// activate coil on switch?
 							c = 0;
 							while (USB_HWrule_ActSw[c][0] && (c<15)) {	// look for a free slot
 								c++;}
 							USB_HWrule_ActSw[c][0] = USB_SerialBuffer[1+i];	// set switch as trigger
 							USB_HWrule_ActSw[c][1] = USB_SerialBuffer[0];		// store coil number
 							USB_HWrule_ActSw[c][2] = USB_SerialBuffer[4];}	// store pulse duration
-						if (USB_SerialBuffer[7+i] & 2) {							// deactivate coil on switch release?
+						if (USB_SerialBuffer[7+i] & 2) {					// deactivate coil on switch release?
 							c = 0;
 							while (USB_HWrule_RelSw[c][0] && (c<15)) {	// look for a free slot
 								c++;}
@@ -1215,14 +1215,14 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 							USB_HWrule_RelSw[c][1] = USB_SerialBuffer[0];	// store coil number
 							USB_HWrule_RelSw[c][2] = 0;}}						// store pulse duration 0 (means coil release)
 					else {
-						if (USB_SerialBuffer[7+i] & 1) {							// activate coil on switch?
+						if (USB_SerialBuffer[7+i] & 1) {					// activate coil on switch?
 							c = 0;
 							while (USB_HWrule_RelSw[c][0] && (c<15)) {	// look for a free slot
 								c++;}
 							USB_HWrule_RelSw[c][0] = USB_SerialBuffer[1+i] - 128;	// set switch release as trigger
 							USB_HWrule_RelSw[c][1] = USB_SerialBuffer[0];	// store coil number
 							USB_HWrule_RelSw[c][2] = USB_SerialBuffer[4];}	// store pulse duration
-						if (USB_SerialBuffer[7+i] & 2) {							// deactivate coil on switch release?
+						if (USB_SerialBuffer[7+i] & 2) {					// deactivate coil on switch release?
 							c = 0;
 							while (USB_HWrule_ActSw[c][0] && (c<15)) {	// look for a free slot
 								c++;}
@@ -1232,16 +1232,17 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 					i++;}}}
 		break;
 	case 64:																						// read setting from APC
-		if (USB_SerialBuffer[0]) {														// game setting selected
+		if (USB_SerialBuffer[0]) {												// game setting selected
 			USB_WriteByte((byte) game_settings[USB_SerialBuffer[1]]);}
 		else {																						// APC settings selected
 			USB_WriteByte((byte) APC_settings[USB_SerialBuffer[1]]);}
 		break;
 	case 65:																						// write setting to APC
-		if (USB_SerialBuffer[0]) {														// game setting selected
+		if (USB_SerialBuffer[0]) {												// game setting selected
 			game_settings[USB_SerialBuffer[1]] = USB_SerialBuffer[2];}
 		else {																						// APC settings selected
 			APC_settings[USB_SerialBuffer[1]] = USB_SerialBuffer[2];}
+		Init_System2(1);
 		break;
 	case 100:																						// init
 		USB_WatchdogHandler(1);
