@@ -1,7 +1,6 @@
 #include <SdFat.h>																		// APC.ino is the operating system for the Arduino Pinball Controller
 SdFat SD;
 #include <SPI.h>
-#include <Wire.h>
 #include "Arduino.h"
 #include "Sound.h"
 #define UpDown 53                                			// arduino pin connected to the auto/up - manual/Down button
@@ -125,8 +124,6 @@ char EnterIni[3];
 byte HwExt_Buf[20][2];																// ringbuffer for bytes to be send to the HW_ext interface (first bytes specifies the select line to be activated
 byte HwExtIRQpos = 0;																	// next buffer position for the interrupt to work on
 byte HwExtBufPos = 0;																	// next buffer position to be written to
-byte Command = 0;																			// Received command
-volatile bool CommandFlag = false;										// indicates that a valid command has been received
 uint16_t *SoundBuffer;																// buffers sound data from SD to be processed by interrupt
 uint16_t *MusicBuffer;																// buffers music data from SD to be processed by interrupt
 uint16_t *Buffer16b;																	// 16bit pointer to the audio DAC buffer
@@ -250,10 +247,8 @@ void setup() {
 	digitalWrite(VolumePin, HIGH);                      // set volume to 0
 	pinMode(UpDown, INPUT);                          		// initialize Up/Down pin
 	Serial.begin(115200);																// needed for USB and serial communication
+	Serial3.begin(115200);															// needed for onboard serial communication
 	SPI.begin();																				// needed for SD card handling
-	Wire1.begin(68);																		// start I2C handling
-	Wire1.onReceive(I2C_receive);												// define I2C receive function
-	Wire1.onRequest(I2C_transmit);											// define I2C transmit function
 	REG_PIOC_PER = 871363582;                           // set required Port C pins to controlled In/Out
 	REG_PIOC_PUDR = 871363582;                          // disable Pull-ups
 	REG_PIOC_OER = 871363582;                           // set pins to outputs
@@ -822,12 +817,8 @@ void loop() {
 					if (AfterSound) {
 						AfterSound();}}}}}
 	if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) { 	// Remote mode?
-		if (APC_settings[ConnType] > 1) {									// USB mode?
-			if(Serial.available()) {
-				USB_ReceiveCommand();}}												// use the first received byte as a command
-		if (CommandFlag) {																// command received?
-			USB_ExecuteCommand(Command);
-			CommandFlag = false;}}}
+		if(USB_Available()) {
+			USB_SerialCommand();}}}													// use the first received byte as a command
 
 void ReadMusic() {																		// read music data from SD
 	if (MusicFile.available() > 255) {									// enough data remaining in file to fill one block?

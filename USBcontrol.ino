@@ -1,7 +1,5 @@
 // USB interface for APC based pinball machines
 
-#define USB_I2C_TxBuffer_Size 16
-
 unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
 const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB commands from 0 - 9
 															1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
@@ -29,8 +27,6 @@ const char USB_JL_NewGameSounds[5][13] = {{"0_26_001.snd"},{"0_26_002.snd"},{"0_
 #define USB_DebugCoil	7																// selected debug mode
 #define USB_DebugSound	8															// selected debug mode
 #define USB_PinMameSound 9														// use APC sound HW or old sound board?
-void USB_ReceiveCommand();
-void USB_ExecuteCommand(byte Command);
 
 const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
@@ -41,7 +37,6 @@ const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
 															0,0,0,0,0,0,0,0};
 
-byte USB_SerialBuffer[128];														// buffer for received commands
 byte USB_ChangedSwitches[64];
 byte USB_HWrule_ActSw[16][3];													// hardware rules for activated switches
 byte USB_HWrule_RelSw[16][3];													// hardware rules for released switches
@@ -53,10 +48,6 @@ char USB_RepeatMusic[13];															// name of the music file to be repeated
 byte USB_WaitingSoundFiles[2][14];										// names of the waiting sound files first byte is for channel and commands
 byte USB_WaitSoundTimer;															// number of the timer for the sound sequencing
 byte USB_Enter_TestmodeTimer;													// number of the timer to determine whether the Advance button has been held down
-byte USB_I2C_TxBuffer[16];														// transmit buffer for the I2C interface
-byte USB_I2C_TxPointer = 0;														// pointer to the current write position in the TxBuffer
-byte USB_I2C_CountBytes = 0;													// number of received bytes
-volatile byte USB_I2C_ReadBytes = 0;									// number of bytes read as the last command - only set after the command has been executed
 
 const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
 const char TxTUSB_LisyMode[4][17] = {{"       PINMAME  "},{"        MPF     "},{"       CONTROL  "},{"        DEBUG   "}};
@@ -206,49 +197,31 @@ void USB_Testmode(byte Dummy) {												// enter system settings if advance b
 	Settings_Enter();}
 
 byte USB_ReadByte() {																	// read a byte from the selected interface
-	if (APC_settings[ConnType] == 1) {									// I2C selected?
-		USB_I2C_CountBytes++;															// count received bytes
-		return Wire1.read();}
+	if (APC_settings[ConnType] == 1) {									// onboard PI selected?
+		return Serial3.read();}
 	else {																							// USB selected
 		return Serial.read();}}
 
 void USB_WriteByte(byte Data) {												// write a byte to the selected interface
-	if (APC_settings[ConnType] == 1) {									// I2C selected?
-		USB_I2C_TxBuffer[USB_I2C_TxPointer] = Data;				// send byte
-		USB_I2C_TxPointer++;															// increase buffer pointer
-		if (USB_I2C_TxPointer > USB_I2C_TxBuffer_Size) {	// end of buffer reached?
-			ErrorHandler(40,0,USB_I2C_TxPointer);}}					// start from 0
+	if (APC_settings[ConnType] == 1) {									// onboard PI selected?
+		Serial3.write(Data);}
 	else {																							// USB selected
 		Serial.write(Data);}}
 
 byte USB_Available() {
-	if (APC_settings[ConnType] == 1) {									// I2C selected?
-		return Wire1.available();}
+	if (APC_settings[ConnType] == 1) {									// onboard PI selected?
+		return Serial3.available();}
 	else {																							// USB selected
 		return Serial.available();}}
 
-void I2C_receive(int Dummy) {													// receive a byte on request (I2C)
-	UNUSED(Dummy);
-	if (APC_settings[ConnType] == 1) {									// I2C selected?
-		USB_I2C_ReadBytes = 0;														// indicate that a command is in progress
-		USB_ReceiveCommand();}}
-
-void I2C_transmit() {																	// send a byte on master request (I2C)
-	if ((APC_settings[ConnType] == 1) && (APC_settings[ActiveGame] == 3)) {	// I2C selected and USBcontrol active?
-		if (USB_I2C_ReadBytes) {													// command execution finished?
-			if (USB_I2C_TxPointer) {												// first write request?
-				Wire1.write(USB_I2C_TxBuffer[USB_I2C_TxPointer-1]);	// send byte
-				if (USB_I2C_TxPointer > USB_I2C_TxBuffer_Size+1) {	// end of buffer reached?
-					ErrorHandler(41,0,USB_I2C_TxPointer);}}
-			else {																					// first write request
-				Wire1.write(USB_I2C_ReadBytes);}							// write amount of received bytes of last command
-			USB_I2C_TxPointer++;}														// increase buffer pointer
-		else {
-			Wire1.write(0);}}}
-
-void USB_ReceiveCommand() {
+void USB_SerialCommand() {
+	static byte Command;
 	static byte USB_BufferPointer;											// pointer for the SerialBuffer
+	static byte USB_SerialBuffer[128];
 	static bool CommandPending;
+	static byte SoundSeries[3] = {0,0,1};								// buffer to handle pre system11 sound series
+	static byte LastCh1Sound;														// preSys11: stores the number of the last sound that has been played on Ch1
+	static byte LEDCommandCounter;											// for sending LED command via USB
 	byte c = 0;
 	byte i = 0;
 	if (!CommandPending) {															// any unfinished business?
@@ -318,15 +291,6 @@ void USB_ReceiveCommand() {
 			return;}}
 	CommandPending = false;
 	USB_BufferPointer = 0;
-	USB_I2C_TxPointer = 0;															// reset pointer to Tx buffer
-	CommandFlag = true;}
-
-void USB_ExecuteCommand(byte Command) {								// process a received command
-	static byte SoundSeries[3] = {0,0,1};								// buffer to handle pre system11 sound series
-	static byte LastCh1Sound;														// preSys11: stores the number of the last sound that has been played on Ch1
-	static byte LEDCommandCounter;											// for sending LED command via USB
-	byte c = 0;
-	byte i = 0;
 	if (game_settings[USB_Debug] == 1) {
 		for (i=1; i<24; i++) {                        		// move all characters in the lower display row 4 chars to the left
 			DisplayLower[i] = DisplayLower[i+8];}
@@ -338,33 +302,23 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 		*(DisplayLower+27) = DispPattern2[33 + 2 * (Command - (Command % 100)) / 100];}
 	switch (Command) {																	// execute command if complete
 	case 0:																							// get connected hardware
-		if (APC_settings[ConnType] == 1) {
-			USB_WriteByte('A');
-			USB_WriteByte('P');
-			USB_WriteByte('C');}
-		else {
-			Serial.print("APC");}
+		USB_WriteByte('A');
+		USB_WriteByte('P');
+		USB_WriteByte('C');
 		USB_WriteByte((byte) 0);
 		break;
 	case 1:																							// get firmware version
 		if (APC_settings[ConnType] == 1) {
-			USB_WriteByte('0');
-			USB_WriteByte('0');
-			USB_WriteByte('.');
-			USB_WriteByte('1');
-			USB_WriteByte('4');}
+			Serial3.print(APC_Version);}
 		else {
 			Serial.print(APC_Version);}
 		USB_WriteByte((byte) 0);
 		break;
 	case 2:																							// get API version
-		if (APC_settings[ConnType] == 1) {
-			USB_WriteByte('0');
-			USB_WriteByte('.');
-			USB_WriteByte('1');
-			USB_WriteByte('0');}
-		else {
-			Serial.print("0.10");}
+		USB_WriteByte('0');
+		USB_WriteByte('.');
+		USB_WriteByte('1');
+		USB_WriteByte('0');
 		USB_WriteByte((byte) 0);
 		break;
 	case 3:																							// get number of lamps
@@ -1269,11 +1223,7 @@ void USB_ExecuteCommand(byte Command) {								// process a received command
 			WriteUpper2("UNKNOWNCOMMAND  ");}
 		WriteLower2("                ");
 		ShowNumber(31, Command);               						// show command number
-		ShowMessage(3);}
-	USB_I2C_TxPointer = 0;															// reset pointer to Tx buffer
-	byte Buf = USB_I2C_CountBytes;
-	USB_I2C_CountBytes = 0;
-	USB_I2C_ReadBytes = Buf;}														// indicate that the command is complete
+		ShowMessage(3);}}																	// indicate that the command is complete
 
 void USB_ResetWaitSoundTimers(byte Dummy) {						// reset the timer and play waiting sounds
 	UNUSED(Dummy);
