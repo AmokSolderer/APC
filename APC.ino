@@ -819,7 +819,7 @@ void loop() {
 					AfterSoundPending = 0;
 					if (AfterSound) {
 						AfterSound();}}}}}
-	if (!OnBoardCom && (REG_PIOD_PDSR & 32)) {					// onboard com off and Pi detected?
+	if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {		// onboard com off and Pi detected?
 		Serial3.begin(115200);														// needed for onboard serial communication
 		OnBoardCom = true;}
 	if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) { 	// Remote mode?
