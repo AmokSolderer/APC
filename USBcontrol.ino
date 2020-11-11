@@ -210,7 +210,10 @@ void USB_WriteByte(byte Data) {												// write a byte to the selected inter
 
 byte USB_Available() {
 	if (APC_settings[ConnType] == 1) {									// onboard PI selected?
-		return Serial3.available();}
+		if (OnBoardCom) {																	// onboard Pi detected?
+			return Serial3.available();}
+		else {
+			return 0;}}
 	else {																							// USB selected
 		return Serial.available();}}
 

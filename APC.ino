@@ -151,6 +151,14 @@ byte SoundPriority = 0;																// stores the priority of the sound file 
 bool SoundPrio = false;																// indicates which channel has to be processed first
 char *NextSoundName;
 const char TestSounds[3][15] = {{"MUSIC.BIN"},{"SOUND.BIN"},0};
+byte APC_settings[64];																// system settings to be stored on the SD
+byte game_settings[64];																// game settings to be stored on the SD
+byte *SettingsPointer;																// points to the settings being changed
+const char *SettingsFileName;													// points to the settings file currently being edited
+const unsigned long SwitchMask[8] = {65536, 16777216, 8388608, 4194304, 64, 16, 8, 4};
+uint16_t SwDrvMask = 2;                               // mask for switch row select
+byte SolBuffer[3];                                    // stores the state of the solenoid latches
+bool OnBoardCom = false;															// on board Pi detected?
 
 struct SettingTopic {																	// one topic of a list of settings
 	char Text[17];																			// display text
@@ -232,22 +240,16 @@ byte AppByte;                                         // general purpose applica
 byte AppByte2;                                        // general purpose application buffer
 byte AppByte3;                                        // general purpose application buffer
 bool AppBool = false;                                 // general purpose application bool
-byte APC_settings[64];																// system settings to be stored on the SD
-byte game_settings[64];																// game settings to be stored on the SD
-byte *SettingsPointer;																// points to the settings being changed
-const char *SettingsFileName;													// points to the settings file currently being edited
-const unsigned long SwitchMask[8] = {65536, 16777216, 8388608, 4194304, 64, 16, 8, 4};
-uint16_t SwDrvMask = 2;                               // mask for switch row select
-byte SolBuffer[3];                                    // stores the state of the solenoid latches
+
 
 void setup() {
 	pinMode(Blanking, OUTPUT);                          // initialize blanking pin
 	pinMode(VolumePin, OUTPUT);                         // initialize volume PWM pin
+	pinMode(2, INPUT);																	// pin for onboard PI detection
 	digitalWrite(Blanking, LOW);                        // and activate the blanking
 	digitalWrite(VolumePin, HIGH);                      // set volume to 0
 	pinMode(UpDown, INPUT);                          		// initialize Up/Down pin
 	Serial.begin(115200);																// needed for USB and serial communication
-	Serial3.begin(115200);															// needed for onboard serial communication
 	SPI.begin();																				// needed for SD card handling
 	REG_PIOC_PER = 871363582;                           // set required Port C pins to controlled In/Out
 	REG_PIOC_PUDR = 871363582;                          // disable Pull-ups
@@ -256,8 +258,9 @@ void setup() {
 	REG_PIOA_PUDR = 29425756;														// disable Pull-ups
 	REG_PIOA_ODR = 29425756;														// set pins to inputs
 	REG_PIOA_OER = 524288;                              // set pin 19 to output (DisBlank)
-	REG_PIOD_PER = 15;                            			// set required Port D pins to controlled In/Out
-	REG_PIOD_PUDR = 15;                           			// disable Pull-ups
+	REG_PIOD_PER = 47;                            			// set required Port D pins to controlled In/Out
+	REG_PIOD_PUDR = 47;                           			// disable Pull-ups
+	REG_PIOD_ODR = 32;																	// set RX3 to input
 	REG_PIOD_OER = 15;                            			// set pins to outputs
 	REG_PIOD_CODR = 15;                               	// clear strobe select signals
 	REG_PIOC_CODR = AllSelects;                       	// clear all select signals
@@ -816,6 +819,9 @@ void loop() {
 					AfterSoundPending = 0;
 					if (AfterSound) {
 						AfterSound();}}}}}
+	if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {		// onboard com off and Pi detected?
+		Serial3.begin(115200);														// needed for onboard serial communication
+		OnBoardCom = true;}
 	if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) { 	// Remote mode?
 		if(USB_Available()) {
 			USB_SerialCommand();}}}													// use the first received byte as a command
