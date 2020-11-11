@@ -95,7 +95,13 @@ void USB_AttractMode() {                              // Attract Mode
 		USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
 	if (game_settings[USB_Watchdog]) {									// watchdog enabled?
 		USB_WatchdogHandler(1);}													// initiate reset and start watchdog
-	WriteUpper("  USB  CONTROL  ");
+	if (APC_settings[ConnType]) {
+		if (APC_settings[ConnType] == 1) {
+			WriteUpper("WAITING F LISY  ");}
+		else {
+			WriteUpper("  USB  CONTROL  ");}}
+	else {
+		WriteUpper("NO CONNSELECTED ");}
 	WriteLower("                ");}
 
 void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset & start WD / 2-> WD has run out / 3-> stop WD

@@ -819,10 +819,10 @@ void loop() {
 					AfterSoundPending = 0;
 					if (AfterSound) {
 						AfterSound();}}}}}
-	if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {		// onboard com off and Pi detected?
-		Serial3.begin(115200);														// needed for onboard serial communication
-		OnBoardCom = true;}
 	if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) { 	// Remote mode?
+		if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {	// onboard com off and Pi detected?
+			Serial3.begin(115200);													// needed for onboard serial communication
+			OnBoardCom = true;}
 		if(USB_Available()) {
 			USB_SerialCommand();}}}													// use the first received byte as a command
 
