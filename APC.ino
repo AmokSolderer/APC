@@ -644,13 +644,13 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (HwExt_Buf[HwExtIRQpos][1] & 128) {						// rising select edge requested?
 			for (i=0;i<5;i++) {															// for all HwExt selects
 				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
-					REG_PIOC_SODR = HwExtSelMask[i];						// generate a rising edge
-					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}	// shift to the next bit
+					REG_PIOC_SODR = HwExtSelMask[i];}						// generate a rising edge
+				HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}	// shift to the next bit
 		else {																						// falling select edge requested
 			for (i=0;i<5;i++) {															// for all HwExt selects
 				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
-					REG_PIOC_CODR = HwExtSelMask[i];						// generate a falling edge
-					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}}	// shift to the next bit
+					REG_PIOC_CODR = HwExtSelMask[i];}						// generate a falling edge
+				HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}	// shift to the next bit
 
 	// Sound
 
