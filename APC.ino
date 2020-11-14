@@ -98,6 +98,7 @@ byte BlinkingNo[65];                                  // number of lamps using t
 bool BlinkState[65];                                  // current state of the lamps of this blink timer
 unsigned int BlinkPeriod[65];                         // blink period for this timer
 byte BlinkingLamps[65][65];                           // [BlinkTimer] used by these [lamps]
+byte SolMax = 24;																			// maximum number of solenoids
 bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
 byte SolLatch = 0;																		// Indicates which solenoid latches must be updated
 bool C_BankActive = false;														// A/C relay currently doing C bank?
@@ -157,7 +158,7 @@ byte *SettingsPointer;																// points to the settings being changed
 const char *SettingsFileName;													// points to the settings file currently being edited
 const unsigned long SwitchMask[8] = {65536, 16777216, 8388608, 4194304, 64, 16, 8, 4};
 uint16_t SwDrvMask = 2;                               // mask for switch row select
-byte SolBuffer[3];                                    // stores the state of the solenoid latches
+byte SolBuffer[4];                                    // stores the state of the solenoid latches + solenoid_exp board
 bool OnBoardCom = false;															// on board Pi detected?
 
 struct SettingTopic {																	// one topic of a list of settings
@@ -185,14 +186,15 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,		 	// system default settings
 #define DimInserts  5                       		     	// Reduce lighting time of playfield lamps by 50%
 #define Volume  6                         		    		// Volume of the speaker
 #define LEDsetting  7                         		   	// Setting for the APC_LED_EXP board
-#define DebugMode  8                            		 	// debug mode enabled?
+#define SolenoidExp	8																	// Solenoid expander present?
+#define DebugMode  9                            		 	// debug mode enabled?
 
 const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "},{"   TUTORIAL     "}};
 const char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
 const char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{"123456123456    "},{"12345671234567  "}};
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 
-const struct SettingTopic APC_setList[12] = {
+const struct SettingTopic APC_setList[13] = {
 		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,7},
 		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
 		{" NO OF  BALLS   ",HandleNumSetting,0,1,5},
@@ -201,6 +203,7 @@ const struct SettingTopic APC_setList[12] = {
 		{"  DIM  INSERTS  ",HandleBoolSetting,0,0,0},
 		{"SPEAKER VOLUME  ",HandleVolumeSetting,0,0,255},
 		{"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,2},
+		{"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
 		{"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS  ",ExitSettings,0,0,0},
@@ -391,6 +394,13 @@ void Init_System2(byte State) {												// state = 0 will restore the setting
 			for(i=0;i<64;i++) {
 				game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
 	digitalWrite(VolumePin,HIGH);										    // turn off the digital volume control
+	if (APC_settings[SolenoidExp]) {										// solenoid exp board selected?
+		REG_PIOC_SODR = Sel14;														// enable the HW_ext_latch
+		SolMax = 33;}																			// enable 8 more solenoids
+	else {
+		SolMax = 25;}
+	if (APC_settings[LEDsetting]) {
+		REG_PIOC_SODR = Sel14;}														// enable the HW_ext_latch
 	if (State) {
 		ActivateTimer(2000, 0, EnterAttractMode);}
 	else {
@@ -1271,8 +1281,11 @@ void DelaySolenoid(byte Solenoid) {                   // activate solenoid after
 	ActivateSolenoid(0, Solenoid);}
 
 void ReleaseAllSolenoids() {
-	for (i=0; i< 3; i++) {															// clear all solenoid buffers
+	for (i=0; i< 4; i++) {															// clear all solenoid buffers
 		SolBuffer[i] = 0;}
+	if (APC_settings[SolenoidExp]) {										// sol exp board selected
+		WriteToHwExt(0, 128+4);
+		WriteToHwExt(0, 4);}
 	ReleaseSolenoid(1);																	// release one solenoid of each buffer
 	ReleaseSolenoid(9);
 	ReleaseSolenoid(17);}

@@ -413,6 +413,9 @@ void USB_SerialCommand() {
 		else if (USB_SerialBuffer[0] == 25) {							// 25 is a shortcut for both flipper fingers
 			ActivateSolenoid(0, 23);												// enable both flipper fingers
 			ActivateSolenoid(0, 24);}
+		else if ((USB_SerialBuffer[0] <= SolMax) && APC_settings[SolenoidExp]) {	// sol exp board selected
+			WriteToHwExt(SolBuffer[3] |= 1<<(USB_SerialBuffer[0]-26), 128+4);
+			WriteToHwExt(SolBuffer[3] |= 1<<(USB_SerialBuffer[0]-26), 4);}
 		break;
 	case 22:																						// set solenoid # to off
 		if (USB_SerialBuffer[0] < 25) {										// max 24 solenoids
@@ -420,6 +423,9 @@ void USB_SerialCommand() {
 		else if (USB_SerialBuffer[0] == 25) {							// 25 is a shortcut for both flipper fingers
 			ReleaseSolenoid(23);														// disable both flipper fingers
 			ReleaseSolenoid(24);}
+		else if ((USB_SerialBuffer[0] <= SolMax) && APC_settings[SolenoidExp]) {	// sol exp board selected
+			WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 128+4);
+			WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 4);}
 		break;
 	case 23:																						// pulse solenoid
 		if (USB_SerialBuffer[0] < 25) {										// max 24 solenoids
