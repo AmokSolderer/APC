@@ -249,7 +249,7 @@ void setup() {
 	digitalWrite(Blanking, LOW);                        // and activate the blanking
 	digitalWrite(VolumePin, HIGH);                      // set volume to 0
 	pinMode(UpDown, INPUT);                          		// initialize Up/Down pin
-	Serial.begin(115200);																// needed for USB and serial communication
+	//Serial.begin(115200);																// needed for USB and serial communication
 	SPI.begin();																				// needed for SD card handling
 	REG_PIOC_PER = 871363582;                           // set required Port C pins to controlled In/Out
 	REG_PIOC_PUDR = 871363582;                          // disable Pull-ups
@@ -264,7 +264,9 @@ void setup() {
 	REG_PIOD_OER = 15;                            			// set pins to outputs
 	REG_PIOD_CODR = 15;                               	// clear strobe select signals
 	REG_PIOC_CODR = AllSelects;                       	// clear all select signals
-	REG_PIOC_SODR = Sel13 + Sel14;                      // set the special switch select (Sel13 - low active) and the Hw_ext_latch (Sel14)
+	REG_PIOC_SODR = AllData;														// set all pins of the HW_ext bus to high to suppress sounds from Sys7 sound boards
+	REG_PIOC_SODR = Sel13 + Sel14;                      // set the special switch select (Sel13 - low active) and the HW_ext_latch (Sel14)
+	REG_PIOC_CODR = Sel14;															// deselect the HW_ext_latch
 	REG_PIOC_CODR = AllSelects + AllData;               // clear all select signals and the data bus
 	REG_PIOC_SODR = AllData - SwDrvMask;                // put select pattern on data bus
 	REG_PIOC_SODR = 32768;                              // use Sel12
@@ -642,13 +644,13 @@ void TC7_Handler() {                                  // interrupt routine - run
 		if (HwExt_Buf[HwExtIRQpos][1] & 128) {						// rising select edge requested?
 			for (i=0;i<5;i++) {															// for all HwExt selects
 				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
-					REG_PIOC_SODR = HwExtSelMask[i];						// generate a rising edge
-					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}	// shift to the next bit
+					REG_PIOC_SODR = HwExtSelMask[i];}						// generate a rising edge
+				HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}	// shift to the next bit
 		else {																						// falling select edge requested
 			for (i=0;i<5;i++) {															// for all HwExt selects
 				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
-					REG_PIOC_CODR = HwExtSelMask[i];						// generate a falling edge
-					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}}	// shift to the next bit
+					REG_PIOC_CODR = HwExtSelMask[i];}						// generate a falling edge
+				HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}	// shift to the next bit
 
 	// Sound
 
@@ -820,9 +822,10 @@ void loop() {
 					if (AfterSound) {
 						AfterSound();}}}}}
 	if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) { 	// Remote mode?
-		if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {	// onboard com off and Pi detected?
-			Serial3.begin(115200);													// needed for onboard serial communication
-			OnBoardCom = true;}
+		if (APC_settings[ConnType] == 1) {								// onboard Pi selected?
+			if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {	// onboard com off and Pi detected?
+				Serial3.begin(115200);												// needed for onboard serial communication
+				OnBoardCom = true;}}
 		if(USB_Available()) {
 			USB_SerialCommand();}}}													// use the first received byte as a command
 
@@ -1676,12 +1679,6 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
 void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3) {
 	WriteUpper2("ERROR           ");                    // Show Error Message
 	WriteLower2("                ");
-	Serial.print("Error = ");
-	Serial.println(Error);
-	Serial.print("Number2 = ");
-	Serial.println(Number2);
-	Serial.print("Number3 = ");
-	Serial.println(Number3);
 	ShowNumber(15, Error);
 	ShowNumber(23, Number2);
 	ShowNumber(31, Number3);
@@ -1690,6 +1687,12 @@ void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3
 		LampPattern = NoLamps;                            // Turn off all lamps
 		KillAllTimers();
 		ReleaseAllSolenoids();
+		Serial.print("Error = ");
+		Serial.println(Error);
+		Serial.print("Number2 = ");
+		Serial.println(Number2);
+		Serial.print("Number3 = ");
+		Serial.println(Number3);
 		while(true) {}}}
 
 void ShowFileNotFound(String Filename) {							// show file not found message

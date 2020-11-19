@@ -225,6 +225,8 @@ struct GameDef BK_GameDefinition = {
 
 void BK_init() {
 	digitalWrite(VolumePin,HIGH);												// mute sound
+	if (APC_settings[DebugMode]) {											// activate serial interface in debug mode
+		Serial.begin(115200);}
 	ACselectRelay = BK_ACselectRelay;										// assign the number of the A/C select relay
 	GameDefinition = BK_GameDefinition;}								// read the game specific settings and highscores
 
@@ -1798,6 +1800,8 @@ void TestMode_Enter() {
 	ActivateSolenoid(0, 23);                            // enable flipper fingers
 	ActivateSolenoid(0, 24);
 	Switch_Pressed = DummyProcess;                      // Switches do nothing
+	if (APC_settings[DebugMode]) {											// deactivate serial interface in debug mode
+		Serial.end();}
 	if (QuerySwitch(73)) {															// Up/Down switch pressed?
 		Settings_Enter();}
 	else {

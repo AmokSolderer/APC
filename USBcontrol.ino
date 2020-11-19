@@ -76,6 +76,13 @@ struct GameDef USB_GameDefinition = {
 		USB_SolTimes};																		// Default activation times of solenoids
 
 void USB_init() {
+	if (APC_settings[ConnType]) {
+		if (APC_settings[ConnType] == 1) {
+			OnBoardCom = false;}
+		else {
+			Serial.begin(115200);}}													// needed for USB and serial communication
+	else 	if (APC_settings[DebugMode]) {								// activate serial interface in debug mode
+		Serial.begin(115200);}
 	Switch_Pressed = DummyProcess;
 	GameDefinition = USB_GameDefinition;}								// read the game specific settings and highscores
 
@@ -200,6 +207,10 @@ void USB_Testmode(byte Dummy) {												// enter system settings if advance b
 	USB_WatchdogHandler(3);															// stop USB watchdog
 	for (byte i=0; i<5; i++) {
 		USB_DisplayProtocol[i] = 6;} 											// use ASCII protocol for displays
+	if (APC_settings[ConnType] == 2) {									// USB mode selected?
+		Serial.end();}
+	else if ((APC_settings[ConnType] == 1) && OnBoardCom) {	// onbeard Pi selected and detected?
+		Serial3.end();}
 	Settings_Enter();}
 
 byte USB_ReadByte() {																	// read a byte from the selected interface
