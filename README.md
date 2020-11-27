@@ -16,38 +16,6 @@ To summarize the above it can be said that the APC does replace all CPU, power d
 
 Note that Jokerz! has a unique audio board which uses seperate audio channels for the cabinet and the backbox speakers. The APC HW is capable of generating two independent sound channels, but you need at least DC-blocks (capacitors) when connecting it to the speakers of the Jokerz!
 
-## Documentation contents
-
-1 Building and setting up an APC  
-1.1 [How to start](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md) - If you want to start using the APC you should read this page first.  
-1.2 [Board Assembly help](https://github.com/AmokSolderer/APC/blob/master/DOC/BoardAssembly.md) - Decribes how to populate your board and do the necessary tests.  
-1.3 [Useful software tools](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md) - Simple tools for audio data conversion and so on  
-1.4 [APC settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) - a table of the settings and how to use them  
-1.5 [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
-
-2 Writing my own game code - You want to program your own game in C? Then read this.  
-2.1 [Game code tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md)  
-2.2 [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) - All commands of the API in a nutshell  
-
-3 Running PinMame  
-3.1 [Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw) - this video shows them controlling my Pinbot  
-3.2 [The APC and PinMame](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame  
-3.3 [PinMame howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that
-
-4 Using MPF  
-4.1 [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw) - see my first humble MPF steps in this video  
-4.2 [MPF setup](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/MPF) - my MPF test config files
-4.3 Lisy runs MPF
-
-5 Additional APC hardware - boards that might come in handy with the APC  
-5.1 [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  
-5.2 APC solenoid expansion board - use this to control 8 more solenoids with your APC  
-5.3 System 7 alphanumeric display - to have alphanumerical displays in a pre System 11 machine  
-
-6 Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
-6.1 System 7 LED display - an LED replacement display for System 7, purely numerical  
-6.2 System 11a LED display - an LED replacement display for System 11a  
-
 The picture below shows an APC prototype in my Pinbot.
 
 ![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
@@ -94,7 +62,7 @@ I have written game codes for my Black Knight and Pinbot. They are still not fin
 
 Please note that I have equipped my Black Knight with a [special kind of display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha) and that advanced APC commands like scrolling are currently not usable with pre System11 displays. This is because I think that these displays are not suited for homebrew machines. If you do all the work needed to do your own game code, you'd for sure want to have a display with letters, otherwise you wouldn't be able to even have a decent high score list. Additionally it would be quite cumbersome to debug some game software without the display being able to show letters. Therfore I recommend to use an early System11 display which has at least one row with alphanumeric displays (or build my System7Alpha). However, the basic software support is implemented, which means you can use the old displays without any restrictions you just have to do a bit more coding to get all the features. And if you just want to use them with PinMame to replace your old boards these displays will work perfectly well as soon as the PinMame support is completely done.
 
-## Current Status (April 2020)
+## Current Status (December 2020)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/wiki#cable-extensions).
 
@@ -102,10 +70,10 @@ The PinMame support is still under development and even if a generation is basic
 
 | System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
-|3| Not yet | Not yet | Yes| Needs an additional wire |
-|4| Not yet | Not yet | Yes| Needs an additional wire |
-|6| Not yet | Not yet | Yes | Needs an additional wire |
-|7| Yes | Not yet | Yes | Needs three additional wires |
+|3| Not yet | Not yet | Yes|  |
+|4| Yes | Not yet | Yes|  |
+|6| Not yet | Not yet | Yes |  |
+|7| Yes | Not yet | Yes | Needs two additional wires |
 |9| Yes | soon | Yes |  |
 |11| Yes | Not yet | Yes |  |
 |11a| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
@@ -129,3 +97,35 @@ Feedback is very important for me, because if there is none I must assume that n
 ## How to get a board?
 
 I'm sorry, but I'm not going to sell them. However, I have tried to put the required information for building a board and using the software to the [APC wiki](https://github.com/AmokSolderer/APC/wiki/Home)
+
+## Documentation contents
+
+1 Building and setting up an APC  
+1.1 [How to start](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md) - If you want to start using the APC you should read this page first.  
+1.2 [Board Assembly help](https://github.com/AmokSolderer/APC/blob/master/DOC/BoardAssembly.md) - Decribes how to populate your board and do the necessary tests.  
+1.3 [Useful software tools](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md) - Simple tools for audio data conversion and so on  
+1.4 [APC settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) - a table of the settings and how to use them  
+1.5 [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
+
+2 Writing my own game code - You want to program your own game in C? Then read this.  
+2.1 [Game code tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md)  
+2.2 [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) - All commands of the API in a nutshell  
+
+3 Running PinMame  
+3.1 [Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw) - this video shows them controlling my Pinbot  
+3.2 [The APC and PinMame](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame  
+3.3 [PinMame howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that
+
+4 Using MPF  
+4.1 [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw) - see my first humble MPF steps in this video  
+4.2 [MPF setup](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/MPF) - my MPF test config files
+4.3 Lisy runs MPF
+
+5 Additional APC hardware - boards that might come in handy with the APC  
+5.1 [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  
+5.2 APC solenoid expansion board - still to come 
+5.3 System 7 alphanumeric display - to have alphanumerical displays in a pre System 11 machine  
+
+6 Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
+6.1 System 7 LED display - an LED replacement display for System 7, purely numerical  
+6.2 System 11a LED display - an LED replacement display for System 11a

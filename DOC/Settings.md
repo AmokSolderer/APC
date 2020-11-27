@@ -40,21 +40,22 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 1 | Active Game | 0 | Base Code | - | The very basics of a game SW |
 | 1 |  | 1 | Black Knight | - | My own Black Knight game SW |
 | 1 |  | 2 | Pinbot | - | My own Pinbot game SW |
-| 1 |  | 3 | USB Control | X | For controlling the APC via I2C or USB |
+| 1 |  | 3 | USB Control | X | For controlling the APC remotely via USB or an onboard Raspberry Pi|
 | 1 |  | 4 | Tutorial | - | The corresponding game SW to the game code tutorial Wiki|
 | 2 | No of balls | - | - | 3 | Numerical setting - range 1 -5 |
 | 3 | Free game | - | - | Yes | Bool setting |
 | 4 | Connect Type | 0| Off | - | No remote control during USBcontrol mode |
-| 4 |  | 1 | On board | X | APC can be controlled by the Pi on board |
-| 4 |  | 2 | USB | - | APC can be controlled via USB |
+| 4 |  | 1 | On board | X | APC is controlled by the Pi on board |
+| 4 |  | 2 | USB | - | APC is controlled via USB |
 | 5 | Dim inserts | - | - | No | Bool setting - brightness of playfield lamps is set to 50% when on |
 | 6 | Speaker volume | - | - | 0 | Numerical setting - range 1 - 255 / must be set to 0 when volume pot is connected at 10J4 / 1J16 |
 | 7 | LED lamps | 0 | No LEDs | X | The APC_LED_exp board is not used |
 | 7 |  | 1 | Playfld only | - | The APC_LED_exp board is only used for the lamps 9 - 64 |
 | 7 |  | 2 | PlayfldBackbox | - | The APC_LED_exp board is used for all lamps |
-| 8 | Debug Mode | - | - | No | Bool setting - Active debug mode will show the number of active timers in the credit display and will stop the game on error |
-| 9 | RestoreDefault | - | - | - | No setting - restores the default settings |
-| 10 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 8 | Sol Exp Board | - | - | No | Bool setting - will use the solenoid expander board for solenoids 26 - 33 if set
+| 9 | Debug Mode | - | - | No | Bool setting - Active debug mode will show the number of active timers in the credit display and will stop the game on error |
+| 10 | RestoreDefault | - | - | - | No setting - restores the default settings |
+| 11 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## Game Settings in USBcontrol mode
 
@@ -62,7 +63,7 @@ For pre Sys11 displays all text settings are represented by their item number as
 |--|--|--|--|--|--|
 | 0 | USB watchdog | - | - | No | Bool settings - disables all solenoids when no watchdog reset command is received for 1s |
 | 1 | Debug Mode | 0 | Off | X | No debugging |
-| 1 |  | 1 | USB | - | Shows the received USB/I2C commands in the displays |
+| 1 |  | 1 | USB | - | Shows the received commands in the displays |
 | 1 |  | 2 | Audio | - | Audio debug mode for PinMame Sounds |
 | 2 | Lisy Mode | 0 | PinMame | X | Start PinMame |
 | 2 | | 1 | MPF | - | Start MPF |
@@ -75,6 +76,6 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 7 | Debug coil | - | - | No | Enable Lisy Solenoid debugging |
 | 8 | Debug Sound | - | - | No | Enable Lisy Sound debugging |
 | 9 | PinMame Sound | 0 | APC | X | PinMame sounds are played on the APC sound HW |
-| 9 | | 1 | Board | - | PinMame sounds are played on the external audio board |
+| 9 | | 1 | Board | - | PinMame sounds are played on an external audio board |
 | 10 | RestoreDefault | - | - | - | No setting - restores the default settings |
 | 11 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |

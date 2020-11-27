@@ -1,5 +1,31 @@
 # APC News and Changelog
 
+## December 2020
+
+APC 3.0 is released.
+
+### New HW Version V3.0
+
+* The Lisy_Mini board is no longer needed to run Lisy (for PinMame or MPF) as the Raspberry Pi has been added to the APC board itself. Note that the 'Connect Type' setting must be set to 'On Board' for the on board Pi to work. This has been done to still be able to ignore the on board Pi and control the APC from the USB port if needed.
+
+* The Hardware Extensions Interface has been upgraded to have 5V logic level also at the select pins. Furthermore the data lines can now be latched which makes it possible to control System7 audio boards without having to use additional HW.
+
+* The board has been reworked to use SMD ICs where possible and move all components to the top side. This makes it possible to populate the board at the board manufacturers. All necessary fabrication files can be found in the [fabrication files folder](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles).
+
+### New SW Version V0.20
+
+* Display blanking for the various display types is now handled by SW which makes jumper JP1 and the resistor arrays RR2 - RR5 obsolete. This does also work for APC 2.x boards.
+
+* The functionality of pre System11 sound boards has been modelled. This make it easier to use the PinMame sound of System 3 - 9 machines. For Systems 3 - 7 it is also possible to use to original audio boards.
+
+* Support for System7 displays has been added.
+
+### Misc
+
+* Sound files for Black Knight and Jungle Lord are available on request. They can be used with PinMame or as a basis for own games.
+
+* A summary of the [Documentation contents](https://github.com/AmokSolderer/APC/tree/master#documentation-contents) has been added at the end of the main page to provide a better overview about the documentation.
+
 ## April 2020
 
 PinMame is working.
@@ -13,8 +39,6 @@ Watch the
 video to see my old Pinbot under PinMame control.
 
 There's still some work to be done, but with this setup you can do much more than just playing the original game. See my [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md) for details.
-
-A new [Solenoid expander](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_Solenoid_exp) is available. The board can be connected to the HW extension port of the APC and can drive 8 additional solenoids. Up to now it is untested, so take care when you test it.
 
 ### New SW Version V0.13
 
