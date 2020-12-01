@@ -185,7 +185,6 @@ void USB_ReleasedSwitches(byte Switch) {
 		if (USB_Enter_TestmodeTimer) {
 			KillTimer(USB_Enter_TestmodeTimer);
 			USB_Enter_TestmodeTimer = 0;}
-		break;
 	default:
 		byte i = 0;
 		while (USB_HWrule_RelSw[i][0]) {									// check for HW rules for this switch
