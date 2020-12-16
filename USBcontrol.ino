@@ -104,7 +104,7 @@ void USB_AttractMode() {                              // Attract Mode
 		USB_WatchdogHandler(1);}													// initiate reset and start watchdog
 	if (APC_settings[ConnType]) {
 		if (APC_settings[ConnType] == 1) {
-			WriteUpper("WAITING F LISY  ");}
+			WriteUpper("BOOTING  LISY   ");}
 		else {
 			WriteUpper("  USB  CONTROL  ");}}
 	else {
@@ -1242,6 +1242,16 @@ void USB_SerialCommand() {
 		USB_WatchdogHandler(0);
 		break;
 	default:
+		SolChange = false;																// block IRQ solenoid handling
+		SolBuffer[0] = 0;																	// turn off all solenoids
+		SolBuffer[1] = 0;
+		SolBuffer[2] = 192;																// keep the flipper fingers alive
+		SolBuffer[3] = 0;
+		SolLatch = 7;																			// signal all latches to be processed
+		SolChange = true;
+		if (APC_settings[SolenoidExp]) {									// sol exp board selected
+			WriteToHwExt(0, 128+4);
+			WriteToHwExt(0, 4);}
 		if (APC_settings[DisplayType] == 3) {           	// 2x16 alphanumeric display (BK2K type)
 			WriteUpper2("UNKNOWN COMMAND ");}
 		else {
