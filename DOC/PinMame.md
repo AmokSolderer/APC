@@ -1,6 +1,13 @@
 # The APC and PinMame
 
-Bringing PinMame and the APC together was only possible with the help of the Lisy project. In case of the APC we're using the [Lisy_Mini](https://lisy.dev/lisy_mini.html) board, but Lisy offers much more especially for Bally and Gottlieb fans. Please visit the [Lisy homepage](https://lisy.dev) for more.
+Bringing PinMame and the APC together was only possible with the help of the [Lisy project](https://lisy.dev).  
+To set it up you have to get a Raspberry Pi (all Zero and Pi3 variants are supported) and install the Lisy disk image on the SD card of your Pi.  
+The APC's 'Active Game' setting has to be set to 'Remote Control' (which is the default setting) to make it communicate with the Pi.
+
+If you have an APC 3 board you can just plug the Pi on the J1 connector of the APC directly. As the APC is set to USB communication by default, you have to change the 'Connect Type' setting in the 'System Settings' to 'On board'. Take a look at the [settings page](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) for a desription of the settings. Connect an SD-card to P8 of the APC for the settings to be stored permanently.  
+It might be necessary to power cycle the system as the synchonization betwenn the APC and Lisy is still under development.
+
+If you have an APC 2.x board or you just want a portable Lisy system you can use the [Lisy_Mini](https://lisy.dev/lisy_mini.html) board which controls the APC via USB.
 
 We have started our PinMame experiments with my old trusty Pinbot which is running quite well as you can see in the following video:
 
@@ -23,15 +30,22 @@ To make this possible, it is necessary that PinMame and the APC can play sounds 
 
 The drawback of this is that you have to extract the music files from PinMame. Furthermore we have to understand how the audio boards work and emulate their behaviour. The first task is easy and if we find some server space to store the files somewhere in the internet then this work must only be done once for each game. For System 3 - 9 games I expect this to be easy anyway, as they have a very limited sound performance. You could use the Audio Debug Mode which is explained later to find out which sounds to extract.
 
-At the moment the list of available sound packages has only one entry, but we see the extraction of the sound files as a community task. Of course it would be great if you'd share you sound package with the rest of us. Up to now we haven't found some server space to store the files on, so send me a PM via Pinside or Flippertreff (see the feedback section on the main page), and I'll store my Pinbot files somewhere and send the link back to you.
+At the moment the list of available sound packages is still quite short, but we hope that some of you will do this for their machines also. Of course it would be great if you'd share you sound package with the rest of us. Up to now we haven't found some server space to store the files on, so send me a PM via Pinside or Flippertreff (see the feedback section on the main page) if you want to have one of the sound packages listed below.
 
 |System|Game| Sound File URL|Comments|
 |--|--|--|--|
+|7|Black Knight| URL available on request| Good quality|
+|7|Jungle Lord| URL available on request| Good quality|
 |11a|Pinbot| URL available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW. No looping implemented yet - if you wait long enough, some sounds will just run out|
 
 ## Audio boards
 
 Understanding the audio boards is the second task at hand. Again I expect this to be easy for games prior to System 11, but it took me roughly a week before I was satified with the sounds of my Pinbot. Of course I started from scratch, so it's going to be easier for the next one doing this, but System 11 features various audio boards and I don't know how much they differ from the Pinbot's. For this reason I'm going to maintain a second list here where all PinMame relevant information about the various systems are listed.
+
+### System 7
+
+These boards are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher pitch). For the APC the sound file names have to be like 0_2a_000, where the leading zero is selecting sound channel 0 (System 7 games use only this channel), 2a being the sound number and 000 the pitch of this sound. The latter number is counted up for all pitches avaiable for this sound.  
+Alas, the numbers of these sounds are not the same for the various games which means they have to be programmed to the APC SW for each game.
 
 ### System 11
 

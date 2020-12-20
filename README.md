@@ -26,7 +26,7 @@ To see the APC in action take a look at my [Black Knight game video](https://you
 
 ## PinMame
 
-The APC by itself cannot run the original Williams EPROM software, but you can use PinMame to emulate the pinball's hardware and run the old game SW on the APC. The easiest way to do this is to plug a Raspberry PI on the APC board and install Lisy on it. The image file for the PI's SD card and additional information about Lisy can be found on the [Lisy project page](https://lisy.dev). Note that only the Raspberry Pi Zero, Zero W, 3A+ and 3B+ models are currently supported by Lisy.  
+The APC by itself cannot run the original Williams EPROM software, but you can use PinMame to emulate the pinball's hardware and run the old game SW on the APC. The easiest way to do this is to plug a Raspberry Pi on the APC board and install Lisy on it. The image file for the Pi's SD card and additional information about Lisy can be found on the [Lisy project page](https://lisy.dev). Note that only the Raspberry Pi Zero, Zero W, 3A+ and 3B+ models are currently supported by Lisy.  
 There's also a Lisy_Mini board available. The Raspberry Pi is then located on this board which can be conntected to the APC via USB. For more information about how to setup PinMame please have a look at my [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md).
 
 ## MPF
@@ -40,7 +40,7 @@ I did a short video with some basic [MPF setup](https://github.com/AmokSolderer/
 
 ## C code
 
-If you're familiar with C you can also program the APC directly. This SW would then run on the Arduino itself with no need for an additional PC or Raspberry PI.  
+If you're familiar with C you can also program the APC directly. This SW would then run on the Arduino itself with no need for an additional PC or Raspberry Pi.  
 For this the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to control a pinball machine. It's still a lot of effort to program a game completely from scratch, but you could still run your game in PinMame and only use the API to do changes or extensions to the original rules.
 
 The APC software itself consists of two parts: the operating system APC.ino and the game specific code. The former controls the hardware and offers an application interface (API) for the game specific software to use. For an overview of the available API variables and commands please take a look at the
@@ -126,7 +126,7 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ww
 
 5 Additional APC hardware - boards that might come in handy with the APC  
 5.1 [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  
-5.2 APC solenoid expansion board - still to come 
+5.2 [APC solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) - to control additional features  
 5.3 System 7 alphanumeric display - to have alphanumerical displays in a pre System 11 machine  
 
 6 Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  

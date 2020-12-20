@@ -1241,6 +1241,9 @@ void USB_SerialCommand() {
 	case 101:
 		USB_WatchdogHandler(0);
 		break;
+	case 102:
+		USB_WriteByte((byte) 0);
+		break;
 	default:
 		SolChange = false;																// block IRQ solenoid handling
 		SolBuffer[0] = 0;																	// turn off all solenoids

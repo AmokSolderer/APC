@@ -47,6 +47,13 @@ Sys3 - 7 games need a single wire for the display blanking. On the APC you can e
 The picture does also show the two additional connections that have to be done for the commas of Sys7 displays to work. The APC has them on pin 10 (comma 1+2) and 11 (comma 3+4) of 1J5 and on pin 3 (comma 1+2) and pin 4 (comma 3+4) of 1J8. They have to be connected to pin 2 (comma 1+2) and pin 1 (comma 3+4) of the old 1P8.  
 In the picture 1J8 of the APC has been used to provide the signals.
 
+You can use a simple 5 wire cable to use System7 audio boards with the APC 3.0 (older APCs need additional HW). This cable needs to connect the pins 3 - 7 of the HW extensions interface (P11) of the APC 3.0 to the audio board. One easy way to do this is to connect them to the pins 12 to 8 of 1P8 (the plug belonging to 1J8 of your Sys7 CPU board).  
+A cable like this is shown below. 
+
+![Sys7SoundCable](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/Sys7SoundCable.jpg)
+
+To make the APC use this interface, you have to set the 'PinMame Sound' setting to 'Board'. The setting can be found in the 'Game Settings' menu in 'Remote Control' mode.
+
 ## Software preparation
 
 To run the software you need at least the Arduino IDE with the SPI and the SdFat library installed.

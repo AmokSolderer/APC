@@ -20,4 +20,4 @@ The schematic, Gerber (and drilling) are located in the [APC_Solenoid_exp](https
 
 # APC solenoid expansion board with separated grounds (for use with loads using the pinball's power supply)
 
-This board can 
+Still to come.
