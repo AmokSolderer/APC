@@ -10,7 +10,7 @@ After the correct display is selected, press Up/Down to get it down and Game Sta
 
 ## Using the settings menu
 
-To enter the APC settings you have to press the Advance button at the coin door. If you're in USBcontrol mode you have to keep it pressed for more than 1s.
+To enter the APC settings you have to press the Advance button at the coin door. If you're in Remote Control mode you have to keep it pressed for more than 1s.
 
 In settings mode use Advance to select the setting and the Game Start button to change it's value. If the Up/Down button is in down position then you're moving backwards.
 
@@ -23,7 +23,7 @@ The APC settings are splitted in two parts.
 
 Games with a credit display show 00 for System Settings and 01 for Game Settings in the left two digits. The number of the setting currently being shown appears in the right two digits of the credit display. This is important for pre System11 displays as they can show only numbers and no menu text. 
 
-For pre Sys11 displays all text settings are represented by their item number as shown in the tables. For example, if a pre Sys11 display is selected and the credit display shows 00 01 you have selected the System Settings and the 'Active Game' setting is currently being shown. An early System11 display (upper display row alphanumerical and lower row numerical) will still try to show the name of the currently selected game as a text which is not perfect, but good enough. A pre System11 display will show the item number instead and if there is a 3 stated in the player 4 display then you're in USBcontrol mode.
+For pre Sys11 displays all text settings are represented by their item number as shown in the tables. For example, if a pre Sys11 display is selected and the credit display shows 00 01 you have selected the System Settings and the 'Active Game' setting is currently being shown. An early System11 display (upper display row alphanumerical and lower row numerical) will still try to show the name of the currently selected game as a text which is not perfect, but good enough. A pre System11 display will show the item number instead and if there is a 3 stated in the player 4 display then you're in Remote Control mode.
 
 ## System Settings
 
@@ -40,11 +40,11 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 1 | Active Game | 0 | Base Code | - | The very basics of a game SW |
 | 1 |  | 1 | Black Knight | - | My own Black Knight game SW |
 | 1 |  | 2 | Pinbot | - | My own Pinbot game SW |
-| 1 |  | 3 | USB Control | X | For controlling the APC remotely via USB or an onboard Raspberry Pi|
+| 1 |  | 3 | Remote Control | X | For controlling the APC remotely via USB or an onboard Raspberry Pi|
 | 1 |  | 4 | Tutorial | - | The corresponding game SW to the game code tutorial Wiki|
 | 2 | No of balls | - | - | 3 | Numerical setting - range 1 -5 |
 | 3 | Free game | - | - | Yes | Bool setting |
-| 4 | Connect Type | 0| Off | - | No remote control during USBcontrol mode |
+| 4 | Connect Type | 0| Off | - | No remote control during Remote Control mode |
 | 4 |  | 1 | On board | X | APC is controlled by the Pi on board |
 | 4 |  | 2 | USB | - | APC is controlled via USB |
 | 5 | Dim inserts | - | - | No | Bool setting - brightness of playfield lamps is set to 50% when on |
@@ -57,7 +57,7 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 10 | RestoreDefault | - | - | - | No setting - restores the default settings |
 | 11 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
-## Game Settings in USBcontrol mode
+## Game Settings in Remote Control mode
 
 | Number | Text  | Item Nr | Item Text | Default | Comment |
 |--|--|--|--|--|--|
