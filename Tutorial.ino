@@ -154,6 +154,8 @@ struct GameDef TT_GameDefinition = {
 		TT_SolTimes};																			// Default activation times of solenoids
 
 void TT_init() {
+	if (APC_settings[DebugMode]) {											// activate serial interface in debug mode
+		Serial.begin(115200);}
 	ACselectRelay = TT_ACselectRelay;										// assign the number of the A/C select relay
 	GameDefinition = TT_GameDefinition;}								// read the game specific settings and highscores
 
@@ -277,6 +279,8 @@ void TT_AttractModeSW(byte Button) {                  // Attract Mode switch beh
 		CheckReleaseTimer = 0;
     LampPattern = NoLamps;                            // Turn off all lamps
     ReleaseAllSolenoids();
+  	if (APC_settings[DebugMode]) {										// deactivate serial interface in debug mode
+  		Serial.end();}
     if (!QuerySwitch(73)) {														// Up/Down switch pressed?
       WriteUpper("  TEST  MODE    ");
       WriteLower("                ");

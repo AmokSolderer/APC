@@ -2,13 +2,25 @@
 
 ## Getting started
 
-First of all you need a [Lisy_Mini](https://lisy.dev/lisy_mini.html) and an [APC](https://github.com/AmokSolderer/APC/wiki) board and write the [Lisy software](https://lisy.dev/software.html) to the SD card of your Raspberry PI.
+For using Lisy you need an additional Raspberry Pi. At the moment all zero and model 3 type Pi's are supported.  
+Download the [Lisy software](https://lisy.dev/software.html) and install it to the SD card of your Raspberry Pi. 
+In order to run the code for your game, you need the PinMame game numer of your game which can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv).
 
-Set the S2 DIP switches to your game number. The numbers can be found in the Lisy_Mini documentation.
+### APC 3 with Raspberry Pi on board
 
-Connect the power connector K8 of your Lisy_Mini board to the 5V supply of your pinball machine. (You can also supply Lisy_Mini by the micro USB port of the PI. In this case you need a 2A capable power supply and you should power up Lisy after the APC and connect the USB cable then.)
+Plug the Pi into connector J1 on the APC. Then power up your APC, enter the 'System Settings' and select 'Remote Control' as 'Active Game' and 'On Board' as 'Connect Type'.  
+Now enter the 'Game Settings' and set 'PinMame Game' to the number of your game. 
 
-Start your pinball with Lisy_Mini and the APC. In order to accept USB commands the APC has to be in 'USB control' mode which is the default since SW V0.13. The display should show 'USB control' as long as PinMame is not active.
+As the synchronization of Lisy and the APC is not yet finalized it may now necessary to power-cycle your game.  
+During booting the display should show 'Booting Lisy'. After the booting has finished the yellow LED on the APC will be turned on, followed by the gree one when the connection to the APC has been established. Now the name of the game should appear in the displays with a countdown after which the game emulation starts.
+
+### Using the Lisy_Mini board
+
+Ppower up your APC, enter the 'System Settings' and select 'Remote Control' as 'Active Game' and 'USB' as 'Connect Type'. Set the S2 DIP switches on the Lisy_Mini board to your game number. 
+
+Connect the power connector K8 of your Lisy_Mini board to the 5V supply of your pinball machine. (You can also supply Lisy_Mini by the micro USB port of the Pi. In this case you need a 2A capable power supply and you should power up Lisy after the APC and connect the USB cable then.)
+
+Start your pinball with Lisy_Mini and the APC. The displays of your pinball machines should show 'USB control' until the connection between Lisy and the APC has been established. 
 
 ## Recording the sounds
 
@@ -24,7 +36,7 @@ In order for the APC to find the right sound, all sounds have to be named with t
 
 When you start from scratch you should play your game with Lisy being in Debug Mode. Set DIP 7 and the sound jumper to make it log only sound related commands.
 
-When you're done playing, press the shutdown switch on your Lisy_Mini board to make it exit the emulation and store the log file to the SD card. The file will be located on the PI's SD card in the folder lisy/lisy_m/debug.
+When you're done playing, press the shutdown switch on your Lisy_Mini board to make it exit the emulation and store the log file to the SD card. The file will be located on the Pi's SD card in the folder lisy/lisy_m/debug.
 
 In lisy_m_debug.txt playing a sound looks like
 
