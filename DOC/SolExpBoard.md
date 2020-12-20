@@ -5,7 +5,7 @@ Note that this is a simple board without ground separation. This means you can o
 
 The prototype of the Solenoid Expansion Board looks like this. The final board looks slightly different.
 
-![SolExpBoard](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/SolExpBoard.jpg)
+![SolExpBoard](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/SolExpBoard.JPG)
 
 Currently the use of only one board is supported by the SW, but this could be changed if needed.
 

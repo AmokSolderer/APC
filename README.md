@@ -1,5 +1,8 @@
 # The Arduino Pinball Controller
 ![APC 2.0](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC.JPG)
+The picture shows an APC 3.0 board configured for System 9 + 11 machines as the connectors for System 3 - 7 are not populated.  
+See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impression what has changed compared to the previous versions.
+
 ## Overview
 
 The APC is a freely programmable controller for Williams pinball machines. It uses an Arduino Due and contains all the circuitry required to run a Williams pinball machine from System 3 to System 11c (and the compatible Data East machines):
@@ -22,14 +25,14 @@ The picture below shows an APC prototype in my Pinbot.
 
 To see the APC in action take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
 
-### Software
+## Software
 
-## PinMame
+### PinMame
 
 The APC by itself cannot run the original Williams EPROM software, but you can use PinMame to emulate the pinball's hardware and run the old game SW on the APC. The easiest way to do this is to plug a Raspberry Pi on the APC board and install Lisy on it. The image file for the Pi's SD card and additional information about Lisy can be found on the [Lisy project page](https://lisy.dev). Note that only the Raspberry Pi Zero, Zero W, 3A+ and 3B+ models are currently supported by Lisy.  
 There's also a Lisy_Mini board available. The Raspberry Pi is then located on this board which can be conntected to the APC via USB. For more information about how to setup PinMame please have a look at my [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md).
 
-## MPF
+### MPF
 
 The APC is mainly meant to be a platform for people who want to program their own rules and features.  
 One way of doing this is to use the [Mission Pinball Framework](http://missionpinball.org/). It can run on a PC which then controls the APC via USB. For later it is also planned to let Lisy run MPF which would then work without a PC.
@@ -38,7 +41,7 @@ I did a short video with some basic [MPF setup](https://github.com/AmokSolderer/
 
 [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw)
 
-## C code
+### C code
 
 If you're familiar with C you can also program the APC directly. This SW would then run on the Arduino itself with no need for an additional PC or Raspberry Pi.  
 For this the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to control a pinball machine. It's still a lot of effort to program a game completely from scratch, but you could still run your game in PinMame and only use the API to do changes or extensions to the original rules.
@@ -46,7 +49,7 @@ For this the APC software offers an [API](https://github.com/AmokSolderer/APC/tr
 The APC software itself consists of two parts: the operating system APC.ino and the game specific code. The former controls the hardware and offers an application interface (API) for the game specific software to use. For an overview of the available API variables and commands please take a look at the
 [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf).
 
-I have written game codes for my Black Knight and Pinbot. They are still not final, but good enough to have fun with and to use as a reference when writing own code. Additionally there's a Base Code which should serve as a starting point for you to do your own game. It contains the very basics of a pinball game and it can be easily adapted to your machine. As a startup guide how to start writing game code I have written a short tutorial in the [docs](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md) section.
+I have written game codes for my Black Knight and Pinbot. They are still not final, but good enough to have fun with and to use as a reference when writing own code. Additionally there's a Base Code which should serve as a starting point for you to do your own game. It contains the very basics of a pinball game and it can be easily adapted to your machine. As a startup guide how to start writing game code I have written a short [tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md).
 
 Please note that I have equipped my Black Knight with a [special kind of display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha) and that advanced APC commands like scrolling are currently not usable with pre System11 displays. This is because I think that these displays are not suited for homebrew machines. If you do all the work needed to do your own game code, you'd for sure want to have a display with letters, otherwise you wouldn't be able to even have a decent high score list. Additionally it would be quite cumbersome to debug some game software without the display being able to show letters. Therfore I recommend to use an early System11 display which has at least one row with alphanumeric displays (or build my System7Alpha). However, the basic software support is implemented, which means you can use the old displays without any restrictions you just have to do a bit more coding to get all the features. And if you just want to use them with PinMame to replace your old boards these displays will work perfectly well as soon as the PinMame support is completely done.
 
@@ -100,7 +103,7 @@ Feedback is very important for me, because if there is none I must assume that n
 
 ## How to get a board?
 
-I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](www.jlcpcb.com), but before you do so I'd recommend to read the documentation below.
+I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](https://www.jlcpcb.com), but before you do so I'd recommend to read the documentation below.
 
 ## Documentation contents
 

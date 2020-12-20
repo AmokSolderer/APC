@@ -2,7 +2,7 @@
 
 ## December 2020
 
-APC 3.0 is released.
+APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impression what has changed.
 
 ### New HW Version V3.0
 
