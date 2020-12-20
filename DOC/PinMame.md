@@ -5,7 +5,7 @@ To set it up you have to get a Raspberry Pi (all Zero and Pi3 variants are suppo
 The APC's 'Active Game' setting has to be set to 'Remote Control' (which is the default setting) to make it communicate with the Pi.
 
 If you have an APC 3 board you can just plug the Pi on the J1 connector of the APC directly. As the APC is set to USB communication by default, you have to change the 'Connect Type' setting in the 'System Settings' to 'On board'. Take a look at the [settings page](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) for a desription of the settings. Connect an SD-card to P8 of the APC for the settings to be stored permanently.  
-It might be necessary to power cycle the system as the synchonization betwenn the APC and Lisy is still under development.
+It might be necessary to power cycle the system as the synchonization between the APC and Lisy is still under development.
 
 If you have an APC 2.x board or you just want a portable Lisy system you can use the [Lisy_Mini](https://lisy.dev/lisy_mini.html) board which controls the APC via USB.
 
@@ -44,8 +44,8 @@ Understanding the audio boards is the second task at hand. Again I expect this t
 
 ### System 7
 
-These boards are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher pitch). For the APC the sound file names have to be like 0_2a_000, where the leading zero is selecting sound channel 0 (System 7 games use only this channel), 2a being the sound number and 000 the pitch of this sound. The latter number is counted up for all pitches avaiable for this sound.  
-Alas, the numbers of these sounds are not the same for the various games which means they have to be programmed to the APC SW for each game.
+These boards are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher pitch). For the APC the sound file names have to be like 0_2a_000, where the leading zero is selecting sound channel 0 (System 7 games use only this channel), 2a being the sound number and 000 the pitch of this sound. The latter number is counted up for all pitches available for this sound.  
+Alas, the numbers of these sounds are different from game to game which means they have to be programmed to the APC SW for each game.
 
 ### System 11
 

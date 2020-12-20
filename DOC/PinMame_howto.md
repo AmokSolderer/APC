@@ -12,11 +12,11 @@ Plug the Pi into connector J1 on the APC. Then power up your APC, enter the 'Sys
 Now enter the 'Game Settings' and set 'PinMame Game' to the number of your game. 
 
 As the synchronization of Lisy and the APC is not yet finalized it may now necessary to power-cycle your game.  
-During booting the display should show 'Booting Lisy'. After the booting has finished the yellow LED on the APC will be turned on, followed by the gree one when the connection to the APC has been established. Now the name of the game should appear in the displays with a countdown after which the game emulation starts.
+During booting the display should show 'Booting Lisy'. After the booting has finished the yellow LED on the APC will be turned on, followed by the green one when the connection to the APC has been established. Now the name of the game should appear in the displays with a countdown after which the game emulation starts.
 
 ### Using the Lisy_Mini board
 
-Ppower up your APC, enter the 'System Settings' and select 'Remote Control' as 'Active Game' and 'USB' as 'Connect Type'. Set the S2 DIP switches on the Lisy_Mini board to your game number. 
+Power up your APC, enter the 'System Settings' and select 'Remote Control' as 'Active Game' and 'USB' as 'Connect Type'. Set the S2 DIP switches on the Lisy_Mini board to your game number. 
 
 Connect the power connector K8 of your Lisy_Mini board to the 5V supply of your pinball machine. (You can also supply Lisy_Mini by the micro USB port of the Pi. In this case you need a 2A capable power supply and you should power up Lisy after the APC and connect the USB cable then.)
 
