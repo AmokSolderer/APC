@@ -59,7 +59,7 @@ To make the APC use this interface, you have to set the 'PinMame Sound' setting 
 To run the software you need at least the Arduino IDE with the SPI and the SdFat libraries installed.
 
 In order to test your HW you have two options:  
-The first one is to use a terminal program (like Hterm) to connect your PC to the APC. Then you can use the commands of the [Lisy-API](http://docs.missionpinball.org/en/latest/hardware/lisy/protocol.html) to control the APC and do some tests. For this the system has to be in USBcontrol mode and the communications have to be set to USB which are the default settings.
+The first one is to use a terminal program (like Hterm) to connect your PC to the APC. Then you can use the commands of the [Lisy-API](http://docs.missionpinball.org/en/latest/hardware/lisy/protocol.html) to control the APC and do some tests. For this the system has to be in Remote Control mode and the communications have to be set to USB which are the default settings.
 The second option is to use the software as it is. For this you have to change your game to the Base Code mode  which should be enough to test the board, as it is described in the Board assembly help. To activate the BaseCode keep the Advance button pressed until you're in the settings. Enter the 'System Settings' by pressing the Game Start button, then Advance to proceed to the 'Active Game' setting and Game Start to change it to 'Base Code'. Use Advance to select 'Exit Settings' and Game Start to confirm. If an SD card is connected then the settings will be stored.  
 A list of the avaiable settings can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md).
 

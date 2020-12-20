@@ -20,6 +20,8 @@ APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJ
 
 * Support for System7 displays has been added.
 
+* USBcontrol mode has been renamed to Remote Control Mode as the APC 3 can also be controlled by the on board Pi.
+
 ### Misc
 
 * Sound files for Black Knight and Jungle Lord are available on request. They can be used with PinMame or as a basis for own games.
