@@ -6,16 +6,25 @@ SdFat SD;
 #define UpDown 53                                			// arduino pin connected to the auto/up - manual/Down button
 #define Blanking  22		                              // arduino pin to control the blanking signal
 #define VolumePin 13																	// arduino pin to control the sound volume
-#define AllSelects 871346688							           	// mask for all port C pins belonging to select signals except special switch select
+#define SwMax 72                                 			// number of existing switches (max. 72)
+#define LampMax 64                               			// number of existing lamps (max. 64)
+#define DispColumns 16                           			// Number of columns of the used display unit
+#define AllSelects 871338496							           	// mask for all port C pins belonging to select signals except special switch Sel13 and HW_ext latch select Sel14
 #define Sel5 2097152																	// mask for the Sel5 select signal
 #define HwExtSels 606077440														// mask for all Hw extension port select signals
+#define Sel14 8192																		// mask for the Sel14 select signal
+#define Sel13 16384																		// mask for the Sel13 select signal
 #define AllData 510
 #define HwExtStackPosMax 20														// size of the HwExtBuffer
 
-const char APC_Version[6] = "00.13";                  // Current APC version - includes the other INO files also
-const int SwMax = 72;                                 // number of existing switches (max. 72)
-const int LampMax = 64;                               // number of existing lamps (max. 64)
-const int DispColumns = 16;                           // Number of columns of the used display unit
+const char APC_Version[6] = "00.20";                  // Current APC version - includes the other INO files also
+
+void HandleBoolSetting(bool change);
+void HandleTextSetting(bool change);
+void HandleNumSetting(bool change);
+void HandleVolumeSetting(bool change);
+void RestoreDefaults(bool change);
+void ExitSettings(bool change);
 
 const byte AlphaUpper[128] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
 		63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,136,0,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
@@ -61,7 +70,7 @@ byte SwEvents[2];                                     // contains the number of 
 uint32_t SwitchRows[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the status of all switch rows
 const byte *DispRow1;                                 // determines which patterns are to be shown (2 lines with 16 chars each)
 const byte *DispRow2;
-const byte *DispPattern1;
+const byte *DispPattern1;															// points to the correct character patterns for this kind of display
 const byte *DispPattern2;
 byte DisplayUpper[32];                                // changeable display buffer
 byte DisplayLower[32];
@@ -89,6 +98,7 @@ byte BlinkingNo[65];                                  // number of lamps using t
 bool BlinkState[65];                                  // current state of the lamps of this blink timer
 unsigned int BlinkPeriod[65];                         // blink period for this timer
 byte BlinkingLamps[65][65];                           // [BlinkTimer] used by these [lamps]
+byte SolMax = 24;																			// maximum number of solenoids
 bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
 byte SolLatch = 0;																		// Indicates which solenoid latches must be updated
 bool C_BankActive = false;														// A/C relay currently doing C bank?
@@ -111,7 +121,6 @@ void (*TimerEvent[64])(byte);                         // pointers to the procedu
 void (*TimerBuffer)(byte);
 void (*Switch_Pressed)(byte);                         // Pointer to current behavior mode for activated switches
 void (*Switch_Released)(byte);                        // Pointer to current behavior mode for released switches
-void (*SerialCommand)();															// Pointer to the serial command handler (0 if serial command mode is off)
 char EnterIni[3];
 byte HwExt_Buf[20][2];																// ringbuffer for bytes to be send to the HW_ext interface (first bytes specifies the select line to be activated
 byte HwExtIRQpos = 0;																	// next buffer position for the interrupt to work on
@@ -143,16 +152,24 @@ byte SoundPriority = 0;																// stores the priority of the sound file 
 bool SoundPrio = false;																// indicates which channel has to be processed first
 char *NextSoundName;
 const char TestSounds[3][15] = {{"MUSIC.BIN"},{"SOUND.BIN"},0};
+byte APC_settings[64];																// system settings to be stored on the SD
+byte game_settings[64];																// game settings to be stored on the SD
+byte *SettingsPointer;																// points to the settings being changed
+const char *SettingsFileName;													// points to the settings file currently being edited
+const unsigned long SwitchMask[8] = {65536, 16777216, 8388608, 4194304, 64, 16, 8, 4};
+uint16_t SwDrvMask = 2;                               // mask for switch row select
+byte SolBuffer[4];                                    // stores the state of the solenoid latches + solenoid_exp board
+bool OnBoardCom = false;															// on board Pi detected?
 
 struct SettingTopic {																	// one topic of a list of settings
 	char Text[17];																			// display text
 	void (*EventPointer)(bool);													// Pointer to the subroutine to process this topic
-	char *TxTpointer;																		// if text setting -> pointer to a text array
+	const char *TxTpointer;															// if text setting -> pointer to a text array
 	byte LowerLimit;																		// if num setting -> lower limit of selection value
 	byte UpperLimit;};																	// if text setting -> amount of text entries -1 / if num setting -> upper limit of selection value
 
 const char APC_set_file_name[13] = "APC_SET.BIN";
-const byte APC_defaults[64] =  {0,3,3,1,0,0,0,0,		 	// system default settings
+const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,		 	// system default settings
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,
@@ -165,30 +182,35 @@ const byte APC_defaults[64] =  {0,3,3,1,0,0,0,0,		 	// system default settings
 #define ActiveGame  1																	// Select the active game
 #define NofBalls  2																		// Balls per game
 #define FreeGame  3																		// Free game mode?
-#define DimInserts  4                       		     	// Reduce lighting time of playfield lamps by 50%
-#define Volume  5                         		    		// Volume of the speaker
-#define LEDsetting  6                         		   	// Setting for the APC_LED_EXP board
-#define DebugMode  7                            		 	// debug mode enabled?
+#define ConnType  4																		// Remote control mode?
+#define DimInserts  5                       		     	// Reduce lighting time of playfield lamps by 50%
+#define Volume  6                         		    		// Volume of the speaker
+#define LEDsetting  7                         		   	// Setting for the APC_LED_EXP board
+#define SolenoidExp	8																	// Solenoid expander present?
+#define DebugMode  9                            		 	// debug mode enabled?
 
-char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"  USB  CONTROL  "},{"   TUTORIAL     "}};
-char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
-char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{"123456123456    "},{"12345671234567  "}};
+const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{"   TUTORIAL     "}};
+const char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
+const char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{"123456123456    "},{"12345671234567  "}};
+const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 
-struct SettingTopic APC_setList[11] = {
-		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,6},
+const struct SettingTopic APC_setList[13] = {
+		{"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,7},
 		{" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
 		{" NO OF  BALLS   ",HandleNumSetting,0,1,5},
 		{"  FREE  GAME    ",HandleBoolSetting,0,0,0},
+		{"CONNECT TYPE    ",HandleTextSetting,&TxTConType[0][0],0,2},
 		{"  DIM  INSERTS  ",HandleBoolSetting,0,0,0},
 		{"SPEAKER VOLUME  ",HandleVolumeSetting,0,0,255},
 		{"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,2},
+		{"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
 		{"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS  ",ExitSettings,0,0,0},
 		{"",NULL,0,0,0}};
 
 struct GameDef {
-	struct SettingTopic *GameSettingsList;							// points to the settings definition of the current game
+	const struct SettingTopic *GameSettingsList;				// points to the settings definition of the current game
 	byte *GameDefaultsPointer;													// points to the default settings of the selected game
 	const char *GameSettingsFileName;										// points to the name of the settings file for the selected game
 	const char *HighScoresFileName;											// contains the name of the high scores file for the selected game
@@ -197,7 +219,7 @@ struct GameDef {
 };
 
 struct GameDef GameDefinition;												// invoke a game definition structure
-struct SettingTopic *SettingsList;										// points to the current settings menu list
+const struct SettingTopic *SettingsList;							// points to the current settings menu list
 
 // game variables
 
@@ -221,22 +243,17 @@ byte AppByte;                                         // general purpose applica
 byte AppByte2;                                        // general purpose application buffer
 byte AppByte3;                                        // general purpose application buffer
 bool AppBool = false;                                 // general purpose application bool
-byte APC_settings[64];																// system settings to be stored on the SD
-byte game_settings[64];																// game settings to be stored on the SD
-byte *SettingsPointer;																// points to the settings being changed
-const char *SettingsFileName;													// points to the settings file currently being edited
-const unsigned long SwitchMask[8] = {65536, 16777216, 8388608, 4194304, 64, 16, 8, 4};
-uint16_t SwDrvMask = 2;                               // mask for switch row select
-byte SolBuffer[3];                                    // stores the state of the solenoid latches
+
 
 void setup() {
 	pinMode(Blanking, OUTPUT);                          // initialize blanking pin
 	pinMode(VolumePin, OUTPUT);                         // initialize volume PWM pin
+	pinMode(2, INPUT);																	// pin for onboard PI detection
 	digitalWrite(Blanking, LOW);                        // and activate the blanking
 	digitalWrite(VolumePin, HIGH);                      // set volume to 0
 	pinMode(UpDown, INPUT);                          		// initialize Up/Down pin
-	Serial.begin(115200);
-	SPI.begin();
+	//Serial.begin(115200);																// needed for USB and serial communication
+	SPI.begin();																				// needed for SD card handling
 	REG_PIOC_PER = 871363582;                           // set required Port C pins to controlled In/Out
 	REG_PIOC_PUDR = 871363582;                          // disable Pull-ups
 	REG_PIOC_OER = 871363582;                           // set pins to outputs
@@ -244,12 +261,15 @@ void setup() {
 	REG_PIOA_PUDR = 29425756;														// disable Pull-ups
 	REG_PIOA_ODR = 29425756;														// set pins to inputs
 	REG_PIOA_OER = 524288;                              // set pin 19 to output (DisBlank)
-	REG_PIOD_PER = 15;                            			// set required Port D pins to controlled In/Out
-	REG_PIOD_PUDR = 15;                           			// disable Pull-ups
+	REG_PIOD_PER = 47;                            			// set required Port D pins to controlled In/Out
+	REG_PIOD_PUDR = 47;                           			// disable Pull-ups
+	REG_PIOD_ODR = 32;																	// set RX3 to input
 	REG_PIOD_OER = 15;                            			// set pins to outputs
 	REG_PIOD_CODR = 15;                               	// clear strobe select signals
 	REG_PIOC_CODR = AllSelects;                       	// clear all select signals
-	REG_PIOC_SODR = 16384;                            	// set the special switch select (low active)
+	REG_PIOC_SODR = AllData;														// set all pins of the HW_ext bus to high to suppress sounds from Sys7 sound boards
+	REG_PIOC_SODR = Sel13 + Sel14;                      // set the special switch select (Sel13 - low active) and the HW_ext_latch (Sel14)
+	REG_PIOC_CODR = Sel14;															// deselect the HW_ext_latch
 	REG_PIOC_CODR = AllSelects + AllData;               // clear all select signals and the data bus
 	REG_PIOC_SODR = AllData - SwDrvMask;                // put select pattern on data bus
 	REG_PIOC_SODR = 32768;                              // use Sel12
@@ -330,7 +350,7 @@ void Init_System() {
 	delay(2000);
 	Init_System2(0);}
 
-void Init_System2(byte State) {
+void Init_System2(byte State) {												// state = 0 will restore the settings if no card is found
 	switch(APC_settings[ActiveGame]) {									// init calls for all valid games
 	case 0:
 		BC_init();
@@ -374,6 +394,13 @@ void Init_System2(byte State) {
 			for(i=0;i<64;i++) {
 				game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
 	digitalWrite(VolumePin,HIGH);										    // turn off the digital volume control
+	if (APC_settings[SolenoidExp]) {										// solenoid exp board selected?
+		REG_PIOC_SODR = Sel14;														// enable the HW_ext_latch
+		SolMax = 33;}																			// enable 8 more solenoids
+	else {
+		SolMax = 25;}
+	if (APC_settings[LEDsetting]) {
+		REG_PIOC_SODR = Sel14;}														// enable the HW_ext_latch
 	if (State) {
 		ActivateTimer(2000, 0, EnterAttractMode);}
 	else {
@@ -392,7 +419,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 	static uint16_t LampColMask = 2;                    // mask for lamp column select
 	static bool LEDFlag;																// stores whether the select has to be triggered by the rising or falling edge
 	static byte LEDCount = 0;														// points to the next command byte to be send to the LED exp board
-	const uint32_t HwExtSelMask[4] = {2097152, 536870912, 512, 67108864}; // mask for sel5, sel6, sel7, SPI_CS1
+	const uint32_t HwExtSelMask[5] = {2097152, 536870912, 512, 67108864, 8192}; // mask for sel5, sel6, sel7, SPI_CS1, Sel14
 	int i;                                              // general purpose counter
 	uint32_t Buff;
 	uint16_t c;
@@ -403,6 +430,27 @@ void TC7_Handler() {                                  // interrupt routine - run
 	if (APC_settings[DimInserts] || (LampWait == LampPeriod)) { // if inserts have to be dimmed or waiting time has passed
 		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
 		REG_PIOC_SODR = 268435456;}                   		// use Sel0 to disable column driver outputs at half time
+
+	// Display columns
+
+	//REG_PIOA_SODR = 524288;                            // disable latch outputs to hide writing cycle
+	if (APC_settings[DisplayType] < 6) {								// Sys11 display
+		if (APC_settings[DisplayType] == 3)								// BK2K type display with inverted segments
+			REG_PIOC_SODR = AllData;
+		else																							// all other Sys11 displays
+			REG_PIOC_CODR = AllData;
+		REG_PIOC_SODR = 983040;}													// use Sel8 - 11
+	else {																							// Sys7 - 9 display
+		REG_PIOC_SODR = AllData;
+		REG_PIOC_SODR = 131072;                           // use Sel10
+		REG_PIOC_CODR = AllData;
+		REG_PIOC_SODR = 65536;}                           // use Sel11
+	if (DispCol == (DispColumns-1)) {               		// last display column reached?
+		DispCol = 0;}                                 		// start again from column 0
+	else {
+		DispCol++;}                                   		// prepare for next column
+	REG_PIOD_CODR = 15;                               	// clear strobe select signals
+	REG_PIOD_SODR = DispCol;                          	// set display column
 
 	// Switches
 
@@ -454,48 +502,6 @@ void TC7_Handler() {                                  // interrupt routine - run
 			SwDrv = 0;
 			REG_PIOC_SODR = 32768+16384;}}                	// use Sel12 and disable Sel13
 
-	// Display
-
-	REG_PIOA_SODR = 524288;                             // disable latch outputs to hide writing cycle
-	if (DispCol == (DispColumns-1)) {               		// last display column reached?
-		DispCol = 0;}                                 		// start again from column 0
-	else {
-		DispCol++;}                                   		// prepare for next column
-	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
-		REG_PIOD_CODR = 15;                               // clear strobe select signals
-		REG_PIOD_SODR = DispCol;                          // set display column
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		byte Buf = ~(*(DispRow1+2*DispCol));
-		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the upper row
-		REG_PIOC_SODR = 524288;                           // use Sel8
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		Buf = ~(*(DispRow1+2*DispCol+1));
-		REG_PIOC_SODR = Buf<<1;                           // set 2nd byte of the display pattern for the upper row
-		REG_PIOC_SODR = 262144;                           // use Sel9
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		Buf = ~(*(DispRow2+2*DispCol));
-		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
-		REG_PIOC_SODR = 131072;                           // use Sel10
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		Buf = ~(*(DispRow2+2*DispCol+1));
-		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
-		REG_PIOC_SODR = 65536;}                           // use Sel11
-	else {
-		REG_PIOD_CODR = 15;                               // clear strobe select signals
-		REG_PIOD_SODR = DispCol;                          // set display column
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		REG_PIOC_SODR = *(DispRow1+2*DispCol)<<1;         // set 1st byte of the display pattern for the upper row
-		REG_PIOC_SODR = 524288;                           // use Sel8
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		REG_PIOC_SODR = *(DispRow1+2*DispCol+1)<<1;       // set 2nd byte of the display pattern for the upper row
-		REG_PIOC_SODR = 262144;                           // use Sel9
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		REG_PIOC_SODR = *(DispRow2+2*DispCol)<<1;         // set 1st byte of the display pattern for the lower row
-		REG_PIOC_SODR = 131072;                           // use Sel10
-		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
-		REG_PIOC_SODR = *(DispRow2+2*DispCol+1)<<1;       // set 1st byte of the display pattern for the lower row
-		REG_PIOC_SODR = 65536;}                           // use Sel11
-
 	// Timers
 
 	if (!BlockTimers) {
@@ -538,8 +544,44 @@ void TC7_Handler() {                                  // interrupt routine - run
 		SolLatch = 0;
 		SolChange = false;}																// reset flag
 
-	REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
+	// REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
 	REG_PIOC_CODR = AllSelects - HwExtSels + AllData;   // clear all select signals and the data bus
+
+	// Display segments
+
+	if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		byte Buf = ~(*(DispRow1+2*DispCol));
+		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the upper row
+		REG_PIOC_SODR = 524288;                           // use Sel8
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		Buf = ~(*(DispRow1+2*DispCol+1));
+		REG_PIOC_SODR = Buf<<1;                           // set 2nd byte of the display pattern for the upper row
+		REG_PIOC_SODR = 262144;                           // use Sel9
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		Buf = ~(*(DispRow2+2*DispCol));
+		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 131072;                           // use Sel10
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		Buf = ~(*(DispRow2+2*DispCol+1));
+		REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 65536;}                           // use Sel11
+	else {
+		//REG_PIOD_CODR = 15;                               // clear strobe select signals
+		//REG_PIOD_SODR = DispCol;                          // set display column
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		REG_PIOC_SODR = *(DispRow1+2*DispCol)<<1;         // set 1st byte of the display pattern for the upper row
+		REG_PIOC_SODR = 524288;                           // use Sel8
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		REG_PIOC_SODR = *(DispRow1+2*DispCol+1)<<1;       // set 2nd byte of the display pattern for the upper row
+		REG_PIOC_SODR = 262144;                           // use Sel9
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		REG_PIOC_SODR = *(DispRow2+2*DispCol)<<1;         // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 131072;                           // use Sel10
+		REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
+		REG_PIOC_SODR = *(DispRow2+2*DispCol+1)<<1;       // set 1st byte of the display pattern for the lower row
+		REG_PIOC_SODR = 65536;}                           // use Sel11
+	REG_PIOC_CODR = AllSelects - HwExtSels + AllData; 	// clear all select signals and the data bus
 
 	// Lamps
 
@@ -586,8 +628,8 @@ void TC7_Handler() {                                  // interrupt routine - run
 					else {
 						LEDFlag = true;
 						WriteToHwExt(LEDCommand[LEDCount], 129);}
-					LEDCount++;                                 	// increase the counter
-					if (LEDCount == LEDCommandBytes) {          	// not all command bytes sent?
+					LEDCount++;                                 // increase the counter
+					if (LEDCount == LEDCommandBytes) {          // not all command bytes sent?
 						LEDCommandBytes = 0;
 						LEDCount = 0;}}}
 			else {                                          // LampCol > 13
@@ -610,15 +652,15 @@ void TC7_Handler() {                                  // interrupt routine - run
 		c = HwExt_Buf[HwExtIRQpos][0];										// get data byte
 		REG_PIOC_SODR = c<<1;															// and put it on the data bus
 		if (HwExt_Buf[HwExtIRQpos][1] & 128) {						// rising select edge requested?
-			for (i=0;i<4;i++) {															// for all HwExt selects
+			for (i=0;i<5;i++) {															// for all HwExt selects
 				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
-					REG_PIOC_SODR = HwExtSelMask[i];						// generate a rising edge
-					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}	// shift to the next bit
+					REG_PIOC_SODR = HwExtSelMask[i];}						// generate a rising edge
+				HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}	// shift to the next bit
 		else {																						// falling select edge requested
-			for (i=0;i<4;i++) {															// for all HwExt selects
+			for (i=0;i<5;i++) {															// for all HwExt selects
 				if (HwExt_Buf[HwExtIRQpos][1] & 1) {					// is the corresponding bit set?
-					REG_PIOC_CODR = HwExtSelMask[i];						// generate a falling edge
-					HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}}	// shift to the next bit
+					REG_PIOC_CODR = HwExtSelMask[i];}						// generate a falling edge
+				HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}	// shift to the next bit
 
 	// Sound
 
@@ -789,8 +831,13 @@ void loop() {
 					AfterSoundPending = 0;
 					if (AfterSound) {
 						AfterSound();}}}}}
-	if (SerialCommand && Serial.available()) {					// USB command mode
-		SerialCommand();}}																// use the first received byte as a command
+	if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) { 	// Remote mode?
+		if (APC_settings[ConnType] == 1) {								// onboard Pi selected?
+			if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {	// onboard com off and Pi detected?
+				Serial3.begin(115200);												// needed for onboard serial communication
+				OnBoardCom = true;}}
+		if(USB_Available()) {
+			USB_SerialCommand();}}}													// use the first received byte as a command
 
 void ReadMusic() {																		// read music data from SD
 	if (MusicFile.available() > 255) {									// enough data remaining in file to fill one block?
@@ -931,22 +978,28 @@ bool WriteToHwExt(byte Data, byte Selects) {					// write data and selects to ri
 
 byte ConvertNumUpper(byte Number, byte Pattern) {			// convert a number to be shown in the upper row of numerical displays
 	const byte NumMaskUpper[5] = {184,64,4,2,1};				// Bitmasks for the upper row of numerical displays
-	byte Mask = 1;
-	Pattern &= NumMaskUpper[0];													// clear all bits belonging to this digit
-	for (byte c=1;c<5;c++) {														// for 4 bit
-		if (Number & Mask) {															// check bits from number
-			Pattern |= NumMaskUpper[c];}										// apply the corresponding bitmask
-		Mask = Mask << 1;}
+	if (Number > 200) {																	// show blank?
+		Pattern |= (255 - NumMaskUpper[0]);}							// set all bits belonging to this digit
+	else {																							// no blank
+		byte Mask = 1;
+		Pattern &= NumMaskUpper[0];												// clear all bits belonging to this digit
+		for (byte c=1;c<5;c++) {													// for 4 bit
+			if (Number & Mask) {														// check bits from number
+				Pattern |= NumMaskUpper[c];}									// apply the corresponding bitmask
+			Mask = Mask << 1;}}
 	return Pattern;}
 
 byte ConvertNumLower(byte Number, byte Pattern) {			// convert a number to be shown in the lower row of numerical displays
 	const byte NumMaskLower[5] = {71,16,8,128,32};			// Bitmasks for the lower row of numerical displays
-	byte Mask = 1;
-	Pattern &= NumMaskLower[0];													// clear all bits belonging to this digit
-	for (byte c=1;c<5;c++) {														// for 4 bit
-		if (Number & Mask) {															// check bits from number
-			Pattern |= NumMaskLower[c];}										// apply the corresponding bitmask
-		Mask = Mask << 1;}
+	if (Number > 200) {																	// show blank
+		Pattern |= (255 - NumMaskLower[0]);}							// set all bits belonging to this digit
+	else {																							// no blank
+		byte Mask = 1;
+		Pattern &= NumMaskLower[0];												// clear all bits belonging to this digit
+		for (byte c=1;c<5;c++) {													// for 4 bit
+			if (Number & Mask) {														// check bits from number
+				Pattern |= NumMaskLower[c];}									// apply the corresponding bitmask
+			Mask = Mask << 1;}}
 	return Pattern;}
 
 byte ConvertPattern(byte Select, byte Pattern) {			// convert the main display pattern to those of the lower row etc
@@ -1018,19 +1071,19 @@ void WritePlayerDisplay(char* DisplayText, byte Player) {	// write ASCII text to
 				for (i=0;i<7;i++) {														// for all digits
 					if (*(DisplayText+i) & 128) {								// comma set?
 						*(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) (*(DisplayText+i) & 127)-48,(byte) *(DisplayLower+2+16*Player+2*i));
-						*(DisplayLower+3+16*Player+2*i) = 128;}
+						*(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) | 1;}
 					else {
 						*(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));
-						*(DisplayLower+3+16*Player+2*i) = 0;}}}
+						*(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) & 254;}}}
 			else {																					// lower row
 				Player = Player - 3;
 				for (i=0;i<7;i++) {														// for all digits
 					if (*(DisplayText+i) & 128) {								// comma set?
 						*(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) (*(DisplayText+i) & 127)-48,(byte) *(DisplayLower+2+16*Player+2*i));
-						*(DisplayLower+3+16*Player+2*i) = 1;}
+						*(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) | 128;}
 					else {
 						*(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+16*Player+2*i));
-						*(DisplayLower+3+16*Player+2*i) = 0;}}}}
+						*(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) & 127;}}}}
 		else {																						// credit display
 			*(DisplayLower) = ConvertNumUpper((byte) *(DisplayText)-48,(byte) *(DisplayLower));
 			*(DisplayLower+16) = ConvertNumUpper((byte) *(DisplayText+1)-48,(byte) *(DisplayLower+16));
@@ -1228,8 +1281,11 @@ void DelaySolenoid(byte Solenoid) {                   // activate solenoid after
 	ActivateSolenoid(0, Solenoid);}
 
 void ReleaseAllSolenoids() {
-	for (i=0; i< 3; i++) {															// clear all solenoid buffers
+	for (i=0; i< 4; i++) {															// clear all solenoid buffers
 		SolBuffer[i] = 0;}
+	if (APC_settings[SolenoidExp]) {										// sol exp board selected
+		WriteToHwExt(0, 128+4);
+		WriteToHwExt(0, 4);}
 	ReleaseSolenoid(1);																	// release one solenoid of each buffer
 	ReleaseSolenoid(9);
 	ReleaseSolenoid(17);}
@@ -1506,7 +1562,7 @@ void DisplayScore (byte Position, unsigned int Score) {
 						*(DisplayLower+Buffer1+10) = ConvertNumLower(0, (byte) *(DisplayLower+Buffer1+12));}}
 				break;}}
 
-void ShowNumber(byte Position, unsigned int Number) {
+void ShowNumber(byte Position, unsigned int Number) {	// write a number into the second display buffer
 	byte Buffer = 0;
 	byte i = 0;
 	if (Number) {
@@ -1636,12 +1692,6 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
 void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3) {
 	WriteUpper2("ERROR           ");                    // Show Error Message
 	WriteLower2("                ");
-	Serial.print("Error = ");
-	Serial.println(Error);
-	Serial.print("Number2 = ");
-	Serial.println(Number2);
-	Serial.print("Number3 = ");
-	Serial.println(Number3);
 	ShowNumber(15, Error);
 	ShowNumber(23, Number2);
 	ShowNumber(31, Number3);
@@ -1650,6 +1700,12 @@ void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3
 		LampPattern = NoLamps;                            // Turn off all lamps
 		KillAllTimers();
 		ReleaseAllSolenoids();
+		Serial.print("Error = ");
+		Serial.println(Error);
+		Serial.print("Number2 = ");
+		Serial.println(Number2);
+		Serial.print("Number3 = ");
+		Serial.println(Number3);
 		while(true) {}}}
 
 void ShowFileNotFound(String Filename) {							// show file not found message
@@ -1740,6 +1796,7 @@ void PlayMusic(byte Priority, const char* Filename) {
 void StopPlayingMusic() {
 	if (StartMusic || PlayingMusic) {
 		MusicFile.close();
+		MusicPriority = 0;
 		if (StartMusic) {																	// during startup
 			StartMusic = 0;																	// cancel startup
 			MBP = 0;}																				// neglect data
@@ -1779,8 +1836,8 @@ void PlaySound(byte Priority, const char* Filename) {
 			SoundFile.read(SoundBuffer, 2*128);							// read first block
 			StartSound = true;															// indicate the startup phase
 			SBP++;}}																				// increase read pointer
-	else {																							// music already playing
-		if (Priority > 99) {															// Priority > 99 means new prio has to be larger (not equal) to play
+	else {																							// sound already playing
+		if (Priority > 99) {															// Priority > 99 means new prio has to be higher (not equal) to play
 			Priority = Priority - 100;
 			if (Priority > SoundPriority) {
 				SoundPriority = Priority;
@@ -1807,6 +1864,7 @@ void PlaySound(byte Priority, const char* Filename) {
 void StopPlayingSound() {
 	if (StartSound || PlayingSound) {
 		SoundFile.close();
+		SoundPriority = 0;
 		if (StartSound) {																	// during startup
 			StartSound = 0;																	// cancel startup
 			SBP = 0;}																				// neglect data
@@ -1816,7 +1874,7 @@ void StopPlayingSound() {
 
 void PlayRandomSound(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
-	PlaySound(Priority, List+Amount*12);}
+	PlaySound(Priority, List+Amount*13);}
 
 void PlayNextSound() {
 	PlaySound(50, NextSoundName);}
@@ -1838,7 +1896,7 @@ void SelectSettings(byte Switch) {										// select system or game settings
 		if ((APC_settings[DisplayType] != 2) && (APC_settings[DisplayType] != 3) && (APC_settings[DisplayType] != 4) && (APC_settings[DisplayType] != 5)) { // No Credit display
 			byte CreditBuffer[4];
 			CreditBuffer[0] = 48;
-			CreditBuffer[1] = 49;
+			CreditBuffer[1] = 48;
 			CreditBuffer[2] = 48;
 			CreditBuffer[3] = 48;
 			WritePlayerDisplay((char*) CreditBuffer, 0);}
@@ -1863,7 +1921,7 @@ void SelectSettings(byte Switch) {										// select system or game settings
 			if (APC_settings[DisplayType] != 3) {						// not a BK2K display?
 				byte CreditBuffer[4];
 				CreditBuffer[0] = 48;
-				CreditBuffer[1] = 49;
+				CreditBuffer[1] = 48;
 				CreditBuffer[2] = 48;
 				CreditBuffer[3] = 48;
 				WritePlayerDisplay((char*) CreditBuffer, 0);}
@@ -1874,7 +1932,7 @@ void SelectSettings(byte Switch) {										// select system or game settings
 			if (APC_settings[DisplayType] != 3) {						// not a BK2K display?
 				byte CreditBuffer[4];
 				CreditBuffer[0] = 48;
-				CreditBuffer[1] = 50;
+				CreditBuffer[1] = 49;
 				CreditBuffer[2] = 48;
 				CreditBuffer[3] = 48;
 				WritePlayerDisplay((char*) CreditBuffer, 0);}
@@ -1916,13 +1974,13 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 	case 0:																							// show the current setting
 		if (APC_settings[DisplayType] != 3) {							// not a Sys11c display?
 			if (APC_settings[DisplayType] > 5) {						// numerical display?
-				*(DisplayLower) = ConvertNumLower((byte) ((AppByte+1) - ((AppByte+1) % 10)) / 10,(byte) *(DisplayLower));
-				*(DisplayLower+16) = ConvertNumLower((byte) ((AppByte+1) % 10),(byte) *(DisplayLower+16));}
+				*(DisplayLower) = ConvertNumLower((byte) ((AppByte) - ((AppByte) % 10)) / 10,(byte) *(DisplayLower));
+				*(DisplayLower+16) = ConvertNumLower((byte) ((AppByte) % 10),(byte) *(DisplayLower+16));}
 			else {
-				*(DisplayLower) = RightCredit[32+2*(((AppByte+1) - ((AppByte+1) % 10)) / 10)];
-				*(DisplayLower+1) = RightCredit[32+2*(((AppByte+1) - ((AppByte+1) % 10)) / 10)+1];
-				*(DisplayLower+16) = RightCredit[32+2*((AppByte+1) % 10)];
-				*(DisplayLower+17) = RightCredit[32+2*((AppByte+1) % 10)+1];}}
+				*(DisplayLower) = RightCredit[32+2*(((AppByte) - ((AppByte) % 10)) / 10)];
+				*(DisplayLower+1) = RightCredit[32+2*(((AppByte) - ((AppByte) % 10)) / 10)+1];
+				*(DisplayLower+16) = RightCredit[32+2*((AppByte) % 10)];
+				*(DisplayLower+17) = RightCredit[32+2*((AppByte) % 10)+1];}}
 		WriteUpper( SettingsList[AppByte].Text);					// show the text
 		SettingsList[AppByte].EventPointer(false);				// call the corresponding method and indicate no changes
 		break;

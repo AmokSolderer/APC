@@ -36,10 +36,10 @@ const byte PB_ScoreEnergySeq[7] = {31,10,31,10,31,10,0};
 const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
 																{32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
-const char PB_GameMusic[6][12] = {{"BS_M03.BIN"},{"BS_M05.BIN"},{"BS_M06.BIN"},{"BS_M07.BIN"},{"BS_M08.BIN"},{"BS_M09.BIN"}};
+const char PB_GameMusic[6][13] = {{"BS_M03.BIN"},{"BS_M05.BIN"},{"BS_M06.BIN"},{"BS_M07.BIN"},{"BS_M08.BIN"},{"BS_M09.BIN"}};
 const byte PB_ACselectRelay = 14;											// solenoid number of the A/C select relay
 
-struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
+const struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
 		{" REACH PLANET ",HandleNumSetting,0,1,9},
 		{" ENERGY TIMER ",HandleNumSetting,0,1,90},
 		{"MULTBALVOLUME ",PB_HandleVolumeSetting,0,0,30},
@@ -194,6 +194,8 @@ struct GameDef PB_GameDefinition = {
 		PB_SolTimes};																			// Default activation times of solenoids
 
 void PB_init() {
+	if (APC_settings[DebugMode]) {											// activate serial interface in debug mode
+		Serial.begin(115200);}
 	ACselectRelay = PB_ACselectRelay;										// assign the number of the A/C select relay
 	GameDefinition = PB_GameDefinition;}								// read the game specific settings and highscores
 
@@ -345,6 +347,8 @@ void PB_AttractModeSW(byte Select) {
 		KillAllTimers();
 		LampPattern = NoLamps;                          	// Turn off all lamps
 		ReleaseAllSolenoids();
+		if (APC_settings[DebugMode]) {										// deactivate serial interface in debug mode
+			Serial.end();}
 		if (!QuerySwitch(73)) {														// Up/Down switch pressed?
 			WriteUpper("  TEST  MODE  ");
 			WriteLower("              ");
@@ -1385,12 +1389,13 @@ void PB_CycleDropLights(byte State) {									// State = 0 -> Stop / State = 1 -
 				PB_DropBlinkLamp++;}													// increase number of currently blinking lamp
 			Timer = ActivateTimer(3000, 2, PB_CycleDropLights);}}
 	else {
-		if (Timer) {
-			KillTimer(Timer);
-			Timer = 0;}
-		if (PB_DropBlinkLamp) {														// blink lamp active?
-			RemoveBlinkLamp(PB_DropBlinkLamp);
-			PB_DropBlinkLamp = 0;}}}
+		if (!State) {																			// stop command
+			if (Timer) {
+				KillTimer(Timer);
+				Timer = 0;}
+			if (PB_DropBlinkLamp) {													// blink lamp active?
+				RemoveBlinkLamp(PB_DropBlinkLamp);
+				PB_DropBlinkLamp = 0;}}}}
 
 void PB_PlayGameMusic() {
 	PlayRandomMusic(50, 6, (char *)PB_GameMusic);}
@@ -1913,7 +1918,7 @@ void PB_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 			*(DisplayLower+31) = DispPattern2[(' '-32)*2+1];
 			if (QuerySwitch(73)) {													// Up/Down switch pressed?
 				Solenoid++;                                   // increase the solenoid counter
-				if (Solenoid == 22) {                         // maximum reached?
+				if (Solenoid > 22) {                         	// maximum reached?
 					Solenoid = 1;}}}}                           // then start again
 	AppByte2 = ActivateTimer(1000, Solenoid, PB_FireSolenoids);}   // come back in one second
 
