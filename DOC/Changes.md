@@ -16,7 +16,7 @@ APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJ
 
 * Display blanking for the various display types is now handled by SW which makes jumper JP1 and the resistor arrays RR2 - RR5 obsolete. This does also work for APC 2.x boards.
 
-* The functionality of pre System11 sound boards has been modelled. This make it easier to use the PinMame sound of System 3 - 9 machines. For Systems 3 - 7 it is also possible to use to original audio boards.
+* The functionality of pre System11 sound boards has been modelled. This make it easier to use the PinMame sound of System 3 - 9 machines. For Systems 3 - 7 it is also possible to use the original audio boards.
 
 * Support for System7 displays has been added.
 

@@ -53,7 +53,7 @@ I have written game codes for my Black Knight and Pinbot. They are still not fin
 
 Please note that I have equipped my Black Knight with a [special kind of display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha) and that advanced APC commands like scrolling are currently not usable with pre System11 displays. This is because I think that these displays are not suited for homebrew machines. If you do all the work needed to do your own game code, you'd for sure want to have a display with letters, otherwise you wouldn't be able to even have a decent high score list. Additionally it would be quite cumbersome to debug some game software without the display being able to show letters. Therfore I recommend to use an early System11 display which has at least one row with alphanumeric displays (or build my System7Alpha). However, the basic software support is implemented, which means you can use the old displays without any restrictions you just have to do a bit more coding to get all the features. And if you just want to use them with PinMame to replace your old boards these displays will work perfectly well as soon as the PinMame support is completely done.
 
-### Hardware
+## Hardware
 
 The APC hardware status is mature. I have version 2.0 in use since January 2018 without anything to complain about. You can find the schematics, BOM and layout data in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware). There have been some minor HW updates which are explained in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md).
 
