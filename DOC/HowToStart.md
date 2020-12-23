@@ -99,19 +99,7 @@ If you have a pre System11 machine with numerical displays or a System11 2x16 di
 
 Even if your display works from the start you should enter the settings and browse through them to do a basic test of your switch circuitry.
 
-If displays and switches are working you can proceed to the lamps. So turn off your machine and connect the following connectors:
-
-| Connector name | Number for System 3 - 7 | Number for System 9 + 11 |
-|--|--|--|
-| Lamp B+ | 2J4 | 1J4 |
-| Lamp GND | 2J6 | 1J5 |
-| Lamp Strobes | 2J5 | 1J7 |
-| Lamp Rows | 2J7 | 1J6 |
-
-Now would also be a good time to connect an SD-card to P8. Then turn on your machine. If any lamps should be lit quite brightly then turn it back off as your lamp strobing is faulty.  
-If no lamps are lit you can enter the system settings and change the 'Active Game' to 'Base Code'. After leaving the settings the attract mode of the base code should start which cycles through the controlled lamps.
-
-The last step is about the solenoid related connectors, so turn off your machine and connect the following:
+If displays and switches are working you can proceed to the solenoids. So turn off your machine and connect the following connectors:
 
 | Connector name | Number for System 3 - 7 | Number for System 9 + 11 |
 |--|--|--|
@@ -120,8 +108,20 @@ The last step is about the solenoid related connectors, so turn off your machine
 | Solenoid Drivers 2 | 2J9 | 1J12 |
 | Special Sol Drivers | 2J12 | 1J19 |
 
-If you hear the sound of an activating solenoid when turning on your machine then turn it off immediately, as it means that one of your solenoid drivers is stuck.
+If you hear the sound of an activating solenoid when turning on your machine then turn it off immediately, as it means that one of your solenoid drivers is stuck.  
+If everything is right you're ready for the lamps:
 
+| Connector name | Number for System 3 - 7 | Number for System 9 + 11 |
+|--|--|--|
+| Lamp B+ | 2J4 | 1J4 |
+| Lamp GND | 2J6 | 1J5 |
+| Lamp Strobes | 2J5 | 1J7 |
+| Lamp Rows | 2J7 | 1J6 |
+
+Turn on your machine. If any lamps light up then turn it back off as the 'Remote Control' mode does not turn on any lights without being told to do so.    
+If no lamps are lit you can enter the system settings and change the 'Active Game' to 'Base Code'. After leaving the settings the attract mode of the base code should start which cycles through the controlled lamps.
+
+ IN WORK ->
 
 In order to test your HW you have two options:  
 The first one is to use a terminal program (like Hterm) to connect your PC to the APC. Then you can use the commands of the [Lisy-API](http://docs.missionpinball.org/en/latest/hardware/lisy/protocol.html) to control the APC and do some tests. For this the system has to be in Remote Control mode and the communications have to be set to USB which are the default settings.
