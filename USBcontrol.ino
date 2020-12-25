@@ -1,7 +1,7 @@
 // USB interface for APC based pinball machines
 
 unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
-const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB commands from 0 - 9
+const byte USB_CommandLength[110] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB commands from 0 - 9
 															1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
 															1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
 															250,250,250,250,250,0,0,2,0,0,		// Length of USB commands from 30 - 39
@@ -10,7 +10,8 @@ const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 															10,0,0,0,2,3,0,0,0,0,		// Length of USB commands from 60 - 69
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 70 - 79
 															2,1,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
-															0,0,0,0,0,0,0,0,0,0,0,0};	// Length of USB commands from 90 - 101
+															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 90 - 99
+															0,0,0,0,0,0,0,0,0,0};		// Length of USB commands from 100 - 109
 const byte USB_DisplayDigitNum[8][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
 const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
 const char USB_BK_NewGameSounds[5][13] = {{"0_2b_001.snd"},{"0_2b_002.snd"},{"0_2b_003.snd"},{"0_2b_004.snd"},{"0_2b_005.snd"}}; // sounds for the BK game start

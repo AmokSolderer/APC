@@ -1371,14 +1371,14 @@ void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
 				ActSolSlot++;																	// increase slot number
 				if (ActSolSlot > 63) {												// array end reached?
 					ActSolSlot = 0;}}														// start from zero
-			State = 1;}																			// set routing state to active
+			State = 1;}																			// set routine state to active
 		else if (C_BankActive){														// nothing more to do and relay still active?
 			ReleaseSolenoid(ACselectRelay);									// reset it
 			C_BankActive = false;
 			State = 1;
 			ActivateTimer(50, 1, ActSolenoid);}
 		else {																						// absolutely nothing to do
-			State = 0;}}}																		// set routing state to passive
+			State = 0;}}}																		// set routine state to passive
 
 void ShowPoints(byte Player) {                    		// display the points of the selected player
 	DisplayScore(Player, Points[Player]);}
