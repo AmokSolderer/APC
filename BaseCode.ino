@@ -8,7 +8,7 @@ const byte BC_OutholeKicker = 1;                      // solenoid number of the 
 const byte BC_ShooterLaneFeeder = 2;                  // solenoid number of the shooter lane feeder
 const byte BC_InstalledBalls = 3;                     // number of balls installed in the game
 const byte BC_SearchCoils[15] = {1,4,6,8,13,15,16,17,18,19,20,21,22,14,0}; // coils to fire when the ball watchdog timer runs out - has to end with a zero
-const unsigned int BC_SolTimes[32] = {50,50,50,50,50,50,30,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,0,0,100,100,100,100,100,100,100,100}; // Activation times for solenoids
+unsigned int BC_SolTimes[32] = {50,50,50,50,50,50,30,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,0,0,100,100,100,100,100,100,100,100}; // Activation times for solenoids
 
 #define BCset_OutholeSwitch 0
 #define BCset_BallThroughSwitches 1
@@ -176,6 +176,8 @@ void BC_init() {
 
 void BC_AttractMode() {                               // Attract Mode
   ACselectRelay = game_settings[BCset_ACselectRelay]; // assign the number of the A/C select relay
+  if (ACselectRelay) {
+  	BC_SolTimes[ACselectRelay-1] = 0;}								// allow A/C relay to be turned on permanently
   DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
   digitalWrite(VolumePin,HIGH);                       // set volume to zero
