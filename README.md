@@ -111,7 +111,9 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 1.1 [How to start](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md) - If you want to start using the APC you should read this page first.  
 1.2 [Useful software tools](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md) - Simple tools for audio data conversion and so on  
 1.3 [APC settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) - a table of the settings and how to use them  
-1.4 [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
+1.4 [Initial Tests](https://github.com/AmokSolderer/APC/blob/V00.21/DOC/InitialTests.md) - how to start it up for the first time and use the Test Mode of the Base Code  
+1.5 [Base Code setup](https://github.com/AmokSolderer/APC/blob/V00.21/DOC/SetUpBC.md) - set up the Base Code for your machine  
+1.6 [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
 
 2 Writing my own game code - You want to program your own game in C? Then read this.  
 2.1 [Game code tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md)  

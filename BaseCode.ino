@@ -27,7 +27,7 @@ const byte BC_defaults[64] = {9,13,12,11,20,12,1,2,        // game default setti
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0};
 
-const struct SettingTopic BC_setList[13] = {{"OUTHOLESWITCH ",HandleNumSetting,0,1,64}, // defines the game specific settings
+const struct SettingTopic BC_setList[12] = {{"OUTHOLESWITCH ",HandleNumSetting,0,1,64}, // defines the game specific settings
 		{" BALL  THRU 1 ",HandleNumSetting,0,1,64},
 		{" BALL  THRU 2 ",HandleNumSetting,0,1,64},
 		{" BALL  THRU 3 ",HandleNumSetting,0,1,64},
@@ -36,7 +36,7 @@ const struct SettingTopic BC_setList[13] = {{"OUTHOLESWITCH ",HandleNumSetting,0
 		{"OUTHOLEKICKER ",HandleNumSetting,0,1,22},
 		{"SHOOTERLN FEED",HandleNumSetting,0,1,22},
 		{"INSTALD BALLS ",HandleNumSetting,0,1,3},
-    {" RESET  HIGH  ",BC_ResetHighScores,0,0,0},
+   // {" RESET  HIGH  ",BC_ResetHighScores,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
@@ -570,6 +570,8 @@ void BC_Testmode(byte Select) {
       *(DisplayUpper+16) = 0;
       WriteUpper("DISPLAY TEST    ");
       WriteLower("                ");
+    	if (APC_settings[DisplayType] > 5) {						// Sys3 - 7 display
+    		*(DisplayLower+16) = RightCredit[(1+16)*2];}	// show test number
       AppByte2 = 0;
       break;
     case 3:                                           // credit button
@@ -591,6 +593,8 @@ void BC_Testmode(byte Select) {
         AppByte2 = 0;
         WriteUpper(" SWITCH EDGES   ");
         WriteLower("                ");
+      	if (APC_settings[DisplayType] > 5) {					// Sys3 - 7 display
+      		*(DisplayLower+16) = RightCredit[(2+16)*2];}	// show test number
         break;
       case 72:                                        // advance button
         if (AppByte2) {
@@ -617,6 +621,8 @@ void BC_Testmode(byte Select) {
       case 0:                               	        // init (not triggered by switch)
         WriteUpper("  COIL  TEST    ");
         WriteLower("                ");
+      	if (APC_settings[DisplayType] > 5) {						// Sys3 - 7 display
+      		*(DisplayLower+16) = RightCredit[(3+16)*2];}	// show test number
         AppByte2 = 0;
         break;
       case 3:
@@ -637,6 +643,8 @@ void BC_Testmode(byte Select) {
       case 0:                               		      // init (not triggered by switch)
         WriteUpper(" SINGLE LAMP    ");
         WriteLower("                ");
+      	if (APC_settings[DisplayType] > 5) {						// Sys3 - 7 display
+      		*(DisplayLower+16) = RightCredit[(4+16)*2];}	// show test number
         AppByte2 = 0;
         for (i=0; i<8; i++){                    		  // erase lamp matrix
           LampColumns[i] = 0;}
@@ -660,6 +668,8 @@ void BC_Testmode(byte Select) {
       case 0:                                   			// init (not triggered by switch)
         WriteUpper("  ALL   LAMPS   ");
         WriteLower("                ");
+      	if (APC_settings[DisplayType] > 5) {						// Sys3 - 7 display
+      		*(DisplayLower+16) = RightCredit[(5+16)*2];}	// show test number
         AppByte2 = 0;
         break;
       case 3:
@@ -680,15 +690,17 @@ void BC_Testmode(byte Select) {
       case 0:                                 				// init (not triggered by switch)
         WriteUpper(" MUSIC  TEST    ");
         WriteLower("                ");
+      	if (APC_settings[DisplayType] > 5) {						// Sys3 - 7 display
+      		*(DisplayLower+16) = RightCredit[(6+16)*2];}	// show test number
         AppByte2 = 0;
         break;
       case 3:
         WriteUpper("PLAYING MUSIC   ");
         if (APC_settings[Volume]) {           				// system set to digital volume control?
           analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-        AfterMusic = BC_NextTestSound;
+        AfterMusic = BC_RepeatMusic;
         AppByte2 = 1;
-        PlayMusic(50, (char*) TestSounds[0]);
+        PlayMusic(50, "MUSIC.BIN");
         break;
       case 72:
         AfterMusic = 0;
@@ -781,13 +793,5 @@ void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
         DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}
   AppByte2 = ActivateTimer(500, CharNo, BC_DisplayCycle);}   // restart timer
 
-void BC_NextTestSound() {
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    AppByte++;}
-  if (!TestSounds[AppByte][0]) {
-    AppByte = 0;}
-  *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte+1) % 10)]; // show the actual solenoid number
-  *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte+1) % 10)];
-  *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  PlayMusic(50, (char*) TestSounds[AppByte]);}
+void BC_RepeatMusic() {
+	PlayMusic(50, "MUSIC.BIN");}

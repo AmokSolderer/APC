@@ -83,17 +83,6 @@ The next step is to install the Arduino SW. I'd do this before you put the APC b
 
 Now you're ready for the [initial tests](https://github.com/AmokSolderer/APC/blob/V00.21/DOC/InitialTests.md).
 
- IN WORK ->
-
-In order to test your HW you have two options:  
-The first one is to use a terminal program (like Hterm) to connect your PC to the APC. Then you can use the commands of the [Lisy-API](http://docs.missionpinball.org/en/latest/hardware/lisy/protocol.html) to control the APC and do some tests. For this the system has to be in Remote Control mode and the communications have to be set to USB which are the default settings.
-The second option is to use the software as it is. For this you have to change your game to the Base Code mode  which should be enough to test the board, as it is described in the Board assembly help. To activate the BaseCode keep the Advance button pressed until you're in the settings. Enter the 'System Settings' by pressing the Game Start button, then Advance to proceed to the 'Active Game' setting and Game Start to change it to 'Base Code'. Use Advance to select 'Exit Settings' and Game Start to confirm. If an SD card is connected then the settings will be stored.  
-A list of the avaiable settings can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md).
-
-Note that you have to change some settings at the beginning of BaseCode.ino to adapt it to your machine. Most settings should be self-explanatory, but BC_SolTimes[32] probably isn't. In this array the default times of all solenoids are stored in ms. For Sys11 machines the first 8 entries are representing the A coils (A/C relay in state 'A'), followed by 16 entries for the non A/C coils (9 to 24 - with 23 and 24 being the flipper finger enable switches) and the last 8 entries are for the 'C' solenoids. A 'zero' settings means that the corresponding coil can be turned on permanently. Normally this should only be done for the flipper finger enables and relays, as normal coils will burn when being turned on too long. Only use 0 if you're sure what you're doing, otherwise use a value of 50 which won't be long enough for your relays to work properly but at least you're not going to inflict any damage to your coils.
-
-If your game has an A/C relay then you have to set the BC_SolTimes entry for your A/C relay to zero (like for any other relay of your game). Otherwise it is not allowed to permanently turn on your relay which will prevent any C bank solenoid from working. If this happens the A bank counterpart will be fired instead.
-
 ## Own software
 
 With your board being up and running you have the following options to get a working game:
