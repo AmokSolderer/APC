@@ -120,9 +120,11 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 2.2 [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) - All commands of the API in a nutshell  
 
 3 Running PinMame  
-3.1 [Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw) - this video shows them controlling my Pinbot  
-3.2 [The APC and PinMame](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame  
-3.3 [PinMame howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that
+3.1 [Lisy Homepage](https://lisy.dev/apc.html) - Location of the Lisy SW download and more  
+3.2 [Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw) - this video shows them controlling my Pinbot  
+3.3 [The APC and PinMame](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame  
+3.4 [PinMame howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that  
+3.5 [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/V00.21/DOC/LisyDebug.md) - updating Lisy and using the debug mode
 
 4 Using MPF  
 4.1 [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw) - see my first humble MPF steps in this video  

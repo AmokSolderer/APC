@@ -1,5 +1,17 @@
 # APC News and Changelog
 
+## January 2021
+
+The APC 3.0 board has most components populated by the board manufacturer. As this reduces the probability of soldering errors significantly, the set up and test procedures could be made a lot easier.
+
+### New SW Version V0.21
+
+The Base Code set up can now be done in the Game Settings, without having to do any code changes.
+
+### Misc
+
+The setup and testing procedures have been changed in the DOCs. Some Lisy specific documentation has been added.
+
 ## December 2020
 
 APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impression what has changed.

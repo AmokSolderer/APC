@@ -65,6 +65,7 @@ The name of the current test is shown in the Display. For numerical displays the
 The following table shows the avaiable tests and their number which is shown for numerical displays.
 
 | Test number | Test name |
+|--|--|
 | 1 | Display Test |
 | 2 | Switch Edges |
 | 3 | Coil Test |
