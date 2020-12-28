@@ -52,7 +52,7 @@ const struct SettingTopic USB_setList[8] = {{"USB WATCHDOG  ",HandleBoolSetting,
 		{" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
 		{"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
 		{"PINMAME GAME    ",HandleNumSetting,0,0,72},
-		{" DEBUG SELECT  	",HandleNumSetting,0,0,255},			//{" DEBUG DISPLAY  ",HandleBoolSetting,0,0,0},
+		{" LISY  DEBUG   	",HandleNumSetting,0,1,31},
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS",ExitSettings,0,0,0},
 		{"",NULL,0,0,0}};

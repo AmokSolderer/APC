@@ -37,9 +37,9 @@ The value for 'Lisy Debug' can be derived from the following table.
 |Solenoids|8|
 |Sound|16|
 
-If you want to log more than one option you have to add the respective values. For example, if you want to log the evnts for switches and solenoids you have to select 10 here.  
+If you want to log more than one option you have to add the respective values. For example, if you want to log the events for switches and solenoids you have to select 10 here.  
 Don't forget to select 'Exit Settings' to store your changes to the APC's SD card.
 
-To start the Debug Mode, turn off your machine and set Lisy jumper 3 before turning it back on. The system will now log the selected debug information, but this doesn't mean that it is immediately stored on Lisy's SD card. You should therefore not just turn your pinball machine off, but press the Shutdown Switch SW1 which will initiate a controlled shutdown of Lisy. After that you can turn off your machine and remove the SD card of the Raspberry Pi.
+To start the Debug Mode, turn off your machine and set Lisy jumper 3 before turning it back on. The system will now log the selected debug information, but this doesn't mean that it is immediately stored on Lisy's SD card. You should therefore not just turn your pinball machine off after your debug session, but press the Shutdown Switch SW1 which will initiate a controlled shutdown of Lisy. After that you can turn off your machine and remove the SD card of the Raspberry Pi.
 
 The log file is located in the /lisy/lisy_m/debug folder.
