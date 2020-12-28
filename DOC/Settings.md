@@ -72,6 +72,6 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 2 | PinMame Sound | 0 | APC | X | PinMame sounds are played on the APC sound HW |
 | 2 | | 1 | Board | - | PinMame sounds are played on an external audio board |
 | 3 | PinMame game | - | - | 0 | Numerical setting - PinMame game number |
-| 4 | Lisy Debug | - | - | 0 | Numerical setting - |
+| 4 | Lisy Debug | - | - | 0 | Numerical setting according to the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page |
 | 5 | RestoreDefault | - | - | - | No setting - restores the default settings |
 | 6 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
