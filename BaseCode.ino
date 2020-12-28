@@ -559,160 +559,174 @@ void BC_CheckHighScore(byte Player) {
 // Test mode
 
 void BC_Testmode(byte Select) {
-  Switch_Pressed = BC_Testmode;
-  switch(AppByte) {                                   // which testmode?
-  case 0:                                             // display test
-    switch(Select) {                                  // switch events
-    case 0:                                           // init (not triggered by switch)
-      *(DisplayLower) = 0;                            // clear credit display
-      *(DisplayLower+16) = 0;
-      *(DisplayUpper) = 0;
-      *(DisplayUpper+16) = 0;
-      WriteUpper("DISPLAY TEST    ");
-      WriteLower("                ");
-    	if (APC_settings[DisplayType] > 5) {						// Sys3 - 7 display
-    		*(DisplayLower+16) = RightCredit[(1+16)*2];}	// show test number
-      AppByte2 = 0;
-      break;
-    case 3:                                           // credit button
-      WriteUpper("0000000000000000");
-      WriteLower("0000000000000000");
-      AppByte2 = ActivateTimer(1000, 32, BC_DisplayCycle);
-      break;
-    case 72:                                          // advance button
-      if (AppByte2) {
-        KillTimer(AppByte2);
-        AppByte2 = 0;}
-      else {
-        AppByte++;}
-      BC_Testmode(0);}
-    break;
-    case 1:                                           // switch edges test
-      switch(Select) {                                // switch events
-      case 0:                                         // init (not triggered by switch)
-        AppByte2 = 0;
-        WriteUpper(" SWITCH EDGES   ");
-        WriteLower("                ");
-      	if (APC_settings[DisplayType] > 5) {					// Sys3 - 7 display
-      		*(DisplayLower+16) = RightCredit[(2+16)*2];}	// show test number
-        break;
-      case 72:                                        // advance button
-        if (AppByte2) {
-          AppByte2 = 0;}
-        else {
-          AppByte++;}
-        BC_Testmode(0);
-        break;
-      case 3:                                         // credit button
-        if (!AppByte2) {
-          WriteUpper(" LATEST EDGES   ");
-          AppByte2 = 1;
-          break;}
-      default:                                        // all other switches
-        for (i=1; i<24; i++) {                        // move all characters in the lower display row 4 chars to the left
-          DisplayLower[i] = DisplayLower[i+8];}
-        *(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
-        *(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
-        *(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
-        *(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}
-      break;
-    case 2:                              	           	// solenoid test
-      switch(Select) {                    	          // switch events
-      case 0:                               	        // init (not triggered by switch)
-        WriteUpper("  COIL  TEST    ");
-        WriteLower("                ");
-      	if (APC_settings[DisplayType] > 5) {						// Sys3 - 7 display
-      		*(DisplayLower+16) = RightCredit[(3+16)*2];}	// show test number
-        AppByte2 = 0;
-        break;
-      case 3:
-        WriteUpper(" FIRINGCOIL NO  ");
-        AppBool = false;
-        AppByte2 = ActivateTimer(1000, 1, BC_FireSolenoids);
-        break;
-      case 72:
-        if (AppByte2) {
-          KillTimer(AppByte2);
-          AppByte2 = 0;}
-        else {
-          AppByte++;}
-        BC_Testmode(0);}
-      break;
-    case 3:                                       		// single lamp test
-      switch(Select) {                   		         	// switch events
-      case 0:                               		      // init (not triggered by switch)
-        WriteUpper(" SINGLE LAMP    ");
-        WriteLower("                ");
-      	if (APC_settings[DisplayType] > 5) {						// Sys3 - 7 display
-      		*(DisplayLower+16) = RightCredit[(4+16)*2];}	// show test number
-        AppByte2 = 0;
-        for (i=0; i<8; i++){                    		  // erase lamp matrix
-          LampColumns[i] = 0;}
-        LampPattern = LampColumns;                		// and show it
-        break;
-      case 3:
-        WriteUpper(" ACTUAL LAMP    ");
-        AppByte2 = ActivateTimer(1000, 1, BC_ShowLamp);
-        break;
-      case 72:
-        LampPattern = NoLamps;
-        if (AppByte2) {
-          KillTimer(AppByte2);
-          AppByte2 = 0;}
-        else {
-          AppByte++;}
-        BC_Testmode(0);}
-      break;
-    case 4:                             		        	// all lamps test
-      switch(Select) {                          			// switch events
-      case 0:                                   			// init (not triggered by switch)
-        WriteUpper("  ALL   LAMPS   ");
-        WriteLower("                ");
-      	if (APC_settings[DisplayType] > 5) {						// Sys3 - 7 display
-      		*(DisplayLower+16) = RightCredit[(5+16)*2];}	// show test number
-        AppByte2 = 0;
-        break;
-      case 3:
-        WriteUpper("FLASHNG LAMPS   ");
-        AppByte2 = ActivateTimer(1000, 1, BC_ShowAllLamps);
-        break;
-      case 72:
-        LampPattern = NoLamps;
-        if (AppByte2) {
-          KillTimer(AppByte2);
-          AppByte2 = 0;}
-        else {
-          AppByte++;}
-        BC_Testmode(0);}
-      break;
-    case 5:                                   				// all music test
-      switch(Select) {                        				// switch events
-      case 0:                                 				// init (not triggered by switch)
-        WriteUpper(" MUSIC  TEST    ");
-        WriteLower("                ");
-      	if (APC_settings[DisplayType] > 5) {						// Sys3 - 7 display
-      		*(DisplayLower+16) = RightCredit[(6+16)*2];}	// show test number
-        AppByte2 = 0;
-        break;
-      case 3:
-        WriteUpper("PLAYING MUSIC   ");
-        if (APC_settings[Volume]) {           				// system set to digital volume control?
-          analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-        AfterMusic = BC_RepeatMusic;
-        AppByte2 = 1;
-        PlayMusic(50, "MUSIC.BIN");
-        break;
-      case 72:
-        AfterMusic = 0;
-        digitalWrite(VolumePin,HIGH);         				// set volume to zero
-        StopPlayingMusic();
-        if (AppByte2) {
-          AppByte2 = 0;}
-        else {
-          GameDefinition.AttractMode();
-          return;}
-        BC_Testmode(0);}
-      break;}}
+	Switch_Pressed = BC_Testmode;
+	switch(AppByte) {                                   // which testmode?
+	case 0:                                             // display test
+		switch(Select) {                                  // switch events
+		case 0:                                           // init (not triggered by switch)
+			*(DisplayLower) = 0;                            // clear credit display
+			*(DisplayLower+16) = 0;
+			*(DisplayUpper) = 0;
+			*(DisplayUpper+16) = 0;
+			if (APC_settings[DisplayType] < 6) {						// Sys11 display
+				WriteUpper("DISPLAY TEST    ");
+				WriteLower("                ");}
+			else {																					// Sys3 - 9 display
+				for(byte c=0; c<16; c++) {										// clear numerical displays
+					*(DisplayLower+2*c) = 255;									// delete numbers
+					*(DisplayLower+1+2*c) = 0;}									// delete commas
+				DisplayScore(1, 1);}													// show test number
+			AppByte2 = 0;
+			break;
+		case 3:                                           // credit button
+			if (APC_settings[DisplayType] < 6) {						// Sys11 display
+				WriteUpper("0000000000000000");
+				WriteLower("0000000000000000");
+				AppByte2 = ActivateTimer(1000, 32, BC_DisplayCycle);}
+			else {
+				for(byte c=0; c<16; c++) {										// clear numerical displays
+					*(DisplayLower+2*c) = 0;}										// delete numbers
+				AppByte2 = ActivateTimer(1000, 0, BC_DisplayCycle);}
+			break;
+		case 72:                                          // advance button
+			if (AppByte2) {
+				KillTimer(AppByte2);
+				AppByte2 = 0;}
+			else {
+				AppByte++;}
+			BC_Testmode(0);}
+		break;
+		case 1:                                           // switch edges test
+			switch(Select) {                                // switch events
+			case 0:                                         // init (not triggered by switch)
+				AppByte2 = 0;
+				if (APC_settings[DisplayType] < 6) {					// Sys11 display
+					WriteUpper(" SWITCH EDGES   ");
+					WriteLower("                ");}
+				else {																				// Sys3 - 9 display
+					DisplayScore(1, 2);}												// show test number
+				break;
+			case 72:                                        // advance button
+				if (AppByte2) {
+					AppByte2 = 0;}
+				else {
+					AppByte++;}
+				BC_Testmode(0);
+				break;
+			case 3:                                         // credit button
+				if (!AppByte2) {
+					WriteUpper(" LATEST EDGES   ");
+					AppByte2 = 1;
+					break;}
+			default:                                        // all other switches
+				for (i=1; i<24; i++) {                        // move all characters in the lower display row 4 chars to the left
+					DisplayLower[i] = DisplayLower[i+8];}
+				*(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
+				*(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
+				*(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
+				*(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}
+			break;
+			case 2:                              	           	// solenoid test
+				switch(Select) {                    	          // switch events
+				case 0:                               	        // init (not triggered by switch)
+					if (APC_settings[DisplayType] < 6) {					// Sys11 display
+						WriteUpper("  COIL  TEST    ");
+						WriteLower("                ");}
+					else {																				// Sys3 - 9 display
+						DisplayScore(1, 3);}												// show test number
+					AppByte2 = 0;
+					break;
+				case 3:
+					WriteUpper(" FIRINGCOIL NO  ");
+					AppBool = false;
+					AppByte2 = ActivateTimer(1000, 1, BC_FireSolenoids);
+					break;
+				case 72:
+					if (AppByte2) {
+						KillTimer(AppByte2);
+						AppByte2 = 0;}
+					else {
+						AppByte++;}
+					BC_Testmode(0);}
+				break;
+				case 3:                                       		// single lamp test
+					switch(Select) {                   		         	// switch events
+					case 0:                               		      // init (not triggered by switch)
+						if (APC_settings[DisplayType] < 6) {					// Sys11 display
+							WriteUpper(" SINGLE LAMP    ");
+							WriteLower("                ");}
+						else {																				// Sys3 - 9 display
+							DisplayScore(1, 4);}												// show test number
+						AppByte2 = 0;
+						for (i=0; i<8; i++){                    		  // erase lamp matrix
+							LampColumns[i] = 0;}
+						LampPattern = LampColumns;                		// and show it
+						break;
+					case 3:
+						WriteUpper(" ACTUAL LAMP    ");
+						AppByte2 = ActivateTimer(1000, 1, BC_ShowLamp);
+						break;
+					case 72:
+						LampPattern = NoLamps;
+						if (AppByte2) {
+							KillTimer(AppByte2);
+							AppByte2 = 0;}
+						else {
+							AppByte++;}
+						BC_Testmode(0);}
+					break;
+					case 4:                             		        	// all lamps test
+						switch(Select) {                          			// switch events
+						case 0:                                   			// init (not triggered by switch)
+							if (APC_settings[DisplayType] < 6) {					// Sys11 display
+								WriteUpper("  ALL   LAMPS   ");
+								WriteLower("                ");}
+							else {																				// Sys3 - 9 display
+								DisplayScore(1, 5);}												// show test number
+							AppByte2 = 0;
+							break;
+						case 3:
+							WriteUpper("FLASHNG LAMPS   ");
+							AppByte2 = ActivateTimer(1000, 1, BC_ShowAllLamps);
+							break;
+						case 72:
+							LampPattern = NoLamps;
+							if (AppByte2) {
+								KillTimer(AppByte2);
+								AppByte2 = 0;}
+							else {
+								AppByte++;}
+							BC_Testmode(0);}
+						break;
+						case 5:                                   				// all music test
+							switch(Select) {                        				// switch events
+							case 0:                                 				// init (not triggered by switch)
+								if (APC_settings[DisplayType] < 6) {					// Sys11 display
+									WriteUpper(" MUSIC  TEST    ");
+									WriteLower("                ");}
+								else {																				// Sys3 - 9 display
+									DisplayScore(1, 6);}												// show test number
+								AppByte2 = 0;
+								break;
+							case 3:
+								WriteUpper("PLAYING MUSIC   ");
+								if (APC_settings[Volume]) {           				// system set to digital volume control?
+									analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+								AfterMusic = BC_RepeatMusic;
+								AppByte2 = 1;
+								PlayMusic(50, "MUSIC.BIN");
+								break;
+							case 72:
+								AfterMusic = 0;
+								digitalWrite(VolumePin,HIGH);         				// set volume to zero
+								StopPlayingMusic();
+								if (AppByte2) {
+									AppByte2 = 0;}
+								else {
+									GameDefinition.AttractMode();
+									return;}
+								BC_Testmode(0);}
+							break;}}
 
 void BC_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
   if (QuerySwitch(73)) {                              // Up/Down switch pressed?
@@ -772,26 +786,39 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
   AppByte2 = ActivateTimer(1000, Solenoid, BC_FireSolenoids);}   // come back in one second
 
 void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
-  if (QuerySwitch(73)) {                              // cycle only if Up/Down switch is not pressed
-    if (CharNo == 116) {                              // if the last character is reached
-      CharNo = 32;}                                   // start from the beginning
-    else {
-      if (CharNo == 50) {                             // reached the gap between numbers and characters?
-        CharNo = 66;}
-      else {
-        CharNo = CharNo+2;}}                          // otherwise show next character
-    for (i=0; i<16; i++) {                            // use for all alpha digits
-      if ((APC_settings[DisplayType] != 3) && ((i==0) || (i==8))) {
-        DisplayUpper[2*i] = LeftCredit[CharNo];
-        DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
-        DisplayLower[2*i] = RightCredit[CharNo];
-        DisplayLower[2*i+1] = RightCredit[CharNo+1];}
-      else {
-        DisplayUpper[2*i] = DispPattern1[CharNo];
-        DisplayUpper[2*i+1] = DispPattern1[CharNo+1];
-        DisplayLower[2*i] = DispPattern2[CharNo];
-        DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}
-  AppByte2 = ActivateTimer(500, CharNo, BC_DisplayCycle);}   // restart timer
+	if (QuerySwitch(73)) {                              // cycle only if Up/Down switch is not pressed
+		if (CharNo < 11) {																// numerical display
+			CharNo++;
+			if (CharNo > 9) {
+				CharNo = 0;}
+			byte Comma = 0;
+			byte Num = ConvertNumUpper(CharNo, 0);
+			Num = ConvertNumLower(CharNo, Num);
+			if (CharNo & 1) {																// only do commas at every second run
+				Comma = 129;}
+			for(byte c=0; c<16; c++) {											// clear numerical displays
+				*(DisplayLower+2*c) = Num;										// write numbers
+				*(DisplayLower+1+2*c) = Comma;}}
+		else {																						// System11 display
+			if (CharNo == 116) {                            // if the last character is reached
+				CharNo = 32;}                                 // start from the beginning
+			else {
+				if (CharNo == 50) {                           // reached the gap between numbers and characters?
+					CharNo = 66;}
+				else {
+					CharNo = CharNo+2;}}                        // otherwise show next character
+			for (i=0; i<16; i++) {                          // use for all alpha digits
+				if ((APC_settings[DisplayType] != 3) && ((i==0) || (i==8))) {
+					DisplayUpper[2*i] = LeftCredit[CharNo];
+					DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
+					DisplayLower[2*i] = RightCredit[CharNo];
+					DisplayLower[2*i+1] = RightCredit[CharNo+1];}
+				else {
+					DisplayUpper[2*i] = DispPattern1[CharNo];
+					DisplayUpper[2*i+1] = DispPattern1[CharNo+1];
+					DisplayLower[2*i] = DispPattern2[CharNo];
+					DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}}
+	AppByte2 = ActivateTimer(500, CharNo, BC_DisplayCycle);}   // restart timer
 
 void BC_RepeatMusic() {
 	PlayMusic(50, "MUSIC.BIN");}

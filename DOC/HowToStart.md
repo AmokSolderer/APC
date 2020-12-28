@@ -12,7 +12,10 @@ However, the APC is only suited for you if you have some basic knowledge of elec
 
 All the required data to build a board is in the [fabrication files section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles).
 
-I recommend to use [JLCPCB](https://jlcpcb.com) as your board manufacturer, because the assembly files are tailored to their specifications. The problem with the manufacturers is that they need at least an order of five boards to come up with a reasonable price, so please leave some feedback at the Arduino Forum, may be someone from your country has a board for sale. If you want to order by yourself, you're welcome. The manufacturer will need the APC_Gerber.zip file to build the boards and the APC_BOM.csv and APC-top-pos.csv to populate the SMD parts.
+I recommend to use [JLCPCB](https://jlcpcb.com) as your board manufacturer, because the assembly files are tailored to their specifications. The problem with the manufacturers is that they need at least an order of five boards to come up with a reasonable price, so please leave some feedback at the Arduino Forum, may be someone from your country has a board for sale.  
+If you want to order by yourself, you're welcome. The manufacturer will need the APC_Gerber.zip file to build the boards. You also have to select 'SMT Assembly' and provide the APC_BOM.csv and APC-top-pos.csv files to make them populate the SMD parts.
+
+Note that the board preview of JLCPCB doesn't work with the APC boards. This also means that you have to enter the board dimensions manually to get a quote. The dimensions for the APC board are 200mmx237mm.
 
 ## The Components
 

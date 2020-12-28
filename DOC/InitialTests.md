@@ -61,7 +61,7 @@ Turn on your machine. As you have an SD card plugged into the APC, the previous 
 ## Using the Test Mode
 
 Press the Advance button with Up/Down being in the down position to enter the test mode of the Base Code.  
-The name of the current test is shown in the Display. For numerical displays the number of the test is shown in the right credit display. You can enter the test by pressing the game start button or proceed to the next test by pressing Advance again. The display, coil and single lamp tests are cycling automatically. This cycling can be stopped by the Up/Down button being in Down position.  
+The name of the current test is shown in the Display. For numerical displays the number of the test is shown in the Player 1 display. You can enter the test by pressing the game start button or proceed to the next test by pressing Advance again. The display, coil and single lamp tests are cycling automatically. This cycling can be stopped by the Up/Down button being in Down position.  
 The following table shows the avaiable tests and their number which is shown for numerical displays.
 
 | Test number | Test name |
