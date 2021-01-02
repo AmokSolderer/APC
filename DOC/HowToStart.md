@@ -2,7 +2,7 @@
 
 First you should know what you're dealing with, so take a look at the [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf). I have tried to design the hardware simple and straightforward, that means with a bit of hardware knowledge it shouldn't be a problem for you to understand how it works.
 
-In the schematic the names of the connectors are given for System7 and System11, but the System7 names are also valid for System3 - 6 and the System11 names match to System9. The following picture should help you to determine where the various connectors belong. The solenoid GND connector of Sys11 games (1J13) has only 4 pins, in the picture it is marked as a black rectangle. The X symbols indicate which pins have to be removed.
+In the schematics the names of the connectors are given for System7 and System11, but the System7 names are also valid for System3 - 6 and the System11 names match to System9. The following picture should help you to determine where the various connectors belong. The solenoid GND connector of Sys11 games (1J13) has only 4 pins, in the picture it is marked as a black rectangle. The X symbols indicate which pins have to be removed.
 
 ![APC connectors](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Connectors.png)
 
@@ -86,7 +86,7 @@ As the boards have the component names printed at the corresponding locations, y
 Plug the Arduino DUE on your APC board, but don't populate the Pi yet. I recommend to do the basic tests before assembling the Pi.
 The next step is to install the Arduino SW. I'd do this before you put the APC board into your pinball machine, because if this works you know, that your 5V supply has no short and is working properly.
 
-Now you're ready for the [initial tests](https://github.com/AmokSolderer/APC/blob/V00.21/DOC/InitialTests.md).
+Now you're ready for the [initial tests](https://github.com/AmokSolderer/APC/blob/master/DOC/InitialTests.md).
 
 ## Own software
 

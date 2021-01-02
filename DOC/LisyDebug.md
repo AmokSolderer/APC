@@ -4,7 +4,7 @@ This page covers just the APC relevant basics. In some cases it might be necessa
 
 The basic mode of Lisy is selected by the Lisy_Jumpers P12 which are depicted below.
 
-![Lisy Jumper](https://github.com/AmokSolderer/APC/blob/V00.21/DOC/PICS/LisyJumper.png)
+![Lisy Jumper](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/LisyJumper.png)
 
 |Jumper|Function|Comment|
 |--|--|--|

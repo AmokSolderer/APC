@@ -40,7 +40,7 @@ This step will test the solenoids. For this you have to connect the following co
 
 If you hear the sound of an activating solenoid when turning on your machine then turn it off immediately, as it means that one of your solenoid drivers is stuck.  
 If no solenoid is activated you can enter the 'System Settings' and set the 'Active Game' to 'Base Code'.  
-Depending on your machine it might be possible that a solenoid is being periodically activated after you left the settings. This is not a problem as long as the solenoid is not turned on permanently and will probably be resolved after you have [set up the Base Code](https://github.com/AmokSolderer/APC/blob/V00.21/DOC/SetUpBC.md) to your machine.
+Depending on your machine it might be possible that a solenoid is being periodically activated after you left the settings. This is not a problem as long as the solenoid is not turned on permanently and will probably be resolved after you have [set up the Base Code](https://github.com/AmokSolderer/APC/blob/master/DOC/SetUpBC.md) to your machine.
 
 Turn off your machine when the test is done.
 

@@ -9,7 +9,7 @@ It might be necessary to power cycle the system as the synchonization between th
 
 If you have an APC 2.x board or you just want a portable Lisy system you can use the [Lisy_Mini](https://lisy.dev/lisy_mini.html) board which controls the APC via USB.
 
-Read the [Controllong Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page to make incremental updates of use the Lisy Debug functions.
+Read the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page to learn how to make incremental updates or use the Lisy Debug functions.
 
 We have started our PinMame experiments with my old trusty Pinbot which is running quite well as you can see in the following video:
 
