@@ -1,13 +1,15 @@
 # The APC and PinMame
 
 Bringing PinMame and the APC together was only possible with the help of the [Lisy project](https://lisy.dev).  
-To set it up you have to get a Raspberry Pi (all Zero and Pi3 variants are supported) and install the Lisy disk image on the SD card of your Pi.  
+To set it up you have to get a Raspberry Pi (all Zero and Pi3 variants are supported) and install the [Lisy image](https://lisy.dev/apc.html) on the SD card of your Pi.  
 The APC's 'Active Game' setting has to be set to 'Remote Control' (which is the default setting) to make it communicate with the Pi.
 
 If you have an APC 3 board you can just plug the Pi on the J1 connector of the APC directly. As the APC is set to USB communication by default, you have to change the 'Connect Type' setting in the 'System Settings' to 'On board'. Take a look at the [settings page](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) for a desription of the settings. Connect an SD-card to P8 of the APC for the settings to be stored permanently.  
 It might be necessary to power cycle the system as the synchonization between the APC and Lisy is still under development.
 
 If you have an APC 2.x board or you just want a portable Lisy system you can use the [Lisy_Mini](https://lisy.dev/lisy_mini.html) board which controls the APC via USB.
+
+Read the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page to learn how to make incremental updates or use the Lisy Debug functions.
 
 We have started our PinMame experiments with my old trusty Pinbot which is running quite well as you can see in the following video:
 

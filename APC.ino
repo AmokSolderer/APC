@@ -17,7 +17,7 @@ SdFat SD;
 #define AllData 510
 #define HwExtStackPosMax 20														// size of the HwExtBuffer
 
-const char APC_Version[6] = "00.20";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "00.21";                  // Current APC version - includes the other INO files also
 
 void HandleBoolSetting(bool change);
 void HandleTextSetting(bool change);
@@ -770,6 +770,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 
 void loop() {
 	byte c = 0;                                  				// initialize counter
+	byte i = 0;
 	if (SwEvents[SwitchStack]) {                        // switch event pending?
 		SwitchStack = 1-SwitchStack;                      // switch to the other stack to avoid a conflict with the interrupt
 		while (SwEvents[1-SwitchStack]) {									// as long as there are switch events to process
@@ -1371,14 +1372,14 @@ void ActSolenoid(byte GivenState) {										// activate waiting A/C solenoids
 				ActSolSlot++;																	// increase slot number
 				if (ActSolSlot > 63) {												// array end reached?
 					ActSolSlot = 0;}}														// start from zero
-			State = 1;}																			// set routing state to active
+			State = 1;}																			// set routine state to active
 		else if (C_BankActive){														// nothing more to do and relay still active?
 			ReleaseSolenoid(ACselectRelay);									// reset it
 			C_BankActive = false;
 			State = 1;
 			ActivateTimer(50, 1, ActSolenoid);}
 		else {																						// absolutely nothing to do
-			State = 0;}}}																		// set routing state to passive
+			State = 0;}}}																		// set routine state to passive
 
 void ShowPoints(byte Player) {                    		// display the points of the selected player
 	DisplayScore(Player, Points[Player]);}

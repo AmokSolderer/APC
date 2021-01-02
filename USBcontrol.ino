@@ -1,7 +1,7 @@
 // USB interface for APC based pinball machines
 
 unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
-const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB commands from 0 - 9
+const byte USB_CommandLength[110] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB commands from 0 - 9
 															1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
 															1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
 															250,250,250,250,250,0,0,2,0,0,		// Length of USB commands from 30 - 39
@@ -10,7 +10,8 @@ const byte USB_CommandLength[102] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 															10,0,0,0,2,3,0,0,0,0,		// Length of USB commands from 60 - 69
 															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 70 - 79
 															2,1,0,0,0,0,0,0,0,0,		// Length of USB commands from 80 - 89
-															0,0,0,0,0,0,0,0,0,0,0,0};	// Length of USB commands from 90 - 101
+															0,0,0,0,0,0,0,0,0,0,		// Length of USB commands from 90 - 99
+															0,0,0,0,0,0,0,0,0,0};		// Length of USB commands from 100 - 109
 const byte USB_DisplayDigitNum[8][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
 const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
 const char USB_BK_NewGameSounds[5][13] = {{"0_2b_001.snd"},{"0_2b_002.snd"},{"0_2b_003.snd"},{"0_2b_004.snd"},{"0_2b_005.snd"}}; // sounds for the BK game start
@@ -19,14 +20,9 @@ const char USB_JL_NewGameSounds[5][13] = {{"0_26_001.snd"},{"0_26_002.snd"},{"0_
 																											// offsets of settings in the settings array
 #define USB_Watchdog 0																// watchdog enable setting
 #define USB_Debug 1																		// USB debug mode
-#define USB_LisyMode 2																//
+#define USB_PinMameSound 2														// use APC sound HW or old sound board?
 #define USB_PinMameGame 3															// number of the game to be run in PinMame
-#define USB_DebugDisplay	4														// selected debug mode
-#define USB_DebugSwitch	5															// selected debug mode
-#define USB_DebugLamp	6																// selected debug mode
-#define USB_DebugCoil	7																// selected debug mode
-#define USB_DebugSound	8															// selected debug mode
-#define USB_PinMameSound 9														// use APC sound HW or old sound board?
+#define USB_LisyDebug	4																// selected debug mode
 
 const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,		 		// game default settings
 															0,0,0,0,0,0,0,0,
@@ -50,19 +46,13 @@ byte USB_WaitSoundTimer;															// number of the timer for the sound sequ
 byte USB_Enter_TestmodeTimer;													// number of the timer to determine whether the Advance button has been held down
 
 const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
-const char TxTUSB_LisyMode[4][17] = {{"       PINMAME  "},{"        MPF     "},{"       CONTROL  "},{"        DEBUG   "}};
 const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
 
-const struct SettingTopic USB_setList[13] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+const struct SettingTopic USB_setList[8] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
 		{" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
-		{"  LISY  MODE    ",HandleNumSetting,0,0,255},			//HandleTextSetting,&TxTUSB_LisyMode[0][0],0,3},
-		{"PINMAME GAME    ",HandleNumSetting,0,0,72},
-		{" DEBUG SELECT  	",HandleNumSetting,0,0,255},			//{" DEBUG DISPLAY  ",HandleBoolSetting,0,0,0},
-		{" DEBUG SWITCH   ",HandleBoolSetting,0,0,0},
-		{" DEBUG  LAMP    ",HandleBoolSetting,0,0,0},
-		{" DEBUG  COIL    ",HandleBoolSetting,0,0,0},
-		{" DEBUG  SOUND   ",HandleBoolSetting,0,0,0},
 		{"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
+		{"PINMAME GAME    ",HandleNumSetting,0,0,72},
+		{" LISY  DEBUG   	",HandleNumSetting,0,1,31},
 		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
 		{"  EXIT SETTNGS",ExitSettings,0,0,0},
 		{"",NULL,0,0,0}};

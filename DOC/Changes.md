@@ -1,5 +1,17 @@
 # APC News and Changelog
 
+## January 2021
+
+The APC 3.0 board has most components populated by the board manufacturer. As this reduces the probability of soldering errors significantly, the set up and test procedures could be made a lot easier.
+
+### New SW Version V0.21
+
+The Base Code set up can now be done in the Game Settings, without having to do any code changes.
+
+### Misc
+
+The setup and testing procedures have been changed in the DOCs. Some Lisy specific documentation has been added.
+
 ## December 2020
 
 APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impression what has changed.
@@ -16,7 +28,7 @@ APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJ
 
 * Display blanking for the various display types is now handled by SW which makes jumper JP1 and the resistor arrays RR2 - RR5 obsolete. This does also work for APC 2.x boards.
 
-* The functionality of pre System11 sound boards has been modelled. This make it easier to use the PinMame sound of System 3 - 9 machines. For Systems 3 - 7 it is also possible to use to original audio boards.
+* The functionality of pre System11 sound boards has been modelled. This make it easier to use the PinMame sound of System 3 - 9 machines. For Systems 3 - 7 it is also possible to use the original audio boards.
 
 * Support for System7 displays has been added.
 
