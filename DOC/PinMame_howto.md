@@ -26,7 +26,8 @@ Start your pinball with Lisy_Mini and the APC. The displays of your pinball mach
 
 If you want to get the original sounds for your machine, you have to install PinMame for Windows as the Unix version has severe sound issues.
 
-After PinMame is running press F4 to enter the 'Sound Command Mode' and enter the prefix and the hexadecimal sound number of the sound you want to record. Then press F5 to start the recording, SPACE to play the sound and F5 again to stop recording. The sound can be found in PinMame's 'wave' folder.
+After PinMame is running press F4 to enter the 'Sound Command Mode' and enter the prefix and the hexadecimal sound number of the sound you want to record. Then press F5 to start the recording, SPACE to play the sound and F5 again to stop recording. The sound can be found in PinMame's 'wave' folder.  
+For some reason the PinMame sounds have a sampling rate of 48KHz and must therefore be converted to the normal sampling rate of 44.1KHz. You can use a free audio editor like Audacity to adjust the start and end time of your sound sample as well as the sampling rate.
 
 Like all sounds to be played by the APC the WAV file has to be processed with my Audio Data Converter. You can find additional information about this tool in the [Useful Software Tools](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md) page.
 
