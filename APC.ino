@@ -17,7 +17,7 @@ SdFat SD;
 #define AllData 510
 #define HwExtStackPosMax 20														// size of the HwExtBuffer
 
-const char APC_Version[6] = "00.21";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "00.22";                  // Current APC version - includes the other INO files also
 
 void HandleBoolSetting(bool change);
 void HandleTextSetting(bool change);
