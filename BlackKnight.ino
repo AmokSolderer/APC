@@ -787,10 +787,11 @@ void GameMain(byte Event) {                           // game switch events
 		ShowPoints(Player);
 		if (BonusMultiplier < 5) {
 			BonusMultiplier++;
-			AddBlinkLamp(FirstMultLamp+BonusMultiplier-2, 250);
-			ActivateTimer(2000, FirstMultLamp+BonusMultiplier-2, SetBonusMultiplier);
 			if ((BonusMultiplier == 5) && (Bonus == 49)) {	// full bonus and multiplier?
-				BK_CycleSwordLights(1);}}
+				BK_CycleSwordLights(1);}
+			else {
+				AddBlinkLamp(FirstMultLamp+BonusMultiplier-2, 250);
+				ActivateTimer(2000, FirstMultLamp+BonusMultiplier-2, SetBonusMultiplier);}}
 		if (LowerExBall[Player]) {
 			ActivateSolenoid(8000, 15);											// ring the bell
 			PatPointer = ExBallPat;
