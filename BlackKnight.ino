@@ -947,8 +947,8 @@ void LastChanceLock(byte Event) {
 		ActivateSolenoid(0, 7);}}
 
 void BallEnd(byte Event) {
-	AppByte = CountBallsInTrunk();
-	if ((AppByte == 5)||(AppByte < 4-Multiballs-InLock)) {
+	byte BallsInTrunk = CountBallsInTrunk();
+	if ((BallsInTrunk == 5)||(BallsInTrunk < 4-Multiballs-InLock)) {
 		InLock = 0;
 		if (Multiballs == 1) {
 			for (i=0; i<3; i++) {                         	// check how many balls are on the ball ramp
@@ -972,7 +972,7 @@ void BallEnd(byte Event) {
 			Multiballs = 2;
 			AddBlinkLamp(28, 500);
 			RemoveBlinkLamp(32);
-			if (AppByte != 1) {                             // not 1 ball in trunk
+			if (BallsInTrunk != 1) {                             // not 1 ball in trunk
 				ActivateTimer(1000, 0, BallEnd);}             // check again later
 			else {
 				BlockOuthole = false;}												// remove outhole block
@@ -990,13 +990,13 @@ void BallEnd(byte Event) {
 					analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
 				StopPlayingMusic();
 				PlaySound(60, "0_28.snd");}
-			if (AppByte == 3) {                             // 3 balls in trunk?
+			if (BallsInTrunk == 3) {                             // 3 balls in trunk?
 				ActivateTimer(1000, 0, BallEnd);}
 			else {
 				BlockOuthole = false;}												// remove outhole block
 			break;
 		case 1:                                           // end of ball
-			if (AppByte + InLock != 3) {
+			if (BallsInTrunk + InLock != 3) {
 				WriteUpper(" COUNT  ERROR ");
 				InLock = 0;
 				for (i=0; i<3; i++) {                         // check how many balls are on the ball ramp
@@ -1022,17 +1022,17 @@ void BallEnd(byte Event) {
 				AfterMusic = 0;
 				StopPlayingMusic();
 				PlaySound(60, "0_34_001.snd");									// play bonus count sound
-				CountBonus(AppByte);}}}}
+				CountBonus(BallsInTrunk);}}}}
 
 void CountBonus(byte Balls) {
-	AppByte = Bonus % 10;
-	if (AppByte) {
-		TurnOffLamp(BonusLamp + AppByte - 1);}
+	byte BonusL = Bonus % 10;
+	if (BonusL) {
+		TurnOffLamp(BonusLamp + BonusL - 1);}
 	else {
-		AppByte = Bonus / 10;
-		TurnOffLamp(BonusLamp + 8 + AppByte);
-		if (AppByte > 1) {
-			TurnOnLamp(BonusLamp + 7 + AppByte);}
+		BonusL = Bonus / 10;
+		TurnOffLamp(BonusLamp + 8 + BonusL);
+		if (BonusL > 1) {
+			TurnOnLamp(BonusLamp + 7 + BonusL);}
 		for (i=48; i<57; i++) {
 			TurnOnLamp(i);}}
 	Points[Player] += 1000;
@@ -1076,7 +1076,7 @@ void BallEnd2(byte Balls) {
 		AddBlinkLamp(1, 250);                       			// also in the backbox
 		ExBalls--;
 		ActivateTimer(2000, 0, AfterExBallRelease);
-		ActivateTimer(1000, AppByte, NewBall);
+		ActivateTimer(1000, Balls, NewBall);
 		BlockOuthole = false;}														// remove outhole block
 	else {                                        			// Player has no extra balls
 		if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
