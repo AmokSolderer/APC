@@ -15,7 +15,6 @@ const byte USB_CommandLength[110] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 const byte USB_DisplayDigitNum[8][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
 const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
 const char USB_BK_NewGameSounds[5][13] = {{"0_2b_001.snd"},{"0_2b_002.snd"},{"0_2b_003.snd"},{"0_2b_004.snd"},{"0_2b_005.snd"}}; // sounds for the BK game start
-const char USB_JL_NewGameSounds[5][13] = {{"0_26_001.snd"},{"0_26_002.snd"},{"0_26_003.snd"},{"0_26_004.snd"}}; // sounds for the JL game start
 
 																											// offsets of settings in the settings array
 #define USB_Watchdog 0																// watchdog enable setting
@@ -174,7 +173,7 @@ void USB_ReleasedSwitches(byte Switch) {
 	case 72:
 		if (USB_Enter_TestmodeTimer) {
 			KillTimer(USB_Enter_TestmodeTimer);
-			USB_Enter_TestmodeTimer = 0;}
+			USB_Enter_TestmodeTimer = 0;} 									// @suppress("No break at end of case")
 	default:
 		byte i = 0;
 		while (USB_HWrule_RelSw[i][0]) {									// check for HW rules for this switch
@@ -898,7 +897,9 @@ void USB_SerialCommand() {
 							break;}}
 					else if (game_settings[USB_PinMameGame] == 20) {	// game = Jungle Lord
 						if (USB_SerialBuffer[1] == 38) {					// sound command 0x26 - start game
-							PlayRandomSound(52, 4, (char *)USB_JL_NewGameSounds);
+							char FileName[13] = "0_26_000.snd";			// generate base filename
+							FileName[7] = 48 + random(4) + 1;				// change the counter according to random number
+							PlaySound(52, (char*) FileName);				// play the corresponding sound file
 							break;}
 						if (USB_SerialBuffer[1] == 42) {					// sound command 0x2a - background sound - sound series
 							SoundSeries[0] = 0;
@@ -930,7 +931,51 @@ void USB_SerialCommand() {
 							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
 							PlaySound(51, (char*) FileName);
 							break;}}
-					char FileName[9] = "0_00.snd";
+					else if (game_settings[USB_PinMameGame] == 21) {	// game = Pharaoh
+						if (USB_SerialBuffer[1] == 5) {						// sound command 0x05 - random speech
+							char FileName[13] = "0_05_000.snd";			// generate base filename
+							FileName[7] = 48 + random(4) + 1;				// change the counter according to random number
+							PlaySound(52, (char*) FileName);				// play the corresponding sound file
+							break;}
+						else if (USB_SerialBuffer[1] == 10) {			// sound command 0x0a - random speech
+							char FileName[13] = "0_0a_000.snd";			// generate base filename
+							FileName[7] = 48 + random(2) + 1;				// change the counter according to random number
+							PlaySound(52, (char*) FileName);				// play the corresponding sound file
+							break;}
+						else if (USB_SerialBuffer[1] == 13) {			// sound command 0x0d - background sound - sound series
+							if (SoundSeries[2] < 31)								// sound series has 31 different tunes
+								SoundSeries[2]++;											// switch to the next tune when sound command is called again
+							char FileName[13] = "0_0d_000.snd";			// generate base filename
+							FileName[7] = 48 + (SoundSeries[2] % 10);	// change the 7th character of filename according to current tune
+							FileName[6] = 48 + (SoundSeries[2] % 100) / 10;	// the same with the 6th character
+							for (i=0; i<12; i++) {									// store filename to be repeated
+								USB_RepeatSound[i] = FileName[i];}
+							NextSoundName = USB_RepeatSound;				// set this filename to be started by PlayNextSound
+							AfterSound = PlayNextSound;							// Call PlayNextSounds when current sound has run out
+							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
+							PlaySound(51, (char*) FileName);
+							break;}
+						else if (USB_SerialBuffer[1] == 16) {			// sound command 0x10 - random speech
+							char FileName[13] = "0_10_000.snd";			// generate base filename
+							FileName[7] = 48 + random(2) + 1;				// change the counter according to random number
+							PlaySound(52, (char*) FileName);				// play the corresponding sound file
+							break;}
+						else if (USB_SerialBuffer[1] == 17) {			// sound command 0x11 - random speech
+							char FileName[13] = "0_11_000.snd";			// generate base filename
+							FileName[7] = 48 + random(2) + 1;				// change the counter according to random number
+							PlaySound(52, (char*) FileName);				// play the corresponding sound file
+							break;}
+						else if (USB_SerialBuffer[1] == 23) {			// sound command 0x17 - random speech
+							char FileName[13] = "0_17_000.snd";			// generate base filename
+							FileName[7] = 48 + random(2) + 1;				// change the counter according to random number
+							PlaySound(52, (char*) FileName);				// play the corresponding sound file
+							break;}
+						else if (USB_SerialBuffer[1] == 26) {			// sound command 0x1a - random speech
+							char FileName[13] = "0_1a_000.snd";			// generate base filename
+							FileName[7] = 48 + random(4) + 1;				// change the counter according to random number
+							PlaySound(52, (char*) FileName);				// play the corresponding sound file
+							break;}}																// exit special sound handling
+					char FileName[9] = "0_00.snd";							// handle non game specific sound
 					if ((USB_SerialBuffer[1] >> 4) < 10) {
 						FileName[2] = 48 + (USB_SerialBuffer[1] >> 4);}
 					else {
