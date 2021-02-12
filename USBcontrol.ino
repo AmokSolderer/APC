@@ -71,7 +71,6 @@ void USB_init() {
 			Serial.begin(115200);}}													// needed for USB and serial communication
 	else 	if (APC_settings[DebugMode]) {								// activate serial interface in debug mode
 		Serial.begin(115200);}
-	EX_Init(game_settings[USB_PinMameGame]);						// set exceptions for selected game
 	Switch_Pressed = DummyProcess;
 	GameDefinition = USB_GameDefinition;}								// read the game specific settings and highscores
 
@@ -87,6 +86,7 @@ void USB_AttractMode() {                              // Attract Mode
 	LampPattern = LampColumns;
 	Switch_Pressed = USB_SwitchHandler;
 	Switch_Released = USB_ReleasedSwitches;
+	EX_Init(game_settings[USB_PinMameGame]);						// set exceptions for selected game
 	for (byte i=0; i<5; i++) {
 		USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
 	if (game_settings[USB_Watchdog]) {									// watchdog enabled?
