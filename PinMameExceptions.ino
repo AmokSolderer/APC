@@ -1,7 +1,9 @@
 #define SoundCommandCh1 0
 #define SoundCommandCh2 1
-#define SwitchCommand 2
-#define SolenoidCommand 3
+#define SwitchActCommand 2
+#define SwitchRelCommand 3
+#define SolenoidActCommand 4
+#define SolenoidRelCommand 5
 
 byte (*PinMameException)(byte, byte);
 byte SoundSeries[3];																	// buffer to handle pre system11 sound series
@@ -58,12 +60,29 @@ byte EX_JungleLord(byte Type, byte Command){
 			return(1);}
 		else
 			return(0);
-	case SwitchCommand:
+	case SwitchActCommand:
+		if (Command == 43) {
+			EX_Sys7_BallRelease(0);}
+		else if (Command == 49) {
+			if (QueryLamp(8) && QueryLamp(2)) {															// Magnet lit?
+				ActivateSolenoid(0, 22);}}										// activate magnet
+		else if (Command == 50) {
+			if (QueryLamp(39) && QueryLamp(2)) {														// Magnet lit?
+				ActivateSolenoid(0, 21);}											// activate magnet
+			return(0);
+	case SwitchRelCommand:
+		if (Command == 49){
+			ReleaseSolenoid(22);}
+		else if (Command == 50) {
+			ReleaseSolenoid(21);}
 		return(0);
-	case SolenoidCommand:
+	case SolenoidActCommand:
+		if (Command == 2){
+			if (QueryLamp(2)) {
+				EX_Sys7_BallRelease(1);}}
 		return(0);
 	default:
-		return(0);}}
+		return(0);}}}
 
 //					if (game_settings[USB_PinMameGame] == 34) {	// game = Black Knight
 //						if (USB_SerialBuffer[1] == 48) {					// sound command 0x30

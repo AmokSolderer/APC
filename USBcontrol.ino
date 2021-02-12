@@ -141,53 +141,55 @@ void USB_WatchdogHandler(byte Event) {								// Arg = 0->Reset WD / 1-> Reset &
 
 void USB_SwitchHandler(byte Switch) {
 	byte i = 0;
-	switch (Switch) {
-	case 8:                                             // high score reset
-		digitalWrite(Blanking, LOW);                      // invoke the blanking
-		break;
-	case 72:																						// advance button
-		while (USB_ChangedSwitches[i] && (i<63)) {
-			i++;}
-		USB_ChangedSwitches[i] = Switch | 128;						// send switch code to USB
-		if (QuerySwitch(73)) {														// Up/Down switch pressed?
-			USB_Enter_TestmodeTimer = ActivateTimer(1000, 0, USB_Testmode);}	// look again in 1s
-		break;
-	default:
-		while (USB_HWrule_ActSw[i][0]) {									// check for HW rules for this switch
-			if (USB_HWrule_ActSw[i][0] == Switch) {
-				if (USB_HWrule_ActSw[i][2]) {									// duration != 0 ?
-					USB_FireSolenoid( USB_HWrule_ActSw[i][2], USB_HWrule_ActSw[i][1]);}
-				else {
-					USB_KillSolenoid(USB_HWrule_ActSw[i][1]);}
-				break;}
-			i++;}
-		i = 0;																						// add switch number to list of changed switches
-		while (USB_ChangedSwitches[i] && (i<63)) {
-			i++;}
-		USB_ChangedSwitches[i] = Switch | 128;}}
+	if (!PinMameException(SwitchActCommand, Switch)){		// check for machine specific exceptions
+		switch (Switch) {
+		case 8:                                           // high score reset
+			digitalWrite(Blanking, LOW);                    // invoke the blanking
+			break;
+		case 72:																					// advance button
+			while (USB_ChangedSwitches[i] && (i<63)) {
+				i++;}
+			USB_ChangedSwitches[i] = Switch | 128;					// send switch code to USB
+			if (QuerySwitch(73)) {													// Up/Down switch pressed?
+				USB_Enter_TestmodeTimer = ActivateTimer(1000, 0, USB_Testmode);}	// look again in 1s
+			break;
+		default:
+			while (USB_HWrule_ActSw[i][0]) {								// check for HW rules for this switch
+				if (USB_HWrule_ActSw[i][0] == Switch) {
+					if (USB_HWrule_ActSw[i][2]) {								// duration != 0 ?
+						USB_FireSolenoid( USB_HWrule_ActSw[i][2], USB_HWrule_ActSw[i][1]);}
+					else {
+						USB_KillSolenoid(USB_HWrule_ActSw[i][1]);}
+					break;}
+				i++;}
+			i = 0;																					// add switch number to list of changed switches
+			while (USB_ChangedSwitches[i] && (i<63)) {
+				i++;}
+			USB_ChangedSwitches[i] = Switch | 128;}}}
 
 void USB_ReleasedSwitches(byte Switch) {
-	switch (Switch) {
-	case 8:                                             // high score reset
-		break;
-	case 72:
-		if (USB_Enter_TestmodeTimer) {
-			KillTimer(USB_Enter_TestmodeTimer);
-			USB_Enter_TestmodeTimer = 0;} 									// @suppress("No break at end of case")
-	default:
-		byte i = 0;
-		while (USB_HWrule_RelSw[i][0]) {									// check for HW rules for this switch
-			if (USB_HWrule_RelSw[i][0] == Switch) {
-				if (USB_HWrule_RelSw[i][2]) {									// duration != 0 ?
-					USB_FireSolenoid( USB_HWrule_RelSw[i][2], USB_HWrule_RelSw[i][1]);}
-				else {
-					USB_KillSolenoid(USB_HWrule_RelSw[i][1]);}
-				break;}
-			i++;}
-		i = 0;																						// add switch number to list of changed switches
-		while (USB_ChangedSwitches[i] && (i<63)) {
-			i++;}
-		USB_ChangedSwitches[i] = Switch;}}
+	if (!PinMameException(SwitchRelCommand, Switch)){		// check for machine specific exceptions
+		switch (Switch) {
+		case 8:                                           // high score reset
+			break;
+		case 72:
+			if (USB_Enter_TestmodeTimer) {
+				KillTimer(USB_Enter_TestmodeTimer);
+				USB_Enter_TestmodeTimer = 0;} 								// @suppress("No break at end of case")
+		default:
+			byte i = 0;
+			while (USB_HWrule_RelSw[i][0]) {								// check for HW rules for this switch
+				if (USB_HWrule_RelSw[i][0] == Switch) {
+					if (USB_HWrule_RelSw[i][2]) {								// duration != 0 ?
+						USB_FireSolenoid( USB_HWrule_RelSw[i][2], USB_HWrule_RelSw[i][1]);}
+					else {
+						USB_KillSolenoid(USB_HWrule_RelSw[i][1]);}
+					break;}
+				i++;}
+			i = 0;																					// add switch number to list of changed switches
+			while (USB_ChangedSwitches[i] && (i<63)) {
+				i++;}
+			USB_ChangedSwitches[i] = Switch;}}}
 
 void USB_Testmode(byte Dummy) {												// enter system settings if advance button still pressed
 	UNUSED(Dummy);
@@ -384,36 +386,38 @@ void USB_SerialCommand() {
 			USB_WriteByte((byte) QuerySolenoid(USB_SerialBuffer[0]));}
 		break;
 	case 21:																						// set solenoid # to on
-		if (USB_SerialBuffer[0] < 25) {										// max 24 solenoids
-			if (!USB_SolTimers[USB_SerialBuffer[0]-1]) {		// recycling time over for this coil?
-				SolChange = false;														// block IRQ solenoid handling
-				if (USB_SerialBuffer[0] > 8) {								// does the solenoid not belong to the first latch?
-					if (USB_SerialBuffer[0] < 17) {							// does it belong to the second latch?
-						SolBuffer[1] |= 1<<(USB_SerialBuffer[0]-9);		// latch counts from 0
-						SolLatch |= 2;}														// select second latch
+		if (!PinMameException(SolenoidActCommand, USB_SerialBuffer[0])){	// check for machine specific exceptions
+			if (USB_SerialBuffer[0] < 25) {									// max 24 solenoids
+				if (!USB_SolTimers[USB_SerialBuffer[0]-1]) {	// recycling time over for this coil?
+					SolChange = false;													// block IRQ solenoid handling
+					if (USB_SerialBuffer[0] > 8) {							// does the solenoid not belong to the first latch?
+						if (USB_SerialBuffer[0] < 17) {						// does it belong to the second latch?
+							SolBuffer[1] |= 1<<(USB_SerialBuffer[0]-9);		// latch counts from 0
+							SolLatch |= 2;}													// select second latch
+						else {
+							SolBuffer[2] |= 1<<(USB_SerialBuffer[0]-17);
+							SolLatch |= 4;}}												// select third latch
 					else {
-						SolBuffer[2] |= 1<<(USB_SerialBuffer[0]-17);
-						SolLatch |= 4;}}													// select third latch
-				else {
-					SolBuffer[0] |= 1<<(USB_SerialBuffer[0]-1);
-					SolLatch |= 1;}															// select first latch
-				SolChange = true;}}
-		else if (USB_SerialBuffer[0] == 25) {							// 25 is a shortcut for both flipper fingers
-			ActivateSolenoid(0, 23);												// enable both flipper fingers
-			ActivateSolenoid(0, 24);}
-		else if ((USB_SerialBuffer[0] <= SolMax) && APC_settings[SolenoidExp]) {	// sol exp board selected
-			WriteToHwExt(SolBuffer[3] |= 1<<(USB_SerialBuffer[0]-26), 128+4);
-			WriteToHwExt(SolBuffer[3] |= 1<<(USB_SerialBuffer[0]-26), 4);}
+						SolBuffer[0] |= 1<<(USB_SerialBuffer[0]-1);
+						SolLatch |= 1;}														// select first latch
+					SolChange = true;}}
+			else if (USB_SerialBuffer[0] == 25) {						// 25 is a shortcut for both flipper fingers
+				ActivateSolenoid(0, 23);											// enable both flipper fingers
+				ActivateSolenoid(0, 24);}
+			else if ((USB_SerialBuffer[0] <= SolMax) && APC_settings[SolenoidExp]) {	// sol exp board selected
+				WriteToHwExt(SolBuffer[3] |= 1<<(USB_SerialBuffer[0]-26), 128+4);
+				WriteToHwExt(SolBuffer[3] |= 1<<(USB_SerialBuffer[0]-26), 4);}}
 		break;
 	case 22:																						// set solenoid # to off
-		if (USB_SerialBuffer[0] < 25) {										// max 24 solenoids
-			USB_KillSolenoid(USB_SerialBuffer[0]);}
-		else if (USB_SerialBuffer[0] == 25) {							// 25 is a shortcut for both flipper fingers
-			ReleaseSolenoid(23);														// disable both flipper fingers
-			ReleaseSolenoid(24);}
-		else if ((USB_SerialBuffer[0] <= SolMax) && APC_settings[SolenoidExp]) {	// sol exp board selected
-			WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 128+4);
-			WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 4);}
+		if (!PinMameException(SolenoidRelCommand, USB_SerialBuffer[0])){	// check for machine specific exceptions
+			if (USB_SerialBuffer[0] < 25) {										// max 24 solenoids
+				USB_KillSolenoid(USB_SerialBuffer[0]);}
+			else if (USB_SerialBuffer[0] == 25) {							// 25 is a shortcut for both flipper fingers
+				ReleaseSolenoid(23);														// disable both flipper fingers
+				ReleaseSolenoid(24);}
+			else if ((USB_SerialBuffer[0] <= SolMax) && APC_settings[SolenoidExp]) {	// sol exp board selected
+				WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 128+4);
+				WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 4);}}
 		break;
 	case 23:																						// pulse solenoid
 		if (USB_SerialBuffer[0] < 25) {										// max 24 solenoids
