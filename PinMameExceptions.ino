@@ -8,17 +8,24 @@
 #define LampOffCommand 7
 
 byte (*PinMameException)(byte, byte);
-byte LastCh1Sound;																		// preSys11: stores the number of the last sound that has been played on Ch1
 
 char USB_RepeatSound[13];															// name of the sound file to be repeated
+byte EX_EjectSolenoid;																// eject coil for improved ball release
 unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
 
 void EX_Init(byte GameNumber) {
 	switch(GameNumber) {
 	case 20:																						// Jungle Lord
+		EX_EjectSolenoid = 2;															// specify eject coil for improved ball release
 		USB_SolTimes[20] = 0;															// allow permanent on state for magna save relais
 		USB_SolTimes[21] = 0;
 		PinMameException = EX_JungleLord;									// use exception rules for Jungle Lord
+		break;
+	case 34:																						// Black Knight
+		EX_EjectSolenoid = 6;															// specify eject coil for improved ball release
+		USB_SolTimes[8] = 0;															// allow permanent on state for magna save relais
+		USB_SolTimes[9] = 0;
+		PinMameException = EX_BlackKnight;								// use exception rules for Jungle Lord
 		break;
 	default:
 		PinMameException = EX_DummyProcess;}}
@@ -28,7 +35,7 @@ byte EX_DummyProcess(byte Type, byte Command) {
 	UNUSED(Command);
 	return(0);}
 
-void EX_Sys7_BallRelease(byte State) {							// repeat ball eject in case ball got stuck
+void EX_BallRelease(byte State) {											// repeat ball eject in case ball got stuck
 	static byte Timer;
 	switch (State) {
 	case 0:
@@ -38,11 +45,11 @@ void EX_Sys7_BallRelease(byte State) {							// repeat ball eject in case ball g
 		break;
 	case 1:
 		if (!Timer) {
-			Timer = ActivateTimer(3000, 2, EX_Sys7_BallRelease);}
+			Timer = ActivateTimer(3000, 2, EX_BallRelease);}
 		break;
 	case 2:
-		ActivateSolenoid(40, 2);
-		Timer = ActivateTimer(3000, 2, EX_Sys7_BallRelease);}}
+		ActivateSolenoid(40, EX_EjectSolenoid);
+		Timer = ActivateTimer(3000, 2, EX_BallRelease);}}
 
 byte EX_JungleLord(byte Type, byte Command){
 	static byte SoundSeries[2];													// buffer to handle pre system11 sound series
@@ -86,13 +93,13 @@ byte EX_JungleLord(byte Type, byte Command){
 			return(0);																			// this number does not belong to a special sound so proceed with standard sound handling
 	case SwitchActCommand:															// activated switches
 		if (Command == 43) {															// ball successfully ejected
-			EX_Sys7_BallRelease(0);}												// stop ball release timer
+			EX_BallRelease(0);}															// stop ball release timer
 		else if (Command == 49) {													// right magnet button
 			if (QueryLamp(8) && QueryLamp(2)) {							// right magnet and ball in play lamp lit?
 				ActivateSolenoid(0, 22);}}										// activate right magnet
 		else if (Command == 50) {													// left magnet button
 			if (QueryLamp(39) && QueryLamp(2)) {						// left magnet and ball in play lamp lit?
-				ActivateSolenoid(0, 21);}}										// activate leftmagnet
+				ActivateSolenoid(0, 21);}}										// activate left magnet
 		return(0);																				// all switches are reported to PinMame
 	case SwitchRelCommand:															// deactivated switches
 		if (Command == 49){																// right magnet button
@@ -101,9 +108,9 @@ byte EX_JungleLord(byte Type, byte Command){
 			ReleaseSolenoid(21);}														// turn off left magnet
 		return(0);																				// all switches are reported to PinMame
 	case SolenoidActCommand:														// activated solenoids
-		if (Command == 2){																// ball eject coil
+		if (Command == EX_EjectSolenoid){									// ball eject coil
 			if (QueryLamp(2)) {															// ball in play lamp lit?
-				EX_Sys7_BallRelease(1);}}											// start ball release timer
+				EX_BallRelease(1);}}													// start ball release timer
 		return(0);																				// solenoid will be activated
 	default:
 		return(0);}}																			// no exception rule found for this type so proceed as normal
@@ -155,97 +162,94 @@ byte EX_Blank(byte Type, byte Command){
 	default:																						// use default treatment for undefined types
 		return(0);}}
 
-//					if (game_settings[USB_PinMameGame] == 34) {	// game = Black Knight
-//						if (USB_SerialBuffer[1] == 48) {					// sound command 0x30
-//							if (QuerySolenoid(11)) {								// GI off?
-//								PlaySound(152, "0_30_001.snd");				// play multiball ball release sequence
-//								break;}}
-//						if (USB_SerialBuffer[1] == 56) {					// sound command 0x38
-//							if (QuerySolenoid(11)) {								// GI off?
-//								if (LastCh1Sound != 56) {							// ignore all subsequent 0x38 commands
-//									AfterSound = 0;
-//									LastCh1Sound = USB_SerialBuffer[1];	// buffer sound number
-//									PlaySound(51, "0_38_001.snd");}			// play multiball start sequence
-//								break;}}
-//						if (USB_SerialBuffer[1] == 43) {					// sound command 0x2b - start game
-//							PlayRandomSound(52, 5, (char *)USB_BK_NewGameSounds);
-//							break;}
-//						if (USB_SerialBuffer[1] == 45) {					// sound command 0x2d - activated spinner - sound series
-//							if (SoundSeries[0] != 45) {
-//								SoundSeries[0] = 45;
-//								SoundSeries[1] = 0;}
-//							SoundSeries[1]++;
-//							char FileName[13] = "0_2d_000.snd";
-//							FileName[7] = 48 + (SoundSeries[1] % 10);
-//							FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
-//							FileName[5] = 48 + SoundSeries[1] / 100;
-//							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
-//							PlaySound(51, (char*) FileName);
-//							break;}
-//						if (USB_SerialBuffer[1] == 46) {					// sound command 0x2e - background sound - sound series
-//							SoundSeries[0] = 0;
-//							if (SoundSeries[2] < 29)
-//								SoundSeries[2]++;
-//							char FileName[13] = "0_2e_000.snd";
-//							FileName[7] = 48 + (SoundSeries[2] % 10);
-//							FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
-//							FileName[5] = 48 + SoundSeries[2] / 100;
-//							for (i=0; i<12; i++) {
-//								USB_RepeatSound[i] = FileName[i];}
-//							NextSoundName = USB_RepeatSound;
-//							AfterSound = PlayNextSound;
-//							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
-//							PlaySound(51, (char*) FileName);
-//							break;}
-//						if (USB_SerialBuffer[1] == 52) {					// sound command 0x34 - bonus count
-//							AfterSound = 0;
-//							if (!QueryLamp(49) && !QueryLamp(57) && !QueryLamp(61)) { // only bonus lamp 1 lit?
-//								PlaySound(51, "0_34_002.snd");
-//								break;}
-//							if (LastCh1Sound != 52) {
-//								LastCh1Sound = USB_SerialBuffer[1];		// buffer sound number
-//								SoundSeries[2] = 1;										// Reset BG sound
-//								PlaySound(51, "0_34_001.snd");}
-//							break;}
-//						if (USB_SerialBuffer[1] == 58) {					// sound command 0x3a
-//							PlaySound(152, "0_3a.snd");							// play multiball ball release sequence
-//							break;}}
-//					else if (game_settings[USB_PinMameGame] == 20) {	// game = Jungle Lord
-//						if (USB_SerialBuffer[1] == 38) {					// sound command 0x26 - start game
-//							char FileName[13] = "0_26_000.snd";			// generate base filename
-//							FileName[7] = 48 + random(4) + 1;				// change the counter according to random number
-//							PlaySound(52, (char*) FileName);				// play the corresponding sound file
-//							break;}
-//						if (USB_SerialBuffer[1] == 42) {					// sound command 0x2a - background sound - sound series
-//							SoundSeries[0] = 0;
-//							if (SoundSeries[2] < 29)
-//								SoundSeries[2]++;
-//							char FileName[13] = "0_2a_000.snd";
-//							FileName[7] = 48 + (SoundSeries[2] % 10);
-//							FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
-//							FileName[5] = 48 + SoundSeries[2] / 100;
-//							for (i=0; i<12; i++) {
-//								USB_RepeatSound[i] = FileName[i];}
-//							NextSoundName = USB_RepeatSound;
-//							AfterSound = PlayNextSound;
-//							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
-//							PlaySound(51, (char*) FileName);
-//							break;}
-//						if (USB_SerialBuffer[1] == 45) {					// sound command 0x2d - multiball start - sound series
-//							if (SoundSeries[0] != 45) {
-//								SoundSeries[0] = 45;
-//								SoundSeries[1] = 0;}
-//							if (SoundSeries[1] < 31)
-//								SoundSeries[1]++;
-//							else
-//								SoundSeries[1] = 1;
-//							char FileName[13] = "0_2d_000.snd";
-//							FileName[7] = 48 + (SoundSeries[1] % 10);
-//							FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
-//							FileName[5] = 48 + SoundSeries[1] / 100;
-//							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
-//							PlaySound(51, (char*) FileName);
-//							break;}}
+byte EX_BlackKnight(byte Type, byte Command){
+	static byte SoundSeries[3];													// buffer to handle pre system11 sound series
+	static byte LastCh1Sound;														// preSys11: stores the number of the last sound that has been played on Ch1
+	switch(Type){
+	case SoundCommandCh1:																// sound commands for channel 1
+		if (Command == 48) {															// sound command 0x30
+			if (QuerySolenoid(11)) {												// GI off?
+				PlaySound(152, "0_30_001.snd");								// play multiball ball release sequence
+				return(1);}}
+		else if (Command == 56) {													// sound command 0x38
+			if (QuerySolenoid(11)) {												// GI off?
+				if (LastCh1Sound != 56) {											// ignore all subsequent 0x38 commands
+					AfterSound = 0;
+					LastCh1Sound = Command;											// buffer sound number
+					PlaySound(51, "0_38_001.snd");}							// play multiball start sequence
+				return(1);}}
+		else if (Command == 43) {													// sound command 0x2b - start game
+			char FileName[13] = "0_2b_000.snd";							// generate base filename
+			FileName[7] = 48 + random(5) + 1;								// change the counter according to random number
+			PlaySound(52, (char*) FileName);								// play the corresponding sound file
+			return(1);}
+		else if (Command == 45) {													// sound command 0x2d - activated spinner - sound series
+			if (SoundSeries[0] != 45) {
+				SoundSeries[0] = 45;
+				SoundSeries[1] = 0;}
+			SoundSeries[1]++;
+			char FileName[13] = "0_2d_000.snd";
+			FileName[7] = 48 + (SoundSeries[1] % 10);
+			FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
+			FileName[5] = 48 + SoundSeries[1] / 100;
+			LastCh1Sound = Command;													// buffer sound number
+			PlaySound(51, (char*) FileName);
+			return(1);}
+		else if (Command == 44) {													// sound command 0x2c - stop sound
+			AfterSound = 0;
+			SoundSeries[0] = 0;															// Reset last sound series number
+			SoundSeries[1] = 0;															// reset the multiball start sound
+			SoundSeries[2] = 0;															// Reset BG sound
+			StopPlayingSound();
+			return(1);}
+		else if (Command == 46) {													// sound command 0x2e - background sound - sound series
+			SoundSeries[0] = 0;
+			if (SoundSeries[2] < 29)
+				SoundSeries[2]++;
+			char FileName[13] = "0_2e_000.snd";
+			FileName[7] = 48 + (SoundSeries[2] % 10);
+			FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
+			FileName[5] = 48 + SoundSeries[2] / 100;
+			for (i=0; i<12; i++) {
+				USB_RepeatSound[i] = FileName[i];}
+			NextSoundName = USB_RepeatSound;
+			AfterSound = PlayNextSound;
+			LastCh1Sound = Command;													// buffer sound number
+			PlaySound(51, (char*) FileName);
+			return(1);}
+		else if (Command == 52) {													// sound command 0x34 - bonus count
+			AfterSound = 0;
+			if (!QueryLamp(49) && !QueryLamp(57) && !QueryLamp(61)) { // only bonus lamp 1 lit?
+				PlaySound(51, "0_34_002.snd");
+				return(1);}
+			if (LastCh1Sound != 52) {
+				LastCh1Sound = Command;												// buffer sound number
+				SoundSeries[2] = 0;														// Reset BG sound
+				PlaySound(51, "0_34_001.snd");}
+			return(1);}
+		else if (Command == 58) {													// sound command 0x3a
+			PlaySound(152, "0_3a.snd");											// play multiball ball release sequence
+			return(1);}
+		LastCh1Sound = Command;														// buffer sound number
+		return(0);
+	case SwitchActCommand:															// activated switches
+		if (Command == 45) {															// ball successfully ejected
+			EX_BallRelease(0);}															// stop ball release timer
+		else if (Command == 9) {													// right magnet button
+			if (QueryLamp(9) && QueryLamp(2)) {							// right magnet and ball in play lamp lit?
+				ActivateSolenoid(0, 9);}}											// activate right magnet
+		else if (Command == 10) {													// left magnet button
+			if (QueryLamp(10) && QueryLamp(2)) {						// left magnet and ball in play lamp lit?
+				ActivateSolenoid(0, 10);}}										// activate left magnet
+		return(0);																				// all switches are reported to PinMame
+	case SolenoidActCommand:														// activated solenoids
+		if (Command == EX_EjectSolenoid){									// ball eject coil
+			if (QueryLamp(2)) {															// ball in play lamp lit?
+				EX_BallRelease(1);}}													// start ball release timer
+		return(0);
+	default:
+		return(0);}}
+
 //					else if (game_settings[USB_PinMameGame] == 21) {	// game = Pharaoh
 //						if (USB_SerialBuffer[1] == 5) {						// sound command 0x05 - random speech
 //							char FileName[13] = "0_05_000.snd";			// generate base filename

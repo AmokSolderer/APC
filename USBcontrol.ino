@@ -13,7 +13,6 @@ const byte USB_CommandLength[110] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB comm
 															0,0,0,0,0,0,0,0,0,0};		// Length of USB commands from 100 - 109
 const byte USB_DisplayDigitNum[8][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
 const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
-const char USB_BK_NewGameSounds[5][13] = {{"0_2b_001.snd"},{"0_2b_002.snd"},{"0_2b_003.snd"},{"0_2b_004.snd"},{"0_2b_005.snd"}}; // sounds for the BK game start
 
 																											// offsets of settings in the settings array
 #define USB_Watchdog 0																// watchdog enable setting
@@ -869,7 +868,6 @@ void USB_SerialCommand() {
 									*(DisplayLower+12) = ConvertNumLower(USB_SerialBuffer[1] / 10,(byte) *(DisplayLower+12));
 									*(DisplayLower+14) = ConvertNumLower(USB_SerialBuffer[1] % 10,(byte) *(DisplayLower+14));}
 								break;}}
-						LastCh1Sound = USB_SerialBuffer[1];				// buffer sound number
 						PlaySound(51, (char*) FileName);}}}
 			else {																					// system11 game
 				if (!USB_SerialBuffer[1]) {										// stop sound
