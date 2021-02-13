@@ -42,12 +42,20 @@ At the moment the list of available sound packages is still quite short, but we 
 
 ## Audio boards
 
-Understanding the audio boards is the second task at hand. Again I expect this to be easy for games prior to System 11, but it took me roughly a week before I was satified with the sounds of my Pinbot. Of course I started from scratch, so it's going to be easier for the next one doing this, but System 11 features various audio boards and I don't know how much they differ from the Pinbot's. For this reason I'm going to maintain a second list here where all PinMame relevant information about the various systems are listed.
+Understanding the audio boards is the second task at hand. Again I expect this to be easy for games prior to System 11, but it took me roughly a week before I was satified with the sounds of my Pinbot. Of course I started from scratch, so it's going to be easier for the next one doing this, but System 11 features various audio boards and I don't know how much they differ from the Pinbot's. For this reason I'm going to maintain a second list here where all PinMame relevant information about the various systems are listed.  
+Alas, the sound commands seem to be unique for every machine which requires a slightly different handling of sound commands depending of which machine is selected. The APC SW features a machine specific exception handling which allows you to implement these special audio commands for your machine. A description of this can be found on the [Howto page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame_howto.md).
 
 ### System 7
 
-These boards are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher pitch). For the APC the sound file names have to be like 0_2a_000, where the leading zero is selecting sound channel 0 (System 7 games use only this channel), 2a being the sound number and 000 the pitch of this sound. The latter number is counted up for all pitches available for this sound.  
-Alas, the numbers of these sounds are different from game to game which means they have to be programmed to the APC SW for each game.
+Up to now we know standard commands which seem to be identical for System7 audio boards:
+
+|Command / Hex|Comment|
+|--|--|
+|2c|Stop Sound|
+|7f|Not a real sound command, but used to reset the data bus to the audio board between commands|
+
+These boards are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher tune). For the APC these sound file names have to be like 0_2a_000, where the leading zero is selecting sound channel 0 (System 7 games use only this channel), 2a being the sound number and 000 the tune of this sound. The latter number is counted up for all tunes available for this sound.  
+One of these sound series is usually the BG sound. This sound can be interrupted by other sounds but continues afterwards. As the numbers of these sounds are different from game to game they have to be set as an exception for every game. 
 
 ### System 11
 

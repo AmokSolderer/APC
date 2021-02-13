@@ -1,6 +1,5 @@
 // USB interface for APC based pinball machines
 
-unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
 const byte USB_CommandLength[110] = {0,0,0,0,0,0,0,1,0,0,		// Length of USB commands from 0 - 9
 															1,1,1,0,0,0,0,0,0,0,		// Length of USB commands from 10 - 19
 															1,1,1,1,2,2,0,0,0,0,		// Length of USB commands from 20 - 29
@@ -371,12 +370,14 @@ void USB_SerialCommand() {
 			USB_WriteByte((byte) 2);}
 		break;
 	case 11:																						// turn on lamp
-		if (USB_SerialBuffer[0] < 65) {										// max 64 lamps
-			TurnOnLamp(USB_SerialBuffer[0]);}
+		if (!PinMameException(LampOnCommand, USB_SerialBuffer[0])){	// check for machine specific exceptions
+			if (USB_SerialBuffer[0] < 65) {									// max 64 lamps
+				TurnOnLamp(USB_SerialBuffer[0]);}}
 		break;
 	case 12:																						// turn off lamp
-		if (USB_SerialBuffer[0] < 65) {										// max 64 lamps
-			TurnOffLamp(USB_SerialBuffer[0]);}
+		if (!PinMameException(LampOffCommand, USB_SerialBuffer[0])){	// check for machine specific exceptions
+			if (USB_SerialBuffer[0] < 65) {									// max 64 lamps
+				TurnOffLamp(USB_SerialBuffer[0]);}}
 		break;
 	case 19:																						// get number of modern lights
 		USB_WriteByte((byte) 0);
@@ -837,12 +838,6 @@ void USB_SerialCommand() {
 					WriteToHwExt(USB_SerialBuffer[1], 16);}			// turn off Sel14
 				else {																				// use APC sound HW
 					if (USB_SerialBuffer[1] == 127) {						// sound command 0x7f - audio bus init - not relevant for APC sound
-						break;}
-					if (USB_SerialBuffer[1] == 44) {						// sound command 0x2c - stop sound
-						AfterSound = 0;
-						SoundSeries[0] = 0;
-						SoundSeries[2] = 1;												// Reset BG sound
-						StopPlayingSound();
 						break;}
 					if (!PinMameException(SoundCommandCh1, USB_SerialBuffer[1])){
 						char FileName[9] = "0_00.snd";							// handle non game specific sound

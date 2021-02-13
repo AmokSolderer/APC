@@ -55,3 +55,107 @@ You can activate this mode in the game settings. To do this you have to press Ad
 
 In Audio Debug mode the lower display(s) are used for audio information. The Player 3 display (or the left part of the lower display for BK2K type displays) shows information for sound prefix 00 and the Player 4 display (right part of lower display for BK2K) does the same for prefix 01. If the requested sound is found on the SD card, it's hex number is shown in the left side of the corresponding display and the sound is played normally. If the sound file is missing it's hex number is shown on the right side of the corresponding display which makes it easy to find missing sound files.  
 As the pre System11 displays cannot show letters, the corresponding sound numbers are shown in decimal values when this kind of display is selected.
+
+## Programming exceptions
+
+The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. To enable this for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.  
+You can manipulate sound, lamp, switch and solenoid commands. Some of these expections are necessary to make your machine work correctly while others are simply improvements or moderate rule changes.
+
+### Doing sound exceptions for the Jungle Lord
+
+Let's use the System 7 Jungle Lord as an example how to use exception handling in pratice:
+
+First of all we need to generate a Jungle Lord specific code section to handle all the required exceptions. There's a template named byte EX_Blank(byte Type, byte Command) in PinMameExceptions.ino you could use as a start. So I create a copy of this and rename it to byte EX_JungleLord(byte Type, byte Command)  
+In order for the system to use this code section, we have to add it to EX_Init which is on top of PinMameExceptions.ino and determines which code is used for which machine. As Jungle Lord is the first machine to have such an exception handling there's just one entry in EX_Init:
+
+    void EX_Init(byte GameNumber) {
+      switch(GameNumber) {
+      case 20:																						// Jungle Lord
+        USB_SolTimes[20] = 0;															// allow permanent on state for magna save relais
+        USB_SolTimes[21] = 0;
+        PinMameException = EX_JungleLord;									// use exception rules for Jungle Lord
+        break;
+      default:
+        PinMameException = EX_DummyProcess;}}
+
+All other games do not have an exception handler yet, so the exception pointer just points to a dummy process which does nothing.  
+The change of the USB_SolTimes is only necessary as we also want to improve the reaction time of the magna save magnets and for this we must be allowed to turn on the magnets permanently. But ignore this for now as this is handled later.
+
+Jungle Lord uses certain [System 7 specific sound commands](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md#system-7) the APC has to know for the sound to work correctly. As System7 just use one sound channel, these exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program.
+
+The first exception is the 0x26 sound command which triggers one of four random spoken phrases. In the exception handler this looks like this:
+
+    case SoundCommandCh1:																// sound commands for channel 1
+      if (Command == 38){ 															// sound command 0x26 - start game
+        char FileName[13] = "0_26_000.snd";							// generate base filename
+        FileName[7] = 48 + random(4) + 1;								// change the counter according to random number
+        PlaySound(52, (char*) FileName);								// play the corresponding sound file
+        return(1);}																			// do not try to play this as a normal sound
+
+The APC expects the corresponding sound files to be named 0_26_00X.snd with the X being one for the first file, two for the second and so on.  
+First we generate the base filename "0_26_000.snd" and then we change the 8th character of this string to a random number between 1 and 4. After that we play the sound file and return a value of 1 to the main program.  
+The return value is important, because it determines whether the main program additionally tries to process this sound command afterwards (return(0)) or whether it just omitts any further processing. In our case we return a value of 1 since there's nothing more to do about this command. For special sound commands it makes no sense to return a 0 anyway, because in this case it would make the main program look for a file named 0_26.snd which doesn't exist.
+
+The next special sound command of the Jungle Lord is 0x2d which is a looping sound series, which means it starts again with the first tune after the last has been played. The corresponding code is:
+
+		else if (Command == 45){													// sound command 0x2d - multiball start - sound series
+			if (SoundSeries[1] < 31)												// this sound has 31 tunes
+				SoundSeries[1]++;															// every call of this sound proceeds with next tune
+			else
+				SoundSeries[1] = 1;														// start all over again
+			char FileName[13] = "0_2d_000.snd";							// generate base filename
+			FileName[7] = 48 + (SoundSeries[1] % 10);				// change the 7th character of filename according to current tune
+			FileName[6] = 48 + (SoundSeries[1] % 100) / 10;	// the same with the 6th character
+			PlaySound(51, (char*) FileName);								// play the sound
+			return(1);}																			// this was a special sound so do not proceed with standard sound handling
+
+For this we need an additional variable SoundSeries which stores the number of the tune currently being played. This variable has to be defined as static byte at the beginning of our EX_JungleLord.  
+At first it is checked whether the last tune of this series is currently being played. If yes then the tune number is set back to one other wise it is increased by one. After that the base filename is generated and the new tune number is written into it. Then the sound is played and one is returned to the main program to indicate that the handling of this sound number has been completed.
+
+Sound command 0x2a is very is also a sound series, so it's treated very similarly.  
+One difference is that this sound series is not a looping one which means the tune counter is not reset to one, but stays at the highest value until it is reset by the stop sound command 0x2c. However, this command resets the tune of the 0x2d sound series (SoundSeries[1] = 0;).  
+But the major difference is that 0x2a is the background sound which can be interrupted by other sound, but will continue afterwards.  
+In the APC SW the Aftersound pointer can be used for this. This pointer can be set to a routine which is called automatically when a sound has run out. Here we use the PlayNextSound routine which takes the filename NextSoundName points to and plays the file. For this we copy the filename of the current tune to USB_RepeatSound and set the NextSoundName accordingly.
+
+Last but not least we need to implement the stop sound command 0x2c.
+
+		else if (Command == 44) {													// sound command 0x2c - stop sound
+			AfterSound = 0;
+			SoundSeries[0] = 0;															// Reset BG sound
+      SoundSeries[1] = 0;															// reset the multiball start sound
+			StopPlayingSound();
+			return(1);}
+
+This command sets AfterSound = 0 which will prevent the BG sound from being restarted. Then it resets both sound series and stops the current playback.
+
+### Doing exceptions for the magna save of the Jungle Lord
+
+Jungle Lord features timed magna saves which means that the magnets are just activated for as long as the magna save buttons are pressed.  
+If we let PinMame handle this then the message of the pressed button is forwarded from the APC to PinMame who will calculate an answer and in return send a command to turn on the magna save coil. Even though the reaction times are quite short it still feels a little sluggish sometimes and we want the APC to handle this directly.
+
+As the whole process is triggered by the magna save button, the SwitchActCommand case is the right place to add our code:
+
+    case SwitchActCommand:															// activated switches
+      if (Command == 49) {													    // right magnet button
+        if (QueryLamp(8) && QueryLamp(2)) {							// right magnet and ball in play lamp lit?
+          ActivateSolenoid(0, 22);}}										// activate right magnet
+      else if (Command == 50) {													// left magnet button
+        if (QueryLamp(39) && QueryLamp(2)) {						// left magnet and ball in play lamp lit?
+          ActivateSolenoid(0, 21);}}										// activate leftmagnet
+      return(0);																				// all switches are reported to PinMame
+
+If the right magna save button is pressed, we check whether lamp 8 is lit which means that the player has activated the magna save feature. We also check for the 'Ball in Play' lamp 2 to prevent the magnet from being activated without a game running. If these conditions are met, the magna save coil 22 is activated.  
+The left magna save is treated accordingly.  
+Note, that we return a zero to the main program which means that PinMame will be informed about the activation of these switches. This is necessary as PinMame has to count the seconds the magna save is on and turn off the magna save lamps if the player has none left.
+
+For timed magna saves we have to do the same for the magna save buttons being released, we just don't have to check for any lit lamps:
+
+    case SwitchRelCommand:															// deactivated switches
+      if (Command == 49){																// right magnet button
+        ReleaseSolenoid(22);}														// turn off right magnet
+      else if (Command == 50) {													// left magnet button
+        ReleaseSolenoid(21);}														// turn off left magnet
+      return(0);																				// all switches are reported to PinMame
+      
+### Improving a game
+

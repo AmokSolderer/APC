@@ -1,7 +1,9 @@
 # The Arduino Pinball Controller
-![APC 2.0](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC.JPG)
-The picture shows an APC 3.0 board configured for System 9 + 11 machines as the connectors for System 3 - 7 are not populated.  
-See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impression what has changed compared to the previous versions.
+
+Before I explain what the APC is, let's first clarify what it is not.
+ 
+The APC is no commercial drop-in replacement board. It is a private project and I'm not liable for any damage that might occur to your machine while using it.  
+Some special machines might even not work with the APC or require additional HW. Jokerz! for example has a unique audio board which uses seperate audio channels for the cabinet and the backbox speakers. The APC HW is capable of generating two independent sound channels, but you need at least DC-blocks (capacitors) when connecting it to the speakers.
 
 ## Overview
 
@@ -18,7 +20,9 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards at a price of well below 100€ per board. 
 
-Note that Jokerz! has a unique audio board which uses seperate audio channels for the cabinet and the backbox speakers. The APC HW is capable of generating two independent sound channels, but you need at least DC-blocks (capacitors) when connecting it to the speakers of the Jokerz!
+![APC 2.0](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC.JPG)
+The picture shows an APC 3.0 board configured for System 9 + 11 machines as the connectors for System 3 - 7 are not populated.  
+See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impression what has changed compared to the previous versions.
 
 The picture below shows an APC prototype in my Pinbot.
 

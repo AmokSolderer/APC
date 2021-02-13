@@ -342,9 +342,12 @@ void Init_System() {
 		*(DisplayLower+30) = DispPattern2[2*(APC_Version[4]-32)];
 		*(DisplayLower+31) = DispPattern2[2*(APC_Version[4]-32)+1];}
 	else {																							// BCD display
+		*(DisplayLower+18) = ConvertNumLower((byte) 10,(byte) *(DisplayLower+24));
+		*(DisplayLower+20) = ConvertNumLower((byte) 10,(byte) *(DisplayLower+24));
+		*(DisplayLower+22) = ConvertNumLower((byte) 10,(byte) *(DisplayLower+24));
 		*(DisplayLower+24) = ConvertNumLower((byte) APC_Version[0]-48,(byte) *(DisplayLower+24));
 		*(DisplayLower+26) = ConvertNumLower((byte) APC_Version[1]-48,(byte) *(DisplayLower+26));
-		*(DisplayLower+27) = 8;														// Comma
+		*(DisplayLower+27) = 128;													// Comma
 		*(DisplayLower+28) = ConvertNumLower((byte) APC_Version[3]-48,(byte) *(DisplayLower+28));
 		*(DisplayLower+30) = ConvertNumLower((byte) APC_Version[4]-48,(byte) *(DisplayLower+30));}
 	delay(2000);
