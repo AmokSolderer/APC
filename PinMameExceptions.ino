@@ -13,26 +13,6 @@ char USB_RepeatSound[13];															// name of the sound file to be repeated
 byte EX_EjectSolenoid;																// eject coil for improved ball release
 unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
 
-void EX_Init(byte GameNumber) {
-	switch(GameNumber) {
-	case 20:																						// Jungle Lord
-		EX_EjectSolenoid = 2;															// specify eject coil for improved ball release
-		USB_SolTimes[20] = 0;															// allow permanent on state for magna save relais
-		USB_SolTimes[21] = 0;
-		PinMameException = EX_JungleLord;									// use exception rules for Jungle Lord
-		break;
-	case 21:																						// Pharaoh
-		PinMameException = EX_Pharaoh;										// use exception rules for Pharaoh
-		break;
-	case 34:																						// Black Knight
-		EX_EjectSolenoid = 6;															// specify eject coil for improved ball release
-		USB_SolTimes[8] = 0;															// allow permanent on state for magna save relais
-		USB_SolTimes[9] = 0;
-		PinMameException = EX_BlackKnight;								// use exception rules for Jungle Lord
-		break;
-	default:
-		PinMameException = EX_DummyProcess;}}
-
 byte EX_DummyProcess(byte Type, byte Command) {
 	UNUSED(Type);
 	UNUSED(Command);
@@ -308,3 +288,22 @@ byte EX_Blank(byte Type, byte Command){
 	default:																						// use default treatment for undefined types
 		return(0);}}
 
+void EX_Init(byte GameNumber) {
+	switch(GameNumber) {
+	case 20:																						// Jungle Lord
+		EX_EjectSolenoid = 2;															// specify eject coil for improved ball release
+		USB_SolTimes[20] = 0;															// allow permanent on state for magna save relais
+		USB_SolTimes[21] = 0;
+		PinMameException = EX_JungleLord;									// use exception rules for Jungle Lord
+		break;
+	case 21:																						// Pharaoh
+		PinMameException = EX_Pharaoh;										// use exception rules for Pharaoh
+		break;
+	case 34:																						// Black Knight
+		EX_EjectSolenoid = 6;															// specify eject coil for improved ball release
+		USB_SolTimes[8] = 0;															// allow permanent on state for magna save relais
+		USB_SolTimes[9] = 0;
+		PinMameException = EX_BlackKnight;								// use exception rules for Jungle Lord
+		break;
+	default:
+		PinMameException = EX_DummyProcess;}}

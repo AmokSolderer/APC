@@ -65,8 +65,15 @@ You can manipulate sound, lamp, switch and solenoid commands. Some of these expe
 
 Let's use the System 7 Jungle Lord as an example how to use exception handling in pratice:
 
-First of all we need to generate a Jungle Lord specific code section to handle all the required exceptions. There's a template named byte EX_Blank(byte Type, byte Command) in PinMameExceptions.ino you could use as a start. So I create a copy of this and rename it to byte EX_JungleLord(byte Type, byte Command)  
-In order for the system to use this code section, we have to add it to EX_Init which is on top of PinMameExceptions.ino and determines which code is used for which machine. As Jungle Lord is the first machine to have such an exception handling there's just one entry in EX_Init:
+First of all we need to generate a Jungle Lord specific code section to handle all the required exceptions. There's a template named
+
+    byte EX_Blank(byte Type, byte Command)
+    
+in PinMameExceptions.ino you could use as a start. So I create a copy of this and rename it to
+
+    byte EX_JungleLord(byte Type, byte Command)  
+
+In order for the system to use this code section, we have to add it to EX_Init which is at the ende of PinMameExceptions.ino and determines which code is used for which machine. As Jungle Lord is the first machine to have such an exception handling there's just one entry in EX_Init yet:
 
     void EX_Init(byte GameNumber) {
       switch(GameNumber) {
@@ -82,7 +89,7 @@ In order for the system to use this code section, we have to add it to EX_Init w
 All other games do not have an exception handler yet, so the exception pointer just points to a dummy process which does nothing.  
 The change of the USB_SolTimes is only necessary as we also want to improve the reaction time of the magna save magnets and for this we must be allowed to turn on the magnets permanently. But ignore this for now as well as the EX_EjectSolenoid.
 
-Jungle Lord uses certain [System 7 specific sound commands](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md#system-7) the APC has to know for the sound to work correctly. As System7 just use one sound channel, these exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program.
+Jungle Lord uses certain [System 7 specific sound commands](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md#system-7) the APC has to know for the sound to work correctly. As System7 just uses one sound channel, these exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program.
 
 The first exception is the 0x26 sound command which triggers one of four random spoken phrases. In the exception handler this looks like this:
 
@@ -111,11 +118,11 @@ The next special sound command of the Jungle Lord is 0x2d which is a looping sou
       return(1);}                                     // this was a special sound so do not proceed with standard sound handling
 
 For this we need an additional variable SoundSeries which stores the number of the tune currently being played. This variable has to be defined as static byte at the beginning of our EX_JungleLord.  
-At first it is checked whether the last tune of this series is currently being played. If yes then the tune number is set back to one other wise it is increased by one. After that the base filename is generated and the new tune number is written into it. Then the sound is played and one is returned to the main program to indicate that the handling of this sound number has been completed.
+At first it is checked whether the last tune of this series is currently being played. If yes then the tune number is set back to one otherwise it is increased by one. After that the base filename is generated and the new tune number is written into it. Then the sound is played and one is returned to the main program to indicate that the handling of this sound number has been completed.
 
 Sound command 0x2a is very is also a sound series, so it's treated very similarly.  
 One difference is that this sound series is not a looping one which means the tune counter is not reset to one, but stays at the highest value until it is reset by the stop sound command 0x2c. However, this command resets the tune of the 0x2d sound series (SoundSeries[1] = 0;).  
-But the major difference is that 0x2a is the background sound which can be interrupted by other sound, but will continue afterwards.  
+But the major difference is that 0x2a is the background sound which can be interrupted by other sounds, but will continue afterwards.  
 In the APC SW the Aftersound pointer can be used for this. This pointer can be set to a routine which is called automatically when a sound has run out. Here we use the PlayNextSound routine which takes the filename NextSoundName points to and plays the file. For this we copy the filename of the current tune to USB_RepeatSound and set the NextSoundName accordingly.
 
 Last but not least we need to implement the stop sound command 0x2c.
@@ -132,7 +139,7 @@ This command sets AfterSound = 0 which will prevent the BG sound from being rest
 ### Doing exceptions for the magna save of the Jungle Lord
 
 Jungle Lord features timed magna saves which means that the magnets are just activated for as long as the magna save buttons are pressed.  
-If we let PinMame handle this then the message of the pressed button is forwarded from the APC to PinMame who will calculate an answer and in return send a command to turn on the magna save coil. Even though the reaction times are quite short it still feels a little sluggish sometimes and we want the APC to handle this directly.
+If we let PinMame handle this, then the message of the pressed button is forwarded from the APC to PinMame who will calculate an answer and in return send a command to turn on the magna save coil. Even though the reaction times are quite short it still feels a little sluggish sometimes and we want the APC to handle this directly.
 
 As the whole process is triggered by the magna save button, the SwitchActCommand case is the right place to add our code:
 
@@ -186,11 +193,11 @@ How does this look in code? First we need a handling routine for our timer. As w
         ActivateSolenoid(40, EX_EjectSolenoid);           // activate the shooter lane feeder again
         Timer = ActivateTimer(3000, 2, EX_BallRelease);}} // and restart the timer
 
-This routine call be called with a State argument which determines what it has to do.  
+This routine shall be called with a State argument which determines what it has to do.  
 If State is 0 then the timer is not needed any more and must be deactivated. In our case this would happen if the ball has triggered the shooter lane switch.  
 State = 1 means that a timer shall be started. The number of this timer is being stored in the Timer variable and the Timer is configured to call our handler again after 3s. When it does so it'll pass a 2 as an argument which will indicate that our handling routine has been called by a timer.  
 When our handler is called with State = 2 it knows that the timer has run out which means that the ball is probably stuck. So it activates the shooter lane feeder again and restarts the timer in case the ball gets stuck again.  
-For more information about timers read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md#2-basic-game-functions)
+For more information about timers read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md#2-basic-game-functions) tutorial.
 
 With this timer handler in place we just have to tell our exception handler to use it. First of all it needs to know which coil is for the shooter lane feeder. In case of the Jungle Lord this is solenoid number 2 which we already defined before in EX_Init by setting EX_EjectSolenoid = 2. 
 The rest is easy. We just have to create an exception for EX_EjectSolenoid being activated
@@ -202,7 +209,7 @@ The rest is easy. We just have to create an exception for EX_EjectSolenoid being
       return(0);                                        // solenoid will be activated
 
 If the shooter lane feeder is activated, we first check whether a game is running by probing the 'Ball in Play' lamp 2. This is because we don't want our fix to be accidentially triggered in test mode. If the conditions are met we call our timer handler EX_BallRelease with an argument of 1, as this will start a timer. Note that we return a value of 0 as we don't want to block the activation of this solenoid.   
-Last but not least we have to switch off the timer when the shooter lane switch is triggered. This done by calling EX_BallRelease with an argument of 0.
+Last but not least we have to switch off the timer when the shooter lane switch (43) is triggered. This done by calling EX_BallRelease with an argument of 0.
 
     case SwitchActCommand:                              // activated switches
       if (Command == 43) {                              // ball successfully ejected
