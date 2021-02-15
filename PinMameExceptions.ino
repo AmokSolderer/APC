@@ -21,6 +21,9 @@ void EX_Init(byte GameNumber) {
 		USB_SolTimes[21] = 0;
 		PinMameException = EX_JungleLord;									// use exception rules for Jungle Lord
 		break;
+	case 21:																						// Pharaoh
+		PinMameException = EX_Pharaoh;										// use exception rules for Pharaoh
+		break;
 	case 34:																						// Black Knight
 		EX_EjectSolenoid = 6;															// specify eject coil for improved ball release
 		USB_SolTimes[8] = 0;															// allow permanent on state for magna save relais
@@ -36,20 +39,20 @@ byte EX_DummyProcess(byte Type, byte Command) {
 	return(0);}
 
 void EX_BallRelease(byte State) {											// repeat ball eject in case ball got stuck
-	static byte Timer;
-	switch (State) {
-	case 0:
-		if (Timer) {
-			KillTimer(Timer);
-			Timer = 0;}
+	static byte Timer;																	// stores the timer number
+	switch (State) {																		// determines what to do
+	case 0:																							// kill the timer
+		if (Timer) {																			// if a timer is active
+			KillTimer(Timer);																// kill it
+			Timer = 0;}																			// and set Timer = 0 to indicate that no timer is active
 		break;
-	case 1:
-		if (!Timer) {
-			Timer = ActivateTimer(3000, 2, EX_BallRelease);}
+	case 1:																							// start a timer
+		if (!Timer) {																			// if no timer is active
+			Timer = ActivateTimer(3000, 2, EX_BallRelease);}	// start one for 3s with 2 as the argument
 		break;
-	case 2:
-		ActivateSolenoid(40, EX_EjectSolenoid);
-		Timer = ActivateTimer(3000, 2, EX_BallRelease);}}
+	case 2:																							// timer has run out
+		ActivateSolenoid(40, EX_EjectSolenoid);						// activate the shooter lane feeder again
+		Timer = ActivateTimer(3000, 2, EX_BallRelease);}}	// and restart the timer
 
 byte EX_JungleLord(byte Type, byte Command){
 	static byte SoundSeries[2];													// buffer to handle pre system11 sound series
@@ -115,52 +118,60 @@ byte EX_JungleLord(byte Type, byte Command){
 	default:
 		return(0);}}																			// no exception rule found for this type so proceed as normal
 
-byte EX_Blank(byte Type, byte Command){
+byte EX_Pharaoh(byte Type, byte Command){
+	static byte SoundSeries;														// buffer to handle pre system11 sound series
 	switch(Type){
 	case SoundCommandCh1:																// sound commands for channel 1
-		if (Command == 38){ 															// sound command 0x26
-												// enter your special sound command 0x26 here
+		if (Command == 37) {															// sound command 0x25 - random speech
+			char FileName[13] = "0_05_000.snd";							// generate base filename
+			FileName[7] = 48 + random(4) + 1;								// change the counter according to random number
+			PlaySound(52, (char*) FileName);								// play the corresponding sound file
 			return(1);}																			// do not proceed with standard sound handling
-		else
-			return(0);																			// proceed with standard sound handling
-	case SoundCommandCh2:																// sound commands for channel 2
-		if (Command == 38){ 															// sound command 0x26
-												// enter your special sound command 0x26 here
+		else if (Command == 42) {													// sound command 0x2a - random speech
+			char FileName[13] = "0_0a_000.snd";							// generate base filename
+			FileName[7] = 48 + random(2) + 1;								// change the counter according to random number
+			PlaySound(52, (char*) FileName);								// play the corresponding sound file
 			return(1);}																			// do not proceed with standard sound handling
-		else
-			return(0);																			// proceed with standard sound handling
-	case SwitchActCommand:															// activated switches
-		if (Command == 43) {															// handle the activation of switch 43
-												// enter your special handling for switch 43 here
-		}
-			return(0);																			// switch will also be reported to PinMame. Use return(1) to hide the activation from PinMame
-	case SwitchRelCommand:															// released switches
-		if (Command == 43){																// handle the deactivation of switch 43
-												// enter your special handling for switch 43 here
-		}
-		return(0);																				// switch will also be reported to PinMame. Use return(1) to hide the deactivation from PinMame
-	case SolenoidActCommand:														// activate solenoids
-		if (Command == 2){																// handle the activation of solenoid 2
-												// enter your special handling for activating solenoid 2 here
-		}
-		return(0);																				// solenoid will be activated. Use return(1) to suppress this
-	case SolenoidRelCommand:														// deactivate solenoids
-		if (Command == 2){																// handle the deactivation of solenoid 2
-												// enter your special handling for deactivating solenoid 2 here
-		}
-		return(0);																				// solenoid will be deactivated. Use return(1) to suppress this
-	case LampOnCommand:																	// turn on lamp
-		if (Command == 2){																// handle the turn on of lamp 2
-												// enter your special handling for activating lamp 2 here
-		}
-		return(0);																				// lamp will be turn on. Use return(1) to suppress this
-	case LampOffCommand:																// turn off lamp
-		if (Command == 2){																// handle the turn off of lamp 2
-												// enter your special handling for turning off lamp 2 here
-		}
-		return(0);																				// lamp will be turn off. Use return(1) to suppress this
-	default:																						// use default treatment for undefined types
-		return(0);}}
+		else if (Command == 44) {													// sound command 0x2c - stop sound
+			AfterSound = 0;																	// disable auto restart of BG sound
+			SoundSeries = 0;																// Reset BG sound
+			StopPlayingSound();
+			return(1);}																			// do not proceed with standard sound handling
+		else if (Command == 45) {													// sound command 0x2d - background sound - sound series
+			if (SoundSeries < 31)														// sound series has 31 different tunes
+				SoundSeries++;																// switch to the next tune when sound command is called again
+			char FileName[13] = "0_0d_000.snd";							// generate base filename
+			FileName[7] = 48 + (SoundSeries % 10);					// change the 7th character of filename according to current tune
+			FileName[6] = 48 + (SoundSeries % 100) / 10;		// the same with the 6th character
+			for (i=0; i<12; i++) {													// store filename to be repeated
+				USB_RepeatSound[i] = FileName[i];}
+			NextSoundName = USB_RepeatSound;								// set this filename to be started by PlayNextSound
+			AfterSound = PlayNextSound;											// Call PlayNextSounds when current sound has run out
+			PlaySound(51, (char*) FileName);
+			return(1);}																			// do not proceed with standard sound handling
+		else if (Command == 48) {													// sound command 0x30 - random speech
+			char FileName[13] = "0_10_000.snd";							// generate base filename
+			FileName[7] = 48 + random(2) + 1;								// change the counter according to random number
+			PlaySound(52, (char*) FileName);								// play the corresponding sound file
+			return(1);}																			// do not proceed with standard sound handling
+		else if (Command == 49) {													// sound command 0x31 - random speech
+			char FileName[13] = "0_11_000.snd";							// generate base filename
+			FileName[7] = 48 + random(2) + 1;								// change the counter according to random number
+			PlaySound(52, (char*) FileName);								// play the corresponding sound file
+			return(1);}																			// do not proceed with standard sound handling
+		else if (Command == 55) {													// sound command 0x37 - random speech
+			char FileName[13] = "0_17_000.snd";							// generate base filename
+			FileName[7] = 48 + random(2) + 1;								// change the counter according to random number
+			PlaySound(52, (char*) FileName);								// play the corresponding sound file
+			return(1);}																			// do not proceed with standard sound handling
+		else if (Command == 58) {													// sound command 0x3a - random speech
+			char FileName[13] = "0_1a_000.snd";							// generate base filename
+			FileName[7] = 48 + random(4) + 1;								// change the counter according to random number
+			PlaySound(52, (char*) FileName);								// play the corresponding sound file
+			return(1);}																			// do not proceed with standard sound handling
+		return(0);																				// no special sound rule found so proceed with standard sound handling
+	default:
+		return(0);}}																			// no exception rule found for this type so proceed as normal
 
 byte EX_BlackKnight(byte Type, byte Command){
 	static byte SoundSeries[3];													// buffer to handle pre system11 sound series
@@ -250,47 +261,50 @@ byte EX_BlackKnight(byte Type, byte Command){
 	default:
 		return(0);}}
 
-//					else if (game_settings[USB_PinMameGame] == 21) {	// game = Pharaoh
-//						if (USB_SerialBuffer[1] == 5) {						// sound command 0x05 - random speech
-//							char FileName[13] = "0_05_000.snd";			// generate base filename
-//							FileName[7] = 48 + random(4) + 1;				// change the counter according to random number
-//							PlaySound(52, (char*) FileName);				// play the corresponding sound file
-//							break;}
-//						else if (USB_SerialBuffer[1] == 10) {			// sound command 0x0a - random speech
-//							char FileName[13] = "0_0a_000.snd";			// generate base filename
-//							FileName[7] = 48 + random(2) + 1;				// change the counter according to random number
-//							PlaySound(52, (char*) FileName);				// play the corresponding sound file
-//							break;}
-//						else if (USB_SerialBuffer[1] == 13) {			// sound command 0x0d - background sound - sound series
-//							if (SoundSeries[2] < 31)								// sound series has 31 different tunes
-//								SoundSeries[2]++;											// switch to the next tune when sound command is called again
-//							char FileName[13] = "0_0d_000.snd";			// generate base filename
-//							FileName[7] = 48 + (SoundSeries[2] % 10);	// change the 7th character of filename according to current tune
-//							FileName[6] = 48 + (SoundSeries[2] % 100) / 10;	// the same with the 6th character
-//							for (i=0; i<12; i++) {									// store filename to be repeated
-//								USB_RepeatSound[i] = FileName[i];}
-//							NextSoundName = USB_RepeatSound;				// set this filename to be started by PlayNextSound
-//							AfterSound = PlayNextSound;							// Call PlayNextSounds when current sound has run out
-//							LastCh1Sound = USB_SerialBuffer[1];			// buffer sound number
-//							PlaySound(51, (char*) FileName);
-//							break;}
-//						else if (USB_SerialBuffer[1] == 16) {			// sound command 0x10 - random speech
-//							char FileName[13] = "0_10_000.snd";			// generate base filename
-//							FileName[7] = 48 + random(2) + 1;				// change the counter according to random number
-//							PlaySound(52, (char*) FileName);				// play the corresponding sound file
-//							break;}
-//						else if (USB_SerialBuffer[1] == 17) {			// sound command 0x11 - random speech
-//							char FileName[13] = "0_11_000.snd";			// generate base filename
-//							FileName[7] = 48 + random(2) + 1;				// change the counter according to random number
-//							PlaySound(52, (char*) FileName);				// play the corresponding sound file
-//							break;}
-//						else if (USB_SerialBuffer[1] == 23) {			// sound command 0x17 - random speech
-//							char FileName[13] = "0_17_000.snd";			// generate base filename
-//							FileName[7] = 48 + random(2) + 1;				// change the counter according to random number
-//							PlaySound(52, (char*) FileName);				// play the corresponding sound file
-//							break;}
-//						else if (USB_SerialBuffer[1] == 26) {			// sound command 0x1a - random speech
-//							char FileName[13] = "0_1a_000.snd";			// generate base filename
-//							FileName[7] = 48 + random(4) + 1;				// change the counter according to random number
-//							PlaySound(52, (char*) FileName);				// play the corresponding sound file
-//							break;}}																// exit special sound handling
+byte EX_Blank(byte Type, byte Command){
+	switch(Type){
+	case SoundCommandCh1:																// sound commands for channel 1
+		if (Command == 38){ 															// sound command 0x26
+												// enter your special sound command 0x26 here
+			return(1);}																			// do not proceed with standard sound handling
+		else
+			return(0);																			// proceed with standard sound handling
+	case SoundCommandCh2:																// sound commands for channel 2
+		if (Command == 38){ 															// sound command 0x26
+												// enter your special sound command 0x26 here
+			return(1);}																			// do not proceed with standard sound handling
+		else
+			return(0);																			// proceed with standard sound handling
+	case SwitchActCommand:															// activated switches
+		if (Command == 43) {															// handle the activation of switch 43
+												// enter your special handling for switch 43 here
+		}
+			return(0);																			// switch will also be reported to PinMame. Use return(1) to hide the activation from PinMame
+	case SwitchRelCommand:															// released switches
+		if (Command == 43){																// handle the deactivation of switch 43
+												// enter your special handling for switch 43 here
+		}
+		return(0);																				// switch will also be reported to PinMame. Use return(1) to hide the deactivation from PinMame
+	case SolenoidActCommand:														// activate solenoids
+		if (Command == 2){																// handle the activation of solenoid 2
+												// enter your special handling for activating solenoid 2 here
+		}
+		return(0);																				// solenoid will be activated. Use return(1) to suppress this
+	case SolenoidRelCommand:														// deactivate solenoids
+		if (Command == 2){																// handle the deactivation of solenoid 2
+												// enter your special handling for deactivating solenoid 2 here
+		}
+		return(0);																				// solenoid will be deactivated. Use return(1) to suppress this
+	case LampOnCommand:																	// turn on lamp
+		if (Command == 2){																// handle the turn on of lamp 2
+												// enter your special handling for activating lamp 2 here
+		}
+		return(0);																				// lamp will be turn on. Use return(1) to suppress this
+	case LampOffCommand:																// turn off lamp
+		if (Command == 2){																// handle the turn off of lamp 2
+												// enter your special handling for turning off lamp 2 here
+		}
+		return(0);																				// lamp will be turn off. Use return(1) to suppress this
+	default:																						// use default treatment for undefined types
+		return(0);}}
+

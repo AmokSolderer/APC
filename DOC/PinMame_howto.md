@@ -70,27 +70,28 @@ In order for the system to use this code section, we have to add it to EX_Init w
 
     void EX_Init(byte GameNumber) {
       switch(GameNumber) {
-      case 20:																						// Jungle Lord
-        USB_SolTimes[20] = 0;															// allow permanent on state for magna save relais
+      case 20:                                            // Jungle Lord
+        EX_EjectSolenoid = 2;                             // specify eject coil for improved ball release
+        USB_SolTimes[20] = 0;                             // allow permanent on state for magna save relais
         USB_SolTimes[21] = 0;
-        PinMameException = EX_JungleLord;									// use exception rules for Jungle Lord
+        PinMameException = EX_JungleLord;                 // use exception rules for Jungle Lord
         break;
       default:
         PinMameException = EX_DummyProcess;}}
 
 All other games do not have an exception handler yet, so the exception pointer just points to a dummy process which does nothing.  
-The change of the USB_SolTimes is only necessary as we also want to improve the reaction time of the magna save magnets and for this we must be allowed to turn on the magnets permanently. But ignore this for now as this is handled later.
+The change of the USB_SolTimes is only necessary as we also want to improve the reaction time of the magna save magnets and for this we must be allowed to turn on the magnets permanently. But ignore this for now as well as the EX_EjectSolenoid.
 
 Jungle Lord uses certain [System 7 specific sound commands](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md#system-7) the APC has to know for the sound to work correctly. As System7 just use one sound channel, these exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program.
 
 The first exception is the 0x26 sound command which triggers one of four random spoken phrases. In the exception handler this looks like this:
 
-    case SoundCommandCh1:																// sound commands for channel 1
-      if (Command == 38){ 															// sound command 0x26 - start game
-        char FileName[13] = "0_26_000.snd";							// generate base filename
-        FileName[7] = 48 + random(4) + 1;								// change the counter according to random number
-        PlaySound(52, (char*) FileName);								// play the corresponding sound file
-        return(1);}																			// do not try to play this as a normal sound
+    case SoundCommandCh1:                               // sound commands for channel 1
+      if (Command == 38){                               // sound command 0x26 - start game
+        char FileName[13] = "0_26_000.snd";             // generate base filename
+        FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
+        PlaySound(52, (char*) FileName);                // play the corresponding sound file
+        return(1);}                                     // do not try to play this as a normal sound
 
 The APC expects the corresponding sound files to be named 0_26_00X.snd with the X being one for the first file, two for the second and so on.  
 First we generate the base filename "0_26_000.snd" and then we change the 8th character of this string to a random number between 1 and 4. After that we play the sound file and return a value of 1 to the main program.  
@@ -98,16 +99,16 @@ The return value is important, because it determines whether the main program ad
 
 The next special sound command of the Jungle Lord is 0x2d which is a looping sound series, which means it starts again with the first tune after the last has been played. The corresponding code is:
 
-		else if (Command == 45){													// sound command 0x2d - multiball start - sound series
-			if (SoundSeries[1] < 31)												// this sound has 31 tunes
-				SoundSeries[1]++;															// every call of this sound proceeds with next tune
-			else
-				SoundSeries[1] = 1;														// start all over again
-			char FileName[13] = "0_2d_000.snd";							// generate base filename
-			FileName[7] = 48 + (SoundSeries[1] % 10);				// change the 7th character of filename according to current tune
-			FileName[6] = 48 + (SoundSeries[1] % 100) / 10;	// the same with the 6th character
-			PlaySound(51, (char*) FileName);								// play the sound
-			return(1);}																			// this was a special sound so do not proceed with standard sound handling
+    else if (Command == 45){                          // sound command 0x2d - multiball start - sound series
+      if (SoundSeries[1] < 31)                        // this sound has 31 tunes
+        SoundSeries[1]++;                             // every call of this sound proceeds with next tune
+      else
+        SoundSeries[1] = 1;                           // start all over again
+      char FileName[13] = "0_2d_000.snd";             // generate base filename
+      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current tune
+      FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
+      PlaySound(51, (char*) FileName);                // play the sound
+      return(1);}                                     // this was a special sound so do not proceed with standard sound handling
 
 For this we need an additional variable SoundSeries which stores the number of the tune currently being played. This variable has to be defined as static byte at the beginning of our EX_JungleLord.  
 At first it is checked whether the last tune of this series is currently being played. If yes then the tune number is set back to one other wise it is increased by one. After that the base filename is generated and the new tune number is written into it. Then the sound is played and one is returned to the main program to indicate that the handling of this sound number has been completed.
@@ -119,12 +120,12 @@ In the APC SW the Aftersound pointer can be used for this. This pointer can be s
 
 Last but not least we need to implement the stop sound command 0x2c.
 
-		else if (Command == 44) {													// sound command 0x2c - stop sound
-			AfterSound = 0;
-			SoundSeries[0] = 0;															// Reset BG sound
-      SoundSeries[1] = 0;															// reset the multiball start sound
-			StopPlayingSound();
-			return(1);}
+    else if (Command == 44) {                         // sound command 0x2c - stop sound
+      AfterSound = 0;
+      SoundSeries[0] = 0;                             // Reset BG sound
+      SoundSeries[1] = 0;                             // reset the multiball start sound
+      StopPlayingSound();
+      return(1);}
 
 This command sets AfterSound = 0 which will prevent the BG sound from being restarted. Then it resets both sound series and stops the current playback.
 
@@ -135,14 +136,14 @@ If we let PinMame handle this then the message of the pressed button is forwarde
 
 As the whole process is triggered by the magna save button, the SwitchActCommand case is the right place to add our code:
 
-    case SwitchActCommand:															// activated switches
-      if (Command == 49) {													    // right magnet button
-        if (QueryLamp(8) && QueryLamp(2)) {							// right magnet and ball in play lamp lit?
-          ActivateSolenoid(0, 22);}}										// activate right magnet
-      else if (Command == 50) {													// left magnet button
-        if (QueryLamp(39) && QueryLamp(2)) {						// left magnet and ball in play lamp lit?
-          ActivateSolenoid(0, 21);}}										// activate leftmagnet
-      return(0);																				// all switches are reported to PinMame
+    case SwitchActCommand:                              // activated switches
+      if (Command == 49) {                              // right magnet button
+        if (QueryLamp(8) && QueryLamp(2)) {             // right magnet and ball in play lamp lit?
+          ActivateSolenoid(0, 22);}}                    // activate right magnet
+      else if (Command == 50) {                         // left magnet button
+        if (QueryLamp(39) && QueryLamp(2)) {            // left magnet and ball in play lamp lit?
+          ActivateSolenoid(0, 21);}}                    // activate leftmagnet
+      return(0);                                        // all switches are reported to PinMame
 
 If the right magna save button is pressed, we check whether lamp 8 is lit which means that the player has activated the magna save feature. We also check for the 'Ball in Play' lamp 2 to prevent the magnet from being activated without a game running. If these conditions are met, the magna save coil 22 is activated.  
 The left magna save is treated accordingly.  
@@ -150,12 +151,61 @@ Note, that we return a zero to the main program which means that PinMame will be
 
 For timed magna saves we have to do the same for the magna save buttons being released, we just don't have to check for any lit lamps:
 
-    case SwitchRelCommand:															// deactivated switches
-      if (Command == 49){																// right magnet button
-        ReleaseSolenoid(22);}														// turn off right magnet
-      else if (Command == 50) {													// left magnet button
-        ReleaseSolenoid(21);}														// turn off left magnet
-      return(0);																				// all switches are reported to PinMame
+    case SwitchRelCommand:                              // deactivated switches
+      if (Command == 49){                               // right magnet button
+        ReleaseSolenoid(22);}                           // turn off right magnet
+      else if (Command == 50) {                         // left magnet button
+        ReleaseSolenoid(21);}                           // turn off left magnet
+      return(0);                                        // all switches are reported to PinMame
       
-### Improving a game
+### Changing a game
 
+The previous examples were just to improve the emulation of a machine, which is necessary to make your game work correct with PinMame. However, you are not limited to this, but you can also use this to apply changes to a game.
+
+As an example I want to fix one nasty problem that affected both of my System7 machines.  
+It didn't happen often but regularly that a ball ejected into the plunger lane bounced back from the side rail and into the trunk again. If it got back into the trunk completely the SW would recognize this and eject the ball again. But sometimes the ball didn't really get back into the trunk. Instead it got stuck above the shooter lane feeder and there wasn't much I could do about it except of operating the feeder manually to push the ball into the shooter lane.
+
+How can we fix this?  
+There is a switch in the shooter lane, so all we have to do is start a timer when the solenoid of the shooter lane feeder is activated. If the shooter lane switch is triggered within 3 seconds, we know the ball has been ejected successfully and we can just kill the timer. But if the timer runs out, we know the ball is probably stuck and we just operate the feeder again.
+
+How does this look in code? First we need a handling routine for our timer. As we're going to need this for most if not all System7 machines, I've generated a generic timer handler for our problem that can be used by all machines:
+
+    void EX_BallRelease(byte State) {                     // repeat ball eject in case ball got stuck
+      static byte Timer;                                  // stores the timer number
+      switch (State) {                                    // determines what to do
+      case 0:                                             // kill the timer
+        if (Timer) {                                      // if a timer is active
+          KillTimer(Timer);                               // kill it
+          Timer = 0;}                                     // and set Timer = 0 to indicate that no timer is active
+        break;
+      case 1:                                             // start a timer
+        if (!Timer) {                                     // if no timer is active
+          Timer = ActivateTimer(3000, 2, EX_BallRelease);}  // start one for 3s with 2 as the argument
+        break;
+      case 2:                                             // timer has run out
+        ActivateSolenoid(40, EX_EjectSolenoid);           // activate the shooter lane feeder again
+        Timer = ActivateTimer(3000, 2, EX_BallRelease);}} // and restart the timer
+
+This routine call be called with a State argument which determines what it has to do.  
+If State is 0 then the timer is not needed any more and must be deactivated. In our case this would happen if the ball has triggered the shooter lane switch.  
+State = 1 means that a timer shall be started. The number of this timer is being stored in the Timer variable and the Timer is configured to call our handler again after 3s. When it does so it'll pass a 2 as an argument which will indicate that our handling routine has been called by a timer.  
+When our handler is called with State = 2 it knows that the timer has run out which means that the ball is probably stuck. So it activates the shooter lane feeder again and restarts the timer in case the ball gets stuck again.  
+For more information about timers read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md#2-basic-game-functions)
+
+With this timer handler in place we just have to tell our exception handler to use it. First of all it needs to know which coil is for the shooter lane feeder. In case of the Jungle Lord this is solenoid number 2 which we already defined before in EX_Init by setting EX_EjectSolenoid = 2. 
+The rest is easy. We just have to create an exception for EX_EjectSolenoid being activated
+
+    case SolenoidActCommand:                            // activated solenoids
+      if (Command == EX_EjectSolenoid){                 // ball eject coil
+        if (QueryLamp(2)) {                             // ball in play lamp lit?
+          EX_BallRelease(1);}}                          // start ball release timer
+      return(0);                                        // solenoid will be activated
+
+If the shooter lane feeder is activated, we first check whether a game is running by probing the 'Ball in Play' lamp 2. This is because we don't want our fix to be accidentially triggered in test mode. If the conditions are met we call our timer handler EX_BallRelease with an argument of 1, as this will start a timer. Note that we return a value of 0 as we don't want to block the activation of this solenoid.   
+Last but not least we have to switch off the timer when the shooter lane switch is triggered. This done by calling EX_BallRelease with an argument of 0.
+
+    case SwitchActCommand:                              // activated switches
+      if (Command == 43) {                              // ball successfully ejected
+        EX_BallRelease(0);}                             // stop ball release timer
+
+These were just a few simple examples of what you could do with exception handling, but with this you could even do significant changes of the rules without having to program the whole game by yourself.
