@@ -209,7 +209,7 @@ The rest is easy. We just have to create an exception for EX_EjectSolenoid being
       return(0);                                        // solenoid will be activated
 
 If the shooter lane feeder is activated, we first check whether a game is running by probing the 'Ball in Play' lamp 2. This is because we don't want our fix to be accidentially triggered in test mode. If the conditions are met we call our timer handler EX_BallRelease with an argument of 1, as this will start a timer. Note that we return a value of 0 as we don't want to block the activation of this solenoid.   
-Last but not least we have to switch off the timer when the shooter lane switch (43) is triggered. This done by calling EX_BallRelease with an argument of 0.
+Last but not least we have to switch off the timer when the shooter lane switch (43) is triggered. This is done by calling EX_BallRelease with an argument of 0.
 
     case SwitchActCommand:                              // activated switches
       if (Command == 43) {                              // ball successfully ejected
