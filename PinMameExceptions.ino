@@ -103,12 +103,12 @@ byte EX_Pharaoh(byte Type, byte Command){
 	switch(Type){
 	case SoundCommandCh1:																// sound commands for channel 1
 		if (Command == 37) {															// sound command 0x25 - random speech
-			char FileName[13] = "0_05_000.snd";							// generate base filename
+			char FileName[13] = "0_25_000.snd";							// generate base filename
 			FileName[7] = 48 + random(4) + 1;								// change the counter according to random number
 			PlaySound(52, (char*) FileName);								// play the corresponding sound file
 			return(1);}																			// do not proceed with standard sound handling
 		else if (Command == 42) {													// sound command 0x2a - random speech
-			char FileName[13] = "0_0a_000.snd";							// generate base filename
+			char FileName[13] = "0_2a_000.snd";							// generate base filename
 			FileName[7] = 48 + random(2) + 1;								// change the counter according to random number
 			PlaySound(52, (char*) FileName);								// play the corresponding sound file
 			return(1);}																			// do not proceed with standard sound handling
@@ -120,7 +120,7 @@ byte EX_Pharaoh(byte Type, byte Command){
 		else if (Command == 45) {													// sound command 0x2d - background sound - sound series
 			if (SoundSeries < 31)														// sound series has 31 different tunes
 				SoundSeries++;																// switch to the next tune when sound command is called again
-			char FileName[13] = "0_0d_000.snd";							// generate base filename
+			char FileName[13] = "0_2d_000.snd";							// generate base filename
 			FileName[7] = 48 + (SoundSeries % 10);					// change the 7th character of filename according to current tune
 			FileName[6] = 48 + (SoundSeries % 100) / 10;		// the same with the 6th character
 			for (i=0; i<12; i++) {													// store filename to be repeated
@@ -130,22 +130,22 @@ byte EX_Pharaoh(byte Type, byte Command){
 			PlaySound(51, (char*) FileName);
 			return(1);}																			// do not proceed with standard sound handling
 		else if (Command == 48) {													// sound command 0x30 - random speech
-			char FileName[13] = "0_10_000.snd";							// generate base filename
+			char FileName[13] = "0_30_000.snd";							// generate base filename
 			FileName[7] = 48 + random(2) + 1;								// change the counter according to random number
 			PlaySound(52, (char*) FileName);								// play the corresponding sound file
 			return(1);}																			// do not proceed with standard sound handling
 		else if (Command == 49) {													// sound command 0x31 - random speech
-			char FileName[13] = "0_11_000.snd";							// generate base filename
+			char FileName[13] = "0_31_000.snd";							// generate base filename
 			FileName[7] = 48 + random(2) + 1;								// change the counter according to random number
 			PlaySound(52, (char*) FileName);								// play the corresponding sound file
 			return(1);}																			// do not proceed with standard sound handling
 		else if (Command == 55) {													// sound command 0x37 - random speech
-			char FileName[13] = "0_17_000.snd";							// generate base filename
+			char FileName[13] = "0_37_000.snd";							// generate base filename
 			FileName[7] = 48 + random(2) + 1;								// change the counter according to random number
 			PlaySound(52, (char*) FileName);								// play the corresponding sound file
 			return(1);}																			// do not proceed with standard sound handling
 		else if (Command == 58) {													// sound command 0x3a - random speech
-			char FileName[13] = "0_1a_000.snd";							// generate base filename
+			char FileName[13] = "0_3a_000.snd";							// generate base filename
 			FileName[7] = 48 + random(4) + 1;								// change the counter according to random number
 			PlaySound(52, (char*) FileName);								// play the corresponding sound file
 			return(1);}																			// do not proceed with standard sound handling

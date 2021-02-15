@@ -55,7 +55,7 @@ Up to now we know standard commands which seem to be identical for System7 audio
 |2c|Stop Sound|
 |7f|Not a real sound command, but used to reset the data bus to the audio board between commands|
 
-These boards are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher tune). For the APC these sound file names have to be like 0_2a_000, where the leading zero is selecting sound channel 0 (System 7 games use only this channel), 2a being the sound number and 000 the tune of this sound. The latter number is counted up for all tunes available for this sound.  
+These boards are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher tune). For the APC these sound file names have to be like 0_2a_001, where the leading zero is selecting sound channel 0 (System 7 games use only this channel), 2a being the sound number and 001 the tune of this sound. The latter number is counted up for all tunes available for this sound.  
 One of these sound series is usually the BG sound. This sound can be interrupted by other sounds but continues afterwards. As the numbers of these sounds are different from game to game they have to be set as an exception for every game. 
 
 ### System 11

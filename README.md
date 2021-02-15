@@ -2,7 +2,8 @@
 
 Before I explain what the APC is, let's first clarify what it is not.
  
-The APC is no commercial drop-in replacement board. It is a private project and I'm not liable for any damage that might occur to your machine while using it.  
+The APC is no commercial drop-in replacement board. It is intended for people with some basic knowledge of programming and electronics who want to expand the possibilities of their pinball machine. That means it's going to require some work to set up your game even if you don't want to change anything, but run the original rules with PinMame.  
+As this is a private project with no commercial interest, you may use the APC at your own risk and I'm not liable for any damage that might occur to your machine while using it.  
 Some special machines might even not work with the APC or require additional HW. Jokerz! for example has a unique audio board which uses seperate audio channels for the cabinet and the backbox speakers. The APC HW is capable of generating two independent sound channels, but you need at least DC-blocks (capacitors) when connecting it to the speakers.
 
 ## Overview
