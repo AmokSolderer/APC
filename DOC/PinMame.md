@@ -36,8 +36,9 @@ At the moment the list of available sound packages is still quite short, but we 
 
 |System|Game| Sound File URL|Comments|
 |--|--|--|--|
-|7|Black Knight| URL available on request| Good quality|
-|7|Jungle Lord| URL available on request| Good quality|
+|7|Black Knight| URL available on request| |
+|7|Jungle Lord| URL available on request| |
+|7|Pharaoh| Ask Grangeomatic in the Pinside forum| |
 |11a|Pinbot| URL available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW. No looping implemented yet - if you wait long enough, some sounds will just run out|
 
 ## Audio boards
