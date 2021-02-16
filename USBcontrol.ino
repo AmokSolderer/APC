@@ -460,8 +460,6 @@ void USB_SerialCommand() {
 				break;}
 			break;
 		case 6:																						// Sys3 - 6 display
-
-			break;
 		case 7:																						// Sys7 + 9 display
 			switch (USB_DisplayProtocol[0]) {								// which protocol shall be used?
 			case 1:																					// BCD
@@ -546,8 +544,6 @@ void USB_SerialCommand() {
 				break;}
 			break;
 		case 6:																						// Sys3 - 6 display
-
-			break;
 		case 7:																						// Sys7 + 9 display
 			switch (USB_DisplayProtocol[1]) {								// which protocol shall be used?
 			case 1:																					// BCD
@@ -630,8 +626,6 @@ void USB_SerialCommand() {
 					break;}
 				break;
 			case 6:																					// Sys3 - 6 display
-
-				break;
 			case 7:																					// Sys7 + 9 display
 				switch (USB_DisplayProtocol[2]) {							// which protocol shall be used?
 				case 1:																				// BCD
@@ -712,8 +706,6 @@ void USB_SerialCommand() {
 
 				break;
 			case 6:																					// Sys3 - 6 display
-
-				break;
 			case 7:																					// Sys7 + 9 display
 				switch (USB_DisplayProtocol[3]) {							// which protocol shall be used?
 				case 1:																				// BCD
@@ -791,8 +783,6 @@ void USB_SerialCommand() {
 					break;}
 				break;
 			case 6:																					// Sys3 - 6 display
-
-				break;
 			case 7:																					// Sys7 + 9 display
 				switch (USB_DisplayProtocol[4]) {							// which protocol shall be used?
 				case 1:																				// BCD
