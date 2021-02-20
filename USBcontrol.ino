@@ -821,127 +821,13 @@ void USB_SerialCommand() {
 		break;
 	case 50:																						// play sound #
 		if (USB_SerialBuffer[0] == 1) {										// channel 1?
-			if (game_settings[USB_PinMameGame] < 40) {			// pre system11 game?
-				if (game_settings[USB_PinMameSound]) {				// use old audio board
-					WriteToHwExt(USB_SerialBuffer[1], 128+16);	// turn on Sel14
-					WriteToHwExt(USB_SerialBuffer[1], 16);}			// turn off Sel14
-				else {																				// use APC sound HW
-					if (USB_SerialBuffer[1] == 127) {						// sound command 0x7f - audio bus init - not relevant for APC sound
-						break;}
-					if (!PinMameException(SoundCommandCh1, USB_SerialBuffer[1])){
-						char FileName[9] = "0_00.snd";							// handle non game specific sound
-						if ((USB_SerialBuffer[1] >> 4) < 10) {
-							FileName[2] = 48 + (USB_SerialBuffer[1] >> 4);}
-						else {
-							FileName[2] = 55 + (USB_SerialBuffer[1] >> 4);}
-						if ((USB_SerialBuffer[1] & 15) < 10) {
-							FileName[3] = 48 + (USB_SerialBuffer[1] & 15);}
-						else {
-							FileName[3] = 55 + (USB_SerialBuffer[1] & 15);}
-						if (game_settings[USB_Debug] == 2) {			// display can be used for debug information
-							if (SD.exists(FileName)) {
-								if (APC_settings[DisplayType] < 7) {	// Sys11 type display?
-									*(DisplayLower+2) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the sound to be played
-									*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
-									*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
-									*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
-								else {																// Sys3 - 7 type display
-									*(DisplayLower+2) = ConvertNumLower(USB_SerialBuffer[1] / 10,(byte) *(DisplayLower+2));
-									*(DisplayLower+4) = ConvertNumLower(USB_SerialBuffer[1] % 10,(byte) *(DisplayLower+4));}}
-							else {
-								if (APC_settings[DisplayType] < 7) {	// Sys11 type display?
-									*(DisplayLower+12) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing sound
-									*(DisplayLower+13) = DispPattern2[2 * (FileName[2] - 32) + 1];
-									*(DisplayLower+14) = DispPattern2[2 * (FileName[3] - 32)];
-									*(DisplayLower+15) = DispPattern2[2 * (FileName[3] - 32) + 1];}
-								else {																// Sys3 - 7 type display
-									*(DisplayLower+12) = ConvertNumLower(USB_SerialBuffer[1] / 10,(byte) *(DisplayLower+12));
-									*(DisplayLower+14) = ConvertNumLower(USB_SerialBuffer[1] % 10,(byte) *(DisplayLower+14));}
-								break;}}
-						PlaySound(51, (char*) FileName);}}}
-			else {																					// system11 game
-				if (!USB_SerialBuffer[1]) {										// stop sound
-					AfterSound = 0;
-					StopPlayingSound();
-					break;}
-				if (USB_SerialBuffer[1] == 85) {							// sound command 0x55
-					break;}
-				if (USB_SerialBuffer[1] == 105) { 						// strange misplaced sound during multiball
-					break;}
-				if (USB_SerialBuffer[1] == 170) {							// sound command 0xaa
-					break;}
-				if (USB_SerialBuffer[1] == 255) {							// sound command 0xff
-					break;}
-				char FileName[9] = "0_00.snd";
-				if ((USB_SerialBuffer[1] >> 4) < 10) {
-					FileName[2] = 48 + (USB_SerialBuffer[1] >> 4);}
-				else {
-					FileName[2] = 55 + (USB_SerialBuffer[1] >> 4);}
-				if ((USB_SerialBuffer[1] & 15) < 10) {
-					FileName[3] = 48 + (USB_SerialBuffer[1] & 15);}
-				else {
-					FileName[3] = 55 + (USB_SerialBuffer[1] & 15);}
-				if (game_settings[USB_Debug] == 2) {					// display can be used for debug information
-					if (SD.exists(FileName)) {
-						*(DisplayLower+2) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the sound to be played
-						*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
-						*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
-						*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
-					else {
-						*(DisplayLower+12) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing sound
-						*(DisplayLower+13) = DispPattern2[2 * (FileName[2] - 32) + 1];
-						*(DisplayLower+14) = DispPattern2[2 * (FileName[3] - 32)];
-						*(DisplayLower+15) = DispPattern2[2 * (FileName[3] - 32) + 1];
-						break;}}
-				if (USB_SerialBuffer[1] < 128) {							// play speech with a higher priority
-					PlaySound(50, (char*) FileName);}
-				else {
-					PlaySound(51, (char*) FileName);}}}
+			if (game_settings[USB_PinMameSound]) {					// use old audio board
+				WriteToHwExt(USB_SerialBuffer[1], 128+16);		// turn on Sel14
+				WriteToHwExt(USB_SerialBuffer[1], 16);}				// turn off Sel14
+			else {																					// use APC sound HW
+				PinMameException(SoundCommandCh1, USB_SerialBuffer[1]);}}
 		else {																						// channel 2
-			if (!USB_SerialBuffer[1]) {											// sound command 0x00 - stop music
-				AfterMusic = 0;
-				StopPlayingMusic();
-				break;}
-			if (USB_SerialBuffer[1] == 127) {								// sound command 0x7f - stop sound
-				AfterSound = 0;
-				StopPlayingSound();
-				break;}
-			if (USB_SerialBuffer[1] > 29 && USB_SerialBuffer[1] < 48) {	// unknown sound commands 0x1d to 0x30
-				break;}
-			if (USB_SerialBuffer[1] > 79 && USB_SerialBuffer[1] < 89) {	// unknown sound commands 0x4f to 0x59
-				break;}
-			if (USB_SerialBuffer[1] > 95 && USB_SerialBuffer[1] < 100) { // music volume command 0x6X
-				MusicVolume = USB_SerialBuffer[1] - 96;
-				break;}
-			if (USB_SerialBuffer[1] == 170) {								// unknown sound command 0xaa
-				break;}
-			if (USB_SerialBuffer[1] == 255) {								// unknown sound command 0xff
-				break;}
-			char FileName[9] = "1_00.snd";
-			if ((USB_SerialBuffer[1] >> 4) < 10) {
-				FileName[2] = 48 + (USB_SerialBuffer[1] >> 4);}
-			else {
-				FileName[2] = 55 + (USB_SerialBuffer[1] >> 4);}
-			if ((USB_SerialBuffer[1] & 15) < 10) {
-				FileName[3] = 48 + (USB_SerialBuffer[1] & 15);}
-			else {
-				FileName[3] = 55 + (USB_SerialBuffer[1] & 15);}
-			if (game_settings[USB_Debug] == 2) {						// display can be used for debug information
-				if (SD.exists(FileName)) {
-					*(DisplayLower+18) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the music to be played
-					*(DisplayLower+19) = DispPattern2[2 * (FileName[2] - 32) + 1];
-					*(DisplayLower+20) = DispPattern2[2 * (FileName[3] - 32)];
-					*(DisplayLower+21) = DispPattern2[2 * (FileName[3] - 32) + 1];}
-				else {
-					*(DisplayLower+28) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing music
-					*(DisplayLower+29) = DispPattern2[2 * (FileName[2] - 32) + 1];
-					*(DisplayLower+30) = DispPattern2[2 * (FileName[3] - 32)];
-					*(DisplayLower+31) = DispPattern2[2 * (FileName[3] - 32) + 1];
-					break;}}
-			if ((USB_SerialBuffer[1] < 128)) {							// play sounds > 127 on the sound channel
-				PlayMusic(50, (char*) FileName);}
-			else {
-				PlaySound(50, (char*) FileName);}}
+			PinMameException(SoundCommandCh2, USB_SerialBuffer[1]);}
 		break;
 	case 51:																						// stop sound
 		if (USB_SerialBuffer[0] == 1) {										// channel 1?
@@ -1215,3 +1101,53 @@ void USB_ReleaseSolenoid(byte Coil) {									// solenoid timer has run out
 
 void USB_ReleaseSolBlock(byte Coil) {									// release the coil block when the recycling time is over
 	USB_SolTimers[Coil-1] = 0;}
+
+byte USB_GenerateFilename(byte Channel, byte Sound, char* FileName) {
+	if ((Sound >> 4) < 10) {
+		*(FileName+2) = 48 + (Sound >> 4);}
+	else {
+		*(FileName+2) = 55 + (Sound >> 4);}
+	if ((Sound & 15) < 10) {
+		*(FileName+3) = 48 + (Sound & 15);}
+	else {
+		*(FileName+3) = 55 + (Sound & 15);}
+	if (game_settings[USB_Debug] == 2) {								// display can be used for debug information
+		if (Channel == 1) {
+			if (SD.exists(FileName)) {											// sound file present?
+				if (APC_settings[DisplayType] < 7) {					// Sys11 type display?
+					*(DisplayLower+2) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the sound to be played
+					*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
+					*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
+					*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
+				else if (APC_settings[DisplayType] == 6) {		// Sys3-6 type display
+					*(DisplayLower) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower));
+					*(DisplayLower+2) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+2));}
+				else {																				// Sys3 7 - 9 type display
+					*(DisplayLower+2) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower+2));
+					*(DisplayLower+4) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+4));}}
+			else {																					// sound file doesn't exist
+				if (APC_settings[DisplayType] < 7) {					// Sys11 type display?
+					*(DisplayLower+12) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing sound
+					*(DisplayLower+13) = DispPattern2[2 * (FileName[2] - 32) + 1];
+					*(DisplayLower+14) = DispPattern2[2 * (FileName[3] - 32)];
+					*(DisplayLower+15) = DispPattern2[2 * (FileName[3] - 32) + 1];}
+				else if (APC_settings[DisplayType] == 6) {		// Sys3 - 6 type display
+					*(DisplayLower+8) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower+8));
+					*(DisplayLower+10) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+10));}
+				else {																				// Sys3 7 - 9 type display
+					*(DisplayLower+12) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower+12));
+					*(DisplayLower+14) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+14));}
+				return(0);}}																	// indicate that file doesn't exist
+		else {																						// channel 2 - Sys11 only
+			if (SD.exists(FileName)) {
+				*(DisplayLower+18) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the music to be played
+				*(DisplayLower+19) = DispPattern2[2 * (FileName[2] - 32) + 1];
+				*(DisplayLower+20) = DispPattern2[2 * (FileName[3] - 32)];
+				*(DisplayLower+21) = DispPattern2[2 * (FileName[3] - 32) + 1];}
+			else {
+				*(DisplayLower+28) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing music
+				*(DisplayLower+29) = DispPattern2[2 * (FileName[2] - 32) + 1];
+				*(DisplayLower+30) = DispPattern2[2 * (FileName[3] - 32)];
+				*(DisplayLower+31) = DispPattern2[2 * (FileName[3] - 32) + 1];
+				return(0);}}}																	// indicate that file doesn't exist
+	return(1);}																					// indicate that file does exist
