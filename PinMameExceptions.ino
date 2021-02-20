@@ -278,9 +278,9 @@ byte EX_Pinbot(byte Type, byte Command){
 					PlayMusic(50, (char*) FileName);}						// play on the music channel
 				else {
 					PlaySound(50, (char*) FileName);}}}					// play on the sound channel
-		return(0);
+		return(0);																				// return number not relevant for sounds
 	default:																						// use default treatment for undefined types
-		return(0);}}																			// return number not relevant for sounds
+		return(0);}}																			// no exception rule found for this type so proceed as normal
 
 byte EX_Blank(byte Type, byte Command){
 	switch(Type){
