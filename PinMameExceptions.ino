@@ -357,3 +357,4 @@ void EX_Init(byte GameNumber) {
 		break;
 	default:
 		PinMameException = EX_DummyProcess;}}
+
