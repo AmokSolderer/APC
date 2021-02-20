@@ -69,11 +69,11 @@ First of all we need to generate a Jungle Lord specific code section to handle a
 
     byte EX_Blank(byte Type, byte Command)
     
-in PinMameExceptions.ino you could use as a start. So I create a copy of this and rename it to
+in PinMameExceptions.ino you could use as a start. So let's create a copy of this and rename it to
 
     byte EX_JungleLord(byte Type, byte Command)  
 
-In order for the system to use this code section, we have to add it to EX_Init which is at the ende of PinMameExceptions.ino and determines which code is used for which machine. As Jungle Lord is the first machine to have such an exception handling there's just one entry in EX_Init yet:
+In order for the system to use this code section, we have to add it to EX_Init which is at the ende of PinMameExceptions.ino and determines which code is used for which machine. At the time this documant was created, Jungle Lord was the first machine to have such an exception handling, so there's just one entry in EX_Init yet:
 
     void EX_Init(byte GameNumber) {
       switch(GameNumber) {
@@ -89,7 +89,7 @@ In order for the system to use this code section, we have to add it to EX_Init w
 All other games do not have an exception handler yet, so the exception pointer just points to a dummy process which only plays the standard sounds, but knows no exceptions.  
 The change of the USB_SolTimes is only necessary because in this example I also want to improve the reaction time of the magna save magnets and for this it must be allowed to turn on the magnets permanently. But ignore this for now as well as the EX_EjectSolenoid.
 
-Jungle Lord uses certain [System 7 specific sound commands](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md#system-7) the APC has to know for the sound to work correctly. As System7 just uses one sound channel, these exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program.
+Jungle Lord uses certain [System 7 specific sound commands](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md#system-7) the APC has to know for the sound to work correctly. As System7 just uses one sound channel, these exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program. For a System11 game you'd also have to prepare exceptions for SoundCommandCh2 as these games use both sound channels.
 
 The first exception is the 0x26 sound command which triggers one of four random spoken phrases. In the exception handler this looks like this:
 
