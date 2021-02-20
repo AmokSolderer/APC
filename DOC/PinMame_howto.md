@@ -154,7 +154,7 @@ Up to now we have only implemented the sounds that are somehow special for the J
         PlaySound(51, (char*) FileName);}}
     return(0);                                        // return number not relevant for sounds
 
-These filename of these sounds just consists of the channel number, an underscore and the sound number in hex followed by ".snd". There is a routine called 
+The filenames of these sounds just consist of the channel number, an underscore and the sound number in hex followed by ".snd". There is a routine called 
 
     byte USB_GenerateFilename(byte Channel, byte Sound, char* FileName)
 
