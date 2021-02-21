@@ -2033,6 +2033,7 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 			AppByte--;}																			// and go one back to reach the last settings entry
 		/* no break */
 	case 0:																							// show the current setting
+		WriteUpper( SettingsList[AppByte].Text);					// show the text
 		if (APC_settings[DisplayType] != 3) {							// not a Sys11c display?
 			if (APC_settings[DisplayType] == 6) {						// Sys6 display
 				*(DisplayLower+12) = ConvertNumUpper((byte) ((AppByte) - ((AppByte) % 10)) / 10,(byte) *(DisplayLower+12));
@@ -2045,7 +2046,6 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 				*(DisplayLower+1) = RightCredit[32+2*(((AppByte) - ((AppByte) % 10)) / 10)+1];
 				*(DisplayLower+16) = RightCredit[32+2*((AppByte) % 10)];
 				*(DisplayLower+17) = RightCredit[32+2*((AppByte) % 10)+1];}}
-		WriteUpper( SettingsList[AppByte].Text);					// show the text
 		SettingsList[AppByte].EventPointer(false);				// call the corresponding method and indicate no changes
 		break;
 	case 3:
