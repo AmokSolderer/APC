@@ -1,5 +1,15 @@
 # APC News and Changelog
 
+## March 2021
+
+### New SW Version V0.22
+
+* A new exception handling system has been implemented. This makes it easier to program machine specific changes while using PinMame. Take a look at the [PinMame How-to](https://github.com/AmokSolderer/APC/blob/V00.22/DOC/PinMame_howto.md#programming-exceptions) page for details
+
+* Exception rules for System 7 Pharaoh have been added. Sound files for Pharaoh are also available
+
+* Support for 6 digit numerical displays (System3 - 6) has been added
+
 ## January 2021
 
 The APC 3.0 board has most components populated by the board manufacturer. As this reduces the probability of soldering errors significantly, the set up and test procedures could be made a lot easier.

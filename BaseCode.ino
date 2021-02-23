@@ -604,6 +604,9 @@ void BC_Testmode(byte Select) {
 					WriteUpper(" SWITCH EDGES   ");
 					WriteLower("                ");}
 				else {																				// Sys3 - 9 display
+					for(byte c=0; c<16; c++) {									// clear numerical displays
+						*(DisplayLower+2*c) = 255;								// delete numbers
+						*(DisplayLower+1+2*c) = 0;}								// delete commas
 					DisplayScore(1, 2);}												// show test number
 				break;
 			case 72:                                        // advance button
@@ -618,13 +621,25 @@ void BC_Testmode(byte Select) {
 					WriteUpper(" LATEST EDGES   ");
 					AppByte2 = 1;
 					break;}
+				/* no break */
 			default:                                        // all other switches
-				for (i=1; i<24; i++) {                        // move all characters in the lower display row 4 chars to the left
-					DisplayLower[i] = DisplayLower[i+8];}
-				*(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
-				*(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
-				*(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
-				*(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}
+				if (APC_settings[DisplayType] == 6) {					// Sys6 display?
+					for (byte i=0; i<10; i++) {                 // move all characters in the lower display row 4 chars to the left
+						DisplayLower[2*i] = DisplayLower[2*i+8];}
+					*(DisplayLower+24) = ConvertNumLower((byte) Select / 10, 0); // and insert the switch number to the right of the row
+					*(DisplayLower+26) = ConvertNumLower((byte) (Select % 10), 0);}
+				else if (APC_settings[DisplayType] == 7) {		// Sys7 display?
+					for (byte i=1; i<24; i++) {                 // move all characters in the lower display row 4 chars to the left
+						DisplayLower[i] = DisplayLower[i+8];}
+					*(DisplayLower+28) = ConvertNumLower((byte) Select / 10, 0); // and insert the switch number to the right of the row
+					*(DisplayLower+30) = ConvertNumLower((byte) (Select % 10), 0);}
+				else {
+					for (byte i=1; i<24; i++) {                 // move all characters in the lower display row 4 chars to the left
+						DisplayLower[i] = DisplayLower[i+8];}
+					*(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
+					*(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
+					*(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
+					*(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}}
 			break;
 			case 2:                              	           	// solenoid test
 				switch(Select) {                    	          // switch events
@@ -633,6 +648,9 @@ void BC_Testmode(byte Select) {
 						WriteUpper("  COIL  TEST    ");
 						WriteLower("                ");}
 					else {																				// Sys3 - 9 display
+						for(byte c=0; c<16; c++) {									// clear numerical displays
+							*(DisplayLower+2*c) = 255;								// delete numbers
+							*(DisplayLower+1+2*c) = 0;}								// delete commas
 						DisplayScore(1, 3);}												// show test number
 					AppByte2 = 0;
 					break;
@@ -656,6 +674,9 @@ void BC_Testmode(byte Select) {
 							WriteUpper(" SINGLE LAMP    ");
 							WriteLower("                ");}
 						else {																				// Sys3 - 9 display
+							for(byte c=0; c<16; c++) {									// clear numerical displays
+								*(DisplayLower+2*c) = 255;								// delete numbers
+								*(DisplayLower+1+2*c) = 0;}								// delete commas
 							DisplayScore(1, 4);}												// show test number
 						AppByte2 = 0;
 						for (i=0; i<8; i++){                    		  // erase lamp matrix
@@ -682,6 +703,9 @@ void BC_Testmode(byte Select) {
 								WriteUpper("  ALL   LAMPS   ");
 								WriteLower("                ");}
 							else {																				// Sys3 - 9 display
+								for(byte c=0; c<16; c++) {									// clear numerical displays
+									*(DisplayLower+2*c) = 255;								// delete numbers
+									*(DisplayLower+1+2*c) = 0;}								// delete commas
 								DisplayScore(1, 5);}												// show test number
 							AppByte2 = 0;
 							break;
@@ -705,6 +729,9 @@ void BC_Testmode(byte Select) {
 									WriteUpper(" MUSIC  TEST    ");
 									WriteLower("                ");}
 								else {																				// Sys3 - 9 display
+									for(byte c=0; c<16; c++) {									// clear numerical displays
+										*(DisplayLower+2*c) = 255;								// delete numbers
+										*(DisplayLower+1+2*c) = 0;}								// delete commas
 									DisplayScore(1, 6);}												// show test number
 								AppByte2 = 0;
 								break;
@@ -729,20 +756,27 @@ void BC_Testmode(byte Select) {
 							break;}}
 
 void BC_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    *(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
-    *(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
-    *(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
-    *(DisplayLower+29) = DispPattern2[33 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
-    TurnOnLamp(CurrentLamp);                          // turn on lamp
-    if (CurrentLamp > 1) {                            // and turn off the previous one
-      TurnOffLamp(CurrentLamp-1);}
-    else {
-      TurnOffLamp(LampMax);}
-    CurrentLamp++;                                    // increase the lamp counter
-    if (CurrentLamp == LampMax+1) {                   // maximum reached?
-      CurrentLamp = 1;}}                              // then start again
-  AppByte2 = ActivateTimer(1000, CurrentLamp, BC_ShowLamp);} // come back in one second
+	if (QuerySwitch(73)) {                              // Up/Down switch pressed?
+		if (APC_settings[DisplayType] == 6) {							// Sys6 display?
+			*(DisplayLower+24) = ConvertNumLower((byte) CurrentLamp / 10, 0); // and insert the switch number to the right of the row
+			*(DisplayLower+26) = ConvertNumLower((byte) (CurrentLamp % 10), 0);}
+		else if (APC_settings[DisplayType] == 7) {				// Sys7 display?
+			*(DisplayLower+28) = ConvertNumLower((byte) CurrentLamp / 10, 0); // and insert the switch number to the right of the row
+			*(DisplayLower+30) = ConvertNumLower((byte) (CurrentLamp % 10), 0);}
+		else {																						// Sys11 display
+			*(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
+			*(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
+			*(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
+			*(DisplayLower+29) = DispPattern2[33 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];}
+		TurnOnLamp(CurrentLamp);                          // turn on lamp
+		if (CurrentLamp > 1) {                            // and turn off the previous one
+			TurnOffLamp(CurrentLamp-1);}
+		else {
+			TurnOffLamp(LampMax);}
+		CurrentLamp++;                                    // increase the lamp counter
+		if (CurrentLamp == LampMax+1) {                   // maximum reached?
+			CurrentLamp = 1;}}                              // then start again
+	AppByte2 = ActivateTimer(1000, CurrentLamp, BC_ShowLamp);} // come back in one second
 
 void BC_ShowAllLamps(byte State) {                    // Flash all lamps
   if (State) {                                        // if all lamps are on
@@ -754,36 +788,43 @@ void BC_ShowAllLamps(byte State) {                    // Flash all lamps
   AppByte2 = ActivateTimer(500, State, BC_ShowAllLamps);}  // come back in 500ms
 
 void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
-  if (AppBool) {                                      // if C bank solenoid
-    ActC_BankSol(Solenoid);
-    *(DisplayLower+30) = DispPattern2[('C'-32)*2];    // show the C
-    *(DisplayLower+31) = DispPattern2[('C'-32)*2+1];
-    if (QuerySwitch(73)) {                            // Up/Down switch pressed?
-      AppBool = false;
-      Solenoid++;}}
-  else {                                              // if A bank solenoid
-    *(DisplayLower+28) = DispPattern2[32 + 2 * (Solenoid % 10)]; // show the actual solenoid number
-    *(DisplayLower+29) = DispPattern2[33 + 2 * (Solenoid % 10)];
-    *(DisplayLower+26) = DispPattern2[32 + 2 * (Solenoid - (Solenoid % 10)) / 10];
-    *(DisplayLower+27) = DispPattern2[33 + 2 * (Solenoid - (Solenoid % 10)) / 10];
-    //if (Solenoid == 11 || Solenoid == 12 || Solenoid == 13 || Solenoid == 14 || Solenoid == 9 || Solenoid == 10 || Solenoid == 18) {  // is it a relay or a #1251 flasher?
-    if (!(*(GameDefinition.SolTimes+Solenoid-1))) {   // can this solenoid be turned on permanently?
-      ActivateSolenoid(500, Solenoid);}               // then the duration must be specified
-    else {
-      ActivateSolenoid(0, Solenoid);}                 // activate the solenoid with default duration
-    if ((Solenoid < 9) && game_settings[BCset_ACselectRelay]) {         // A solenoid and Sys11 machine?
-      *(DisplayLower+30) = DispPattern2[('A'-32)*2];  // show the A
-      *(DisplayLower+31) = DispPattern2[('A'-32)*2+1];
-      if (QuerySwitch(73)) {                          // Up/Down switch pressed?
-        AppBool = true;}}
-    else {
-      *(DisplayLower+30) = DispPattern2[(' '-32)*2];  // delete the C
-      *(DisplayLower+31) = DispPattern2[(' '-32)*2+1];
-      if (QuerySwitch(73)) {                          // Up/Down switch pressed?
-        Solenoid++;                                   // increase the solenoid counter
-        if (Solenoid > 22) {                          // maximum reached?
-          Solenoid = 1;}}}}                           // then start again
-  AppByte2 = ActivateTimer(1000, Solenoid, BC_FireSolenoids);}   // come back in one second
+	if (AppBool) {                                      // if C bank solenoid
+		ActC_BankSol(Solenoid);
+		*(DisplayLower+30) = DispPattern2[('C'-32)*2];    // show the C
+		*(DisplayLower+31) = DispPattern2[('C'-32)*2+1];
+		if (QuerySwitch(73)) {                            // Up/Down switch pressed?
+			AppBool = false;
+			Solenoid++;}}
+	else {                                              // if A bank solenoid
+		if (APC_settings[DisplayType] == 6) {							// Sys6 display?
+			*(DisplayLower+24) = ConvertNumLower((byte) Solenoid / 10, 0); // and insert the switch number to the right of the row
+			*(DisplayLower+26) = ConvertNumLower((byte) (Solenoid % 10), 0);}
+		else if (APC_settings[DisplayType] == 7) {				// Sys7 display?
+			*(DisplayLower+28) = ConvertNumLower((byte) Solenoid / 10, 0); // and insert the switch number to the right of the row
+			*(DisplayLower+30) = ConvertNumLower((byte) (Solenoid % 10), 0);}
+		else {																						// Sys11 display
+			*(DisplayLower+28) = DispPattern2[32 + 2 * (Solenoid % 10)]; // show the actual solenoid number
+			*(DisplayLower+29) = DispPattern2[33 + 2 * (Solenoid % 10)];
+			*(DisplayLower+26) = DispPattern2[32 + 2 * (Solenoid - (Solenoid % 10)) / 10];
+			*(DisplayLower+27) = DispPattern2[33 + 2 * (Solenoid - (Solenoid % 10)) / 10];}
+		if (!(*(GameDefinition.SolTimes+Solenoid-1))) {   // can this solenoid be turned on permanently?
+			ActivateSolenoid(500, Solenoid);}               // then the duration must be specified
+		else {
+			ActivateSolenoid(0, Solenoid);}                 // activate the solenoid with default duration
+		if ((Solenoid < 9) && game_settings[BCset_ACselectRelay]) { // A solenoid and Sys11 machine?
+			*(DisplayLower+30) = DispPattern2[('A'-32)*2];  // show the A
+			*(DisplayLower+31) = DispPattern2[('A'-32)*2+1];
+			if (QuerySwitch(73)) {                          // Up/Down switch pressed?
+				AppBool = true;}}
+		else {
+			if (APC_settings[DisplayType] < 6) {						// Sys11 display?
+				*(DisplayLower+30) = DispPattern2[(' '-32)*2];// delete the C
+				*(DisplayLower+31) = DispPattern2[(' '-32)*2+1];}
+			if (QuerySwitch(73)) {                          // Up/Down switch pressed?
+				Solenoid++;                                   // increase the solenoid counter
+				if (Solenoid > 22) {                          // maximum reached?
+					Solenoid = 1;}}}}                           // then start again
+	AppByte2 = ActivateTimer(1000, Solenoid, BC_FireSolenoids);}   // come back in one second
 
 void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
 	if (QuerySwitch(73)) {                              // cycle only if Up/Down switch is not pressed
