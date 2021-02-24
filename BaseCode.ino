@@ -780,9 +780,11 @@ void BC_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
 
 void BC_ShowAllLamps(byte State) {                    // Flash all lamps
   if (State) {                                        // if all lamps are on
+  	LampColumns[0] = 0;																// first column
     LampPattern = NoLamps;                            // turn them off
     State = 0;}
   else {                                              // or the other way around
+  	LampColumns[0] = 255;															// first column
     LampPattern = AllLamps;
     State = 1;}
   AppByte2 = ActivateTimer(500, State, BC_ShowAllLamps);}  // come back in 500ms

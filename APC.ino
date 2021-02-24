@@ -900,19 +900,19 @@ void DummyProcess(byte Dummy) {
 
 bool QuerySwitch(byte Switch) {												// return status of switch
 	Switch--;																						// arrays start with 0
-	return !(SwitchRows[(Switch - (Switch % 8))/8] & SwitchMask[Switch % 8]);}
+	return !(SwitchRows[Switch / 8] & SwitchMask[Switch % 8]);}
 
 void TurnOnLamp(byte Lamp) {
 	Lamp--;
-	LampColumns[(Lamp - (Lamp % 8))/8] |= 1<<(Lamp % 8);}
+	LampColumns[Lamp / 8] |= 1<<(Lamp % 8);}
 
 void TurnOffLamp(byte Lamp) {
 	Lamp--;
-	LampColumns[(Lamp - (Lamp % 8))/8] &= 255-(1<<(Lamp % 8));}
+	LampColumns[Lamp /8] &= 255-(1<<(Lamp % 8));}
 
 bool QueryLamp(byte Lamp) {
 	Lamp--;
-	return LampColumns[(Lamp - (Lamp % 8))/8] & 1<<(Lamp % 8);}
+	return LampColumns[Lamp / 8] & 1<<(Lamp % 8);}
 
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
 	byte i = 1;                                     		// reset counter
@@ -1326,7 +1326,7 @@ void ReleaseSolenoid(byte Solenoid) {
 
 bool QuerySolenoid(byte Solenoid) {                  	// determine the current state of a solenoid
 	Solenoid--;
-	return SolBuffer[(Solenoid - (Solenoid % 8)) / 8] & (1<<(Solenoid % 8));}
+	return SolBuffer[Solenoid / 8] & (1<<(Solenoid % 8));}
 
 void ActA_BankSol(byte Solenoid) {
 	if (!SolWaiting[NextSolSlot][0]) {
@@ -2036,14 +2036,14 @@ void SelSetting(byte Switch) {												// Switch mode of the settings
 		WriteUpper( SettingsList[AppByte].Text);					// show the text
 		if (APC_settings[DisplayType] != 3) {							// not a Sys11c display?
 			if (APC_settings[DisplayType] == 6) {						// Sys6 display
-				*(DisplayLower+12) = ConvertNumUpper((byte) ((AppByte) - ((AppByte) % 10)) / 10,(byte) *(DisplayLower+12));
+				*(DisplayLower+12) = ConvertNumUpper((byte) AppByte / 10,(byte) *(DisplayLower+12));
 				*(DisplayLower+14) = ConvertNumUpper((byte) ((AppByte) % 10),(byte) *(DisplayLower+14));}
 			else if (APC_settings[DisplayType] == 7) {			// Sys7 display
-				*(DisplayLower) = ConvertNumLower((byte) ((AppByte) - ((AppByte) % 10)) / 10,(byte) *(DisplayLower));
+				*(DisplayLower) = ConvertNumLower((byte) AppByte / 10,(byte) *(DisplayLower));
 				*(DisplayLower+16) = ConvertNumLower((byte) ((AppByte) % 10),(byte) *(DisplayLower+16));}
 			else {																					// Sys11 display
-				*(DisplayLower) = RightCredit[32+2*(((AppByte) - ((AppByte) % 10)) / 10)];
-				*(DisplayLower+1) = RightCredit[32+2*(((AppByte) - ((AppByte) % 10)) / 10)+1];
+				*(DisplayLower) = RightCredit[32+2*(AppByte / 10)];
+				*(DisplayLower+1) = RightCredit[32+2*(AppByte / 10)+1];
 				*(DisplayLower+16) = RightCredit[32+2*((AppByte) % 10)];
 				*(DisplayLower+17) = RightCredit[32+2*((AppByte) % 10)+1];}}
 		SettingsList[AppByte].EventPointer(false);				// call the corresponding method and indicate no changes
