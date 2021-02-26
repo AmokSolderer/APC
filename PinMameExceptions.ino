@@ -282,12 +282,30 @@ byte EX_Pinbot(byte Type, byte Command){
 	default:																						// use default treatment for undefined types
 		return(0);}}																			// no exception rule found for this type so proceed as normal
 
+byte EX_Rollergames(byte Type, byte Command){
+static byte LastSoundCommand = 0;
+	switch(Type){
+	case SoundCommandCh1:																// sound commands for channel 1
+		if (!Command){ 																		// sound command 0x00 - stop sound
+			AfterSound = 0;
+			StopPlayingSound();
+			AfterMusic = 0;
+			StopPlayingMusic();}
+		else if (Command == LastSoundCommand) {
+			LastSoundCommand = 0;
+			return(0);}
+
+			LastSoundCommand = Command;
+		return(0);
+	default:																						// use default treatment for undefined types
+		return(0);}}
+
 byte EX_Blank(byte Type, byte Command){
 	switch(Type){
 	case SoundCommandCh1:																// sound commands for channel 1
 		if (Command == 38){ 															// sound command 0x26
 			// enter your special sound command 0x26 here
-		}																			// do not proceed with standard sound handling
+		}
 		else {
 			char FileName[9] = "0_00.snd";									// handle standard sound
 			if (USB_GenerateFilename(1, Command, FileName)) {	// create filename and check whether file is present
@@ -296,7 +314,7 @@ byte EX_Blank(byte Type, byte Command){
 	case SoundCommandCh2:																// sound commands for channel 2
 		if (Command == 38){ 															// sound command 0x26
 			// enter your special sound command 0x26 here
-		}																			// do not proceed with standard sound handling
+		}
 		else {
 			char FileName[9] = "1_00.snd";									// handle standard music
 			if (USB_GenerateFilename(2, Command, FileName)) {	// create filename and check whether file is present
@@ -354,6 +372,9 @@ void EX_Init(byte GameNumber) {
 		break;
 	case 43:																						// Pinbot
 		PinMameException = EX_Pinbot;											// use exception rules for Pinbot
+		break;
+	case 67:																						// Rollergames
+		PinMameException = EX_Rollergames;								// use exception rules for Rollergames
 		break;
 	default:
 		PinMameException = EX_DummyProcess;}}
