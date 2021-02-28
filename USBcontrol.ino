@@ -824,8 +824,13 @@ void USB_SerialCommand() {
 	case 50:																						// play sound #
 		if (USB_SerialBuffer[0] == 1) {										// channel 1?
 			if (game_settings[USB_PinMameSound]) {					// use old audio board
-				WriteToHwExt(USB_SerialBuffer[1], 128+16);		// turn on Sel14
-				WriteToHwExt(USB_SerialBuffer[1], 16);}				// turn off Sel14
+				if (game_settings[USB_PinMameGame] < 19) {		// Sys 3 - 6 game
+					SolBuffer[1] = SolBuffer[1] & 224;					// turn off sound related solenoids
+					SolBuffer[1] = SolBuffer[1] | (USB_SerialBuffer[1] & 31);	// write sound number to solenoids 9 - 13
+					SolLatch |= 2;}															// trigger update of 2nd solenoid latch
+				else {																				// Sys 7 - 11 game
+					WriteToHwExt(USB_SerialBuffer[1], 128+16);	// turn on Sel14
+					WriteToHwExt(USB_SerialBuffer[1], 16);}}		// turn off Sel14
 			else {																					// use APC sound HW
 				PinMameException(SoundCommandCh1, USB_SerialBuffer[1]);}}
 		else {																						// channel 2
