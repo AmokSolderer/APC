@@ -6,9 +6,15 @@
 #define SolenoidRelCommand 5
 #define LampOnCommand 6
 #define LampOffCommand 7
+#define WriteToDisplay0 8
+#define WriteToDisplay1 9
+#define WriteToDisplay2 10
+#define WriteToDisplay3 11
+#define WriteToDisplay4 12
 
 byte (*PinMameException)(byte, byte);
 
+byte USB_SerialBuffer[128];														// received command arguments
 char USB_RepeatSound[13];															// name of the sound file to be repeated
 byte EX_EjectSolenoid;																// eject coil for improved ball release
 unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40};	// Activation times for solenoids
@@ -350,6 +356,11 @@ byte EX_Blank(byte Type, byte Command){
 			// enter your special handling for turning off lamp 2 here
 		}
 		return(0);																				// lamp will be turn off. Use return(1) to suppress this
+	case WriteToDisplay0:																// write to display 0 (Credit)
+		if (USB_SerialBuffer[0] == 1) {										// if the first digit is zero
+			// enter your special handling for display 0 here
+		}
+		return(0);																				// display content will be written. Use return(1) to suppress this
 	default:																						// use default treatment for undefined types
 		return(0);}}
 
