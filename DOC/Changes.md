@@ -4,11 +4,13 @@
 
 ### New SW Version V0.22
 
-* A new exception handling system has been implemented. This makes it easier to program machine specific changes while using PinMame. Take a look at the [PinMame How-to](https://github.com/AmokSolderer/APC/blob/V00.22/DOC/PinMame_howto.md#programming-exceptions) page for details
+* A new exception handling system has been implemented. This makes it easier to program machine specific changes while using PinMame. Take a look at the [PinMame How-to](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) page for details
 
 * Exception rules for System 7 Pharaoh have been added. Sound files for Pharaoh are also available
 
 * Support for 6 digit numerical displays (System3 - 6) has been added
+
+* Support for System 3 - 6 sound boards has been added
 
 ## January 2021
 
@@ -32,7 +34,7 @@ APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJ
 
 * The Hardware Extensions Interface has been upgraded to have 5V logic level also at the select pins. Furthermore the data lines can now be latched which makes it possible to control System7 audio boards without having to use additional HW.
 
-* The board has been reworked to use SMD ICs where possible and move all components to the top side. This makes it possible to populate the board at the board manufacturers. All necessary fabrication files can be found in the [fabrication files folder](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles).
+* The board has been reworked to use SMD ICs where possible and move all components to the top side. This makes it possible to populate the board at the board manufacturers. All necessary fabrication files can be found in the [fabrication files folder](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_FabricationFiles).
 
 ### New SW Version V0.20
 

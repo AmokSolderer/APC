@@ -62,7 +62,7 @@ byte EX_JungleLord(byte Type, byte Command){
 			char FileName[13] = "0_2a_000.snd";							// generate base filename
 			FileName[7] = 48 + (SoundSeries[0] % 10);				// change the 7th character of filename according to current tune
 			FileName[6] = 48 + (SoundSeries[0] % 100) / 10;	// the same with the 6th character
-			for (i=0; i<12; i++) {													// store the name of this sound
+			for (byte i=0; i<12; i++) {											// store the name of this sound
 				USB_RepeatSound[i] = FileName[i];}
 			NextSoundName = USB_RepeatSound;								// select this sound to be repeated
 			AfterSound = PlayNextSound;											// determine that PlayNextSound is executed when the sound has run out
@@ -133,7 +133,7 @@ byte EX_Pharaoh(byte Type, byte Command){
 			char FileName[13] = "0_2d_000.snd";							// generate base filename
 			FileName[7] = 48 + (SoundSeries % 10);					// change the 7th character of filename according to current tune
 			FileName[6] = 48 + (SoundSeries % 100) / 10;		// the same with the 6th character
-			for (i=0; i<12; i++) {													// store filename to be repeated
+			for (byte i=0; i<12; i++) {											// store filename to be repeated
 				USB_RepeatSound[i] = FileName[i];}
 			NextSoundName = USB_RepeatSound;								// set this filename to be started by PlayNextSound
 			AfterSound = PlayNextSound;											// Call PlayNextSounds when current sound has run out
@@ -206,7 +206,7 @@ byte EX_BlackKnight(byte Type, byte Command){
 			FileName[7] = 48 + (SoundSeries[2] % 10);
 			FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
 			FileName[5] = 48 + SoundSeries[2] / 100;
-			for (i=0; i<12; i++) {
+			for (byte i=0; i<12; i++) {
 				USB_RepeatSound[i] = FileName[i];}
 			NextSoundName = USB_RepeatSound;
 			AfterSound = PlayNextSound;
@@ -289,19 +289,64 @@ byte EX_Pinbot(byte Type, byte Command){
 		return(0);}}																			// no exception rule found for this type so proceed as normal
 
 byte EX_Rollergames(byte Type, byte Command){
-static byte LastSoundCommand = 0;
+	static byte LastSoundCommand = 0;
 	switch(Type){
-	case SoundCommandCh1:																// sound commands for channel 1
+	case SoundCommandCh2:																// sound commands for channel 1
 		if (!Command){ 																		// sound command 0x00 - stop sound
 			AfterSound = 0;
 			StopPlayingSound();
 			AfterMusic = 0;
 			StopPlayingMusic();}
-		else if (Command == LastSoundCommand) {
+		else if (Command == LastSoundCommand) {						// skip double command calls
 			LastSoundCommand = 0;
 			return(0);}
-
-			LastSoundCommand = Command;
+		else if (Command > 95 && Command < 100) { 				// music volume command 0x6X
+			MusicVolume = Command - 96;}
+		else if (Command == 1) {													// music track 1
+			PlayMusic(50, "1_01.snd");											// play non looping part of music track 1
+			const char FileName[] = "1_01L.snd";						// generate filename for looping part of music track 1
+			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
+			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+		else if (Command == 3 || Command == 65) {					// music track 3 identical to 0x41
+			PlayMusic(50, "1_03.snd");											// play non looping part of music track
+			const char FileName[] = "1_03L.snd";						// generate filename for looping part of music track
+			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
+			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+		else if (Command == 6) {													// music track 6 Multiball start
+			PlayMusic(50, "1_06.snd");											// play non looping part of music track
+			const char FileName[] = "1_06L.snd";						// generate filename for looping part of music track
+			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
+			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+		else if (Command == 8) {													// music track 8 Multiball lock
+			PlayMusic(50, "1_08.snd");											// play non looping part of music track
+			const char FileName[] = "1_08L.snd";						// generate filename for looping part of music track
+			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
+			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+		else if (Command == 9 || Command == 66) {					// music track 9 identical to 0x42
+			PlayMusic(50, "1_09.snd");											// play non looping part of music track
+			const char FileName[] = "1_09L.snd";						// generate filename for looping part of music track
+			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
+			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+		else if (Command == 13) {													// music track 0x0d
+			PlayMusic(50, "1_0d.snd");											// play non looping part of music track
+			const char FileName[] = "1_0dL.snd";						// generate filename for looping part of music track
+			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
+			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+		else if (Command == 67) {													// music track 0x43
+			PlayMusic(50, "1_43.snd");											// play non looping part of music track
+			const char FileName[] = "1_43L.snd";						// generate filename for looping part of music track
+			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
+			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+		else if (Command == 68) {													// music track 0x44
+			PlayMusic(50, "1_44.snd");											// play non looping part of music track
+			const char FileName[] = "1_43L.snd";						// generate filename for looping part of music track
+			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
+			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+		else {																						// standard sound
+			char FileName[9] = "1_00.snd";									// handle standard sound
+			if (USB_GenerateFilename(2, Command, FileName)) {	// create filename and check whether file is present
+				PlaySound(51, (char*) FileName);}}
+		LastSoundCommand = Command;
 		return(0);
 	default:																						// use default treatment for undefined types
 		return(0);}}

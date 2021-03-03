@@ -59,7 +59,7 @@ As the pre System11 displays cannot show letters, the corresponding sound number
 ## Programming exceptions
 
 The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. To enable this for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.  
-You can manipulate sound, lamp, switch and solenoid commands. Some of these expections are necessary to make your machine work correctly while others are simply improvements or moderate rule changes.
+You can manipulate sound, lamp, switch, display and solenoid commands. Some of these expections are necessary to make your machine work correctly while others are simply improvements or moderate rule changes.
 
 ### Doing sound exceptions for the Jungle Lord
 
