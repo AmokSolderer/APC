@@ -138,7 +138,6 @@ byte MusicVolume = 0;																	// 0 = max volume
 File MusicFile;																				// file handle for the music file (SD)
 byte AfterMusicPending = 0;														// indicates an after music event -> 0 - no event, 1 - event pending, 2 - event is blocked by StopPlayingMusic
 void (*AfterMusic)() = 0;															// program to execute after music file has ended
-const char *NextMusicName;														// points to the name of the next music file to be played (if any)
 byte MusicPriority = 0;																// stores the priority of the music file currently being played
 byte SBP = 0;																					// Sound Buffer Pointer - next block to write to inside of the music buffer
 byte SoundIRpos = 0;																	// next block of the sound buffer to be read from the interrupt
@@ -1870,7 +1869,15 @@ void PlayRandomMusic(byte Priority, byte Amount, char* List) {
 	PlayMusic(Priority, List+Amount*12);}
 
 void PlayNextMusic() {
-	PlayMusic(50, NextMusicName);}
+	QueueNextMusic(0);}
+
+void QueueNextMusic(const char* Filename) {
+	static const char* NextMusicName;
+	if (!NextMusicName) {
+		PlayMusic(50, NextMusicName);}
+	else {
+		NextMusicName = Filename;
+		AfterMusic = PlayNextMusic;}}
 
 void FadeOutMusic(byte Speed) {
 	analogWrite(VolumePin, 255-ByteBuffer3);

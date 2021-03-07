@@ -363,7 +363,6 @@ void PB_GameStart() {
 	AfterSound = 0;
 	PB_NewBall(2);
 	ReleaseSolenoid(12);                                // turn playfield GI back on
-	NextMusicName = "BS_M03.BIN";
 	AfterMusic = PB_PlayGameMusic;
 	PlayMusic(50, "BS_M02.BIN");}
 

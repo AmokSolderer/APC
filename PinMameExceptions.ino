@@ -304,44 +304,28 @@ byte EX_Rollergames(byte Type, byte Command){
 			MusicVolume = Command - 96;}
 		else if (Command == 1) {													// music track 1
 			PlayMusic(50, "1_01.snd");											// play non looping part of music track 1
-			const char FileName[] = "1_01L.snd";						// generate filename for looping part of music track 1
-			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
-			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+			QueueNextMusic("1_01L.snd");}										// queue looping part as next music to be played
 		else if (Command == 3 || Command == 65) {					// music track 3 identical to 0x41
 			PlayMusic(50, "1_03.snd");											// play non looping part of music track
-			const char FileName[] = "1_03L.snd";						// generate filename for looping part of music track
-			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
-			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+			QueueNextMusic("1_03L.snd");}										// queue looping part as next music to be played
 		else if (Command == 6) {													// music track 6 Multiball start
 			PlayMusic(50, "1_06.snd");											// play non looping part of music track
-			const char FileName[] = "1_06L.snd";						// generate filename for looping part of music track
-			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
-			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+			QueueNextMusic("1_06L.snd");}										// queue looping part as next music to be played
 		else if (Command == 8) {													// music track 8 Multiball lock
 			PlayMusic(50, "1_08.snd");											// play non looping part of music track
-			const char FileName[] = "1_08L.snd";						// generate filename for looping part of music track
-			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
-			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+			QueueNextMusic("1_08L.snd");}										// queue looping part as next music to be played
 		else if (Command == 9 || Command == 66) {					// music track 9 identical to 0x42
 			PlayMusic(50, "1_09.snd");											// play non looping part of music track
-			const char FileName[] = "1_09L.snd";						// generate filename for looping part of music track
-			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
-			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+			QueueNextMusic("1_09L.snd");}										// queue looping part as next music to be played
 		else if (Command == 13) {													// music track 0x0d
 			PlayMusic(50, "1_0d.snd");											// play non looping part of music track
-			const char FileName[] = "1_0dL.snd";						// generate filename for looping part of music track
-			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
-			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+			QueueNextMusic("1_0dL.snd");}										// queue looping part as next music to be played
 		else if (Command == 67) {													// music track 0x43
 			PlayMusic(50, "1_43.snd");											// play non looping part of music track
-			const char FileName[] = "1_43L.snd";						// generate filename for looping part of music track
-			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
-			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+			QueueNextMusic("1_43L.snd");}										// queue looping part as next music to be played
 		else if (Command == 68) {													// music track 0x44
 			PlayMusic(50, "1_44.snd");											// play non looping part of music track
-			const char FileName[] = "1_43L.snd";						// generate filename for looping part of music track
-			NextMusicName = (char*) FileName;								// let NextSoundName point to filename of looping part
-			AfterMusic = PlayNextMusic;}										// will loop NextMusicName
+			QueueNextMusic("1_43L.snd");}										// queue looping part as next music to be played
 		else {																						// standard sound
 			char FileName[9] = "1_00.snd";									// handle standard sound
 			if (USB_GenerateFilename(2, Command, FileName)) {	// create filename and check whether file is present
