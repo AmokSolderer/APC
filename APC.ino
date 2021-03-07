@@ -149,7 +149,6 @@ byte AfterSoundPending = 0;														// indicates an after sound event -> 0 
 void (*AfterSound)() = 0;															// program to execute after sound file has ended
 byte SoundPriority = 0;																// stores the priority of the sound file currently being played
 bool SoundPrio = false;																// indicates which channel has to be processed first
-char *NextSoundName;
 const char TestSounds[3][15] = {{"MUSIC.BIN"},{"SOUND.BIN"},0};
 byte APC_settings[64];																// system settings to be stored on the SD
 byte game_settings[64];																// game settings to be stored on the SD
@@ -1873,7 +1872,7 @@ void PlayNextMusic() {
 
 void QueueNextMusic(const char* Filename) {
 	static const char* NextMusicName;
-	if (!NextMusicName) {
+	if (!Filename) {
 		PlayMusic(50, NextMusicName);}
 	else {
 		NextMusicName = Filename;
@@ -1945,7 +1944,15 @@ void PlayRandomSound(byte Priority, byte Amount, char* List) {
 	PlaySound(Priority, List+Amount*13);}
 
 void PlayNextSound() {
-	PlaySound(50, NextSoundName);}
+	QueueNextSound(0);}
+
+void QueueNextSound(const char* Filename) {
+	static const char* NextSoundName;
+	if (!Filename) {
+		PlaySound(50, NextSoundName);}
+	else {
+		NextSoundName = Filename;
+		AfterSound = PlayNextSound;}}
 
 void Settings_Enter() {
 	WriteUpper("   SETTINGS     ");                     // Show Test Mode

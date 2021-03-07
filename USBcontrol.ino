@@ -891,8 +891,7 @@ void USB_SerialCommand() {
 				if (USB_SerialBuffer[1] & 1) {										// looping active?
 					for (i=0; i<12; i++) {
 						USB_RepeatSound[i] = USB_SerialBuffer[2+i];}
-					NextSoundName = USB_RepeatSound;
-					AfterSound = PlayNextSound;}
+					QueueNextSound(USB_RepeatSound);}
 				else {
 					AfterSound = 0;}}
 			else {
@@ -1053,8 +1052,7 @@ void USB_ResetWaitSoundTimers(byte Dummy) {						// reset the timer and play wai
 			if (USB_WaitingSoundFiles[0][0] & 2) {					// looping active?
 				for (i=0; i<12; i++) {
 					USB_RepeatSound[i] = USB_WaitingSoundFiles[0][1+i];}
-				NextSoundName = USB_RepeatSound;
-				AfterSound = PlayNextSound;}
+				QueueNextSound(USB_RepeatSound);}
 			else {
 				AfterSound = 0;}}
 		else {																						// waiting sound is for channel 1

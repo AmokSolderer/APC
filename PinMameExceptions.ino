@@ -64,8 +64,7 @@ byte EX_JungleLord(byte Type, byte Command){
 			FileName[6] = 48 + (SoundSeries[0] % 100) / 10;	// the same with the 6th character
 			for (byte i=0; i<12; i++) {											// store the name of this sound
 				USB_RepeatSound[i] = FileName[i];}
-			NextSoundName = USB_RepeatSound;								// select this sound to be repeated
-			AfterSound = PlayNextSound;											// determine that PlayNextSound is executed when the sound has run out
+			QueueNextSound(USB_RepeatSound);								// select this sound to be repeated
 			PlaySound(51, (char*) FileName);}								// play the sound
 		else if (Command == 44) {													// sound command 0x2c - stop sound
 			AfterSound = 0;
@@ -135,8 +134,7 @@ byte EX_Pharaoh(byte Type, byte Command){
 			FileName[6] = 48 + (SoundSeries % 100) / 10;		// the same with the 6th character
 			for (byte i=0; i<12; i++) {											// store filename to be repeated
 				USB_RepeatSound[i] = FileName[i];}
-			NextSoundName = USB_RepeatSound;								// set this filename to be started by PlayNextSound
-			AfterSound = PlayNextSound;											// Call PlayNextSounds when current sound has run out
+			QueueNextSound(USB_RepeatSound);								// set this filename to be started by PlayNextSound
 			PlaySound(51, (char*) FileName);}
 		else if (Command == 48) {													// sound command 0x30 - random speech
 			char FileName[13] = "0_30_000.snd";							// generate base filename
@@ -208,8 +206,7 @@ byte EX_BlackKnight(byte Type, byte Command){
 			FileName[5] = 48 + SoundSeries[2] / 100;
 			for (byte i=0; i<12; i++) {
 				USB_RepeatSound[i] = FileName[i];}
-			NextSoundName = USB_RepeatSound;
-			AfterSound = PlayNextSound;
+			QueueNextSound(USB_RepeatSound);
 			LastCh1Sound = Command;													// buffer sound number
 			PlaySound(51, (char*) FileName);}
 		else if (Command == 52) {													// sound command 0x34 - bonus count
