@@ -126,15 +126,14 @@ Sound command 0x2a is also a sound series, so it's treated very similarly.
       char FileName[13] = "0_2a_000.snd";             // generate base filename
       FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current tune
       FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
-      for (i=0; i<12; i++) {                          // store the name of this sound
+      for (byte i=0; i<12; i++) {                     // store the name of this sound
         USB_RepeatSound[i] = FileName[i];}
-      NextSoundName = USB_RepeatSound;                // select this sound to be repeated
-      AfterSound = PlayNextSound;                     // determine that PlayNextSound is executed when the sound has run out
+      QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
       PlaySound(51, (char*) FileName);}               // play the sound
       
 One difference is that this sound series is not a looping one which means the tune counter is not reset to one, but stays at the highest value until it is reset by the stop sound command 0x2c. Furthermore this command resets the tune of the 0x2d sound series (SoundSeries[1] = 0;).  
 However, the major difference is that 0x2a is the background sound which can be interrupted by other sounds, but will continue afterwards.  
-In the APC SW the Aftersound pointer can be used for this. This pointer can be set to a routine which is called automatically when a sound has run out. Here we use the PlayNextSound routine which takes the filename NextSoundName points to and plays the file. For this we copy the filename of the current tune to USB_RepeatSound and set the NextSoundName accordingly.
+In the APC SW the Aftersound pointer can be used for this. This pointer can be set to a routine which is called automatically when a sound has run out. Here we call QueueNextSound which takes the filename USB_RepeatSound points to as an argument. It sets the AfterSound pointer to a routine which will play the filename stored in USB_RepeatSound when the current sound file is running out. Setting AfterSound = 0 will disable this mechanism.
 
 Every System7 machine additionally needs the stop sound command 0x2c.
 
