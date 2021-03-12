@@ -1226,6 +1226,7 @@ void EnterInitials(byte Event) {
 
 void AfterExBallRelease(byte Event) {
 	UNUSED(Event);
+	BK_StartBgMusic();
 	if (QuerySwitch(45)) {                              // ball still in the shooting lane?
 		ActivateTimer(2000, Event, AfterExBallRelease);}  // come back in2s
 	else {                                              // ball has been shot
