@@ -339,6 +339,8 @@ byte EX_Rollergames(byte Type, byte Command){
 			PlayMusic(50, "1_44.snd");											// play non looping part of music track
 			QueueNextMusic("1_43L.snd");}										// queue looping part as next music to be played
 		else {																						// standard sound
+			if (Command == 78) {														// 0x4e ends music track
+				StopPlayingMusic();}
 			char FileName[9] = "1_00.snd";									// handle standard sound
 			if (USB_GenerateFilename(2, Command, FileName)) {	// create filename and check whether file is present
 				PlaySound(51, (char*) FileName);}}
