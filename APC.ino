@@ -1865,7 +1865,7 @@ void StopPlayingMusic() {
 
 void PlayRandomMusic(byte Priority, byte Amount, char* List) {
 	Amount = random(Amount);
-	PlayMusic(Priority, List+Amount*12);}
+	PlayMusic(Priority, List+Amount*13);}
 
 void PlayNextMusic() {
 	QueueNextMusic(0);}

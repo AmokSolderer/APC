@@ -322,7 +322,6 @@ byte EX_Pinbot(byte Type, byte Command){
 		return(0);}}																			// no exception rule found for this type so proceed as normal
 
 byte EX_Rollergames(byte Type, byte Command){
-	static byte LastSoundCommand = 0;
 	switch(Type){
 	case SoundCommandCh2:																// sound commands for channel 1
 		if (!Command){ 																		// sound command 0x00 - stop sound
@@ -330,9 +329,6 @@ byte EX_Rollergames(byte Type, byte Command){
 			StopPlayingSound();
 			AfterMusic = 0;
 			StopPlayingMusic();}
-		else if (Command == LastSoundCommand) {						// skip double command calls
-			LastSoundCommand = 0;
-			return(0);}
 		else if (Command > 95 && Command < 100) { 				// music volume command 0x6X
 			MusicVolume = Command - 96;}
 		else if (Command == 1) {													// music track 1
@@ -383,7 +379,6 @@ byte EX_Rollergames(byte Type, byte Command){
 			char FileName[9] = "1_00.snd";									// handle standard sound
 			if (USB_GenerateFilename(2, Command, FileName)) {	// create filename and check whether file is present
 				PlaySound(51, (char*) FileName);}}
-		LastSoundCommand = Command;
 		return(0);
 	default:																						// use default treatment for undefined types
 		return(0);}}
