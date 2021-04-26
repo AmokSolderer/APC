@@ -314,6 +314,7 @@ byte EX_Pinbot(byte Type, byte Command){
 			char FileName[9] = "1_00.snd";									// handle standard sound
 			if (USB_GenerateFilename(2, Command, FileName)) {	// create filename and check whether file is present
 				if (Command < 128) {													// play only music on the music channel
+					AfterMusic = 0;															// stop looping music
 					PlayMusic(50, (char*) FileName);}						// play on the music channel
 				else {
 					PlaySound(50, (char*) FileName);}}}					// play on the sound channel
