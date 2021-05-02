@@ -299,7 +299,7 @@ byte EX_Pinbot(byte Type, byte Command){
 			PlayMusic(50, "1_0a.snd");											// play non looping part of music track
 			QueueNextMusic("1_02L.snd");}										// queue looping part as next music to be played
 		else if (Command == 65) {													// music track 0x41
-			PlayMusic(50, "1_41.snd");											// play non looping part of music track
+			PlayMusic(50, "1_01L.snd");											// play non looping part of music track
 			QueueNextMusic("1_01L.snd");}										// queue looping part as next music to be played
 		else if (Command == 66) {													// music track 0x42
 			PlayMusic(50, "1_0a.snd");											// play non looping part of music track
@@ -307,9 +307,6 @@ byte EX_Pinbot(byte Type, byte Command){
 		else if (Command == 148) {												// music track 0x94
 			PlayMusic(50, "1_94.snd");											// play non looping part of music track
 			QueueNextMusic("1_94L.snd");}										// queue looping part as next music to be played
-		else if (Command == 168) {												// music track 0xa8
-			PlayMusic(50, "1_a8.snd");											// play non looping part of music track
-			QueueNextMusic("1_a8L.snd");}										// queue looping part as next music to be played
 		else {
 			char FileName[9] = "1_00.snd";									// handle standard sound
 			if (USB_GenerateFilename(2, Command, FileName)) {	// create filename and check whether file is present
