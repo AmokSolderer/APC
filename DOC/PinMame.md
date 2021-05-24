@@ -23,8 +23,7 @@ For most of the game generations you could also install the original audio board
 
 Our current setup is not using the Raspberry Pi to generate the PinMame sounds. Instead all sound and music files have to be created once and stored on the SD card of the APC. Of course this requires some work, but we think the benefits are worth it.
 
-First of all, the Pi uses the Unix version of PinMame which has severe sound quality issues while the audio quality of the APC is very good. But there're some more advantages in having all sound files on the SD card. One is that you can use the same files for PinMame, MPF or when programming the APC natively. This may not sound like a big deal, but it gives you the opportunity to run your game in PinMame and introduce certain changes by using the [APC API](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf)
-.
+First of all, the Pi uses the Unix version of PinMame which has severe sound quality issues while the audio quality of the APC is very good. But there're some more advantages in having all sound files on the SD card. One is that you can use the same files for PinMame, MPF or when programming the APC natively. This may not sound like a big deal, but it gives you the opportunity to run your game in PinMame and introduce certain changes by using the [APC API](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf). A description of this can be found on the [Howto page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame_howto.md).
 
 A good example is a local fellow who wants his System 3 'Disco Fever' to play songs like 'Saturday Night Fever' additionally to the normal sounds of the machine. We still have to add PinMame support for System 3, but once we have it adding the music should be an easy task. The commands of the APC API can be used to start the music when the game starts and to stop it when it ends. You could even identify certain trigger points to switch to another song and so on.
 
@@ -36,10 +35,12 @@ At the moment the list of available sound packages is still quite short, but we 
 
 |System|Game| Sound File URL|Comments|
 |--|--|--|--|
+|6|Firepower| Ask Matiou in the Pinside forum | |
 |7|Black Knight| URL available on request| |
 |7|Jungle Lord| URL available on request| |
 |7|Pharaoh| Ask Grangeomatic in the Pinside forum| |
-|11a|Pinbot| URL available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW. No looping implemented yet - if you wait long enough, some sounds will just run out|
+|11a|Pinbot| URL available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW.|
+|11c|Rollergames| URL available on request| There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. The issue doesn't seem to affect the Windows version of PinMame. Please contact me if you have any idea what the root cause might be. |
 
 ## Audio boards
 

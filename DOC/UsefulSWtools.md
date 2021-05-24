@@ -8,6 +8,8 @@ I recommend to use tools like Audacity to generate the mono WAV, but the tool ca
 
 Rename Data.BIN and put it on the SD Card. Use only capital letters for the filename, because only then the pinball display is able to show it correctly in case an error message is shown.
 
+There's also an [AudioSaveFolder.pl](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/AudioSaveFolder.pl) version of this tool available (thanks to Mokopin). This tool converts all .wav files in the current folder to .snd files automatically.
+
 ## Display segment code calculator
 
 The following tool generates the numerical definition of the display segment patterns (2 bytes for each character). In other words the numbers tell the APC which display segments to switch on for which character. In the code these numbers can be found at the beginning of APC.ino. They are stored in arrays named AlphaUpper, AlphaLower and NumLower depending on where you want this character to appear.

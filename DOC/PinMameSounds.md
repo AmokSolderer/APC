@@ -28,12 +28,3 @@ After this step, you can either convert each file to 44.1kHz manually in audacit
 The last step is to convert the 16Bit WAV files to the 12Bit APC format. This can be done with a PERL script which takes all (mono) wav files within the current directory and converts them to *.snd files. This script can be executed with a perl interpreter, e.g. for windows available from http://strawberryperl.com
 
 The resulting snd Files need to be copied to the APC SD-CARD. Please use a SD-card formatter utility (eg https://www.sdcardformatter.com/) and not the operating system function.  FAT file systems do not sort or index files so open does a sequential search for the file. Opening a file normally takes about 15ms but can take up to 50ms. In addition to that, the SD card controller might be doing some 'housekeeping', further prolonging access times. As a result, a sound file may not be found by the APC, even if it is available on the SD card (with a larger number of files stored on it). 
-
-Finally there is an additional bonus to all the work required to extract and convert sound files: each sound or music can be exchanged or extended easily. E.g by adding two lines of code to the USBcontrol.ino , custom music can be added to the original pinball music.
-
-    if ((USB_SerialBuffer[1] == 2)|| (USB_SerialBuffer[1] == 58)) {  // main theme
-      USB_SerialBuffer[1]=random(200,204+1);}                        // cycle between five songs randomly
-    if (USB_SerialBuffer[1] == 200) { USB_SerialBuffer[1]=58;}       // include main theme also
-          // C9, CA, CB,CC = custom songs
-
-

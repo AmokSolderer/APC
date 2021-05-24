@@ -1,6 +1,6 @@
 # APC News and Changelog
 
-## March 2021
+## June 2021
 
 ### New SW Version V0.22
 
@@ -8,9 +8,12 @@
 
 * Exception rules for System 7 Pharaoh have been added. Sound files for Pharaoh are also available
 
+* Exception rules for Sysem 6 Firepower have been added. Sound files for Firepower are also available
+
 * Support for 6 digit numerical displays (System3 - 6) has been added
 
 * Support for System 3 - 6 sound boards has been added
+
 
 ## January 2021
 
