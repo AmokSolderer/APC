@@ -1117,24 +1117,26 @@ byte USB_GenerateFilename(byte Channel, byte Sound, char* FileName) {
 	if (game_settings[USB_Debug] == 2) {								// display can be used for debug information
 		if (Channel == 1) {
 			if (SD.exists(FileName)) {											// sound file present?
-				if (APC_settings[DisplayType] < 7) {					// Sys11 type display?
+				if (APC_settings[DisplayType] < 6) {					// Sys11 type display?
 					*(DisplayLower+2) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the sound to be played
 					*(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
 					*(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
 					*(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
 				else if (APC_settings[DisplayType] == 6) {		// Sys3-6 type display
-					*(DisplayLower) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower));
-					*(DisplayLower+2) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+2));}
+					*(DisplayLower) = ConvertNumLower(Sound / 100,(byte) *(DisplayLower));
+					*(DisplayLower+2) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower));
+					*(DisplayLower+4) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+2));}
 				else {																				// Sys3 7 - 9 type display
 					*(DisplayLower+2) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower+2));
 					*(DisplayLower+4) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+4));}}
 			else {																					// sound file doesn't exist
-				if (APC_settings[DisplayType] < 7) {					// Sys11 type display?
+				if (APC_settings[DisplayType] < 6) {					// Sys11 type display?
 					*(DisplayLower+12) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing sound
 					*(DisplayLower+13) = DispPattern2[2 * (FileName[2] - 32) + 1];
 					*(DisplayLower+14) = DispPattern2[2 * (FileName[3] - 32)];
 					*(DisplayLower+15) = DispPattern2[2 * (FileName[3] - 32) + 1];}
 				else if (APC_settings[DisplayType] == 6) {		// Sys3 - 6 type display
+					*(DisplayLower+6) = ConvertNumLower(Sound / 100,(byte) *(DisplayLower+6));
 					*(DisplayLower+8) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower+8));
 					*(DisplayLower+10) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+10));}
 				else {																				// Sys3 7 - 9 type display
