@@ -117,7 +117,6 @@ byte EX_Firepower(byte Type, byte Command){						// thanks to Matiou for sending
 			for (byte i=0; i<12; i++) {                     // store the name of this sound
 				USB_RepeatSound[i] = FileName[i];}
 			QueueNextSound(USB_RepeatSound);								// select this sound to be repeated
-			AfterSound = PlayNextSound;                     // determine that PlayNextSound is executed when the sound has run out
 			PlaySound(51, (char*) FileName);}               // play the sound
 		else if ((Command == 104 || Command == 107 || Command == 60 || Command == 63)      // ignore these sounds at beginning of multiball
 				&& PlayingMultiballSound == 1) { }
