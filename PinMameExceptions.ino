@@ -402,6 +402,7 @@ byte EX_Pinbot(byte Type, byte Command){
 		return(0);}}																			// no exception rule found for this type so proceed as normal
 
 byte EX_Rollergames(byte Type, byte Command){
+	static byte LastMusic;
 	switch(Type){
 	case SoundCommandCh2:																// sound commands for channel 1
 		if (!Command){ 																		// sound command 0x00 - stop sound
@@ -412,47 +413,75 @@ byte EX_Rollergames(byte Type, byte Command){
 		else if (Command > 95 && Command < 100) { 				// music volume command 0x6X
 			MusicVolume = Command - 96;}
 		else if (Command == 1) {													// music track 1
-			PlayMusic(50, "1_01.snd");											// play non looping part of music track 1
-			QueueNextMusic("1_01L.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 1) {
+				LastMusic = 1;
+				PlayMusic(50, "1_01.snd");											// play non looping part of music track 1
+				QueueNextMusic("1_01L.snd");}}										// queue looping part as next music to be played
 		else if (Command == 3 || Command == 65) {					// music track 3 identical to 0x41
-			PlayMusic(50, "1_03.snd");											// play non looping part of music track
-			QueueNextMusic("1_03L.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 3) {
+				LastMusic = 3;
+				PlayMusic(50, "1_03.snd");											// play non looping part of music track
+				QueueNextMusic("1_03L.snd");}}										// queue looping part as next music to be played
 		else if (Command == 4) {													// music track 0x04
-			PlayMusic(50, "1_04.snd");											// play music track
-			QueueNextMusic("1_04.snd");}										// track is looping so queue it also
+			if (LastMusic != 4) {
+				LastMusic = 4;
+				PlayMusic(50, "1_04.snd");											// play music track
+				QueueNextMusic("1_04.snd");}}										// track is looping so queue it also
 		else if (Command == 6) {													// music track 6 Multiball start
-			PlayMusic(50, "1_06.snd");											// play non looping part of music track
-			QueueNextMusic("1_06L.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 6) {
+				LastMusic = 6;
+				PlayMusic(50, "1_06.snd");											// play non looping part of music track
+				QueueNextMusic("1_06L.snd");}}										// queue looping part as next music to be played
 		else if (Command == 7) {													// music track 0x07
-			PlayMusic(50, "1_07.snd");											// play music track
-			QueueNextMusic("1_07.snd");}										// track is looping so queue it also
+			if (LastMusic != 7) {
+				LastMusic = 7;
+				PlayMusic(50, "1_07.snd");											// play music track
+				QueueNextMusic("1_07.snd");}}										// track is looping so queue it also
 		else if (Command == 8) {													// music track 8 Multiball lock
-			PlayMusic(50, "1_08.snd");											// play non looping part of music track
-			QueueNextMusic("1_08L.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 8) {
+				LastMusic = 8;
+				PlayMusic(50, "1_08.snd");											// play non looping part of music track
+				QueueNextMusic("1_08L.snd");}	}									// queue looping part as next music to be played
 		else if (Command == 9 || Command == 66) {					// music track 9 identical to 0x42
-			PlayMusic(50, "1_09.snd");											// play non looping part of music track
-			QueueNextMusic("1_09L.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 9) {
+				LastMusic = 9;
+				PlayMusic(50, "1_09.snd");											// play non looping part of music track
+				QueueNextMusic("1_09L.snd");}}										// queue looping part as next music to be played
 		else if (Command == 11) {													// music track 0x0b
-			PlayMusic(50, "1_0bL.snd");											// play music track
-			QueueNextMusic("1_0bL.snd");}										// track is looping so queue it also
+			if (LastMusic != 11) {
+				LastMusic = 11;
+				PlayMusic(50, "1_0bL.snd");											// play music track
+				QueueNextMusic("1_0bL.snd");}}										// track is looping so queue it also
 		else if (Command == 12) {													// music track 0x0c
-			PlayMusic(50, "1_0c.snd");											// play non looping part of music track
-			QueueNextMusic("1_0cL.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 12) {
+				LastMusic = 12;
+				PlayMusic(50, "1_0c.snd");											// play non looping part of music track
+				QueueNextMusic("1_0cL.snd");}}										// queue looping part as next music to be played
 		else if (Command == 13) {													// music track 0x0d
-			PlayMusic(50, "1_0d.snd");											// play non looping part of music track
-			QueueNextMusic("1_0dL.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 13) {
+				LastMusic = 13;
+				PlayMusic(50, "1_0d.snd");											// play non looping part of music track
+				QueueNextMusic("1_0dL.snd");}}										// queue looping part as next music to be played
 		else if (Command == 14) {													// music track 0x0e
-			PlayMusic(50, "1_0e.snd");											// play non looping part of music track
-			QueueNextMusic("1_0eL.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 14) {
+				LastMusic = 14;
+				PlayMusic(50, "1_0e.snd");											// play non looping part of music track
+				QueueNextMusic("1_0eL.snd");}}										// queue looping part as next music to be played
 		else if (Command == 15) {													// music track 0x0f
-			PlayMusic(50, "1_0f.snd");											// play music track
-			QueueNextMusic("1_0bL.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 15) {
+				LastMusic = 15;
+				PlayMusic(50, "1_0f.snd");											// play music track
+				QueueNextMusic("1_0bL.snd");}}										// queue looping part as next music to be played
 		else if (Command == 67) {													// music track 0x43
-			PlayMusic(50, "1_43.snd");											// play non looping part of music track
-			QueueNextMusic("1_43L.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 67) {
+				LastMusic = 67;
+				PlayMusic(50, "1_43.snd");											// play non looping part of music track
+				QueueNextMusic("1_43L.snd");}}										// queue looping part as next music to be played
 		else if (Command == 68) {													// music track 0x44
-			PlayMusic(50, "1_44.snd");											// play non looping part of music track
-			QueueNextMusic("1_43L.snd");}										// queue looping part as next music to be played
+			if (LastMusic != 68) {
+				LastMusic = 68;
+				PlayMusic(50, "1_44.snd");											// play non looping part of music track
+				QueueNextMusic("1_43L.snd");}}										// queue looping part as next music to be played
 		else {																						// standard sound
 			if (Command == 78) {														// 0x4e ends music track
 				StopPlayingMusic();}

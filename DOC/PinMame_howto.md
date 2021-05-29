@@ -162,6 +162,21 @@ which adds the hex code to a given filename and handles the display messages if 
 
 The return marks the end of the SoundCommandCh1 case.
 
+### Doing music exceptions for System11 machines
+
+With System11 the audio boards became much more powerful. This made it possible to play an independent music score additional to the sound and speech effects.
+
+Most of these music scores consist of an intro and a looping part which is repeated all over. If you want it easy, you could just put the intro and some repetitions of the looping part in one file. This will work in most cases, but if you wait long enough the music will just run out.  
+In order to prevent this from happening, the intro and the looping part must be in separate files and an exception rule must handle the sequencing.
+
+Let's use music track 4 from Pinbot as an example. In the SoundCommandCh2 case the following code handles track4:
+
+		else if (Command == 4) {													// music track 4
+			PlayMusic(50, "1_04.snd");											// play non looping part of music track
+			QueueNextMusic("1_04L.snd");}										// queue looping part as next music to be played
+
+When audio channel 2 receives command 4 then the intro 1_04.snd is played first and the QueueNextMusic command is used to queue the looping part 1_04L.snd to be played after the intro has run out. As long as the AfterMusic variable is not set to zero, the looping part will be repeated automatically.
+
 ### Doing exceptions for the magna save of the Jungle Lord
 
 Jungle Lord features timed magna saves which means that the magnets are just activated for as long as the magna save buttons are pressed.  

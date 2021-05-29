@@ -12,8 +12,11 @@
 
 * Support for 6 digit numerical displays (System3 - 6) has been added
 
-* Support for System 3 - 6 sound boards has been added
+* Support for System 3 - 6 sound boards as well as System 11 audio boards has been added
 
+* The Pinbot exceptions have been changed to handle the looping music scores correctly
+
+* Exception rules for Rollergames have been added, but there seems to be a problem with PinMame sending erroneous music commands. This happens only during a game, the music test works perfectly. This issue is still unsolved, so any help is welcome.
 
 ## January 2021
 

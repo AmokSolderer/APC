@@ -4,7 +4,8 @@ There are several ways to extract sounds from pinball ROMs:
 1) 'F5' method using [PINMAME and M1 music extractor](https://www.vpforums.org/index.php?app=tutorials&article=54)  
 2) 'F6' method using [PINMAME with patch by lucky1](https://vpuniverse.com/forums/topic/4489-pinmame-altsound-editor/)
 
-Method 2) seems preferable because it delivers a list of files automatically, but does not work for everybody (OS Win7, Win10)
+Method 2) seems preferable because it delivers a list of files automatically, but does not work for everybody (OS Win7, Win10)  
+It seems that pinmame version >dec 2020 is required. With WIN10 It doesn't work with the pinmame32.exe from sourceforge which is version 3.3 (july 29th,2020). It works flawlessly with version 3.3b from Toxie (https://www.vpforums.org/index.php?app=downloads&showfile=11571)  
 Method 1) has the drawback that the F5 key is not reliably polled and thus requires good nerves for many files...
 
 Both methods have in common, that both music and sound board of the pinball control system are triggered with machine specific commands (eg. 0x0101 means play song1 on musicboard, 0x0001 means play sound1 on soundboard) . With method 1) a number of files will be available in the 'wave' folder of the pinmame folder (eg. 'rdkn0001.wav').  These files are sampled with 48kHz which is the default pinmame sample rate and which needs to be converted to the APC samplerate of 44.1kHz later.
