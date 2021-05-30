@@ -171,9 +171,9 @@ In order to prevent this from happening, the intro and the looping part must be 
 
 Let's use music track 4 from Pinbot as an example. In the SoundCommandCh2 case the following code handles track4:
 
-		else if (Command == 4) {													// music track 4
-			PlayMusic(50, "1_04.snd");											// play non looping part of music track
-			QueueNextMusic("1_04L.snd");}										// queue looping part as next music to be played
+    else if (Command == 4) {                          // music track 4
+      PlayMusic(50, "1_04.snd");                      // play non looping part of music track
+      QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
 
 When audio channel 2 receives command 4 then the intro 1_04.snd is played first and the QueueNextMusic command is used to queue the looping part 1_04L.snd to be played after the intro has run out. As long as the AfterMusic variable is not set to zero, the looping part will be repeated automatically.
 

@@ -18,6 +18,10 @@
 
 * Exception rules for Rollergames have been added, but there seems to be a problem with PinMame sending erroneous music commands. This happens only during a game, the music test works perfectly. This issue is still unsolved, so any help is welcome.
 
+### Misc
+
+There's a new section [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) in case you encounter a problem
+
 ## January 2021
 
 The APC 3.0 board has most components populated by the board manufacturer. As this reduces the probability of soldering errors significantly, the set up and test procedures could be made a lot easier.

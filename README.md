@@ -95,7 +95,7 @@ The PinMame support is still under development and even if a generation is basic
 |11| Yes | Yes | Yes |  |
 |11a| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
 |11b| Not yet | Not yet | Yes |  |
-|11c| Yes | Not yet | Yes | The wires of three connectors must be extended |
+|11c| Yes | Yes | Yes | The wires of three connectors must be extended |
 
 ## Changes / What's new?
 
@@ -120,6 +120,7 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 1.4 [Initial Tests](https://github.com/AmokSolderer/APC/blob/master/DOC/InitialTests.md) - how to start it up for the first time and use the Test Mode of the Base Code  
 1.5 [Base Code setup](https://github.com/AmokSolderer/APC/blob/master/DOC/SetUpBC.md) - set up the Base Code for your machine  
 1.6 [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
+1.7 [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) - If you have a problem, check here first
 
 2 Writing my own game code - You want to program your own game in C? Then read this.  
 2.1 [Game code tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md)  
