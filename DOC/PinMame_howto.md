@@ -57,6 +57,10 @@ You can activate this mode in the game settings. To do this you have to press Ad
 In Audio Debug mode the lower display(s) are used for audio information. The Player 3 display (or the left part of the lower display for BK2K type displays) shows information for sound prefix 00 and the Player 4 display (right part of lower display for BK2K) does the same for prefix 01. If the requested sound is found on the SD card, it's hex number is shown in the left side of the corresponding display and the sound is played normally. If the sound file is missing it's hex number is shown on the right side of the corresponding display which makes it easy to find missing sound files.  
 As the pre System11 displays cannot show letters, the corresponding sound numbers are shown in decimal values when this kind of display is selected.
 
+### Sound problems
+
+Most sound problems like lags and stuttering are caused by the performance of the SD card. Take a look at the [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) section for more.
+
 ## Programming exceptions
 
 The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. To enable this for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.  

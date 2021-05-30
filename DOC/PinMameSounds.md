@@ -1,5 +1,7 @@
 # Instructions for extracting sound files from pinball ROMs
 
+Thanks to Mokopin for these instructions
+
 There are several ways to extract sounds from pinball ROMs:
 1) 'F5' method using [PINMAME and M1 music extractor](https://www.vpforums.org/index.php?app=tutorials&article=54)  
 2) 'F6' method using [PINMAME with patch by lucky1](https://vpuniverse.com/forums/topic/4489-pinmame-altsound-editor/)
