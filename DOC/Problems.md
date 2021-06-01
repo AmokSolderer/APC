@@ -15,5 +15,7 @@ The solution is to record the whole sequence into one single sound file and to p
 
 If you're using a chinese clone of the Arduino DUE which just stopped working and draws a huge current instead then it's most probably a blown buck converter IC.  
 You can check this by supplying your DUE on the bench (without the APC board) with 5V. Then check the temperature of the marked IC.
-![Buck](https://github.com/AmokSolderer/APC/blob/V00.22/DOC/PICS/Buck.jpg)
+
+![Buck](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/Buck.jpg)
+
 If the IC gets hot then it's damaged. The good thing is that you don't need this IC when using the DUE with the APC, so you can just remove it and your system should run fine again.

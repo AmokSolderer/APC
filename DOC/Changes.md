@@ -20,7 +20,9 @@
 
 ### Misc
 
-There's a new section [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) in case you encounter a problem
+* There's a new section [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) in case you encounter a problem
+
+* The 74HCT273 ICs from Nexperia have run out of stock at JLCPCB quite some time ago and they don't seem to reorder them. Therefore the type of this IC has been changed to the Texas Instruments part.
 
 ## January 2021
 
