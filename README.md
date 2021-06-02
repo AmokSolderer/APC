@@ -1,7 +1,10 @@
 # The Arduino Pinball Controller
-![APC 2.0](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC.JPG)
-The picture shows an APC 3.0 board configured for System 9 + 11 machines as the connectors for System 3 - 7 are not populated.  
-See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impression what has changed compared to the previous versions.
+
+Before I explain what the APC is, let's first clarify what it is not.
+ 
+The APC is no commercial drop-in replacement board. It is intended for people with some basic knowledge of programming and electronics who want to expand the possibilities of their pinball machine. That means it's going to require some work to set up your game even if you don't want to change anything, but run the original rules with PinMame. Take a look at the [PinMame page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) to see what I mean.  
+As this is a private project with no commercial interest, you may use the APC at your own risk and I'm not liable for any damage that might occur to your machine while using it.  
+Some special machines might even not work with the APC or require additional HW. Jokerz! for example has a unique audio board which uses seperate audio channels for the cabinet and the backbox speakers. The APC HW is capable of generating two independent sound channels, but you need at least DC-blocks (capacitors) when connecting it to the speakers.
 
 ## Overview
 
@@ -18,7 +21,9 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards at a price of well below 100€ per board. 
 
-Note that Jokerz! has a unique audio board which uses seperate audio channels for the cabinet and the backbox speakers. The APC HW is capable of generating two independent sound channels, but you need at least DC-blocks (capacitors) when connecting it to the speakers of the Jokerz!
+![APC 2.0](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC.JPG)
+The picture shows an APC 3.0 board configured for System 9 + 11 machines as the connectors for System 3 - 7 are not populated.  
+See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impression what has changed compared to the previous versions.
 
 The picture below shows an APC prototype in my Pinbot.
 
@@ -74,7 +79,7 @@ The second board is a driver for 8 additional solenoids. The current version is 
 
 I use special alphanumerical displays in my Black Knight which can also be found in the HW section as well as an LED replacement for the original System7 numerical displays.
 
-## Current Status (January 2021)
+## Current Status (June 2021)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md#cable-extensions)
 
@@ -84,13 +89,13 @@ The PinMame support is still under development and even if a generation is basic
 |--|--|--|--|--|
 |3| Not yet | Not yet | Yes|  |
 |4| Yes | Not yet | Yes|  |
-|6| Not yet | Not yet | Yes |  |
+|6| Yes | Yes | Yes |  |
 |7| Yes | Yes | Yes | Needs two additional wires |
 |9| Yes | soon | Yes |  |
 |11| Yes | Yes | Yes |  |
 |11a| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
 |11b| Not yet | Not yet | Yes |  |
-|11c| Yes | Not yet | Yes | The wires of three connectors must be extended |
+|11c| Yes | Yes | Yes | The wires of three connectors must be extended |
 
 ## Changes / What's new?
 
@@ -115,6 +120,7 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 1.4 [Initial Tests](https://github.com/AmokSolderer/APC/blob/master/DOC/InitialTests.md) - how to start it up for the first time and use the Test Mode of the Base Code  
 1.5 [Base Code setup](https://github.com/AmokSolderer/APC/blob/master/DOC/SetUpBC.md) - set up the Base Code for your machine  
 1.6 [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
+1.7 [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) - If you have a problem, check here first
 
 2 Writing my own game code - You want to program your own game in C? Then read this.  
 2.1 [Game code tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md)  
@@ -125,7 +131,8 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 3.2 [The APC and PinMame](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame  
 3.3 [PinMame howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that  
 3.4 [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) - list of the PinMame game numbers  
-3.5 [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) - updating Lisy and using the debug mode
+3.5 [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) - updating Lisy and using the debug mode  
+3.6 [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
 
 4 Using MPF  
 4.1 [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw) - see my first humble MPF steps in this video  

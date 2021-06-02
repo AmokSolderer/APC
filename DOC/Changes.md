@@ -1,5 +1,29 @@
 # APC News and Changelog
 
+## June 2021
+
+### New SW Version V0.22
+
+* A new exception handling system has been implemented. This makes it easier to program machine specific changes while using PinMame. Take a look at the [PinMame How-to](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) page for details
+
+* Exception rules for System 7 Pharaoh have been added. Sound files for Pharaoh are also available
+
+* Exception rules for Sysem 6 Firepower have been added. Sound files for Firepower are also available
+
+* Support for 6 digit numerical displays (System3 - 6) has been added
+
+* Support for System 3 - 6 sound boards as well as System 11 audio boards has been added
+
+* The Pinbot exceptions have been changed to handle the looping music scores correctly
+
+* Exception rules for Rollergames have been added, but there seems to be a problem with PinMame sending erroneous music commands. This happens only during a game, the music test works perfectly. This issue is still unsolved, so any help is welcome.
+
+### Misc
+
+* There's a new section [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) in case you encounter a problem
+
+* The 74HCT273 ICs from Nexperia have run out of stock at JLCPCB quite some time ago and they don't seem to reorder them. Therefore the type of this IC has been changed to the Texas Instruments part.
+
 ## January 2021
 
 The APC 3.0 board has most components populated by the board manufacturer. As this reduces the probability of soldering errors significantly, the set up and test procedures could be made a lot easier.
@@ -22,7 +46,7 @@ APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJ
 
 * The Hardware Extensions Interface has been upgraded to have 5V logic level also at the select pins. Furthermore the data lines can now be latched which makes it possible to control System7 audio boards without having to use additional HW.
 
-* The board has been reworked to use SMD ICs where possible and move all components to the top side. This makes it possible to populate the board at the board manufacturers. All necessary fabrication files can be found in the [fabrication files folder](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles).
+* The board has been reworked to use SMD ICs where possible and move all components to the top side. This makes it possible to populate the board at the board manufacturers. All necessary fabrication files can be found in the [fabrication files folder](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_FabricationFiles).
 
 ### New SW Version V0.20
 
