@@ -35,6 +35,9 @@ Like all sounds to be played by the APC the WAV files have to be processed with 
 
 In order for the APC to find the right sound, all sounds have to be named with the prefix (only one digit), underscore, the hexadecimal number of the sound and .snd as the extension. For example, the name of sound 0xf1 of prefix 00 would be 0_f1.snd. All files need to be placed in the root folder of APC's SD card.
 
+System 7 sound commands have 5 bit and can therefore only select 32 (0x20 in hex) different sounds. For some reason PinMame seems to add 32 to each sound number. Hence, the filenames of the system 7 sounds must be numbered from 0x21 to 0x40 for the APC to find the correct file.  
+This offset might be different for other system generations.
+
 ### Which sounds are required?
 
 When you start from scratch you should play your game with Lisy being in Debug Mode. Please read the [Controlling Lisy page](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) to learn how to do this.
@@ -107,7 +110,7 @@ The first exception is the 0x26 sound command which triggers one of four random 
 The APC expects the corresponding sound files to be named 0_26_00X.snd with the X being one for the first file, two for the second and so on.  
 First we generate the base filename "0_26_000.snd", then we change the 8th character of this string to a random number between 1 and 4 and play the sound file with a priority of 52.  
 
-The next special sound command of the Jungle Lord is 0x2d which is a looping sound series, which means it starts again with the first tune after the last has been played. The corresponding code is:
+The next special sound command of the Jungle Lord is 0x2d. This is a looping sound series, which means it starts again with the first tune after the last has been played. The corresponding code is:
 
     else if (Command == 45){                          // sound command 0x2d - multiball start - sound series
       if (SoundSeries[1] < 31)                        // this sound has 31 tunes
@@ -216,9 +219,9 @@ For timed magna saves we have to do the same for the magna save buttons being re
 The previous examples were just to improve the emulation of a machine, which is necessary to make your game work correct with PinMame. However, you are not limited to this, but you can also use this to apply changes to a game.
 
 As an example I want to fix one nasty problem that affected both of my System7 machines.  
-It didn't happen often but regularly that a ball ejected into the plunger lane bounced back from the side rail and into the trunk again. If it got back into the trunk completely the SW would recognize this and eject the ball again. But sometimes the ball didn't really get back into the trunk. Instead it got stuck above the shooter lane feeder and there wasn't much I could do about it except of operating the feeder manually to push the ball into the shooter lane.
+It didn't happen often but regularly that a ball ejected into the plunger lane bounced back from the side rail and into the trunk again. If it got back into the trunk completely the SW would recognize this and eject the ball again. But sometimes the ball didn't really get back into the trunk. Instead it got stuck above the shooter lane feeder and there wasn't much I could do about it except of opening the coin door and operating the feeder manually to push the ball into the shooter lane. I really wonder how these games survived in the pubs with a bug like this.
 
-How can we fix this?  
+With the APC we can fix this.  
 There is a switch in the shooter lane, so all we have to do is start a timer when the solenoid of the shooter lane feeder is activated. If the shooter lane switch is triggered within 3 seconds, we know the ball has been ejected successfully and we can just kill the timer. But if the timer runs out, we know the ball is probably stuck and we just operate the feeder again.
 
 How does this look in code? First we need a handling routine for our timer. As we're going to need this for most if not all System7 machines, I've generated a generic timer handler for our problem that can be used by all machines:
@@ -241,8 +244,8 @@ How does this look in code? First we need a handling routine for our timer. As w
 
 This routine shall be called with a State argument which determines what it has to do.  
 If State is 0 then the timer is not needed any more and must be deactivated. In our case this would happen if the ball has triggered the shooter lane switch.  
-State = 1 means that a timer shall be started. The number of this timer is being stored in the Timer variable and the Timer is configured to call our handler again after 3s. When it does so it'll pass a 2 as an argument which will indicate that our handling routine has been called by a timer.  
-When our handler is called with State = 2 it knows that the timer has run out which means that the ball is probably stuck. So it activates the shooter lane feeder again and restarts the timer in case the ball gets stuck again.  
+State = 1 means that a timer shall be started. The number of this timer is being stored in the Timer variable and the Timer is configured to call our handler again after 3s. When it does so it'll pass a 2 as an argument which will indicate that our handling routine has been called by the timer.  
+Hence, our handler knows that the timer has run out when it's called with State = 2 which means that the ball is probably stuck. So it activates the shooter lane feeder again and restarts the timer in case the ball gets stuck again.  
 For more information about timers read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md#2-basic-game-functions) tutorial.
 
 With this timer handler in place we just have to tell our exception handler to use it. First of all it needs to know which coil is for the shooter lane feeder. In case of the Jungle Lord this is solenoid number 2 which we already defined before in EX_Init by setting EX_EjectSolenoid = 2. 

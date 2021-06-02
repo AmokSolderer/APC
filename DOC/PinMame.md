@@ -37,7 +37,7 @@ At the moment the list of available sound packages is still quite short, but we 
 |--|--|--|--|
 |6|Firepower| Ask Matiou in the Pinside forum | |
 |7|Black Knight| URL available on request| |
-|7|Jungle Lord| URL available on request| |
+|7|Jungle Lord| URL available on request| Works great. Sound samples are also good. |
 |7|Pharaoh| Ask Grangeomatic in the Pinside forum| |
 |11a|Pinbot| URL available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW.|
 |11c|Rollergames| URL available on request| There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. The issue doesn't seem to affect the Windows version of PinMame. Please contact me if you have any idea what the root cause might be. |
