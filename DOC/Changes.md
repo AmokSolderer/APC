@@ -6,9 +6,9 @@
 
 * A new exception handling system has been implemented. This makes it easier to program machine specific changes while using PinMame. Take a look at the [PinMame How-to](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) page for details
 
-* Exception rules for System 7 Pharaoh have been added. Sound files for Pharaoh are also available
+* Exception rules for System 7 Pharaoh have been added. Sound files for Pharaoh are also available (Thanks to Grangeomatic)
 
-* Exception rules for Sysem 6 Firepower have been added. Sound files for Firepower are also available
+* Exception rules for System 6 Firepower have been added. Sound files for Firepower are also available (Thanks to Matiou)
 
 * Support for 6 digit numerical displays (System3 - 6) has been added
 
