@@ -69,17 +69,9 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 1 | Debug Mode | 0 | Off | X | No debugging |
 | 1 |  | 1 | USB | - | Shows the received commands in the displays |
 | 1 |  | 2 | Audio | - | Audio debug mode for PinMame Sounds |
-| 2 | Lisy Mode | 0 | PinMame | X | Start PinMame |
-| 2 | | 1 | MPF | - | Start MPF |
-| 2 | | 2 | Control | - | Start LISYcontrol |
-| 2 | | 3 | Debug | - | Start Lisy with debug |
+| 2 | PinMame Sound | 0 | APC | X | PinMame sounds are played on the APC sound HW |
+| 2 | | 1 | Board | - | PinMame sounds are played on an external audio board |
 | 3 | PinMame game | - | - | 0 | Numerical setting - PinMame game number |
-| 4 | Debug Display | - | - | No | Enable Lisy Display debugging |
-| 5 | Debug Switch | - | - | No | Enable Lisy Switch debugging |
-| 6 | Debug Lamp | - | - | No | Enable Lisy Lamp debugging |
-| 7 | Debug coil | - | - | No | Enable Lisy Solenoid debugging |
-| 8 | Debug Sound | - | - | No | Enable Lisy Sound debugging |
-| 9 | PinMame Sound | 0 | APC | X | PinMame sounds are played on the APC sound HW |
-| 9 | | 1 | Board | - | PinMame sounds are played on an external audio board |
-| 10 | RestoreDefault | - | - | - | No setting - restores the default settings |
-| 11 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 4 | Lisy Debug | - | - | 0 | Numerical setting according to the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page |
+| 5 | RestoreDefault | - | - | - | No setting - restores the default settings |
+| 6 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |

@@ -8,10 +8,18 @@ const byte BC_OutholeKicker = 1;                      // solenoid number of the 
 const byte BC_ShooterLaneFeeder = 2;                  // solenoid number of the shooter lane feeder
 const byte BC_InstalledBalls = 3;                     // number of balls installed in the game
 const byte BC_SearchCoils[15] = {1,4,6,8,13,15,16,17,18,19,20,21,22,14,0}; // coils to fire when the ball watchdog timer runs out - has to end with a zero
-const unsigned int BC_SolTimes[32] = {30,30,50,50,50,50,30,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,0,0,100,100,100,100,100,100,100,100}; // Activation times for solenoids
+unsigned int BC_SolTimes[32] = {50,50,50,50,50,50,30,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,0,0,100,100,100,100,100,100,100,100}; // Activation times for solenoids
 
-const byte BC_defaults[64] = {0,0,0,0,0,0,0,0,        // game default settings
-                              0,0,0,0,0,0,0,0,
+#define BCset_OutholeSwitch 0
+#define BCset_BallThroughSwitches 1
+#define BCset_PlungerLaneSwitch 4
+#define BCset_ACselectRelay 5
+#define BCset_OutholeKicker 6
+#define BCset_ShooterLaneFeeder 7
+#define BCset_InstalledBalls 8
+
+const byte BC_defaults[64] = {9,13,12,11,20,12,1,2,        // game default settings
+                              3,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
@@ -19,8 +27,16 @@ const byte BC_defaults[64] = {0,0,0,0,0,0,0,0,        // game default settings
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0};
 
-const struct SettingTopic BC_setList[5] = {{"  GOD   MODE  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
-    {" RESET  HIGH  ",BC_ResetHighScores,0,0,0},
+const struct SettingTopic BC_setList[12] = {{"OUTHOLESWITCH ",HandleNumSetting,0,1,64}, // defines the game specific settings
+    {" BALL  THRU 1 ",HandleNumSetting,0,1,64},
+    {" BALL  THRU 2 ",HandleNumSetting,0,1,64},
+    {" BALL  THRU 3 ",HandleNumSetting,0,1,64},
+    {"PLUNGERLN SW  ",HandleNumSetting,0,1,64},
+    {"AC SEL RELAY  ",HandleNumSetting,0,0,22},
+    {"OUTHOLEKICKER ",HandleNumSetting,0,1,22},
+    {"SHOOTERLN FEED",HandleNumSetting,0,1,22},
+    {"INSTALD BALLS ",HandleNumSetting,0,1,3},
+   // {" RESET  HIGH  ",BC_ResetHighScores,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
@@ -154,12 +170,14 @@ struct GameDef BC_GameDefinition = {
     BC_SolTimes};                                     // Default activation times of solenoids
 
 void BC_init() {
-	if (APC_settings[DebugMode]) {											// activate serial interface in debug mode
-		Serial.begin(115200);}
-  ACselectRelay = BC_ACselectRelay;                   // assign the number of the A/C select relay
+  if (APC_settings[DebugMode]) {                      // activate serial interface in debug mode
+    Serial.begin(115200);}
   GameDefinition = BC_GameDefinition;}                // read the game specific settings and highscores
 
 void BC_AttractMode() {                               // Attract Mode
+  ACselectRelay = game_settings[BCset_ACselectRelay]; // assign the number of the A/C select relay
+  if (ACselectRelay) {
+    BC_SolTimes[ACselectRelay-1] = 0;}                // allow A/C relay to be turned on permanently
   DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
   digitalWrite(VolumePin,HIGH);                       // set volume to zero
@@ -247,8 +265,8 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
     CheckReleaseTimer = 0;
     LampPattern = NoLamps;                            // Turn off all lamps
     ReleaseAllSolenoids();
-  	if (APC_settings[DebugMode]) {										// deactivate serial interface in debug mode
-  		Serial.end();}
+    if (APC_settings[DebugMode]) {                    // deactivate serial interface in debug mode
+      Serial.end();}
     if (!QuerySwitch(73)) {                           // Up/Down switch pressed?
       WriteUpper("  TEST  MODE    ");
       WriteLower("                ");
@@ -258,7 +276,7 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
       Settings_Enter();}
     break;
   case 3:                                             // start game
-    if (BC_CountBallsInTrunk() == BC_InstalledBalls || (BC_CountBallsInTrunk() == BC_InstalledBalls-1 && QuerySwitch(BC_PlungerLaneSwitch))) { // Ball missing?
+    if (BC_CountBallsInTrunk() == game_settings[BCset_InstalledBalls] || (BC_CountBallsInTrunk() == game_settings[BCset_InstalledBalls]-1 && QuerySwitch(game_settings[BCset_PlungerLaneSwitch]))) { // Ball missing?
       Switch_Pressed = DummyProcess;                  // Switches do nothing
       ShowLampPatterns(0);                            // stop lamp animations
       KillAllTimers();
@@ -283,7 +301,7 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
       for (i=1; i < 5; i++) {
         LockedBalls[i] = 0;
         Points[i] = 0;}
-      BC_NewBall(3);                                  // release a new ball (3 expected balls in the trunk)
+      BC_NewBall(game_settings[BCset_InstalledBalls]); // release a new ball (3 expected balls in the trunk)
       ActivateSolenoid(0, 23);                        // enable flipper fingers
       ActivateSolenoid(0, 24);}}}
 
@@ -295,8 +313,8 @@ void BC_AddPlayer() {
 
 void BC_CheckForLockedBalls(byte Event) {             // check if balls are locked and release them
   UNUSED(Event);
-  if (QuerySwitch(BC_OutholeSwitch)) {                     // for the outhole
-    ActA_BankSol(BC_OutholeKicker);}
+  if (QuerySwitch(game_settings[BCset_OutholeSwitch])) {                     // for the outhole
+    ActA_BankSol(game_settings[BCset_OutholeKicker]);}
 }                                                     // add the locks of your game here
 
 void BC_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
@@ -305,15 +323,15 @@ void BC_NewBall(byte Balls) {                         // release ball (Event = e
     *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];}  // show current ball in left credit
   BlinkScore(1);                                      // start score blinking
   Switch_Released = BC_CheckShooterLaneSwitch;
-  if (!QuerySwitch(BC_PlungerLaneSwitch)) {
-    ActA_BankSol(BC_ShooterLaneFeeder);               // release ball
+  if (!QuerySwitch(game_settings[BCset_PlungerLaneSwitch])) {
+    ActA_BankSol(game_settings[BCset_ShooterLaneFeeder]);               // release ball
     Switch_Pressed = BC_BallReleaseCheck;             // set switch check to enter game
     CheckReleaseTimer = ActivateTimer(5000, Balls-1, BC_CheckReleasedBall);} // start release watchdog
   else {
     Switch_Pressed = BC_ResetBallWatchdog;}}
 
 void BC_CheckShooterLaneSwitch(byte Switch) {
-  if (Switch == BC_PlungerLaneSwitch) {               // shooter lane switch released?
+  if (Switch == game_settings[BCset_PlungerLaneSwitch]) { // shooter lane switch released?
     Switch_Released = DummyProcess;
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, BC_SearchBall);}}}
@@ -324,7 +342,7 @@ void BC_BallReleaseCheck(byte Switch) {               // handle switches during 
       KillTimer(CheckReleaseTimer);
       CheckReleaseTimer = 0;}                         // stop watchdog
     Switch_Pressed = BC_ResetBallWatchdog;
-    if (Switch == BC_PlungerLaneSwitch) {             // ball is in the shooter lane
+    if (Switch == game_settings[BCset_PlungerLaneSwitch]) { // ball is in the shooter lane
       Switch_Released = BC_CheckShooterLaneSwitch;}   // set mode to register when ball is shot
     else {
       if (!BallWatchdogTimer) {
@@ -340,19 +358,19 @@ void BC_ResetBallWatchdog(byte Switch) {              // handle switches during 
 
 void BC_SearchBall(byte Counter) {                    // ball watchdog timer has run out
   BallWatchdogTimer = 0;
-  if (QuerySwitch(BC_OutholeSwitch)) {
+  if (QuerySwitch(game_settings[BCset_OutholeSwitch])) {
     BlockOuthole = false;
     ActivateTimer(1000, 0, BC_ClearOuthole);}
   else {
-    if (QuerySwitch(BC_PlungerLaneSwitch)) {          // if ball is waiting to be launched
+    if (QuerySwitch(game_settings[BCset_PlungerLaneSwitch])) { // if ball is waiting to be launched
       BallWatchdogTimer = ActivateTimer(30000, 0, BC_SearchBall);}  // restart watchdog
     else {                                            // if ball is really missing
       byte c = BC_CountBallsInTrunk();                // recount all balls
-      if (c == BC_InstalledBalls) {                   // found all balls in trunk?
+      if (c == game_settings[BCset_InstalledBalls]) { // found all balls in trunk?
         if (BlockOuthole) {                           // is the outhole blocked
           BC_BallEnd(0);}                             // then it was probably a ball loss gone wrong
         else {
-          ActivateTimer(1000, BC_InstalledBalls, BC_NewBall);}} // otherwise try it with a new ball
+          ActivateTimer(1000, game_settings[BCset_InstalledBalls], BC_NewBall);}} // otherwise try it with a new ball
       else {
         byte c2 = 0;                                  // counted balls in lock
                   // count balls in lock here with 5 being a warning when the switch states don't add up
@@ -373,8 +391,8 @@ void BC_SearchBall(byte Counter) {                    // ball watchdog timer has
 
 byte BC_CountBallsInTrunk() {
   byte Balls = 0;
-  for (i=0; i<BC_InstalledBalls; i++) {               // check how many balls are on the ball ramp
-    if (QuerySwitch(*(BC_BallThroughSwitches+i))) {
+  for (i=0; i<game_settings[BCset_InstalledBalls]; i++) { // check how many balls are on the ball ramp
+    if (QuerySwitch(game_settings[BCset_BallThroughSwitches+i])) {
       if (Balls < i) {
         return 5;}                                    // send warning
       Balls++;}}
@@ -383,19 +401,19 @@ byte BC_CountBallsInTrunk() {
 void BC_CheckReleasedBall(byte Balls) {               // ball release watchdog
   CheckReleaseTimer = 0;
   BlinkScore(0);                                      // stop blinking to show messages
-  WriteUpper("WAITINGFORBALL  ");                       // indicate a problem
+  WriteUpper("WAITINGFORBALL  ");                     // indicate a problem
   WriteLower("                ");
   if (Balls == 10) {                                  // indicating a previous trunk error
     WriteUpper("                ");
     WriteLower("                ");
     ShowAllPoints(0);
     BlinkScore(1);
-    ActA_BankSol(BC_ShooterLaneFeeder);}
+    ActA_BankSol(game_settings[BCset_ShooterLaneFeeder]);}
   byte c = BC_CountBallsInTrunk();
   if (c == Balls) {                                   // expected number of balls in trunk
     WriteUpper("  BALL MISSING  ");
-    if (QuerySwitch(BC_OutholeSwitch)) {                   // outhole switch still active?
-      ActA_BankSol(BC_OutholeKicker);}}               // shove the ball into the trunk
+    if (QuerySwitch(game_settings[BCset_OutholeSwitch])) { // outhole switch still active?
+      ActA_BankSol(game_settings[BCset_OutholeKicker]);}}  // shove the ball into the trunk
   else {                                              //
     if (c == 5) {                                     // balls not settled
       WriteLower(" TRUNK  ERROR   ");
@@ -406,7 +424,7 @@ void BC_CheckReleasedBall(byte Balls) {               // ball release watchdog
         WriteLower("                ");
         ShowAllPoints(0);
         BlinkScore(1);
-        ActA_BankSol(BC_ShooterLaneFeeder);}}}        // release again
+        ActA_BankSol(game_settings[BCset_ShooterLaneFeeder]);}}} // release again
   CheckReleaseTimer = ActivateTimer(5000, Balls, BC_CheckReleasedBall);}
 
 void BC_GameMain(byte Event) {                        // game switch events
@@ -415,9 +433,6 @@ void BC_GameMain(byte Event) {                        // game switch events
   case 2:                                             // ball roll tilt
   case 7:                                             // slam tilt
     break;
-  case BC_OutholeSwitch:
-    ActivateTimer(200, 0, BC_ClearOuthole);           // check again in 200ms
-    break;
   case 46:                                            // playfield tilt
     WriteUpper(" TILT  WARNING  ");
     ActivateTimer(3000, 0, ShowAllPoints);
@@ -425,15 +440,17 @@ void BC_GameMain(byte Event) {                        // game switch events
   case 3:                                             // credit button
     BC_AddPlayer();
     break;
-
+  default:
+    if (Event == game_settings[BCset_OutholeSwitch]) {
+      ActivateTimer(200, 0, BC_ClearOuthole);}        // check again in 200ms
   }}
 
 void BC_ClearOuthole(byte Event) {
   UNUSED(Event);
-  if (QuerySwitch(BC_OutholeSwitch)) {                     // outhole switch still active?
+  if (QuerySwitch(game_settings[BCset_OutholeSwitch])) { // outhole switch still active?
     if (!BlockOuthole && !C_BankActive) {             // outhole blocked?
       BlockOuthole = true;                            // block outhole until this ball has been processed
-      ActivateSolenoid(30, BC_OutholeKicker);         // put ball in trunk
+      ActivateSolenoid(30, game_settings[BCset_OutholeKicker]); // put ball in trunk
       ActivateTimer(2000, 0, BC_BallEnd);}
     else {
       ActivateTimer(2000, 0, BC_ClearOuthole);}}}     // come back in 2s if outhole is blocked
@@ -444,15 +461,15 @@ void BC_HandleLock(byte Balls) {
 
 void BC_BallEnd(byte Event) {
   byte BallsInTrunk = BC_CountBallsInTrunk();
-  if ((BallsInTrunk == 5)||(BallsInTrunk < BC_InstalledBalls+1-Multiballs-InLock)) {
+  if ((BallsInTrunk == 5)||(BallsInTrunk < game_settings[BCset_InstalledBalls]+1-Multiballs-InLock)) {
     InLock = 0;
 //    if (Multiballs == 1) {
 //      for (i=0; i<3; i++) {                           // Count your locked balls here
 //        if (Switch[41+i]) {
 //          InLock++;}}}
     WriteLower(" BALL   ERROR   ");
-    if (QuerySwitch(BC_OutholeSwitch)) {                   // ball still in outhole?
-      ActA_BankSol(BC_OutholeKicker);                 // make the coil a bit stronger
+    if (QuerySwitch(game_settings[BCset_OutholeSwitch])) { // ball still in outhole?
+      ActA_BankSol(game_settings[BCset_OutholeKicker]); // make the coil a bit stronger
       ActivateTimer(2000, Event, BC_BallEnd);}        // and come back in 2s
     else {
       if (Event < 11) {                               // have I been here already?
@@ -473,13 +490,13 @@ void BC_BallEnd(byte Event) {
       break;
     case 2:                                           // end multiball
       Multiballs = 1;
-      if (BallsInTrunk == 3) {                        // 3 balls in trunk?
+      if (BallsInTrunk == game_settings[BCset_InstalledBalls]) { // all balls in trunk?
         ActivateTimer(1000, 0, BC_BallEnd);}
       else {
         BlockOuthole = false;}                        // remove outhole block
       break;
     case 1:                                           // end of ball
-      if (BallsInTrunk + InLock != BC_InstalledBalls) {
+      if (BallsInTrunk + InLock != game_settings[BCset_InstalledBalls]) {
         WriteUpper(" COUNT  ERROR   ");
         InLock = 0;
 //        for (i=0; i<3; i++) {                       // check how many balls are on the ball ramp
@@ -502,7 +519,7 @@ void BC_BallEnd2(byte Balls) {
     BlockOuthole = false;}                            // remove outhole block
   else {                                              // Player has no extra balls
     if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
-      Switch_Pressed = DummyProcess;                                // Switches do nothing
+      Switch_Pressed = DummyProcess;                  // Switches do nothing
       BC_CheckHighScore(Player);}
     else {
       BC_BallEnd3(Balls);}}}
@@ -551,14 +568,25 @@ void BC_Testmode(byte Select) {
       *(DisplayLower+16) = 0;
       *(DisplayUpper) = 0;
       *(DisplayUpper+16) = 0;
-      WriteUpper("DISPLAY TEST    ");
-      WriteLower("                ");
+      if (APC_settings[DisplayType] < 6) {            // Sys11 display
+        WriteUpper("DISPLAY TEST    ");
+        WriteLower("                ");}
+      else {                                          // Sys3 - 9 display
+        for(byte c=0; c<16; c++) {                    // clear numerical displays
+          *(DisplayLower+2*c) = 255;                  // delete numbers
+          *(DisplayLower+1+2*c) = 0;}                 // delete commas
+        DisplayScore(1, 1);}                          // show test number
       AppByte2 = 0;
       break;
     case 3:                                           // credit button
-      WriteUpper("0000000000000000");
-      WriteLower("0000000000000000");
-      AppByte2 = ActivateTimer(1000, 32, BC_DisplayCycle);
+      if (APC_settings[DisplayType] < 6) {            // Sys11 display
+        WriteUpper("0000000000000000");
+        WriteLower("0000000000000000");
+        AppByte2 = ActivateTimer(1000, 32, BC_DisplayCycle);}
+      else {
+        for(byte c=0; c<16; c++) {                    // clear numerical displays
+          *(DisplayLower+2*c) = 0;}                   // delete numbers
+        AppByte2 = ActivateTimer(1000, 0, BC_DisplayCycle);}
       break;
     case 72:                                          // advance button
       if (AppByte2) {
@@ -572,8 +600,14 @@ void BC_Testmode(byte Select) {
       switch(Select) {                                // switch events
       case 0:                                         // init (not triggered by switch)
         AppByte2 = 0;
-        WriteUpper(" SWITCH EDGES   ");
-        WriteLower("                ");
+        if (APC_settings[DisplayType] < 6) {          // Sys11 display
+          WriteUpper(" SWITCH EDGES   ");
+          WriteLower("                ");}
+        else {                                        // Sys3 - 9 display
+          for(byte c=0; c<16; c++) {                  // clear numerical displays
+            *(DisplayLower+2*c) = 255;                // delete numbers
+            *(DisplayLower+1+2*c) = 0;}               // delete commas
+          DisplayScore(1, 2);}                        // show test number
         break;
       case 72:                                        // advance button
         if (AppByte2) {
@@ -587,110 +621,153 @@ void BC_Testmode(byte Select) {
           WriteUpper(" LATEST EDGES   ");
           AppByte2 = 1;
           break;}
+        /* no break */
       default:                                        // all other switches
-        for (i=1; i<24; i++) {                        // move all characters in the lower display row 4 chars to the left
-          DisplayLower[i] = DisplayLower[i+8];}
-        *(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
-        *(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
-        *(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
-        *(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}
-      break;
-    case 2:                                         // solenoid test
-      switch(Select) {                              // switch events
-      case 0:                                       // init (not triggered by switch)
-        WriteUpper("  COIL  TEST    ");
-        WriteLower("                ");
-        AppByte2 = 0;
-        break;
-      case 3:
-        WriteUpper(" FIRINGCOIL NO  ");
-        AppBool = false;
-        AppByte2 = ActivateTimer(1000, 1, BC_FireSolenoids);
-        break;
-      case 72:
-        if (AppByte2) {
-          KillTimer(AppByte2);
-          AppByte2 = 0;}
+        if (APC_settings[DisplayType] == 6) {         // Sys6 display?
+          for (byte i=0; i<10; i++) {                 // move all characters in the lower display row 4 chars to the left
+            DisplayLower[2*i] = DisplayLower[2*i+8];}
+          *(DisplayLower+24) = ConvertNumLower((byte) Select / 10, 0); // and insert the switch number to the right of the row
+          *(DisplayLower+26) = ConvertNumLower((byte) (Select % 10), 0);}
+        else if (APC_settings[DisplayType] == 7) {    // Sys7 display?
+          for (byte i=1; i<24; i++) {                 // move all characters in the lower display row 4 chars to the left
+            DisplayLower[i] = DisplayLower[i+8];}
+          *(DisplayLower+28) = ConvertNumLower((byte) Select / 10, 0); // and insert the switch number to the right of the row
+          *(DisplayLower+30) = ConvertNumLower((byte) (Select % 10), 0);}
         else {
-          AppByte++;}
-        BC_Testmode(0);}
+          for (byte i=1; i<24; i++) {                 // move all characters in the lower display row 4 chars to the left
+            DisplayLower[i] = DisplayLower[i+8];}
+          *(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
+          *(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
+          *(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
+          *(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}}
       break;
-    case 3:                                       // single lamp test
-      switch(Select) {                            // switch events
-      case 0:                                     // init (not triggered by switch)
-        WriteUpper(" SINGLE LAMP    ");
-        WriteLower("                ");
-        AppByte2 = 0;
-        for (i=0; i<8; i++){                      // erase lamp matrix
-          LampColumns[i] = 0;}
-        LampPattern = LampColumns;                // and show it
+      case 2:                                           // solenoid test
+        switch(Select) {                                // switch events
+        case 0:                                         // init (not triggered by switch)
+          if (APC_settings[DisplayType] < 6) {          // Sys11 display
+            WriteUpper("  COIL  TEST    ");
+            WriteLower("                ");}
+          else {                                        // Sys3 - 9 display
+            for(byte c=0; c<16; c++) {                  // clear numerical displays
+              *(DisplayLower+2*c) = 255;                // delete numbers
+              *(DisplayLower+1+2*c) = 0;}               // delete commas
+            DisplayScore(1, 3);}                        // show test number
+          AppByte2 = 0;
+          break;
+        case 3:
+          WriteUpper(" FIRINGCOIL NO  ");
+          AppBool = false;
+          AppByte2 = ActivateTimer(1000, 1, BC_FireSolenoids);
+          break;
+        case 72:
+          if (AppByte2) {
+            KillTimer(AppByte2);
+            AppByte2 = 0;}
+          else {
+            AppByte++;}
+          BC_Testmode(0);}
         break;
-      case 3:
-        WriteUpper(" ACTUAL LAMP    ");
-        AppByte2 = ActivateTimer(1000, 1, BC_ShowLamp);
-        break;
-      case 72:
-        LampPattern = NoLamps;
-        if (AppByte2) {
-          KillTimer(AppByte2);
-          AppByte2 = 0;}
-        else {
-          AppByte++;}
-        BC_Testmode(0);}
-      break;
-    case 4:                                     // all lamps test
-      switch(Select) {                          // switch events
-      case 0:                                   // init (not triggered by switch)
-        WriteUpper("  ALL   LAMPS   ");
-        WriteLower("                ");
-        AppByte2 = 0;
-        break;
-      case 3:
-        WriteUpper("FLASHNG LAMPS   ");
-        AppByte2 = ActivateTimer(1000, 1, BC_ShowAllLamps);
-        break;
-      case 72:
-        LampPattern = NoLamps;
-        if (AppByte2) {
-          KillTimer(AppByte2);
-          AppByte2 = 0;}
-        else {
-          AppByte++;}
-        BC_Testmode(0);}
-      break;
-    case 5:                                   // all music test
-      switch(Select) {                        // switch events
-      case 0:                                 // init (not triggered by switch)
-        WriteUpper(" MUSIC  TEST    ");
-        WriteLower("                ");
-        AppByte2 = 0;
-        break;
-      case 3:
-        WriteUpper("PLAYING MUSIC   ");
-        if (APC_settings[Volume]) {           // system set to digital volume control?
-          analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-        AfterMusic = BC_NextTestSound;
-        AppByte2 = 1;
-        PlayMusic(50, (char*) TestSounds[0]);
-        break;
-      case 72:
-        AfterMusic = 0;
-        digitalWrite(VolumePin,HIGH);         // set volume to zero
-        StopPlayingMusic();
-        if (AppByte2) {
-          AppByte2 = 0;}
-        else {
-          GameDefinition.AttractMode();
-          return;}
-        BC_Testmode(0);}
-      break;}}
+        case 3:                                           // single lamp test
+          switch(Select) {                                // switch events
+          case 0:                                         // init (not triggered by switch)
+            if (APC_settings[DisplayType] < 6) {          // Sys11 display
+              WriteUpper(" SINGLE LAMP    ");
+              WriteLower("                ");}
+            else {                                        // Sys3 - 9 display
+              for(byte c=0; c<16; c++) {                  // clear numerical displays
+                *(DisplayLower+2*c) = 255;                // delete numbers
+                *(DisplayLower+1+2*c) = 0;}               // delete commas
+              DisplayScore(1, 4);}                        // show test number
+            AppByte2 = 0;
+            for (i=0; i<8; i++){                          // erase lamp matrix
+              LampColumns[i] = 0;}
+            LampPattern = LampColumns;                    // and show it
+            break;
+          case 3:
+            WriteUpper(" ACTUAL LAMP    ");
+            AppByte2 = ActivateTimer(1000, 1, BC_ShowLamp);
+            break;
+          case 72:
+            LampPattern = NoLamps;
+            if (AppByte2) {
+              KillTimer(AppByte2);
+              AppByte2 = 0;}
+            else {
+              AppByte++;}
+            BC_Testmode(0);}
+          break;
+          case 4:                                           // all lamps test
+            switch(Select) {                                // switch events
+            case 0:                                         // init (not triggered by switch)
+              if (APC_settings[DisplayType] < 6) {          // Sys11 display
+                WriteUpper("  ALL   LAMPS   ");
+                WriteLower("                ");}
+              else {                                        // Sys3 - 9 display
+                for(byte c=0; c<16; c++) {                  // clear numerical displays
+                  *(DisplayLower+2*c) = 255;                // delete numbers
+                  *(DisplayLower+1+2*c) = 0;}               // delete commas
+                DisplayScore(1, 5);}                        // show test number
+              AppByte2 = 0;
+              break;
+            case 3:
+              WriteUpper("FLASHNG LAMPS   ");
+              AppByte2 = ActivateTimer(1000, 1, BC_ShowAllLamps);
+              break;
+            case 72:
+              LampPattern = NoLamps;
+              if (AppByte2) {
+                KillTimer(AppByte2);
+                AppByte2 = 0;}
+              else {
+                AppByte++;}
+              BC_Testmode(0);}
+            break;
+            case 5:                                           // all music test
+              switch(Select) {                                // switch events
+              case 0:                                         // init (not triggered by switch)
+                if (APC_settings[DisplayType] < 6) {          // Sys11 display
+                  WriteUpper(" MUSIC  TEST    ");
+                  WriteLower("                ");}
+                else {                                        // Sys3 - 9 display
+                  for(byte c=0; c<16; c++) {                  // clear numerical displays
+                    *(DisplayLower+2*c) = 255;                // delete numbers
+                    *(DisplayLower+1+2*c) = 0;}               // delete commas
+                  DisplayScore(1, 6);}                        // show test number
+                AppByte2 = 0;
+                break;
+              case 3:
+                WriteUpper("PLAYING MUSIC   ");
+                if (APC_settings[Volume]) {                   // system set to digital volume control?
+                  analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+                AfterMusic = BC_RepeatMusic;
+                AppByte2 = 1;
+                PlayMusic(50, "MUSIC.BIN");
+                break;
+              case 72:
+                AfterMusic = 0;
+                digitalWrite(VolumePin,HIGH);                 // set volume to zero
+                StopPlayingMusic();
+                if (AppByte2) {
+                  AppByte2 = 0;}
+                else {
+                  GameDefinition.AttractMode();
+                  return;}
+                BC_Testmode(0);}
+              break;}}
 
 void BC_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
   if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    *(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
-    *(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
-    *(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
-    *(DisplayLower+29) = DispPattern2[33 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
+    if (APC_settings[DisplayType] == 6) {             // Sys6 display?
+      *(DisplayLower+24) = ConvertNumLower((byte) CurrentLamp / 10, 0); // and insert the switch number to the right of the row
+      *(DisplayLower+26) = ConvertNumLower((byte) (CurrentLamp % 10), 0);}
+    else if (APC_settings[DisplayType] == 7) {        // Sys7 display?
+      *(DisplayLower+28) = ConvertNumLower((byte) CurrentLamp / 10, 0); // and insert the switch number to the right of the row
+      *(DisplayLower+30) = ConvertNumLower((byte) (CurrentLamp % 10), 0);}
+    else {                                            // Sys11 display
+      *(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
+      *(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
+      *(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
+      *(DisplayLower+29) = DispPattern2[33 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];}
     TurnOnLamp(CurrentLamp);                          // turn on lamp
     if (CurrentLamp > 1) {                            // and turn off the previous one
       TurnOffLamp(CurrentLamp-1);}
@@ -703,9 +780,11 @@ void BC_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
 
 void BC_ShowAllLamps(byte State) {                    // Flash all lamps
   if (State) {                                        // if all lamps are on
+    LampColumns[0] = 0;                               // first column
     LampPattern = NoLamps;                            // turn them off
     State = 0;}
   else {                                              // or the other way around
+    LampColumns[0] = 255;                             // first column
     LampPattern = AllLamps;
     State = 1;}
   AppByte2 = ActivateTimer(500, State, BC_ShowAllLamps);}  // come back in 500ms
@@ -719,23 +798,30 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
       AppBool = false;
       Solenoid++;}}
   else {                                              // if A bank solenoid
-    *(DisplayLower+28) = DispPattern2[32 + 2 * (Solenoid % 10)]; // show the actual solenoid number
-    *(DisplayLower+29) = DispPattern2[33 + 2 * (Solenoid % 10)];
-    *(DisplayLower+26) = DispPattern2[32 + 2 * (Solenoid - (Solenoid % 10)) / 10];
-    *(DisplayLower+27) = DispPattern2[33 + 2 * (Solenoid - (Solenoid % 10)) / 10];
-    //if (Solenoid == 11 || Solenoid == 12 || Solenoid == 13 || Solenoid == 14 || Solenoid == 9 || Solenoid == 10 || Solenoid == 18) {  // is it a relay or a #1251 flasher?
+    if (APC_settings[DisplayType] == 6) {             // Sys6 display?
+      *(DisplayLower+24) = ConvertNumLower((byte) Solenoid / 10, 0); // and insert the switch number to the right of the row
+      *(DisplayLower+26) = ConvertNumLower((byte) (Solenoid % 10), 0);}
+    else if (APC_settings[DisplayType] == 7) {        // Sys7 display?
+      *(DisplayLower+28) = ConvertNumLower((byte) Solenoid / 10, 0); // and insert the switch number to the right of the row
+      *(DisplayLower+30) = ConvertNumLower((byte) (Solenoid % 10), 0);}
+    else {                                            // Sys11 display
+      *(DisplayLower+28) = DispPattern2[32 + 2 * (Solenoid % 10)]; // show the actual solenoid number
+      *(DisplayLower+29) = DispPattern2[33 + 2 * (Solenoid % 10)];
+      *(DisplayLower+26) = DispPattern2[32 + 2 * (Solenoid - (Solenoid % 10)) / 10];
+      *(DisplayLower+27) = DispPattern2[33 + 2 * (Solenoid - (Solenoid % 10)) / 10];}
     if (!(*(GameDefinition.SolTimes+Solenoid-1))) {   // can this solenoid be turned on permanently?
       ActivateSolenoid(500, Solenoid);}               // then the duration must be specified
     else {
       ActivateSolenoid(0, Solenoid);}                 // activate the solenoid with default duration
-    if ((Solenoid < 9) && BC_ACselectRelay) {         // A solenoid and Sys11 machine?
+    if ((Solenoid < 9) && game_settings[BCset_ACselectRelay]) { // A solenoid and Sys11 machine?
       *(DisplayLower+30) = DispPattern2[('A'-32)*2];  // show the A
       *(DisplayLower+31) = DispPattern2[('A'-32)*2+1];
       if (QuerySwitch(73)) {                          // Up/Down switch pressed?
         AppBool = true;}}
     else {
-      *(DisplayLower+30) = DispPattern2[(' '-32)*2];  // delete the C
-      *(DisplayLower+31) = DispPattern2[(' '-32)*2+1];
+      if (APC_settings[DisplayType] < 6) {            // Sys11 display?
+        *(DisplayLower+30) = DispPattern2[(' '-32)*2];// delete the C
+        *(DisplayLower+31) = DispPattern2[(' '-32)*2+1];}
       if (QuerySwitch(73)) {                          // Up/Down switch pressed?
         Solenoid++;                                   // increase the solenoid counter
         if (Solenoid > 22) {                          // maximum reached?
@@ -744,33 +830,38 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 
 void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
   if (QuerySwitch(73)) {                              // cycle only if Up/Down switch is not pressed
-    if (CharNo == 116) {                              // if the last character is reached
-      CharNo = 32;}                                   // start from the beginning
-    else {
-      if (CharNo == 50) {                             // reached the gap between numbers and characters?
-        CharNo = 66;}
+    if (CharNo < 11) {                                // numerical display
+      CharNo++;
+      if (CharNo > 9) {
+        CharNo = 0;}
+      byte Comma = 0;
+      byte Num = ConvertNumUpper(CharNo, 0);
+      Num = ConvertNumLower(CharNo, Num);
+      if (CharNo & 1) {                               // only do commas at every second run
+        Comma = 129;}
+      for(byte c=0; c<16; c++) {                      // clear numerical displays
+        *(DisplayLower+2*c) = Num;                    // write numbers
+        *(DisplayLower+1+2*c) = Comma;}}
+    else {                                            // System11 display
+      if (CharNo == 116) {                            // if the last character is reached
+        CharNo = 32;}                                 // start from the beginning
       else {
-        CharNo = CharNo+2;}}                          // otherwise show next character
-    for (i=0; i<16; i++) {                            // use for all alpha digits
-      if ((APC_settings[DisplayType] != 3) && ((i==0) || (i==8))) {
-        DisplayUpper[2*i] = LeftCredit[CharNo];
-        DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
-        DisplayLower[2*i] = RightCredit[CharNo];
-        DisplayLower[2*i+1] = RightCredit[CharNo+1];}
-      else {
-        DisplayUpper[2*i] = DispPattern1[CharNo];
-        DisplayUpper[2*i+1] = DispPattern1[CharNo+1];
-        DisplayLower[2*i] = DispPattern2[CharNo];
-        DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}
+        if (CharNo == 50) {                           // reached the gap between numbers and characters?
+          CharNo = 66;}
+        else {
+          CharNo = CharNo+2;}}                        // otherwise show next character
+      for (i=0; i<16; i++) {                          // use for all alpha digits
+        if ((APC_settings[DisplayType] != 3) && ((i==0) || (i==8))) {
+          DisplayUpper[2*i] = LeftCredit[CharNo];
+          DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
+          DisplayLower[2*i] = RightCredit[CharNo];
+          DisplayLower[2*i+1] = RightCredit[CharNo+1];}
+        else {
+          DisplayUpper[2*i] = DispPattern1[CharNo];
+          DisplayUpper[2*i+1] = DispPattern1[CharNo+1];
+          DisplayLower[2*i] = DispPattern2[CharNo];
+          DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}}
   AppByte2 = ActivateTimer(500, CharNo, BC_DisplayCycle);}   // restart timer
 
-void BC_NextTestSound() {
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    AppByte++;}
-  if (!TestSounds[AppByte][0]) {
-    AppByte = 0;}
-  *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte+1) % 10)]; // show the actual solenoid number
-  *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte+1) % 10)];
-  *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  PlayMusic(50, (char*) TestSounds[AppByte]);}
+void BC_RepeatMusic() {
+  PlayMusic(50, "MUSIC.BIN");}
