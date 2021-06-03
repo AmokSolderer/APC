@@ -410,6 +410,7 @@ byte EX_Rollergames(byte Type, byte Command){
       StopPlayingSound();
       AfterMusic = 0;
       StopPlayingMusic();}
+    else if (Command == 32 || Command == 64) { }			// unknown commands
     else if (Command > 95 && Command < 100) {         // music volume command 0x6X
       MusicVolume = Command - 96;}
     else if (Command == 1) {                          // music track 1
