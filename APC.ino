@@ -186,13 +186,15 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 #define LEDsetting  7                                 // Setting for the APC_LED_EXP board
 #define SolenoidExp 8                                 // Solenoid expander present?
 #define DebugMode  9                                  // debug mode enabled?
+#define BackboxLamps 10																// Column of backbox lamps
 
 const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{"   TUTORIAL     "}};
 const char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
 const char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{"123456123456    "},{"12345671234567  "}};
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
+const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "}};
 
-const struct SettingTopic APC_setList[13] = {
+const struct SettingTopic APC_setList[14] = {
     {"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,7},
     {" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
     {" NO OF  BALLS   ",HandleNumSetting,0,1,5},
@@ -203,6 +205,7 @@ const struct SettingTopic APC_setList[13] = {
     {"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,2},
     {"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
+		{"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,1},
     {"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS  ",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
@@ -477,7 +480,7 @@ void TC7_Handler() {                                  // interrupt routine - run
         ChangedSw[SwitchStack][c] = SwDrv*8+i+1;}}    // store the switch number to be processed in the main loop
     i++;}
   SwDrvMask = SwDrvMask<<1;                           // and the corresponding select pattern
-  REG_PIOC_CODR = AllSelects - HwExtSels + AllData;        // clear all select signals except HwExtSels and the data bus
+  REG_PIOC_CODR = AllSelects - HwExtSels + AllData;   // clear all select signals except HwExtSels and the data bus
   if (SwDrv < 7) {
     REG_PIOC_SODR = AllData - SwDrvMask;              // put select pattern on data bus
     SwDrv++;                                          // next switch driver
@@ -591,13 +594,21 @@ void TC7_Handler() {                                  // interrupt routine - run
     if (LampWait == LampPeriod) {                     // Waiting time has passed
       LampCol++;                                      // prepare for next lamp column
       LampColMask = LampColMask<<1;
-      c = 2;                                          // clear buffer
-      if (LampCol == 8){                              // max column reached?
-        LampCol = 0;
-        LampColMask = 2;
-        c = LampColumns[LampCol];}                    // column 0 is always from LampColumns
-      else {
-        c = *(LampPattern+LampCol);}                  // columns > 0 are referenced via LampPattern
+      if (APC_settings[BackboxLamps]) {               // backbox lamps in last column?
+        if (LampCol == 8){                            // max column exceeded?
+          LampCol = 0;
+          LampColMask = 2;}
+        if (LampCol == 7){                            // max column reached?
+          c = LampColumns[LampCol];}                  // last column is from LampColumns
+        else {
+          c = *(LampPattern+LampCol+1);}}             // all other columns are referenced via LampPattern
+      else {                                          // backbox lamps in first column
+        if (LampCol == 8){                            // max column exceeded?
+          LampCol = 0;
+          LampColMask = 2;
+          c = LampColumns[LampCol];}                  // first column is from LampColumns
+        else {
+          c = *(LampPattern+LampCol);}}               // all other columns are referenced via LampPattern
       REG_PIOC_SODR = c<<1;                           // write lamp pattern
       REG_PIOC_SODR = 33554432;                       // use Sel1
       REG_PIOC_CODR = AllSelects + AllData;           // clear all select signals and the data bus
