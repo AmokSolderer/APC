@@ -601,7 +601,7 @@ void TC7_Handler() {                                  // interrupt routine - run
         if (LampCol == 7){                            // max column reached?
           c = LampColumns[LampCol];}                  // last column is from LampColumns
         else {
-          c = *(LampPattern+LampCol+1);}}             // all other columns are referenced via LampPattern
+          c = *(LampPattern+LampCol);}}               // all other columns are referenced via LampPattern
       else {                                          // backbox lamps in first column
         if (LampCol == 8){                            // max column exceeded?
           LampCol = 0;
@@ -1793,9 +1793,15 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
       Step++;}
     unsigned int Buffer = (PatPointer+Step-2)->Duration;  // buffer the duration for the current pattern
     if (StrobeLightsTimer) {
-      LampBuffer = ((PatPointer+Step-2)->Pattern)-1;} // show the pattern
+      if (APC_settings[BackboxLamps]) {               // backbox lamps in last column?
+        LampBuffer = ((PatPointer+Step-2)->Pattern);} // show the pattern
+      else {                                          // backbox lamps in first column
+        LampBuffer = ((PatPointer+Step-2)->Pattern)-1;}} // show the pattern shifted by one column
     else {
-      LampPattern = ((PatPointer+Step-2)->Pattern)-1;}// show the pattern
+      if (APC_settings[BackboxLamps]) {               // backbox lamps in last column?
+        LampPattern = ((PatPointer+Step-2)->Pattern);}// show the pattern
+      else {                                          // backbox lamps in first column
+        LampPattern = ((PatPointer+Step-2)->Pattern)-1;}}// show the pattern shifted by onde column
     Step++;                                           // increase the pattern number
     if (!((PatPointer+Step-2)->Duration)) {           // if the duration for the next pattern is 0
       Step = 2;                                       // reset the pattern
