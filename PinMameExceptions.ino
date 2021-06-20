@@ -11,6 +11,7 @@
 #define WriteToDisplay2 10
 #define WriteToDisplay3 11
 #define WriteToDisplay4 12
+#define USB_Option1 5                                 // an option for own PinMame exceptions
 
 byte (*PinMameException)(byte, byte);
 
@@ -128,8 +129,15 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
+void EX_JL_LaneChange(byte Dummy) {
+  UNUSED(Dummy);
+  EX_JungleLord(20, 0);}
+
 byte EX_JungleLord(byte Type, byte Command){
   static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
+  static byte LordModeTimer = 0;											// stores the timer number for the optional LORD lane change
+  static byte PMlamp;                                 // stores the PinMame state of the LORD lamps
+  static byte LampMov;                                // record the LORD lane change movements
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
@@ -168,14 +176,64 @@ byte EX_JungleLord(byte Type, byte Command){
         PlaySound(51, (char*) FileName);}}
     return(0);                                        // return number not relevant for sounds
   case SwitchActCommand:                              // activated switches
-    if (Command == 43) {                              // ball successfully ejected
+    if (LordModeTimer && Command > 12 && Command < 17) {
+      switch(Command) {
+      case 13:
+        PMlamp = PMlamp | 8;
+        break;
+      case 14:
+        PMlamp = PMlamp | 4;
+        break;
+      case 15:
+        PMlamp = PMlamp | 2;
+        break;
+      case 16:
+        PMlamp = PMlamp | 1;
+        break;}
+      Command = Command + LampMov;
+      if (Command > 16) {
+        Command = Command -4;}}
+    else if (Command == 43) {                         // ball successfully ejected
       EX_BallRelease(0);}                             // stop ball release timer
     else if (Command == 49) {                         // right magnet button
-      if (QueryLamp(8) && QueryLamp(2)) {             // right magnet and ball in play lamp lit?
-        ActivateSolenoid(0, 22);}}                    // activate right magnet
+      if (LordModeTimer) {
+        LampMov++;
+        if (LampMov > 3) {
+          LampMov = 0;}
+        bool Buffer = QueryLamp(16);
+        for (byte i=0; i<3; i++) {
+          if (QueryLamp(15-i)) {
+            TurnOnLamp(16-i);}
+          else {
+            TurnOffLamp(16-i);}}
+        if (Buffer) {
+          TurnOnLamp(13);}
+        else {
+          TurnOffLamp(13);}
+        return(1);}
+      else {
+        if (QueryLamp(8) && QueryLamp(2)) {           // right magnet and ball in play lamp lit?
+          ActivateSolenoid(0, 22);}}}                 // activate right magnet
     else if (Command == 50) {                         // left magnet button
-      if (QueryLamp(39) && QueryLamp(2)) {            // left magnet and ball in play lamp lit?
-        ActivateSolenoid(0, 21);}}                    // activate left magnet
+      if (LordModeTimer) {
+        if (LampMov) {
+          LampMov--;}
+        else {
+          LampMov = 3;}
+        bool Buffer = QueryLamp(13);
+        for (byte i=0; i<3; i++) {
+          if (QueryLamp(14+i)) {
+            TurnOnLamp(13+i);}
+          else {
+            TurnOffLamp(13+i);}}
+        if (Buffer) {
+          TurnOnLamp(16);}
+        else {
+          TurnOffLamp(16);}
+        return(1);}
+      else {
+        if (QueryLamp(39) && QueryLamp(2)) {          // left magnet and ball in play lamp lit?
+          ActivateSolenoid(0, 21);}}}                 // activate left magnet
     return(0);                                        // all switches are reported to PinMame
   case SwitchRelCommand:                              // deactivated switches
     if (Command == 49){                               // right magnet button
@@ -188,6 +246,43 @@ byte EX_JungleLord(byte Type, byte Command){
       if (QueryLamp(2)) {                             // ball in play lamp lit?
         EX_BallRelease(1);}}                          // start ball release timer
     return(0);                                        // solenoid will be activated
+  case LampOnCommand:																	// activated lamps
+    if (game_settings[USB_Option1]) {                 // Lane change option active?
+      if (Command == 24 && QueryLamp(2)) {            // Mini playfield illumination turn on
+        if (LordModeTimer) {                          // LordModeTimer already active
+          KillTimer(LordModeTimer);}                  // stop it
+        else {
+          LampMov = 0;
+          PMlamp = 0;
+          for (byte i=0; i<4; i++) {
+            PMlamp = PMlamp<<1;
+            PMlamp = PMlamp | QueryLamp(13+i);}}
+        LordModeTimer = ActivateTimer(1000, 0, EX_JL_LaneChange);}  // (re-) start timer
+      if (LordModeTimer) {
+        if (Command > 12 && Command < 17) {
+          Command = Command + LampMov;
+          if (Command > 16) {
+            Command = Command - 4;}}}}
+    return(0);                                        // report lamp command to PinMame
+  case LampOffCommand:                                // deactivated lamps
+    if (LordModeTimer) {
+      if (Command > 12 && Command < 17) {
+        Command = Command + LampMov;
+        if (Command > 16) {
+          Command = Command - 4;}}}
+    return(0);                                        // report lamp command to PinMame
+  case 20:                                            // LordModeTimer has run out
+    if (QueryLamp(24)) {
+      LordModeTimer = ActivateTimer(1000, 0, EX_JL_LaneChange);}  // (re-) start timer
+    else {
+      LordModeTimer = 0;
+      for (byte i=0; i<4; i++) {
+        if (PMlamp && 1) {
+          TurnOnLamp(16-i);}
+        else {
+          TurnOffLamp(16-i);}
+        PMlamp = PMlamp>>1;}}
+    return(0);
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 

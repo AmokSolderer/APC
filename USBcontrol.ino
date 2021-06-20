@@ -20,6 +20,7 @@ const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 #define USB_PinMameSound 2                            // use APC sound HW or old sound board?
 #define USB_PinMameGame 3                             // number of the game to be run in PinMame
 #define USB_LisyDebug 4                               // selected debug mode
+//#define USB_Option1 -> this option is defined in PinMameExceptions.ino
 
 const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,       // game default settings
                               0,0,0,0,0,0,0,0,
@@ -44,11 +45,12 @@ byte USB_Enter_TestmodeTimer;                         // number of the timer to 
 const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
 const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
 
-const struct SettingTopic USB_setList[8] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+const struct SettingTopic USB_setList[9] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
     {" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
     {"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
     {"PINMAME GAME    ",HandleNumSetting,0,0,72},
     {" LISY  DEBUG    ",HandleNumSetting,0,1,31},
+		{"OPTION1         ",HandleBoolSetting,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
