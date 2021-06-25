@@ -15,6 +15,7 @@
 
 byte (*PinMameException)(byte, byte);
 
+byte USB_ChangedSwitches[64];
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
@@ -177,6 +178,9 @@ byte EX_JungleLord(byte Type, byte Command){
     return(0);                                        // return number not relevant for sounds
   case SwitchActCommand:                              // activated switches
     if (LordModeTimer && Command > 12 && Command < 17) {
+      Command = Command - LampMov;
+      if (Command < 13) {
+        Command = Command + 4;}
       switch(Command) {
       case 13:
         PMlamp = PMlamp | 8;
@@ -190,9 +194,11 @@ byte EX_JungleLord(byte Type, byte Command){
       case 16:
         PMlamp = PMlamp | 1;
         break;}
-      Command = Command + LampMov;
-      if (Command > 16) {
-        Command = Command -4;}}
+      byte i = 0;                                     // add switch number to list of changed switches
+      while (USB_ChangedSwitches[i] && (i<63)) {
+        i++;}
+      USB_ChangedSwitches[i] = Command | 128;
+      return(1);}
     else if (Command == 43) {                         // ball successfully ejected
       EX_BallRelease(0);}                             // stop ball release timer
     else if (Command == 49) {                         // right magnet button
@@ -258,18 +264,22 @@ byte EX_JungleLord(byte Type, byte Command){
             PMlamp = PMlamp<<1;
             PMlamp = PMlamp | QueryLamp(13+i);}}
         LordModeTimer = ActivateTimer(1000, 0, EX_JL_LaneChange);}  // (re-) start timer
-      if (LordModeTimer) {
+      else if (LordModeTimer) {
         if (Command > 12 && Command < 17) {
           Command = Command + LampMov;
           if (Command > 16) {
-            Command = Command - 4;}}}}
+            Command = Command - 4;}
+          TurnOnLamp(Command);
+          return(1);}}}
     return(0);                                        // report lamp command to PinMame
   case LampOffCommand:                                // deactivated lamps
     if (LordModeTimer) {
       if (Command > 12 && Command < 17) {
         Command = Command + LampMov;
         if (Command > 16) {
-          Command = Command - 4;}}}
+          Command = Command - 4;}
+        TurnOffLamp(Command);
+        return(1);}}
     return(0);                                        // report lamp command to PinMame
   case 20:                                            // LordModeTimer has run out
     if (QueryLamp(24)) {
@@ -277,7 +287,7 @@ byte EX_JungleLord(byte Type, byte Command){
     else {
       LordModeTimer = 0;
       for (byte i=0; i<4; i++) {
-        if (PMlamp && 1) {
+        if (PMlamp & 1) {
           TurnOnLamp(16-i);}
         else {
           TurnOffLamp(16-i);}
