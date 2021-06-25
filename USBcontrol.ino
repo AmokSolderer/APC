@@ -31,7 +31,6 @@ const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,       // game default settings
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0};
 
-byte USB_ChangedSwitches[64];
 byte USB_HWrule_ActSw[16][3];                         // hardware rules for activated switches
 byte USB_HWrule_RelSw[16][3];                         // hardware rules for released switches
 byte USB_SolRecycleTime[22];                          // recycle time for each solenoid
