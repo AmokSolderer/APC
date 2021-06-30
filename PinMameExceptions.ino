@@ -130,13 +130,13 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-void EX_JL_LaneChange(byte Dummy) {
-  UNUSED(Dummy);
-  EX_JungleLord(20, 0);}
+void EX_JL_LaneChange(byte Mode) {
+  EX_JungleLord(Mode, 0);}
 
 byte EX_JungleLord(byte Type, byte Command){
   static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
   static byte LordModeTimer = 0;											// stores the timer number for the optional LORD lane change
+  static byte MultiballTimer = 0;                     // stores the timer number for the optional LORD lane change multiball detect timer
   static byte PMlamp;                                 // stores the PinMame state of the LORD lamps
   static byte LampMov;                                // record the LORD lane change movements
   switch(Type){
@@ -263,7 +263,7 @@ byte EX_JungleLord(byte Type, byte Command){
     return(0);                                        // solenoid will be activated
   case LampOnCommand:																	// activated lamps
     if (game_settings[USB_Option1]) {                 // Lane change option active?
-      if (Command == 24 && QueryLamp(2)) {            // Mini playfield illumination turn on
+      if (Command == 24 && (QueryLamp(2) || MultiballTimer)) {  // Mini playfield illumination turn on
         if (LordModeTimer) {                          // LordModeTimer already active
           KillTimer(LordModeTimer);}                  // stop it
         else {
@@ -272,7 +272,11 @@ byte EX_JungleLord(byte Type, byte Command){
           for (byte i=0; i<4; i++) {
             PMlamp = PMlamp<<1;
             PMlamp = PMlamp | QueryLamp(13+i);}}
-        LordModeTimer = ActivateTimer(1000, 0, EX_JL_LaneChange);}  // (re-) start timer
+        LordModeTimer = ActivateTimer(1000, 20, EX_JL_LaneChange);}  // (re-) start timer
+      if (Command == 7) {
+        if (MultiballTimer) {
+          KillTimer(MultiballTimer);}
+        MultiballTimer = ActivateTimer(1000, 21, EX_JL_LaneChange);}
       else if (LordModeTimer) {
         if (Command > 12 && Command < 17) {
           Command = Command + LampMov;
@@ -292,7 +296,7 @@ byte EX_JungleLord(byte Type, byte Command){
     return(0);                                        // report lamp command to PinMame
   case 20:                                            // LordModeTimer has run out
     if (QueryLamp(24)) {
-      LordModeTimer = ActivateTimer(1000, 0, EX_JL_LaneChange);}  // (re-) start timer
+      LordModeTimer = ActivateTimer(1000, 20, EX_JL_LaneChange);}  // (re-) start timer
     else {
       LordModeTimer = 0;
       for (byte i=0; i<4; i++) {
@@ -301,6 +305,9 @@ byte EX_JungleLord(byte Type, byte Command){
         else {
           TurnOffLamp(16-i);}
         PMlamp = PMlamp>>1;}}
+    return(0);
+  case 21:
+    MultiballTimer = 0;
     return(0);
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
