@@ -242,6 +242,15 @@ byte EX_JungleLord(byte Type, byte Command){
           ActivateSolenoid(0, 21);}}}                 // activate left magnet
     return(0);                                        // all switches are reported to PinMame
   case SwitchRelCommand:                              // deactivated switches
+    if (LordModeTimer && Command > 12 && Command < 17) {
+      Command = Command - LampMov;
+      if (Command < 13) {
+        Command = Command + 4;}
+      byte i = 0;                                     // add switch number to list of changed switches
+      while (USB_ChangedSwitches[i] && (i<63)) {
+        i++;}
+      USB_ChangedSwitches[i] = Command;
+      return(1);}
     if (Command == 49){                               // right magnet button
       ReleaseSolenoid(22);}                           // turn off right magnet
     else if (Command == 50) {                         // left magnet button
