@@ -177,11 +177,11 @@ byte EX_JungleLord(byte Type, byte Command){
         PlaySound(51, (char*) FileName);}}
     return(0);                                        // return number not relevant for sounds
   case SwitchActCommand:                              // activated switches
-    if (LordModeTimer && Command > 12 && Command < 17) {
-      Command = Command - LampMov;
+    if (LordModeTimer && Command > 12 && Command < 17) {  // LORD lane change mode active and one of the LORD switches triggered?
+      Command = Command - LampMov;                    // apply lane change moves to switch number
       if (Command < 13) {
         Command = Command + 4;}
-      switch(Command) {
+      switch(Command) {                               // store corresponding PinMame lamp
       case 13:
         PMlamp = PMlamp | 8;
         break;
@@ -197,16 +197,16 @@ byte EX_JungleLord(byte Type, byte Command){
       byte i = 0;                                     // add switch number to list of changed switches
       while (USB_ChangedSwitches[i] && (i<63)) {
         i++;}
-      USB_ChangedSwitches[i] = Command | 128;
-      return(1);}
+      USB_ChangedSwitches[i] = Command | 128;         // send manipulated switch number to PinMame
+      return(1);}                                     // don't report the original switch number to PinMame
     else if (Command == 43) {                         // ball successfully ejected
       EX_BallRelease(0);}                             // stop ball release timer
     else if (Command == 49) {                         // right magnet button
-      if (LordModeTimer) {
-        LampMov++;
+      if (LordModeTimer) {                            // mini playfield active?
+        LampMov++;                                    // store right move of lamps
         if (LampMov > 3) {
           LampMov = 0;}
-        bool Buffer = QueryLamp(16);
+        bool Buffer = QueryLamp(16);                  // move all LORD lamps to the right
         for (byte i=0; i<3; i++) {
           if (QueryLamp(15-i)) {
             TurnOnLamp(16-i);}
@@ -221,12 +221,12 @@ byte EX_JungleLord(byte Type, byte Command){
         if (QueryLamp(8) && QueryLamp(2)) {           // right magnet and ball in play lamp lit?
           ActivateSolenoid(0, 22);}}}                 // activate right magnet
     else if (Command == 50) {                         // left magnet button
-      if (LordModeTimer) {
-        if (LampMov) {
+      if (LordModeTimer) {                            // mini playfield active?
+        if (LampMov) {                                // store left move of lamps
           LampMov--;}
         else {
           LampMov = 3;}
-        bool Buffer = QueryLamp(13);
+        bool Buffer = QueryLamp(13);                  // move all LORD lamps to the left
         for (byte i=0; i<3; i++) {
           if (QueryLamp(14+i)) {
             TurnOnLamp(13+i);}
@@ -242,14 +242,14 @@ byte EX_JungleLord(byte Type, byte Command){
           ActivateSolenoid(0, 21);}}}                 // activate left magnet
     return(0);                                        // all switches are reported to PinMame
   case SwitchRelCommand:                              // deactivated switches
-    if (LordModeTimer && Command > 12 && Command < 17) {
-      Command = Command - LampMov;
+    if (LordModeTimer && Command > 12 && Command < 17) {  // LORD lane change mode active and one of the LORD switches triggered?
+      Command = Command - LampMov;                    // apply lane change moves to switch number
       if (Command < 13) {
         Command = Command + 4;}
       byte i = 0;                                     // add switch number to list of changed switches
       while (USB_ChangedSwitches[i] && (i<63)) {
         i++;}
-      USB_ChangedSwitches[i] = Command;
+      USB_ChangedSwitches[i] = Command;               // send manipulated switch number to PinMame
       return(1);}
     if (Command == 49){                               // right magnet button
       ReleaseSolenoid(22);}                           // turn off right magnet
@@ -266,40 +266,42 @@ byte EX_JungleLord(byte Type, byte Command){
       if (Command == 24 && (QueryLamp(2) || MultiballTimer)) {  // Mini playfield illumination turn on
         if (LordModeTimer) {                          // LordModeTimer already active
           KillTimer(LordModeTimer);}                  // stop it
-        else {
-          LampMov = 0;
-          PMlamp = 0;
+        else {                                        // fresh start of Lord Mode
+          LampMov = 0;                                // reset lane change movements
+          PMlamp = 0;                                 // read current status of LORD lamps
           for (byte i=0; i<4; i++) {
             PMlamp = PMlamp<<1;
             PMlamp = PMlamp | QueryLamp(13+i);}}
         LordModeTimer = ActivateTimer(1000, 20, EX_JL_LaneChange);}  // (re-) start timer
-      if (Command == 7) {
-        if (MultiballTimer) {
-          KillTimer(MultiballTimer);}
-        MultiballTimer = ActivateTimer(1000, 21, EX_JL_LaneChange);}
-      else if (LordModeTimer) {
-        if (Command > 12 && Command < 17) {
+      if (Command == 7) {                             // detect multiball by Multi-Ball timer lamp
+        if (MultiballTimer) {                         // timer already running?
+          KillTimer(MultiballTimer);}                 // kill and
+        MultiballTimer = ActivateTimer(1000, 21, EX_JL_LaneChange);}  // restart it
+      else if (LordModeTimer) {                       // mini playfield active?
+        if (Command > 12 && Command < 17) {           // apply lane change movements to lamp number
           Command = Command + LampMov;
           if (Command > 16) {
             Command = Command - 4;}
-          TurnOnLamp(Command);
-          return(1);}}}
+          TurnOnLamp(Command);                        // turn on the shifted lamp number
+          return(1);}}}                               // ignore the original lamp command from PinMame
     return(0);                                        // report lamp command to PinMame
   case LampOffCommand:                                // deactivated lamps
-    if (LordModeTimer) {
-      if (Command > 12 && Command < 17) {
+    if (LordModeTimer) {                              // mini playfield active?
+      if (Command > 12 && Command < 17) {             // apply lane change movements to lamp number
         Command = Command + LampMov;
         if (Command > 16) {
           Command = Command - 4;}
-        TurnOffLamp(Command);
-        return(1);}}
+        TurnOffLamp(Command);                         // turn off the shifted lamp number
+        return(1);}}                                  // ignore the original lamp command from PinMame
     return(0);                                        // report lamp command to PinMame
   case 20:                                            // LordModeTimer has run out
-    if (QueryLamp(24)) {
+    if (QueryLamp(24)) {                              // mini playfield illumination lamp
       LordModeTimer = ActivateTimer(1000, 20, EX_JL_LaneChange);}  // (re-) start timer
-    else {
-      LordModeTimer = 0;
-      for (byte i=0; i<4; i++) {
+    else {                                            // mini playfield not active any more
+      LordModeTimer = 0;                              // end lane change mode
+      if (PMlamp == 15) {                             // all lamps set?
+        PMlamp = 0;}                                  // turn them off
+      for (byte i=0; i<4; i++) {                      // restore lamps according to PinMame lamp state
         if (PMlamp & 1) {
           TurnOnLamp(16-i);}
         else {
@@ -307,7 +309,7 @@ byte EX_JungleLord(byte Type, byte Command){
         PMlamp = PMlamp>>1;}}
     return(0);
   case 21:
-    MultiballTimer = 0;
+    MultiballTimer = 0;                               // Multiball-Timer lamp is not flashing any more
     return(0);
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
