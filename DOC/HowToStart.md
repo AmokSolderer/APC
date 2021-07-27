@@ -21,7 +21,14 @@ Note that the board preview of JLCPCB doesn't work with the APC boards. This als
 
 As most of the components are SMD and have already been populated by the board manufacturer there's only a few components left for you to assemble. You can find a list of these components with their respective order number from [Mouser](http://www.mouser.com) and [Reichelt](http://www.reichelt.de) in the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/Assembly/APC_BOMnonSMD.pdf)
 
-The german electronics retailer Reichelt doesn't sell all required components, but some (especially connectors) are much cheaper compared to Mouser, so for people in Europe it might still make sense to order them separately. 
+The german electronics retailer Reichelt doesn't sell all required components, but some (especially connectors) are much cheaper compared to Mouser, so for people in Europe it might still make sense to order them separately.
+
+### TDA7496 availability
+
+I got a notification from Mouser that the TDA7496 audio amplifier IC won't be produced any longer.
+
+At the moment I don't have the time to select a new amplifier IC, change the board design and do the necessary tests. I might do it in the future if the IC is not available any more.  
+That means you should try to get these ICs before you order any boards.
 
 ## Preparation
 
