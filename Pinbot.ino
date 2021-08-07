@@ -321,7 +321,7 @@ void PB_AttractModeSW(byte Select) {
       ActA_BankSol(6);}                               // put it down
     ActivateSolenoid(0, 12);                          // turn off playfield GI
     AfterSound = PB_GameStart;                        // release a new ball (2 expected balls in the trunk)
-    PlaySound(150, "BS_S06.BIN");
+    PlaySound(150, "0_ad.snd");
     PB_ChestMode = 1;
     ActivateSolenoid(0, 23);                          // enable flipper fingers
     ActivateSolenoid(0, 24);
@@ -331,11 +331,13 @@ void PB_AttractModeSW(byte Select) {
     break;
   case 46:
     if (PB_CloseVisorFlag) {
+      PlaySound(50, "0_f3.snd");
       PB_CloseVisorFlag = false;
       ReleaseSolenoid(13);}
     break;
   case 47:
     if (PB_OpenVisorFlag) {
+      PlaySound(50, "0_f3.snd");
       PB_OpenVisorFlag = false;
       ReleaseSolenoid(13);}
     break;
@@ -363,8 +365,8 @@ void PB_GameStart() {
   AfterSound = 0;
   PB_NewBall(2);
   ReleaseSolenoid(12);                                // turn playfield GI back on
-  AfterMusic = PB_PlayGameMusic;
-  PlayMusic(50, "BS_M02.BIN");}
+  PlayMusic(50, "1_94.snd");                          // play non looping part of music track
+  QueueNextMusic("1_94L.snd");}                       // queue looping part as next music to be played}
 
 void AddPlayerSW(byte Switch) {
   if (Switch == 3) {
@@ -388,6 +390,7 @@ void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are lock
   else {                                              // no balls in lock
     if (!QuerySwitch(46)) {                               // visor not closed
       ActivateSolenoid(0, 13);                        // activate visor motor
+      PlaySound(50, "0_f1.snd");
       ActivateTimer(2000, 0, PB_CloseVisor);}}}       // ignore the visor switch for 2 seconds
 
 void PB_AddPlayer() {
@@ -420,6 +423,7 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
     PB_ChestLightsTimer = ActivateTimer(500, 0, PB_StartChestPattern);} // start player
   else {
     if (!QuerySwitch(46)) {                           // visor not already closed?
+      PlaySound(50, "0_f1.snd");
       PB_CloseVisorFlag = true;
       ActivateSolenoid(0, 13);}                       // close visor
     if (PB_LitChestLamps) {                           // chest lamps lit?
@@ -483,7 +487,7 @@ void PB_GiveBall(byte Balls) {
 void PB_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 20) {                                 // shooter lane switch released?
     Switch_Released = DummyProcess;
-    PlaySound(150, "BS_S05.BIN");
+    PlaySound(50, "1_95.snd");
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
@@ -501,13 +505,18 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         switch (Switch) {                             // was a skill shot target hit
         case 22:
           c = 20;
+          PlaySound(50, "0_91.snd");
           break;
         case 23:
           c = 100;
+          PlaySound(50, "0_6e_1.snd");
           break;
         case 24:
           c = 5;
+          PlaySound(50, "0_91.snd");
           break;}
+        PlayMusic(50, "1_01L.snd");                   // play music track
+        QueueNextMusic("1_01L.snd");                  // track is looping so queue it also
         WriteUpper2(" VORTEX   X   ");
         WriteLower2("              ");
         ShowNumber(31, c * PB_SkillMultiplier * 1000);// show skill shot points
@@ -630,6 +639,7 @@ void PB_ClearOuthole(byte Event) {
       ActivateTimer(2000, 0, PB_ClearOuthole);}}}     // come back in 2s if outhole is blocked
 
 void PB_GameMain(byte Switch) {
+  static bool RampSound;
   byte c=0;
   byte i=0;
   switch(Switch) {
@@ -750,6 +760,7 @@ void PB_GameMain(byte Switch) {
     PB_BallSave = 0;                                  // ball saver is off when flippers are used
     break;
   case 12:                                            // left outlane
+    PlaySound(50, "1_a5.snd");
     if (PB_BallSave) {
       PB_BallSave = 2;                                // trigger the ball saver
       AddBlinkLamp(33, 250);}
@@ -761,6 +772,7 @@ void PB_GameMain(byte Switch) {
         PB_GiveExBall();}}
     break;
   case 13:                                            // left inlane
+    PlaySound(50, "1_8b.snd");
     PB_AddBonus(1);
     TurnOnLamp(18);
     if (QueryLamp(50)) {
@@ -769,6 +781,7 @@ void PB_GameMain(byte Switch) {
       PB_GiveExBall();}
     break;
   case 14:                                            // right inlane
+    PlaySound(50, "1_8b.snd");
     PB_AddBonus(1);
     if (QueryLamp(58)) {
       TurnOffLamp(58);
@@ -782,6 +795,7 @@ void PB_GameMain(byte Switch) {
       PB_EjectMode[Player] = PB_EjectMode[Player] + 5;}
     break;
   case 15:                                            // right outlane
+    PlaySound(50, "1_a5.snd");
     if (PB_BallSave) {
       PB_BallSave = 2;                                // trigger the ball saver
       AddBlinkLamp(33, 250);}
@@ -799,10 +813,12 @@ void PB_GameMain(byte Switch) {
     if (QueryLamp(51)) {                              // special lit?
       TurnOffLamp(51);
       PB_AddExBall();}
-    if (QueryLamp(18)) {                              // advance planet lit?
+    else if (QueryLamp(18)) {                              // advance planet lit?
       TurnOffLamp(18);
       PB_AddBonus(1);
       PB_AdvancePlanet();}
+    else {
+      PlaySound(50, "1_96.snd");}
     break;
   case 20:                                            // shooter lane
     if (!PB_SkillShot) {
@@ -892,6 +908,7 @@ void PB_GameMain(byte Switch) {
   case 39:                                            // solar ramp exit
     uint16_t Buffer;
     PB_AddBonus(1);
+    PlaySound(50, "1_a9.snd");
     if (PB_SolarValueTimer) {                         // solar ramp lit
       KillTimer(PB_SolarValueTimer);
       PB_SolarValueTimer = 0;
@@ -919,7 +936,10 @@ void PB_GameMain(byte Switch) {
       ShowNumber(15, Buffer*1000);}
     break;
   case 40:                                            // ramp entrance
-    PlaySound(150, "BS_S11.BIN");
+    if (RampSound) {
+      PlaySound(50, "1_a9.snd");}
+    else {
+      PlaySound(50, "1_a8.snd");}
     break;
   case 45:                                            // score energy switch
     if (PB_EnergyActive) {
@@ -933,12 +953,14 @@ void PB_GameMain(byte Switch) {
     break;
   case 46:                                            // visor closed
     if (PB_CloseVisorFlag) {
+      PlaySound(50, "1_f3.snd");
       PB_CloseVisorFlag = false;
       ReleaseSolenoid(13);
       PB_EyeBlink(0);}                                // turn off eye blinking
     break;
   case 47:                                            // visor open
     if (PB_OpenVisorFlag) {
+      PlaySound(50, "0_f3.snd");
       PB_OpenVisorFlag = false;
       ReleaseSolenoid(13);}
     break;
@@ -955,6 +977,7 @@ void PB_GameMain(byte Switch) {
   case 56:                                            // standup targets
   case 59:
   case 60:
+    PlaySound(50, "1_8d.snd");
     Points[Player] += 10;
     break;
   case 65:                                            // lower jet bumper
@@ -1069,6 +1092,7 @@ void PB_StartChestPattern(byte Dummy) {
   PB_ChestLightHandler(0);}
 
 void PB_OpenVisorProc() {                             // measures to open the visor
+  PlaySound(50, "0_f1.snd");
   PB_ChestMode = 0;                                   // indicate that the visor is open
   PB_Chest_Status[Player]++;                          // increase the number of visor openings
   if (PB_Chest_Status[Player] == 2) {                 // visor opened two times?
@@ -1170,6 +1194,7 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
     Pos = 16;                                         // start with a mask value of 10000b
     while (Pos && Buffer2) {                          // until all rows are processed or the required number of lamps has been lit
       if (!(Buffer & Pos)) {                          // if the lamp is not lit
+        PlaySound(50, "1_85.snd");
         if (Buffer2 == 1) {                           // only once per target hit
           PB_AddBonus(1);}
         Buffer2--;                                    // reduce the number of lamps to be lit
@@ -1177,25 +1202,22 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
         Buffer = Buffer | Pos;}                       // set the corresponding bit in the buffer
       Pos = Pos>>1;}                                  // next row
     PB_ChestLamp[Player-1][Switch] = Buffer;          // copy the buffer to the chest lamp array for this player
-    //    if (Buffer2 == PB_LampsToLight) {
-    //      Column already full
-  }
+    if (Buffer2 == PB_LampsToLight) {                 // Column already full
+      PlaySound(50, "0_6f.snd");}}
   else {                                              // it is a row
     Buffer = 1<<(Switch-5);                           // calculate the mask from the row
     Pos = 0;                                          // start on the left of the chest
     while ((Pos < 5) && Buffer2) {                    // until all columns are processed or the required number of lamps has been lit
       if (!(PB_ChestLamp[Player-1][Pos] & Buffer)) {  // if the lamp is not lit
+        PlaySound(50, "1_85.snd");
         if (Buffer2 == 1) {                           // only once per taget hit
           PB_AddBonus(1);}
         Buffer2--;                                    // reduce the number of lamps to be lit
         PB_LitChestLamps++;                           // increase the number of lit chest lamps
         PB_ChestLamp[Player-1][Pos] = PB_ChestLamp[Player-1][Pos] | Buffer;} // set the bit for this lamp in the chest lamp array for this player
       Pos++;}
-    //    if (Buffer2 == PB_LampsToLight) {
-    //      row already full
-  }
-
-}
+    if (Buffer2 == PB_LampsToLight) {                 // row already full
+      PlaySound(50, "0_6f.snd");}}}
 
 void PB_CountLitChestLamps() {                        // count the lit chest lamps for the current player
   byte Buffer;
@@ -1233,6 +1255,7 @@ void PB_HandleLock(byte State) {
             AddBlinkLamp(35, 100);                    // start blinking of solar energy ramp
             PB_OpenVisorFlag = false;
             PB_EyeBlink(0);                           // turn off eye blinking
+            PlaySound(50, "0_f1.snd");
             ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
             ActivateSolenoid(0, 13);                  // start visor motor
             PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
