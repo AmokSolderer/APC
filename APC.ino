@@ -429,8 +429,13 @@ void TC7_Handler() {                                  // interrupt routine - run
   uint32_t Buff;
   uint16_t c;
 
-  if (APC_settings[DebugMode]) {
-    *(DisplayLower) = RightCredit[32 + 2 * ActiveTimers];} // show the number of active timers
+  if (APC_settings[DebugMode]) {                      // Show number of active timers if debug mode is on
+    if (APC_settings[DisplayType] == 6) {             // Sys6 display
+      *(DisplayLower+28) = ConvertNumUpper((byte) ActiveTimers,(byte) *(DisplayLower+28));}
+    else if (APC_settings[DisplayType] == 7) {        // Sys7 display
+      *(DisplayLower) = ConvertNumUpper((byte) ActiveTimers,(byte) *(DisplayLower));}
+    else {                                            // Sys11 display
+      *(DisplayLower) = RightCredit[32 + 2 * ActiveTimers];}} // show the number of active timers
 
   if (APC_settings[DimInserts] || (LampWait == LampPeriod)) { // if inserts have to be dimmed or waiting time has passed
     REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
@@ -1152,21 +1157,6 @@ void WriteLower(const char* DisplayText) {
         *(DisplayLower+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
         *(DisplayLower+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
         *(DisplayLower+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}}}
-
-//void HandleDisplaySetting(bool change) {
-//  HandleTextSetting(change);
-//  if (APC_settings[DisplayType] > 5) {                // numbers only type display
-//    byte HighMask;
-//    byte LowMask;
-//    for (i=0;i<7;i++) {                               // for all digits
-//      *(DisplayLower+2+2*i) &= B11110000;             // clear least significant nibble
-//      HighMask = B1000;                               // prepare bitmasks
-//      LowMask = 1;
-//      for (byte c=0;c<4;c++) {                        // for 4 bit
-//        if (i & LowMask) {                            // get bits from buffer
-//          *(DisplayLower+2+2*i) |= HighMask;          // apply the upside down to the display bus
-//          HighMask = HighMask >> 1;
-//          LowMask = LowMask << 1;}}}}}
 
 void WriteUpper2(const char* DisplayText) {
   if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
