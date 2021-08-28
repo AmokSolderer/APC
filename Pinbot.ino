@@ -1490,28 +1490,83 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         ActivateTimer(2000, 0, PB_AfterExBallRelease);
         ActivateTimer(1000, AppByte, PB_NewBall);}
       else {                                          // no ball saver
-        WriteUpper("BONUS      X  ");
-        WriteLower("      =       ");
-        IntBuffer = Bonus * BonusMultiplier;
-        DisplayScore(2, BonusMultiplier);
-        DisplayScore(4, IntBuffer * 1000);
-        ActivateTimer(2000, 1, PB_CountBonus);}}}}
+        WriteUpper("              ");
+        WriteLower("              ");
+        WriteUpper2(" BONUS        ");
+        ShowNumber(2, Bonus);
+        StopPlayingMusic();
+        PlaySound(50, "0_2c.snd");
+//        IntBuffer = Bonus * BonusMultiplier;
+//        DisplayScore(2, BonusMultiplier);
+//        DisplayScore(4, IntBuffer * 1000);
+        ActivateTimer(200, 0, PB_CountBonus);}}}}
 
-void PB_CountBonus(byte ClearDisplay) {
-  if (ClearDisplay) {
-    WriteUpper("              ");
-    WriteLower("              ");}
-  IntBuffer--;
-  Points[Player] += 1000;
-  ShowPoints(Player);
-  if (Player < 3) {
-    WriteLower("BONUS =       ");
-    DisplayScore(4, IntBuffer*1000);}
-  else {
-    WriteUpper("BONUS =       ");
-    DisplayScore(2, IntBuffer*1000);}
-  if (IntBuffer) {
-    ActivateTimer(20, 0, PB_CountBonus);}
+void PB_CountBonus(byte State) {
+  static uint16_t TotalBonus;
+  const byte Pattern[11] = {4,11,12,3,8,2,1,10,13,6,9};
+  if (State < 11) {                                   // show bonus
+    *(DisplayUpper+2*Pattern[State]) = *(DisplayUpper2+2*Pattern[State]);
+    ActivateTimer(200, State+1, PB_CountBonus);}
+  else if (State == 12) {
+    StopPlayingSound();
+    ActivateTimer(1000, 13, PB_CountBonus);}
+  else if (State == 13) {
+    WritePlayerDisplay((char*) "  1X   ", 1);
+    PlaySound(50, "0_3e.snd");
+    TotalBonus = Bonus*1000;
+    DisplayScore(2, TotalBonus);
+    if (BonusMultiplier > 1) {
+      ActivateTimer(1000, 14, PB_CountBonus);}
+    else {
+      ActivateTimer(1000, 20, PB_CountBonus);}}
+  else if (State == 14) {
+    WritePlayerDisplay((char*) "  2X   ", 1);
+    PlaySound(50, "0_3e.snd");
+    TotalBonus = Bonus*2000;
+    DisplayScore(2, TotalBonus);
+    if (BonusMultiplier > 1) {
+      ActivateTimer(1000, 15, PB_CountBonus);}
+    else {
+      ActivateTimer(1000, 20, PB_CountBonus);}}
+  else if (State == 15) {
+    WritePlayerDisplay((char*) "  3X   ", 1);
+    PlaySound(50, "0_3e.snd");
+    TotalBonus = Bonus*3000;
+    DisplayScore(2, TotalBonus);
+    if (BonusMultiplier > 1) {
+      ActivateTimer(1000, 16, PB_CountBonus);}
+    else {
+      ActivateTimer(1000, 20, PB_CountBonus);}}
+  else if (State == 16) {
+    WritePlayerDisplay((char*) "  4X   ", 1);
+    PlaySound(50, "0_3e.snd");
+    TotalBonus = Bonus*4000;
+    DisplayScore(2, TotalBonus);
+    if (BonusMultiplier > 1) {
+      ActivateTimer(1000, 17, PB_CountBonus);}
+    else {
+      ActivateTimer(1000, 20, PB_CountBonus);}}
+  else if (State == 17) {
+    WritePlayerDisplay((char*) "  5X   ", 1);
+    PlaySound(50, "0_3e.snd");
+    TotalBonus = Bonus*5000;
+    DisplayScore(2, TotalBonus);
+    ActivateTimer(1000, 20, PB_CountBonus);}
+  else if (State == 20) {
+    PlaySound(50, "0_5d.snd");
+    DisplayScore(1, Points[Player]);
+    ActivateTimer(100, 21, PB_CountBonus);}
+  else if (State == 21) {
+    TotalBonus = TotalBonus - 1000;
+    Points[Player] = Points[Player] + 1000;
+    DisplayScore(1, Points[Player]);
+    DisplayScore(2, TotalBonus);
+    if (TotalBonus) {
+      ActivateTimer(100, 21, PB_CountBonus);}
+    else {
+      ActivateTimer(100, 22, PB_CountBonus);}}
+
+
   else {
     PB_BallEnd2();}}
 
