@@ -1766,7 +1766,7 @@ void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3
     Serial.println(Number2);
     Serial.print("Number3 = ");
     Serial.println(Number3);
-    while(true) {}}}
+    while(true) {}}}                                  // stop game
 
 void ShowFileNotFound(String Filename) {              // show file not found message
   Filename.toUpperCase();                             // convert filename to upper case characters
