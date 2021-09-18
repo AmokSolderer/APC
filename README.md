@@ -38,6 +38,9 @@ To see the APC in action take a look at my [Black Knight game video](https://you
 The APC by itself cannot run the original Williams EPROM software, but you can use PinMame to emulate the pinball's hardware and run the old game SW on the APC. The easiest way to do this is to plug a Raspberry Pi on the APC board and install Lisy on it. The image file for the Pi's SD card and additional information about Lisy can be found on the [Lisy project page](https://lisy.dev). Note that only the Raspberry Pi Zero, Zero W, 3A+ and 3B+ models are currently supported by Lisy.  
 There's also a Lisy_Mini board available. The Raspberry Pi is then located on this board which can be conntected to the APC via USB. For more information about how to setup PinMame please have a look at my [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md).
 
+With PinMame running for your game you can use the [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) functionality of the APC to change the rules of your game even though it's running under PinMame control.  
+Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see an example. The corresponding code can be found in PinMameExceptions.ino in the AmokPrivate branch on Github.
+
 ### MPF
 
 The APC is mainly meant to be a platform for people who want to program their own rules and features.  
