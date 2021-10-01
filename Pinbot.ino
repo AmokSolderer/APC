@@ -28,11 +28,12 @@ byte PB_LampsToLight = 2;                             // number of lamps to ligh
 byte *PB_ChestPatterns;                               // pointer to the current chest lamp pattern
 uint16_t PB_ChestPatternCounter = 0;                  // counter for the current chest lamp pattern to be shown
 
-const unsigned int PB_SolTimes[32] = {50,30,30,70,50,200,30,30,0,0,0,0,0,0,100,100,50,0,50,50,50,50,0,0,50,100,100,100,100,100,100,100}; // Activation times for solenoids (last 8 are C bank)
+const unsigned int PB_SolTimes[32] = {50,30,30,70,50,200,30,30,0,0,0,0,0,0,150,150,50,0,50,50,50,50,0,0,50,150,150,150,150,150,150,150}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[10] = {3,4,5,17,19,22,6,20,21,0}; // coils to fire when the ball watchdog timer runs out
 const byte PB_OpenVisorSeq[45] = {26,30,26,30,26,30,27,5,31,5,32,5,29,5,29,5,26,5,29,2,29,3,29,7,29,8,29,5,29,4,26,2,27,5,31,5,32,5,29,5,28,5,26,10,0};
 const byte PB_MultiballSeq[69] = {16,5,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,7,0,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,5,15,10,8,0,0};
 const byte PB_ScoreEnergySeq[7] = {31,10,31,10,31,10,0};
+const byte PB_MultiplierSeq[83] = {27,2,29,6,26,7,27,6,15,5,16,8,27,5,29,8,30,5,26,1,31,11,28,1,15,6,31,3,16,3,28,8,27,1,29,9,26,5,27,4,15,4,31,7,16,3,31,7,26,1,29,10,32,1,15,11,30,1,16,4,31,3,29,8,28,6,26,5,31,7,15,1,16,11,29,10,31,2,15,6,16,4,0};
 const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
                                 {32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
@@ -364,9 +365,7 @@ void PB_AttractModeSW(byte Select) {
 void PB_GameStart() {
   AfterSound = 0;
   PB_NewBall(2);
-  ReleaseSolenoid(12);                                // turn playfield GI back on
-  PlayMusic(50, "1_94.snd");                          // play non looping part of music track
-  QueueNextMusic("1_94L.snd");}                       // queue looping part as next music to be played}
+  ReleaseSolenoid(12);}                                // turn playfield GI back on
 
 void AddPlayerSW(byte Switch) {
   if (Switch == 3) {
@@ -401,6 +400,8 @@ void PB_AddPlayer() {
 
 void PB_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
   ShowAllPoints(0);
+  PlayMusic(50, "1_94.snd");                          // play non looping part of music track
+  QueueNextMusic("1_94L.snd");                        // queue looping part as next music to be played}
   Bonus = 1;
   BonusMultiplier = 1;                                // reset bonus multiplier
   for (i=0; i<4; i++) {                               // turn off the corresponding lamps
@@ -1431,6 +1432,16 @@ void PB_CycleDropLights(byte State) {                 // State = 0 -> Stop / Sta
 void PB_PlayGameMusic() {
   PlayRandomMusic(50, 6, (char *)PB_GameMusic);}
 
+void PB_PlayMultiplierSequence(byte State) {
+  static byte Timer = 0;
+  if ((State > 1) || ((State == 1) && !Timer)) {
+    PlayFlashSequence((byte*) PB_MultiplierSeq);
+    Timer = ActivateTimer(2100, 2, PB_PlayMultiplierSequence);}
+  else if (!State) {
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}}}
+
 void PB_BallEnd(byte Event) {                         // ball has been kicked into trunk
   AppByte = PB_CountBallsInTrunk();
   if ((AppByte == 5)||(AppByte < 3-Multiballs-InLock)) {  // something's wrong in the trunk
@@ -1559,6 +1570,7 @@ void PB_CountBonus(byte State) {
   else if (State == 16) {
     WritePlayerDisplay((char*) "  5X   ", 1);
     PlaySound(50, "0_49.snd");
+    PB_PlayMultiplierSequence(1);
     TotalBonus = Bonus*5000;
     DisplayScore(2, TotalBonus);
     ActivateTimer(1000, 20, PB_CountBonus);}
@@ -1568,19 +1580,16 @@ void PB_CountBonus(byte State) {
     ActivateTimer(100, 21, PB_CountBonus);}
   else if (State == 21) {
     TotalBonus = TotalBonus - 1000;
-    Serial.println(TotalBonus);
-
     Points[Player] = Points[Player] + 1000;
     WriteUpper("              ");
     DisplayScore(1, Points[Player]);
     DisplayScore(2, TotalBonus);
     if (TotalBonus) {
-      ActivateTimer(50, 21, PB_CountBonus);}
+      ActivateTimer(29, 21, PB_CountBonus);}
     else {
       PlaySound(50, "0_65.snd");
+      PB_PlayMultiplierSequence(0);
       ActivateTimer(1000, 22, PB_CountBonus);}}
-
-
   else {
     PB_BallEnd2();}}
 
@@ -1590,8 +1599,8 @@ void PB_BallEnd2() {
   if (ExBalls) {                                      // Player has extra balls
     AddBlinkLamp(33, 250);                            // Let the extra ball lamp blink
     ExBalls--;
-    ActivateTimer(3000, 0, PB_AfterExBallRelease);
-    ActivateTimer(2000, AppByte, PB_NewBall);}
+    ActivateTimer(1100, 0, PB_AfterExBallRelease);
+    ActivateTimer(100, AppByte, PB_NewBall);}
   else {                                              // Player has no extra balls
     TurnOffLamp(51);
     if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
@@ -1612,7 +1621,7 @@ void PB_BallEnd3(byte Dummy) {
     if (Ball < APC_settings[NofBalls]) {              // last ball?
       Player = 1;                                     // not yet
       Ball++;
-      ActivateTimer(1000, AppByte, PB_NewBall);}
+      ActivateTimer(100, AppByte, PB_NewBall);}
     else {                                            // game end
       ReleaseSolenoid(23);                            // disable flipper fingers
       ReleaseSolenoid(24);
