@@ -750,6 +750,7 @@ void PB_GameMain(byte Switch) {
         Serial.println((unsigned int)TimerEvent[i]);}
       i++;}
     SwitchDisplay(1);
+    digitalWrite(Blanking, LOW);                      // invoke the blanking
     break;
   case 10:                                            // left lane change
     PB_MoveExBallLamps(0);
@@ -765,6 +766,8 @@ void PB_GameMain(byte Switch) {
       PB_BallSave = 2;                                // trigger the ball saver
       AddBlinkLamp(33, 250);}
     else {
+      Points[Player] += 5000;
+      ShowPoints(Player);
       PB_AddBonus(3);
       if (QueryLamp(49)) {
         TurnOffLamp(49);
@@ -773,6 +776,8 @@ void PB_GameMain(byte Switch) {
     break;
   case 13:                                            // left inlane
     PlaySound(50, "1_8b.snd");
+    Points[Player] += 5000;
+    ShowPoints(Player);
     PB_AddBonus(1);
     TurnOnLamp(18);
     if (QueryLamp(50)) {
@@ -782,6 +787,8 @@ void PB_GameMain(byte Switch) {
     break;
   case 14:                                            // right inlane
     PlaySound(50, "1_8b.snd");
+    Points[Player] += 5000;
+    ShowPoints(Player);
     PB_AddBonus(1);
     if (QueryLamp(58)) {
       TurnOffLamp(58);
@@ -800,6 +807,8 @@ void PB_GameMain(byte Switch) {
       PB_BallSave = 2;                                // trigger the ball saver
       AddBlinkLamp(33, 250);}
     else {
+      Points[Player] += 5000;
+      ShowPoints(Player);
       PB_AddBonus(3);
       if (QueryLamp(57)) {
         TurnOffLamp(57);
@@ -1493,7 +1502,7 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         WriteUpper("              ");
         WriteLower("              ");
         WriteUpper2(" BONUS        ");
-        ShowNumber(2, Bonus);
+        ShowNumber(15, Bonus*1000);
         StopPlayingMusic();
         PlaySound(50, "0_2c.snd");
 //        IntBuffer = Bonus * BonusMultiplier;
@@ -1502,53 +1511,54 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         ActivateTimer(200, 0, PB_CountBonus);}}}}
 
 void PB_CountBonus(byte State) {
-  static uint16_t TotalBonus;
-  const byte Pattern[11] = {4,11,12,3,8,2,1,10,13,6,9};
+  static uint32_t TotalBonus;
+  const byte Pattern[11] = {5,3,13,14,4,2,12,15,6,10,11};
   if (State < 11) {                                   // show bonus
     *(DisplayUpper+2*Pattern[State]) = *(DisplayUpper2+2*Pattern[State]);
-    ActivateTimer(200, State+1, PB_CountBonus);}
-  else if (State == 12) {
+    *(DisplayUpper+2*Pattern[State]+1) = *(DisplayUpper2+2*Pattern[State]+1);
+    ActivateTimer(100, State+1, PB_CountBonus);}
+  else if (State == 11) {
     StopPlayingSound();
-    ActivateTimer(1000, 13, PB_CountBonus);}
-  else if (State == 13) {
+    ActivateTimer(1000, 12, PB_CountBonus);}
+  else if (State == 12) {
     WritePlayerDisplay((char*) "  1X   ", 1);
     PlaySound(50, "0_3e.snd");
     TotalBonus = Bonus*1000;
     DisplayScore(2, TotalBonus);
     if (BonusMultiplier > 1) {
-      ActivateTimer(1000, 14, PB_CountBonus);}
+      ActivateTimer(300, 13, PB_CountBonus);}
     else {
       ActivateTimer(1000, 20, PB_CountBonus);}}
-  else if (State == 14) {
+  else if (State == 13) {
     WritePlayerDisplay((char*) "  2X   ", 1);
     PlaySound(50, "0_3e.snd");
     TotalBonus = Bonus*2000;
     DisplayScore(2, TotalBonus);
-    if (BonusMultiplier > 1) {
-      ActivateTimer(1000, 15, PB_CountBonus);}
+    if (BonusMultiplier > 2) {
+      ActivateTimer(300, 14, PB_CountBonus);}
     else {
       ActivateTimer(1000, 20, PB_CountBonus);}}
-  else if (State == 15) {
+  else if (State == 14) {
     WritePlayerDisplay((char*) "  3X   ", 1);
     PlaySound(50, "0_3e.snd");
     TotalBonus = Bonus*3000;
     DisplayScore(2, TotalBonus);
-    if (BonusMultiplier > 1) {
-      ActivateTimer(1000, 16, PB_CountBonus);}
+    if (BonusMultiplier > 3) {
+      ActivateTimer(300, 15, PB_CountBonus);}
     else {
       ActivateTimer(1000, 20, PB_CountBonus);}}
-  else if (State == 16) {
+  else if (State == 15) {
     WritePlayerDisplay((char*) "  4X   ", 1);
     PlaySound(50, "0_3e.snd");
     TotalBonus = Bonus*4000;
     DisplayScore(2, TotalBonus);
-    if (BonusMultiplier > 1) {
-      ActivateTimer(1000, 17, PB_CountBonus);}
+    if (BonusMultiplier > 4) {
+      ActivateTimer(300, 16, PB_CountBonus);}
     else {
       ActivateTimer(1000, 20, PB_CountBonus);}}
-  else if (State == 17) {
+  else if (State == 16) {
     WritePlayerDisplay((char*) "  5X   ", 1);
-    PlaySound(50, "0_3e.snd");
+    PlaySound(50, "0_49.snd");
     TotalBonus = Bonus*5000;
     DisplayScore(2, TotalBonus);
     ActivateTimer(1000, 20, PB_CountBonus);}
@@ -1558,13 +1568,17 @@ void PB_CountBonus(byte State) {
     ActivateTimer(100, 21, PB_CountBonus);}
   else if (State == 21) {
     TotalBonus = TotalBonus - 1000;
+    Serial.println(TotalBonus);
+
     Points[Player] = Points[Player] + 1000;
+    WriteUpper("              ");
     DisplayScore(1, Points[Player]);
     DisplayScore(2, TotalBonus);
     if (TotalBonus) {
-      ActivateTimer(100, 21, PB_CountBonus);}
+      ActivateTimer(50, 21, PB_CountBonus);}
     else {
-      ActivateTimer(100, 22, PB_CountBonus);}}
+      PlaySound(50, "0_65.snd");
+      ActivateTimer(1000, 22, PB_CountBonus);}}
 
 
   else {
@@ -1572,11 +1586,12 @@ void PB_CountBonus(byte State) {
 
 void PB_BallEnd2() {
   BlockOuthole = false;                               // remove outhole block
+  PlaySound(50, "1_85.snd");
   if (ExBalls) {                                      // Player has extra balls
     AddBlinkLamp(33, 250);                            // Let the extra ball lamp blink
     ExBalls--;
-    ActivateTimer(2000, 0, PB_AfterExBallRelease);
-    ActivateTimer(1000, AppByte, PB_NewBall);}
+    ActivateTimer(3000, 0, PB_AfterExBallRelease);
+    ActivateTimer(2000, AppByte, PB_NewBall);}
   else {                                              // Player has no extra balls
     TurnOffLamp(51);
     if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
@@ -1602,10 +1617,11 @@ void PB_BallEnd3(byte Dummy) {
       ReleaseSolenoid(23);                            // disable flipper fingers
       ReleaseSolenoid(24);
       LampPattern = NoLamps;                          // Turn off all lamps
-      AfterMusic = GameDefinition.AttractMode;
-      PlayMusic(50, "BS_S10.BIN");
+      //AfterMusic = GameDefinition.AttractMode;
+      //PlayMusic(50, "BS_S10.BIN");
       //PB_CheckForLockedBalls(0);
-      TurnOffLamp(3);}}}                              // turn off Ball in Play lamp
+      TurnOffLamp(3);                                 // turn off Ball in Play lamp
+      GameDefinition.AttractMode();}}}
 
 void PB_Congrats(byte Dummy) {                        // show congratulations
   UNUSED(Dummy);
