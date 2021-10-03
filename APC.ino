@@ -1371,13 +1371,17 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
   if (GivenState || !State) {                         // accept new calls (Givenstate = 0) only when not already running (State = 0)
     if (ActSolSlot != NextSolSlot) {                  // any solenoid waiting?
       if (ACselectRelay && (((SolWaiting[ActSolSlot][0] < 9) && C_BankActive) || ((SolWaiting[ActSolSlot][0] > 24) && !C_BankActive))) { // wrong relay state?
-        if (C_BankActive) {
-          ReleaseSolenoid(ACselectRelay);             // switch to A
-          C_BankActive = false;}                      // signal it
+        if (EndTimeAdder) {                           // hold time of solenoid not yet over
+          ActivateTimer(EndTimeAdder, 1, ActSolenoid);
+          EndTimeAdder = 0;}                          // wait longer
         else {
-          ActivateSolenoid(0, ACselectRelay);         // switch to C
-          C_BankActive = true;}                       // signal it
-        ActivateTimer(50, 1, ActSolenoid);}           // wait 50ms for the relay to settle
+          if (C_BankActive) {
+            ReleaseSolenoid(ACselectRelay);           // switch to A
+            C_BankActive = false;}                    // signal it
+          else {
+            ActivateSolenoid(0, ACselectRelay);       // switch to C
+            C_BankActive = true;}                     // signal it
+          ActivateTimer(50, 1, ActSolenoid);}}        // wait 50ms for the relay to settle
       else {
         if (SolWaiting[ActSolSlot][0] < 25) {         // A bank solenoid
           ActivateSolenoid(0, SolWaiting[ActSolSlot][0]);}
@@ -1405,8 +1409,8 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
       State = 1;}                                     // set routine state to active
     else if (C_BankActive){                           // nothing more to do and relay still active?
       if (EndTimeAdder) {                             // hold time of solenoid not yet over
-        EndTimeAdder = 0;
-        ActivateTimer(EndTimeAdder, 1, ActSolenoid);} // wait longer
+        ActivateTimer(EndTimeAdder, 1, ActSolenoid);
+        EndTimeAdder = 0;}                            // wait longer
       else {                                          // no waiting time needed
         ReleaseSolenoid(ACselectRelay);               // reset the A/C relay
         C_BankActive = false;
