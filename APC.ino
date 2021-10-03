@@ -1367,6 +1367,7 @@ void PlayFlashSequence(byte* Sequence) {              // prepare for playing a f
 
 void ActSolenoid(byte GivenState) {                   // activate waiting A/C solenoids
   static byte State = 0;
+  static uint32_t EndTimeAdder = 0;                   // delay for switching back the A/C relay when a sequence ends
   if (GivenState || !State) {                         // accept new calls (Givenstate = 0) only when not already running (State = 0)
     if (ActSolSlot != NextSolSlot) {                  // any solenoid waiting?
       if (ACselectRelay && (((SolWaiting[ActSolSlot][0] < 9) && C_BankActive) || ((SolWaiting[ActSolSlot][0] > 24) && !C_BankActive))) { // wrong relay state?
@@ -1378,13 +1379,24 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
           C_BankActive = true;}                       // signal it
         ActivateTimer(50, 1, ActSolenoid);}           // wait 50ms for the relay to settle
       else {
-        if (SolWaiting[ActSolSlot][0] < 25) {
+        if (SolWaiting[ActSolSlot][0] < 25) {         // A bank solenoid
           ActivateSolenoid(0, SolWaiting[ActSolSlot][0]);}
-        else {
+        else {                                        // C bank solenoid
           ActivateSolenoid(*(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1), SolWaiting[ActSolSlot][0]-24);}
-        if (SolWaiting[ActSolSlot][1]) {
+        if (SolWaiting[ActSolSlot][1]) {              // time for the next sequence step
+          if (*(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1 <= SolWaiting[ActSolSlot][1]*10 ) { // solenoid on time <= time to next step?
+            if (EndTimeAdder > SolWaiting[ActSolSlot][1]*10) {
+              EndTimeAdder = EndTimeAdder - SolWaiting[ActSolSlot][1]*10;}
+            else {
+              EndTimeAdder = 0;}}                     // no extra time needed
+          else {                                      // solenoid on time > time to next step
+            if (EndTimeAdder > *(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1 - SolWaiting[ActSolSlot][1]*10) {
+              EndTimeAdder = EndTimeAdder - SolWaiting[ActSolSlot][1]*10;}
+            else {
+              EndTimeAdder = *(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1 - SolWaiting[ActSolSlot][1]*10;}} // remember discrepancy
           ActivateTimer(SolWaiting[ActSolSlot][1]*10, 1, ActSolenoid);} // call the timer
-        else {
+        else {                                        // use standard solenoid hold time as the delay for the next step
+          EndTimeAdder = 0;
           ActivateTimer(*(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1, 1, ActSolenoid);}
         SolWaiting[ActSolSlot][0] = 0;                // mark current slot as free
         ActSolSlot++;                                 // increase slot number
@@ -1392,10 +1404,14 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
           ActSolSlot = 0;}}                           // start from zero
       State = 1;}                                     // set routine state to active
     else if (C_BankActive){                           // nothing more to do and relay still active?
-      ReleaseSolenoid(ACselectRelay);                 // reset it
-      C_BankActive = false;
-      State = 1;
-      ActivateTimer(50, 1, ActSolenoid);}
+      if (EndTimeAdder) {                             // hold time of solenoid not yet over
+        EndTimeAdder = 0;
+        ActivateTimer(EndTimeAdder, 1, ActSolenoid);} // wait longer
+      else {                                          // no waiting time needed
+        ReleaseSolenoid(ACselectRelay);               // reset the A/C relay
+        C_BankActive = false;
+        State = 1;
+        ActivateTimer(50, 1, ActSolenoid);}}
     else {                                            // absolutely nothing to do
       State = 0;}}}                                   // set routine state to passive
 
