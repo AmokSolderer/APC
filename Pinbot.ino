@@ -1616,7 +1616,7 @@ void PB_BallEnd3(byte Dummy) {
   LampPattern = LampColumns;
   if (Player < NoPlayers) {                           // last player?
     Player++;
-    ActivateTimer(1000, AppByte, PB_NewBall);}
+    ActivateTimer(100, AppByte, PB_NewBall);}
   else {
     if (Ball < APC_settings[NofBalls]) {              // last ball?
       Player = 1;                                     // not yet
