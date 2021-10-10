@@ -1394,7 +1394,7 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
             else {
               EndTimeAdder = 0;}}                     // no extra time needed
           else {                                      // solenoid on time > time to next step
-            if (EndTimeAdder > *(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1 - SolWaiting[ActSolSlot][1]*10) {
+            if (EndTimeAdder > *(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1) {
               EndTimeAdder = EndTimeAdder - SolWaiting[ActSolSlot][1]*10;}
             else {
               EndTimeAdder = *(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1 - SolWaiting[ActSolSlot][1]*10;}} // remember discrepancy
