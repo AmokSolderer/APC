@@ -1372,8 +1372,8 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
     if (ActSolSlot != NextSolSlot) {                  // any solenoid waiting?
       if (ACselectRelay && (((SolWaiting[ActSolSlot][0] < 9) && C_BankActive) || ((SolWaiting[ActSolSlot][0] > 24) && !C_BankActive))) { // wrong relay state?
         if (EndTimeAdder) {                           // hold time of solenoid not yet over
-          ActivateTimer(EndTimeAdder, 1, ActSolenoid);
-          EndTimeAdder = 0;}                          // wait longer
+          ActivateTimer(EndTimeAdder, 1, ActSolenoid);  // wait longer
+          EndTimeAdder = 0;}
         else {
           if (C_BankActive) {
             ReleaseSolenoid(ACselectRelay);           // switch to A
@@ -1409,8 +1409,8 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
       State = 1;}                                     // set routine state to active
     else if (C_BankActive){                           // nothing more to do and relay still active?
       if (EndTimeAdder) {                             // hold time of solenoid not yet over
-        ActivateTimer(EndTimeAdder, 1, ActSolenoid);
-        EndTimeAdder = 0;}                            // wait longer
+        ActivateTimer(EndTimeAdder, 1, ActSolenoid);  // wait longer
+        EndTimeAdder = 0;}
       else {                                          // no waiting time needed
         ReleaseSolenoid(ACselectRelay);               // reset the A/C relay
         C_BankActive = false;
