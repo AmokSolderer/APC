@@ -465,7 +465,7 @@ void PB_GiveBall(byte Balls) {
   if (PB_SkillMultiplier < 10) {
     PB_SkillMultiplier++;
     if (PB_SkillMultiplier == 10) {
-      PlayFlashSequence((byte*) PB_MultiballSeq);     // super skill shot
+      //PlayFlashSequence((byte*) PB_MultiballSeq);     // super skill shot
     }}
   else {
     PB_SkillMultiplier = 1;}
@@ -871,8 +871,10 @@ void PB_GameMain(byte Switch) {
         for (i=0; i<5; i++) {                         // turn off blinking row / column
           RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
         if (AppByte == PB_ChestMode) {                // correct row / column hit?
+          StopPlayingMusic();
+          PlaySound(50, "0_e0.snd");                  // target hit sound
           PB_AddBonus(1);
-          PB_OpenVisorProc();}                        // open visor
+          ActivateTimer(2000, 0,PB_OpenVisorProc);}   // open visor
         else {                                        // incorrect row / column hit
           PB_ChestMode = Switch-17;                   // Store row / column hit
           PB_SetChestLamps(Switch-28);                // add the lamps for the hit row / column in PB_ChestLamp
@@ -882,7 +884,8 @@ void PB_GameMain(byte Switch) {
         PB_ChestMode = Switch-17;                     // Store row / column hit
         PB_SetChestLamps(Switch-28);                  // add the lamps for the hit row / column in PB_ChestLamp
         if (PB_LitChestLamps == 25) {                 // complete chest lit?
-          PB_OpenVisorProc();}                        // open visor
+          StopPlayingMusic();
+          PB_OpenVisorProc(0);}                        // open visor
         else {
           PB_ClearChest();                            // turn off chest lamps
           PB_ChestLightHandler(1);}}}                 // call effect routine
@@ -966,7 +969,7 @@ void PB_GameMain(byte Switch) {
     break;
   case 46:                                            // visor closed
     if (PB_CloseVisorFlag) {
-      PlaySound(50, "1_f3.snd");
+      PlaySound(50, "0_f3.snd");
       PB_CloseVisorFlag = false;
       ReleaseSolenoid(13);
       PB_EyeBlink(0);}                                // turn off eye blinking
@@ -1106,15 +1109,15 @@ void PB_StartChestPattern(byte Dummy) {
 
 void PB_VisorOpen2() {
   AfterSound = 0;
-  PlayMusic(50, "1_02");
+  PlayMusic(50, "1_02.snd");
   QueueNextMusic("1_02L.snd");}                       // queue looping part as next music to be played}
 
 void PB_VisorOpen() {                                 // Play sound and music when visor has opened
   AfterSound = PB_VisorOpen2;
   PlaySound(50, "0_db.snd");}                         // 'I am in your control'
 
-void PB_OpenVisorProc() {                             // measures to open the visor
-  StopPlayingMusic();
+void PB_OpenVisorProc(byte Dummy) {                   // measures to open the visor
+  UNUSED(Dummy);
   PlaySound(50, "0_f1.snd");                          // moving visor sound
   AfterSound = PB_VisorOpen;
   PB_ChestMode = 0;                                   // indicate that the visor is open
@@ -1260,7 +1263,12 @@ void PB_ResetPlayersChestLamps(byte Player) {         // Reset the chest lamps f
 void PB_2ndLock() {                                   // start new music when 1 ball is locked
   AfterSound = 0;
   PlayMusic(50, "1_03L.snd");
-  QueueNextMusic("1_03L.snd");}                       // queue looping part as next music to be played}
+  QueueNextMusic("1_03L.snd");}                       // queue looping part as next music to be played
+
+//void PB_SolarValueMusic() {
+//  AfterSound = 0;
+//  PlayMusic(50, "1_03L.snd");
+//  QueueNextMusic("1_03L.snd");}                       // queue looping part as next music to be played
 
 void PB_HandleLock(byte State) {
   if (!State) {                                       // routine didn't call itself
@@ -1281,7 +1289,7 @@ void PB_HandleLock(byte State) {
       else {
         if (InLock == 1) {
           if (Multiballs > 1) {                       // multiball already running?
-            StopPlayingMusic();
+            PlayMusic(50, "1_05.snd");
             AddBlinkLamp(35, 100);                    // start blinking of solar energy ramp
             PB_OpenVisorFlag = false;
             PB_EyeBlink(0);                           // turn off eye blinking
@@ -1316,6 +1324,7 @@ void PB_HandleLock(byte State) {
 void PB_Multiball() {
   PlayMusic(50, "1_04.snd");
   QueueNextMusic("1_04L.snd");                        // queue looping part as next music to be played}
+  AfterSound = 0;
   ReleaseSolenoid(9);
   ReleaseSolenoid(10);
   ReleaseSolenoid(18);
