@@ -918,6 +918,7 @@ void PB_GameMain(byte Switch) {
   case 39:                                            // solar ramp exit
     uint16_t Buffer;
     PB_AddBonus(1);
+    RampSound = false;
     PlaySound(50, "1_a9.snd");
     if (PB_SolarValueTimer) {                         // solar ramp lit
       KillTimer(PB_SolarValueTimer);
@@ -947,8 +948,10 @@ void PB_GameMain(byte Switch) {
     break;
   case 40:                                            // ramp entrance
     if (RampSound) {
+      RampSound = false;
       PlaySound(50, "1_a9.snd");}
     else {
+      RampSound = true;
       PlaySound(50, "1_a8.snd");}
     break;
   case 45:                                            // score energy switch
@@ -987,7 +990,7 @@ void PB_GameMain(byte Switch) {
   case 56:                                            // standup targets
   case 59:
   case 60:
-    PlaySound(50, "1_8d.snd");
+    PlaySound(45, "1_8d.snd");
     Points[Player] += 10;
     break;
   case 65:                                            // lower jet bumper
@@ -1101,8 +1104,19 @@ void PB_StartChestPattern(byte Dummy) {
   LampPattern = LampColumns;
   PB_ChestLightHandler(0);}
 
+void PB_VisorOpen2() {
+  AfterSound = 0;
+  PlayMusic(50, "1_02");
+  QueueNextMusic("1_02L.snd");}                       // queue looping part as next music to be played}
+
+void PB_VisorOpen() {                                 // Play sound and music when visor has opened
+  AfterSound = PB_VisorOpen2;
+  PlaySound(50, "0_db.snd");}                         // 'I am in your control'
+
 void PB_OpenVisorProc() {                             // measures to open the visor
-  PlaySound(50, "0_f1.snd");
+  StopPlayingMusic();
+  PlaySound(50, "0_f1.snd");                          // moving visor sound
+  AfterSound = PB_VisorOpen;
   PB_ChestMode = 0;                                   // indicate that the visor is open
   PB_Chest_Status[Player]++;                          // increase the number of visor openings
   if (PB_Chest_Status[Player] == 2) {                 // visor opened two times?
@@ -1243,6 +1257,11 @@ void PB_ResetPlayersChestLamps(byte Player) {         // Reset the chest lamps f
   for (byte c=0; c<5; c++) {
     PB_ChestLamp[Player-1][c] = 0;}}
 
+void PB_2ndLock() {                                   // start new music when 1 ball is locked
+  AfterSound = 0;
+  PlayMusic(50, "1_03L.snd");
+  QueueNextMusic("1_03L.snd");}                       // queue looping part as next music to be played}
+
 void PB_HandleLock(byte State) {
   if (!State) {                                       // routine didn't call itself
     PB_IgnoreLock = false;
@@ -1262,18 +1281,22 @@ void PB_HandleLock(byte State) {
       else {
         if (InLock == 1) {
           if (Multiballs > 1) {                       // multiball already running?
+            StopPlayingMusic();
             AddBlinkLamp(35, 100);                    // start blinking of solar energy ramp
             PB_OpenVisorFlag = false;
             PB_EyeBlink(0);                           // turn off eye blinking
-            PlaySound(50, "0_f1.snd");
+            PlaySound(50, "0_ae.snd");                // 'shoot for solar value'
             ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
             ActivateSolenoid(0, 13);                  // start visor motor
             PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
           else {                                      // multiball not yet running
-            PlaySound(150, "BS_S02.BIN");
+            StopPlayingMusic();
+            AfterSound = PB_2ndLock;
+            PlaySound(51, "0_c9.snd");                // 'partial link-up'
             PB_GiveBall(1);}}                         // give second ball
         else {                                        // both balls in lock
           if (Multiballs == 1) {                      // multiball not yet running?
+            StopPlayingMusic();
             PB_EyeBlink(0);                           // turn off eye blinking
             ActivateSolenoid(0, 11);                  // turn off GI
             ActivateSolenoid(0, 12);
@@ -1284,17 +1307,15 @@ void PB_HandleLock(byte State) {
             LampPattern = NoLamps;                    // Turn off all lamps
             PB_LampSweepActive = 2;
             PB_LampSweep(4);
-            AfterMusic = PB_Multiball;
-            PlayMusic(51, "BS_S03.BIN");
+            AfterSound = PB_Multiball;
+            PlaySound(50, "0_b0.snd");                // 'now I see you'
             Multiballs = 2;}                          // start multiball
           else {
             PB_ClearOutLock(1);}}}}}}                 // eject 1 ball and close visor
 
 void PB_Multiball() {
-  AfterMusic = PB_PlayGameMusic;
-  if (APC_settings[Volume]) {
-    analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[PB_MultiballVolume]);} // increase volume
-  PlayMusic(50, "BS_M04.BIN");
+  PlayMusic(50, "1_04.snd");
+  QueueNextMusic("1_04L.snd");                        // queue looping part as next music to be played}
   ReleaseSolenoid(9);
   ReleaseSolenoid(10);
   ReleaseSolenoid(18);
