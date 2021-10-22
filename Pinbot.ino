@@ -40,7 +40,7 @@ const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
 const char PB_GameMusic[6][13] = {{"BS_M03.BIN"},{"BS_M05.BIN"},{"BS_M06.BIN"},{"BS_M07.BIN"},{"BS_M08.BIN"},{"BS_M09.BIN"}};
 const byte PB_ACselectRelay = 14;                     // solenoid number of the A/C select relay
 
-const struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20}, // TODO switch it to const struct
+const struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20},
     {" REACH PLANET ",HandleNumSetting,0,1,9},
     {" ENERGY TIMER ",HandleNumSetting,0,1,90},
     {"MULTBALVOLUME ",PB_HandleVolumeSetting,0,0,30},
@@ -52,6 +52,7 @@ const struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,
 
                                     // Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
                                     // Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
+
 const struct LampPat PB_AttractPat1[5] = {{150,0b00000000,0b00000000,0b00000000,0b00000000,0b00100000,0b00000000,0b00000000},
                                           {150,0b00000000,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b00000000},
                                           {150,0b00000000,0b00000000,0b11111000,0b11111000,0b11011000,0b11111000,0b11111000},
@@ -105,8 +106,8 @@ const struct LampPat PB_AttractPat4[36] ={{150,0b10000001,0b00000101,0b10000000,
                                           {150,0b00100100,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {150,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {0,0,0,0,0,0,0,0}};
-                                 //  DurationXX0910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364
-const struct LampPat PB_OpenVisorPat[23] = {{100,0b00000000,0b00000000,0b00001000,0b00001000,0b00001000,0b00001000,0b00001000},
+
+const struct LampPat PB_OpenVisorPatOld[23] = {{100,0b00000000,0b00000000,0b00001000,0b00001000,0b00001000,0b00001000,0b00001000},
                                             {100,0b00000000,0b00000000,0b00011000,0b00011000,0b00011000,0b00011000,0b00011000},
                                             {100,0b00000000,0b00000000,0b00111000,0b00111000,0b00111000,0b00111000,0b00111000},
                                             {100,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b01110000,0b01110000},
@@ -132,11 +133,61 @@ const struct LampPat PB_OpenVisorPat[23] = {{100,0b00000000,0b00000000,0b0000100
                                       
 const struct LampFlow PB_AttractFlow[5] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{2,PB_AttractPat4},{0,0}};
 
+const byte PB_OpenVisorPat[163] = {200,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    50,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    50,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b11111,0b11111,0b11111,0b11111,0b11111,0};
+
 const byte PB_RandomChestPat[25] =  {15,0b10011,0b00100,0b01100,0b10101,0b00101,
                                      15,0b11100,0b00101,0b10011,0b10100,0b10010,
                                      15,0b00101,0b11010,0b10110,0b01011,0b01101,
                                      15,0b01010,0b11011,0b01001,0b01010,0b11010,0};
 
+const byte PB_ExpandingSquares[121] = {15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b00000,0b01110,0b01110,0b01110,0b00000,
+                                    15,0b11111,0b01110,0b11011,0b01110,0b11111,
+                                    15,0b11111,0b00000,0b10001,0b00000,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b00000,0b01110,0b01110,0b01110,0b00000,
+                                    15,0b11111,0b01110,0b11011,0b01110,0b11111,
+                                    15,0b11111,0b00000,0b10001,0b00000,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b00000,0b01110,0b01110,0b01110,0b00000,
+                                    15,0b11111,0b01110,0b11011,0b01110,0b11111,
+                                    15,0b11111,0b00000,0b10001,0b00000,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b00000,0b01110,0b01110,0b01110,0b00000,
+                                    15,0b11111,0b01110,0b11011,0b01110,0b11111,
+                                    15,0b11111,0b00000,0b10001,0b00000,0b11111,
+                                    15,0b00000,0b00000,0b00100,0b00000,0b00000,
+                                    15,0b00000,0b01110,0b01110,0b01110,0b00000,
+                                    15,0b11111,0b01110,0b11011,0b01110,0b11111,
+                                    15,0b11111,0b00000,0b10001,0b00000,0b11111,0
+
+};
 const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
                                    15,0b00100,0b00100,0b00100,0b00100,0b00100,
                                    15,0b00010,0b00010,0b00010,0b00010,0b00010,
@@ -872,6 +923,8 @@ void PB_GameMain(byte Switch) {
           RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
         if (AppByte == PB_ChestMode) {                // correct row / column hit?
           StopPlayingMusic();
+          PB_ChestPatterns = (byte*)PB_OpenVisorPat;
+          PB_StartChestPattern(0);
           PlaySound(50, "0_e0.snd");                  // target hit sound
           PB_AddBonus(1);
           ActivateTimer(2000, 0,PB_OpenVisorProc);}   // open visor
@@ -1113,6 +1166,11 @@ void PB_VisorOpen2() {
   QueueNextMusic("1_02L.snd");}                       // queue looping part as next music to be played}
 
 void PB_VisorOpen() {                                 // Play sound and music when visor has opened
+  if (PB_ChestLightsTimer) {                          // stop the chest light animation
+    KillTimer(PB_ChestLightsTimer);
+    PB_ChestLightsTimer = 0;}
+  PB_ChestPatterns = (byte*)PB_ExpandingSquares;
+  PB_StartChestPattern(0);
   AfterSound = PB_VisorOpen2;
   PlaySound(50, "0_db.snd");}                         // 'I am in your control'
 
@@ -1128,11 +1186,10 @@ void PB_OpenVisorProc(byte Dummy) {                   // measures to open the vi
   PB_ResetPlayersChestLamps(Player);                  // reset the stored lamps
   PB_ClearChest();                                    // turn off chest lamps
   PlayFlashSequence((byte*) PB_OpenVisorSeq);         // play flasher sequence
-  PatPointer = PB_OpenVisorPat;                       // set the pointer to the current series
+  LampPattern = NoLamps;                              // set the pointer to the current series
   FlowRepeat = 1;                                     // set the repetitions
-  PB_ChestPatterns = (byte*)PB_WalkingLines;
-  LampReturn = PB_StartChestPattern;
-  ShowLampPatterns(0);                                // start the player
+//  LampReturn = PB_StartChestPattern;
+//  ShowLampPatterns(1);                                // start the player
   PB_CloseVisorFlag = false;
   ActivateSolenoid(4000, 11);                         // turn the backbox GI off
   ActivateTimer(2000, 0, PB_OpenVisor);
@@ -1290,10 +1347,12 @@ void PB_HandleLock(byte State) {
         if (InLock == 1) {
           if (Multiballs > 1) {                       // multiball already running?
             PlayMusic(50, "1_05.snd");
+            MusicVolume = 4;                          // reduce music volume
             AddBlinkLamp(35, 100);                    // start blinking of solar energy ramp
             PB_OpenVisorFlag = false;
             PB_EyeBlink(0);                           // turn off eye blinking
             PlaySound(50, "0_ae.snd");                // 'shoot for solar value'
+            RestoreMusicVolume(25);                   // restore music volume after sound has been played
             ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
             ActivateSolenoid(0, 13);                  // start visor motor
             PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
