@@ -1915,7 +1915,7 @@ void RestoreMusicVolume(byte Speed) {                 // restore max music volum
     if (MusicVolume) {
       ActivateTimer(10*BufferedSpeed, 0, RestoreMusicVolume);}}}
 
-void CallRestoreMusicVolume() {
+void CallRestoreMusicVolume() {                       // to call RestoreMusicVolume without any arguments (e.g. by AfterSound)
   AfterSound = 0;
   RestoreMusicVolume(0);}
 
