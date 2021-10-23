@@ -1905,6 +1905,20 @@ void QueueNextMusic(const char* Filename) {
     NextMusicName = Filename;
     AfterMusic = PlayNextMusic;}}
 
+void RestoreMusicVolume(byte Speed) {                 // restore max music volume with each step taking Speed*10ms
+  static byte BufferedSpeed;
+  if (Speed) {
+    AfterSound = CallRestoreMusicVolume;
+    BufferedSpeed = Speed;}
+  else if (MusicVolume) {
+    MusicVolume--;
+    if (MusicVolume) {
+      ActivateTimer(10*BufferedSpeed, 0, RestoreMusicVolume);}}}
+
+void CallRestoreMusicVolume() {                       // to call RestoreMusicVolume without any arguments (e.g. by AfterSound)
+  AfterSound = 0;
+  RestoreMusicVolume(0);}
+
 void FadeOutMusic(byte Speed) {
   analogWrite(VolumePin, 255-ByteBuffer3);
   if (ByteBuffer3) {
