@@ -1219,11 +1219,6 @@ void PB_EyeBlink(byte State) {                        // Blink lock flashers
 
 void PB_ChestLightHandler(byte State) {               // handle chest lights timer (0 -> stop, 1 -> show hit animation, 100 -> start pattern mode)
   static byte Timer = 0;
-  Serial.print("State = ");
-  Serial.println(State);
-  Serial.print("ChestM = ");
-  Serial.println(PB_ChestMode);
-
   if (State) {
     if (State < 12 ) {                                // is an animation for a row / column hit requested or running?
       if (State < 6) {                                // turn on phase
