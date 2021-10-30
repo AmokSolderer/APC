@@ -26,7 +26,6 @@ byte PB_EjectMode[5];                                 // current mode of the eje
 byte PB_EnergyValue[5];                               // energy value for current player (value = byte*2000)
 byte PB_LampsToLight = 2;                             // number of lamps to light when chest is hit
 byte *PB_ChestPatterns;                               // pointer to the current chest lamp pattern
-uint16_t PB_ChestPatternCounter = 0;                  // counter for the current chest lamp pattern to be shown
 
 const unsigned int PB_SolTimes[32] = {50,30,30,70,50,200,30,30,0,0,0,0,0,0,150,150,50,0,50,50,50,50,0,0,50,150,150,150,150,150,150,150}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[10] = {3,4,5,17,19,22,6,20,21,0}; // coils to fire when the ball watchdog timer runs out
@@ -1152,7 +1151,6 @@ void PB_ClearEjectHole(byte Solenoid) {               // activate solenoid after
 
 void PB_StartChestPattern(byte Dummy) {
   UNUSED(Dummy);
-  PB_ChestPatternCounter = 0;
   LampPattern = LampColumns;
   PB_ChestLightHandler(100);}
 
@@ -1219,6 +1217,7 @@ void PB_EyeBlink(byte State) {                        // Blink lock flashers
 
 void PB_ChestLightHandler(byte State) {               // handle chest lights timer (0 -> stop, 1 -> show hit animation, 100 -> start pattern mode)
   static byte Timer = 0;
+  static uint16_t PatternCounter = 0;                 // counter for the current chest lamp pattern to be shown
   if (State) {
     if (State < 12 ) {                                // is an animation for a row / column hit requested or running?
       if (State < 6) {                                // turn on phase
@@ -1232,10 +1231,11 @@ void PB_ChestLightHandler(byte State) {               // handle chest lights tim
         Timer = ActivateTimer(100, State, PB_ChestLightHandler);} // come back with the current state set
       else {
         PB_ChestPatterns = (byte*)PB_RandomChestPat;  // set pattern
-        PB_ChestPatternCounter = 0;
+        PatternCounter = 0;
         Timer = ActivateTimer(500, 12, PB_ChestLightHandler);}} // come back in pattern mode
     else {                                            // no hit animation running
       if (State == 100 && Timer) {                    // process already running?
+
         return;}                                      // ignore call
       if (PB_ChestMode && (PB_ChestMode < 11)) {      // visor is closed and can be opened with one row / column hit
         PB_ChestMode++;                               // proceed to next row / column
@@ -1249,11 +1249,11 @@ void PB_ChestLightHandler(byte State) {               // handle chest lights tim
       else {                                          // show ChestPatterns
         byte Mask;
         byte Buffer;
-        if (!PB_ChestPatterns[6*PB_ChestPatternCounter]) {
-          PB_ChestPatternCounter = 0;}
+        if (!PB_ChestPatterns[6*PatternCounter]) {
+          PatternCounter = 0;}
         for (byte x=0; x<5; x++) {                    // for all columns
           Mask = 1;                                   // mask to access the stored lamps for this player
-          Buffer = PB_ChestPatterns[6*PB_ChestPatternCounter+x+1]; // buffer the current column
+          Buffer = PB_ChestPatterns[6*PatternCounter+x+1]; // buffer the current column
           for (byte i=0; i<5; i++) {                       // for all rows
             if (PB_ChestLamp[Player-1][x] & Mask) {   // if the lamp is stored
               TurnOnLamp(28+8*x+i);}                  // turn it on
@@ -1264,8 +1264,8 @@ void PB_ChestLightHandler(byte State) {               // handle chest lights tim
                 TurnOffLamp(28+8*x+i);}}              // it is controlled by the pattern
             Mask = Mask<<1;                           // adjust the mask
             Buffer = Buffer>>1;}}                     // and the buffer
-        PB_ChestPatternCounter++;
-        Timer = ActivateTimer(PB_ChestPatterns[6*(PB_ChestPatternCounter-1)]*10, 12, PB_ChestLightHandler);}}}
+        PatternCounter++;
+        Timer = ActivateTimer(PB_ChestPatterns[6*(PatternCounter-1)]*10, 12, PB_ChestLightHandler);}}}
   else {
     if (!State) {
       if (PB_ChestMode && (PB_ChestMode < 11)) {
