@@ -916,16 +916,14 @@ void PB_GameMain(byte Switch) {
       if (Switch > 32) {                              // is it a row?
         AppByte = 16 - AppByte;}                      // turn the rows upside down
       if (PB_ChestMode < 11) {                        // visor can be opened with one row / column hit
-        for (byte i=0; i<5; i++) {                    // turn off blinking row / column
-          RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
+//        for (byte i=0; i<5; i++) {                    // turn off blinking row / column
+//          RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
         if (AppByte == PB_ChestMode) {                // correct row / column hit?
           PB_ChestMode = 0;                           // indicate an open visor
           StopPlayingMusic();
-          PB_ChestPatterns = (byte*)PB_OpenVisorPat;
-          PB_StartChestPattern(0);
-          PlaySound(50, "0_e0.snd");                  // target hit sound
+          //PlaySound(50, "0_e0.snd");                  // target hit sound
           PB_AddBonus(1);
-          ActivateTimer(2000, 0,PB_OpenVisorProc);}   // open visor
+          PB_OpenVisorProc(0);}                       // open visor
         else {                                        // incorrect row / column hit
           PB_ChestMode = Switch-17;                   // Store row / column hit
           PB_SetChestLamps(Switch-28);                // add the lamps for the hit row / column in PB_ChestLamp
@@ -936,7 +934,7 @@ void PB_GameMain(byte Switch) {
         PB_SetChestLamps(Switch-28);                  // add the lamps for the hit row / column in PB_ChestLamp
         if (PB_LitChestLamps == 25) {                 // complete chest lit?
           StopPlayingMusic();
-          PB_OpenVisorProc(0);}                        // open visor
+          PB_OpenVisorProc(0);}                       // open visor
         else {
           PB_ClearChest();                            // turn off chest lamps
           PB_ChestLightHandler(1);}}}                 // call effect routine
@@ -1158,22 +1156,25 @@ void PB_StartChestPattern(byte Dummy) {
   LampPattern = LampColumns;
   PB_ChestLightHandler(100);}
 
-void PB_VisorOpen2() {
-  AfterSound = 0;
-  PlayMusic(50, "1_02.snd");
-  QueueNextMusic("1_02L.snd");}                       // queue looping part as next music to be played}
+//void PB_VisorOpen2() {
+//  AfterSound = 0;
+//  PlayMusic(50, "1_02.snd");
+//  QueueNextMusic("1_02L.snd");}                       // queue looping part as next music to be played}
 
 void PB_VisorOpen() {                                 // Play sound and music when visor has opened
   PB_ChestLightHandler(0);                            // stop chest animation
   PB_ChestPatterns = (byte*)PB_ExpandingSquares;
   PB_StartChestPattern(0);
-  AfterSound = PB_VisorOpen2;
+  RestoreMusicVolume(25);                             // restore music volume after sound has been played
   PlaySound(50, "0_db.snd");}                         // 'I am in your control'
 
 void PB_OpenVisorProc(byte Dummy) {                   // measures to open the visor
   UNUSED(Dummy);
   PlaySound(50, "0_f1.snd");                          // moving visor sound
   AfterSound = PB_VisorOpen;
+  MusicVolume = 4;                                    // reduce music volume
+  PlayMusic(50, "1_02.snd");                          // change music
+  QueueNextMusic("1_02L.snd");                        // queue looping part as next music to be played
   PB_ChestMode = 0;                                   // indicate that the visor is open
   PB_Chest_Status[Player]++;                          // increase the number of visor openings
   if (PB_Chest_Status[Player] == 2) {                 // visor opened two times?
@@ -1181,6 +1182,8 @@ void PB_OpenVisorProc(byte Dummy) {                   // measures to open the vi
   PB_LitChestLamps = 0;                               // reset the counter
   PB_ResetPlayersChestLamps(Player);                  // reset the stored lamps
   PB_ClearChest();                                    // turn off chest lamps
+  PB_ChestPatterns = (byte*)PB_OpenVisorPat;          // request chest animation
+  PB_StartChestPattern(0);                            // start the player
   PlayFlashSequence((byte*) PB_OpenVisorSeq);         // play flasher sequence
   //LampPattern = NoLamps;                              // set the pointer to the current series
   FlowRepeat = 1;                                     // set the repetitions
@@ -1216,6 +1219,11 @@ void PB_EyeBlink(byte State) {                        // Blink lock flashers
 
 void PB_ChestLightHandler(byte State) {               // handle chest lights timer (0 -> stop, 1 -> show hit animation, 100 -> start pattern mode)
   static byte Timer = 0;
+  Serial.print("State = ");
+  Serial.println(State);
+  Serial.print("ChestM = ");
+  Serial.println(PB_ChestMode);
+
   if (State) {
     if (State < 12 ) {                                // is an animation for a row / column hit requested or running?
       if (State < 6) {                                // turn on phase
@@ -1356,8 +1364,8 @@ void PB_HandleLock(byte State) {
       else {
         if (InLock == 1) {
           if (Multiballs > 1) {                       // multiball already running?
-            PlayMusic(50, "1_05.snd");
             MusicVolume = 4;                          // reduce music volume
+            PlayMusic(50, "1_05.snd");
             AddBlinkLamp(35, 100);                    // start blinking of solar energy ramp
             PB_OpenVisorFlag = false;
             PB_EyeBlink(0);                           // turn off eye blinking
