@@ -915,12 +915,8 @@ void PB_GameMain(byte Switch) {
       if (Switch > 32) {                              // is it a row?
         AppByte = 16 - AppByte;}                      // turn the rows upside down
       if (PB_ChestMode < 11) {                        // visor can be opened with one row / column hit
-//        for (byte i=0; i<5; i++) {                    // turn off blinking row / column
-//          RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
         if (AppByte == PB_ChestMode) {                // correct row / column hit?
           PB_ChestMode = 0;                           // indicate an open visor
-          StopPlayingMusic();
-          //PlaySound(50, "0_e0.snd");                  // target hit sound
           PB_AddBonus(1);
           PB_OpenVisorProc(0);}                       // open visor
         else {                                        // incorrect row / column hit
@@ -932,14 +928,12 @@ void PB_GameMain(byte Switch) {
         PB_ChestMode = Switch-17;                     // Store row / column hit
         PB_SetChestLamps(Switch-28);                  // add the lamps for the hit row / column in PB_ChestLamp
         if (PB_LitChestLamps == 25) {                 // complete chest lit?
-          StopPlayingMusic();
           PB_OpenVisorProc(0);}                       // open visor
         else {
           PB_ClearChest();                            // turn off chest lamps
           PB_ChestLightHandler(1);}}}                 // call effect routine
     else {                                            // visor open
-      PB_SetChestLamps(Switch-28);                    // add the lamps for the hit row / column in PB_ChestLamp
-    }
+      PB_SetChestLamps(Switch-28);}                   // add the lamps for the hit row / column in PB_ChestLamp
     break;
   case 38:                                            // eject hole
     if (!PB_EjectIgnore) {
@@ -1153,11 +1147,6 @@ void PB_StartChestPattern(byte Dummy) {
   UNUSED(Dummy);
   LampPattern = LampColumns;
   PB_ChestLightHandler(100);}
-
-//void PB_VisorOpen2() {
-//  AfterSound = 0;
-//  PlayMusic(50, "1_02.snd");
-//  QueueNextMusic("1_02L.snd");}                       // queue looping part as next music to be played}
 
 void PB_VisorOpen() {                                 // Play sound and music when visor has opened
   PB_ChestLightHandler(0);                            // stop chest animation

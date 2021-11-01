@@ -1838,6 +1838,7 @@ void StrobeLights(byte State) {
   StrobeLightsTimer = ActivateTimer(30, State, StrobeLights);}
 
 void PlayMusic(byte Priority, const char* Filename) {
+  AfterMusicPending = 0;                              // TODO Check implications
   if (StartMusic) {                                   // already in startup phase?
     MusicFile.close();                                // close the previous file
     StartMusic = 0;                                   // cancel the startup
@@ -1928,6 +1929,7 @@ void FadeOutMusic(byte Speed) {
     StopPlayingMusic();}}
 
 void PlaySound(byte Priority, const char* Filename) {
+  AfterSoundPending = 0;                              // TODO Check implications
   if (StartSound) {
     SoundFile.close();
     StartSound = 0;
