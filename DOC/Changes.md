@@ -1,5 +1,11 @@
 # APC News and Changelog
 
+## TBD
+
+### New SW Version V0.23
+
+* Bugfix in the AfterMusic(Sound) handling. When the StopPlayingMusic(Sound) command was immediately followed by PlayMusic(Sound) then the first AfterMusic(Sound) event was skipped.
+
 ## July 2021
 
 I got a notification from Mouser that the TDA7496 audio amplifier IC won't be produced any longer.

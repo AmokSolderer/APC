@@ -102,7 +102,7 @@ byte SolMax = 24;                                     // maximum number of solen
 bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
 byte SolLatch = 0;                                    // Indicates which solenoid latches must be updated
 bool C_BankActive = false;                            // A/C relay currently doing C bank?
-byte SolWaiting[64][2];                               // list of waiting A/C solenoid requests
+byte SolWaiting[256][2];                              // list of waiting A/C solenoid requests
 byte ACselectRelay = 0;                               // solenoid number of the A/C select relay
 byte ActSolSlot = 0;                                  // currently processed slot in SolWaiting
 byte NextSolSlot = 0;                                 // next free slot in SolWaiting
@@ -1332,8 +1332,8 @@ void ActA_BankSol(byte Solenoid) {
     SolWaiting[NextSolSlot][0] = Solenoid;
     SolWaiting[NextSolSlot][1] = 0;
     NextSolSlot++;
-    if (NextSolSlot > 63) {
-      NextSolSlot = 0;}
+//    if (NextSolSlot > 63) {
+//      NextSolSlot = 0;}
     ActSolenoid(0);}
   else {
     ErrorHandler(28,0,Solenoid);}}
@@ -1343,8 +1343,8 @@ void ActC_BankSol(byte Solenoid) {
     SolWaiting[NextSolSlot][0] = Solenoid+24;
     SolWaiting[NextSolSlot][1] = 0;
     NextSolSlot++;
-    if (NextSolSlot > 63) {
-      NextSolSlot = 0;}
+//    if (NextSolSlot > 63) {
+//      NextSolSlot = 0;}
     ActSolenoid(0);}
   else {
     ErrorHandler(29,0,Solenoid);}}
@@ -1357,9 +1357,9 @@ void PlayFlashSequence(byte* Sequence) {              // prepare for playing a f
       x++;
       SolWaiting[NextSolSlot][1] = Sequence[x];
       x++;
-      NextSolSlot++;
-      if (NextSolSlot > 63) {
-        NextSolSlot = 0;}}
+      NextSolSlot++;}
+//      if (NextSolSlot > 63) {
+//        NextSolSlot = 0;}}
     else {
       ErrorHandler(30,0,0);
       break;}}
@@ -1382,7 +1382,7 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
             ActivateSolenoid(0, ACselectRelay);       // switch to C
             C_BankActive = true;}                     // signal it
           ActivateTimer(50, 1, ActSolenoid);}}        // wait 50ms for the relay to settle
-      else {
+      else {                                          // AC relay state is correct
         if (SolWaiting[ActSolSlot][0] < 25) {         // A bank solenoid
           ActivateSolenoid(0, SolWaiting[ActSolSlot][0]);}
         else {                                        // C bank solenoid
@@ -1403,9 +1403,9 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
           EndTimeAdder = 0;
           ActivateTimer(*(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1, 1, ActSolenoid);}
         SolWaiting[ActSolSlot][0] = 0;                // mark current slot as free
-        ActSolSlot++;                                 // increase slot number
-        if (ActSolSlot > 63) {                        // array end reached?
-          ActSolSlot = 0;}}                           // start from zero
+        ActSolSlot++;}                                 // increase slot number
+//        if (ActSolSlot > 63) {                        // array end reached?
+//          ActSolSlot = 0;}}                           // start from zero
       State = 1;}                                     // set routine state to active
     else if (C_BankActive){                           // nothing more to do and relay still active?
       if (EndTimeAdder) {                             // hold time of solenoid not yet over
