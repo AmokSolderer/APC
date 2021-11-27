@@ -53,6 +53,27 @@ const struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,
                                     // Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
                                     // Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
 
+const struct LampPat PB_MultiballPat[20] ={{320,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+                                           {320,0b01100000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+                                           {320,0b01110000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+                                           {320,0b11110000,0b00000000,0b00000000,0b00000010,0b00000000,0b00000000,0b00000000},
+                                           {320,0b11110000,0b00000000,0b00001000,0b00001010,0b00001000,0b00001000,0b00001000},
+                                           {320,0b11110000,0b00000000,0b00011000,0b00011010,0b00011000,0b00011000,0b00011000},
+                                           {320,0b11110000,0b00000000,0b00111000,0b00111010,0b00111000,0b00111000,0b00111000},
+                                           {320,0b11110000,0b00000000,0b01111000,0b01111110,0b01111000,0b01111000,0b01111000},
+                                           {320,0b11110000,0b00000000,0b11111000,0b11111110,0b11111001,0b11111000,0b11111000},
+                                           {320,0b11110000,0b00000001,0b11111000,0b11111110,0b11111011,0b11111000,0b11111000},
+                                           {320,0b11110000,0b00000001,0b11111000,0b11111110,0b11111111,0b11111000,0b11111000},
+                                           {320,0b11110000,0b00011001,0b11111000,0b11111110,0b11111111,0b11111000,0b11111000},
+                                           {320,0b11110000,0b00111111,0b11111000,0b11111110,0b11111111,0b11111000,0b11111000},
+                                           {320,0b11110000,0b00111111,0b11111100,0b11111110,0b11111111,0b11111100,0b11111000},
+                                           {320,0b11110000,0b01111111,0b11111110,0b11111110,0b11111111,0b11111100,0b11111000},
+                                           {320,0b11110000,0b11111111,0b11111111,0b11111110,0b11111111,0b11111111,0b11111011},
+                                           {320,0b11110011,0b11111111,0b11111111,0b11111110,0b11111111,0b11111111,0b11111011},
+                                           {320,0b11111111,0b11111111,0b11111111,0b11111110,0b11111111,0b11111111,0b11111011},
+                                           {320,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111011},
+                                           {0,0,0,0,0,0,0,0}};
+
 const struct LampPat PB_AttractPat1[5] = {{150,0b00000000,0b00000000,0b00000000,0b00000000,0b00100000,0b00000000,0b00000000},
                                           {150,0b00000000,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b00000000},
                                           {150,0b00000000,0b00000000,0b11111000,0b11111000,0b11011000,0b11111000,0b11111000},
@@ -106,30 +127,6 @@ const struct LampPat PB_AttractPat4[36] ={{150,0b10000001,0b00000101,0b10000000,
                                           {150,0b00100100,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {150,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {0,0,0,0,0,0,0,0}};
-
-const struct LampPat PB_OpenVisorPatOld[23] = {{100,0b00000000,0b00000000,0b00001000,0b00001000,0b00001000,0b00001000,0b00001000},
-                                            {100,0b00000000,0b00000000,0b00011000,0b00011000,0b00011000,0b00011000,0b00011000},
-                                            {100,0b00000000,0b00000000,0b00111000,0b00111000,0b00111000,0b00111000,0b00111000},
-                                            {100,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b01110000,0b01110000},
-                                            {100,0b00000000,0b00000000,0b11100000,0b11100000,0b11100000,0b11100000,0b11100000},
-                                            {100,0b00000000,0b00000000,0b11001000,0b11001000,0b11001000,0b11001000,0b11001000},
-                                            {100,0b00000000,0b00000000,0b10011000,0b10011000,0b10011000,0b10011000,0b10011000},
-                                            {100,0b00000000,0b00000000,0b00111000,0b00111000,0b00111000,0b00111000,0b00111000},
-                                            {100,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b01110000,0b01110000},
-                                            {100,0b00000000,0b00000000,0b11100000,0b11100000,0b11100000,0b11100000,0b11100000},
-                                            {100,0b00000000,0b00000000,0b11001000,0b11001000,0b11001000,0b11001000,0b11001000},
-                                            {100,0b00000000,0b00000000,0b10011000,0b10011000,0b10011000,0b10011000,0b10011000},
-                                            {100,0b00000000,0b00000000,0b00111000,0b00111000,0b00111000,0b00111000,0b00111000},
-                                            {100,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b01110000,0b01110000},
-                                            {100,0b00000000,0b00000000,0b11100000,0b11100000,0b11100000,0b11100000,0b11100000},
-                                            {100,0b00000000,0b00000000,0b11001000,0b11001000,0b11001000,0b11001000,0b11001000},
-                                            {100,0b00000000,0b00000000,0b10011000,0b10011000,0b10011000,0b10011000,0b10011000},
-                                            {100,0b00000000,0b00000000,0b00111000,0b00111000,0b00111000,0b00111000,0b00111000},
-                                            {100,0b00000000,0b00000000,0b01110000,0b01110000,0b01110000,0b01110000,0b01110000},
-                                            {100,0b00000000,0b00000000,0b11100000,0b11100000,0b11100000,0b11100000,0b11100000},
-                                            {100,0b00000000,0b00000000,0b11000000,0b11000000,0b11000000,0b11000000,0b11000000},
-                                            {100,0b00000000,0b00000000,0b10000000,0b10000000,0b10000000,0b10000000,0b10000000},
-                                            {0,0,0,0,0,0,0,0}};
                                       
 const struct LampFlow PB_AttractFlow[5] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{2,PB_AttractPat4},{0,0}};
 
@@ -1158,17 +1155,28 @@ void PB_OpenVisorProc(byte Dummy) {                   // measures to open the vi
   PB_ChestPatterns = (byte*)PB_OpenVisorPat;          // request chest animation
   PB_StartChestPattern(0);                            // start the player
   PlayFlashSequence((byte*) PB_OpenVisorSeq);         // play flasher sequence
-  //LampPattern = NoLamps;                              // set the pointer to the current series
   FlowRepeat = 1;                                     // set the repetitions
-//  LampReturn = PB_StartChestPattern;
-//  ShowLampPatterns(1);                                // start the player
   PB_CloseVisorFlag = false;
   ActivateSolenoid(4000, 11);                         // turn the backbox GI off
   ActivateTimer(2000, 0, PB_OpenVisor);
   ActivateTimer(3000, 1, PB_EyeBlink);
   ActivateSolenoid(0, 13);}
 
-void PB_EyeBlink(byte State) {                        // Blink lock flashers
+void PB_EyeFlash(byte State) {                        // Blink both lock flashers
+  static byte Timer = 0;
+  if ((State > 1) || ((State == 1) && !Timer)) {
+    ActivateSolenoid(80, 10);
+    ActivateSolenoid(80, 18);
+    Timer = ActivateTimer(135, 2, PB_EyeFlash);}
+  else {
+    if (!State) {
+      if (Timer) {
+        KillTimer(Timer);
+        Timer = 0;}
+      ReleaseSolenoid (10);
+      ReleaseSolenoid (18);}}}
+
+void PB_EyeBlink(byte State) {                        // Blink lock flashers alternately
   static byte Timer = 0;
   if ((State > 1) || ((State == 1) && !Timer)) {
     if (State == 2) {
@@ -1307,13 +1315,10 @@ void PB_ResetPlayersChestLamps(byte Player) {         // Reset the chest lamps f
 
 void PB_2ndLock() {                                   // start new music when 1 ball is locked
   AfterSound = 0;
+  ReleaseSolenoid(12);                                // turn on playfield GI
+  PB_EyeBlink(1);                                     // restart eye blinking
   PlayMusic(50, "1_03L.snd");
   QueueNextMusic("1_03L.snd");}                       // queue looping part as next music to be played
-
-//void PB_SolarValueMusic() {
-//  AfterSound = 0;
-//  PlayMusic(50, "1_03L.snd");
-//  QueueNextMusic("1_03L.snd");}                       // queue looping part as next music to be played
 
 void PB_HandleLock(byte State) {
   if (!State) {                                       // routine didn't call itself
@@ -1346,6 +1351,8 @@ void PB_HandleLock(byte State) {
             PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
           else {                                      // multiball not yet running
             StopPlayingMusic();
+            ActivateSolenoid(0, 12);                  // turn off playfield GI
+            PB_EyeBlink(0);                           // stop eye blinking
             AfterSound = PB_2ndLock;
             PlayFlashSequence((byte*) PB_Ball_Locked);
             PlaySound(51, "0_c9.snd");                // 'partial link-up'
@@ -1356,7 +1363,6 @@ void PB_HandleLock(byte State) {
             PB_EyeBlink(0);                           // turn off eye blinking
             ActivateSolenoid(0, 11);                  // turn off GI
             ActivateSolenoid(0, 12);
-            //ActivateSolenoid(0, 14);
             ActivateSolenoid(0, 9);
             ActivateSolenoid(0, 10);
             ActivateSolenoid(0, 18);
@@ -1364,6 +1370,7 @@ void PB_HandleLock(byte State) {
             PB_LampSweepActive = 2;
             PB_LampSweep(4);
             AfterSound = PB_Multiball;
+            PB_EyeFlash(1);
             PlaySound(50, "0_b0.snd");                // 'now I see you'
             Multiballs = 2;}                          // start multiball
           else {
@@ -1373,17 +1380,22 @@ void PB_Multiball() {
   PlayMusic(50, "1_04.snd");
   QueueNextMusic("1_04L.snd");                        // queue looping part as next music to be played}
   AfterSound = 0;
+  PB_EyeFlash(0);
+  PatPointer = PB_MultiballPat;                       // set the pointer to the lamp pattern
+  FlowRepeat = 1;                                     // set the repetitions
+  LampReturn = PB_Multiball2;                         // call this when the lamp pattern has run out
+  ShowLampPatterns(1);                                // play the lamp pattern
+  StrobeLights(30);                                   // and strobe the lights while doing so
   ReleaseSolenoid(9);
   ReleaseSolenoid(10);
   ReleaseSolenoid(18);
   ReleaseSolenoid(12);
-  LampPattern = AllLamps;
-  PlayFlashSequence((byte*) PB_MultiballSeq);
-  ActivateTimer(1500, 0, PB_Multiball2);}
+  PlayFlashSequence((byte*) PB_MultiballSeq);}
 
 void PB_Multiball2(byte Dummy) {
   UNUSED(Dummy);
   PB_EyeBlink(1);
+  StrobeLights(0);
   LampPattern = LampColumns;}
 
 void PB_LampSweep(byte Step) {

@@ -256,11 +256,9 @@ void AttractLampCycle(byte Event) {                   // play multiple lamp patt
   PatPointer = AttractFlow[AppByte2].FlowPat;         // set the pointer to the current series
   FlowRepeat = AttractFlow[AppByte2].Repeat;          // set the repetitions
   if (AppByte2 == 2) {
-    StrobeLightsTimer = ActivateTimer(30, 0, StrobeLights);}
+    StrobeLights(30);}
   else {
-    if (StrobeLightsTimer) {
-      KillTimer(StrobeLightsTimer);
-      StrobeLightsTimer = 0;}}
+    StrobeLights(0);}
   AppByte2++;                                         // increase counter
   if (!AttractFlow[AppByte2].Repeat) {                // repetitions of next series = 0?
     AppByte2 = 0;}                                    // reset counter
@@ -334,7 +332,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
     ActivateTimer(200, 0, CheckForLockedBalls);       // check again in 200ms
     break;
   case 72:                                            // Service Mode
-    StrobeLightsTimer = 0;
+    StrobeLights(0);
     RightMysteryTimer = 0;
     LeftMysteryTimer = 0;
     LockChaseLight(0);
@@ -350,7 +348,7 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
     break;
   case 3:                                             // start game
     if (CountBallsInTrunk() == 3 || (CountBallsInTrunk() == 2 && QuerySwitch(45))) { // Ball missing?
-      StrobeLightsTimer = 0;
+      StrobeLights(0);
       randomSeed(TC_ReadCV(TC2, 1));
       AfterSound = BK_StartBgMusic;
       PlayRandomSound(61, 5, (char *)BK_NewGameSounds);

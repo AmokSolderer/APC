@@ -78,8 +78,8 @@ byte DisplayUpper2[32];                               // second changeable displ
 byte DisplayLower2[32];
 const byte *LampPattern;                              // determines which lamp pattern is to be shown (for Lamps > 8)
 const byte *LampBuffer;
-byte StrobeLightsTimer = 0;
 byte LampColumns[8];                                  // stores the status of all lamp columns
+bool StrobeLightsOn;                                  // Indicates that the playfield lamps are strobing
 byte LEDCommandBytes = 0;                             // number of command bytes to be send to the LED exp board
 byte LEDCommand[20];                                  // command bytes to be send to the LED exp board
 byte LampWait = 1;                                    // counter for lamp waiting time until next column is applied
@@ -1802,7 +1802,7 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
     if (Step == 1) {
       Step++;}
     unsigned int Buffer = (PatPointer+Step-2)->Duration;  // buffer the duration for the current pattern
-    if (StrobeLightsTimer) {
+    if (StrobeLightsOn) {
       if (APC_settings[BackboxLamps]) {               // backbox lamps in last column?
         LampBuffer = ((PatPointer+Step-2)->Pattern);} // show the pattern
       else {                                          // backbox lamps in first column
@@ -1828,14 +1828,30 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
         KillTimer(Timer);
         Timer = 0;}}}}
 
-void StrobeLights(byte State) {
+void StrobeLights(byte State) {                       // switch between no lamps and normal lamp pattern (0-> stop, >2 -> strobe lamps with this pulse length
+  static byte Timer = 0;
+  static byte PulseLength;
   if (State) {
-    LampPattern = LampBuffer;                         // show the pattern
-    State = 0;}
+    if (State == 1) {
+      LampPattern = LampBuffer;
+      State = 2;}
+    else if (State == 2) {
+      LampPattern = NoLamps;
+      State = 1;}
+    else {
+      if (!Timer) {
+        StrobeLightsOn = true;
+        PulseLength = State;
+        State = 2;}
+      else {
+        return;}}
+    Timer = ActivateTimer(PulseLength, State, StrobeLights);}
   else {
-    LampPattern = NoLamps;
-    State = 1;}
-  StrobeLightsTimer = ActivateTimer(30, State, StrobeLights);}
+    if (Timer) {
+      StrobeLightsOn = false;
+      KillTimer(Timer);
+      Timer = 0;}
+    LampPattern = LampBuffer;}}
 
 void PlayMusic(byte Priority, const char* Filename) {
   AfterMusicPending = 0;                              // TODO Check implications

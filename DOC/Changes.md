@@ -6,6 +6,8 @@
 
 * Bugfix in the AfterMusic(Sound) handling. When the StopPlayingMusic(Sound) command was immediately followed by PlayMusic(Sound) then the first AfterMusic(Sound) event was skipped.
 
+* The maximum number of effects that can be handled by the PlayFlashSequence command has been increased from 64 to 256. 
+
 ## July 2021
 
 I got a notification from Mouser that the TDA7496 audio amplifier IC won't be produced any longer.
