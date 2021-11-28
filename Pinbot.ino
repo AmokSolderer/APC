@@ -1385,7 +1385,7 @@ void PB_Multiball() {
   FlowRepeat = 1;                                     // set the repetitions
   LampReturn = PB_Multiball2;                         // call this when the lamp pattern has run out
   ShowLampPatterns(1);                                // play the lamp pattern
-  StrobeLights(30);                                   // and strobe the lights while doing so
+  StrobeLights(3);                                   // and strobe the lights while doing so
   ReleaseSolenoid(9);
   ReleaseSolenoid(10);
   ReleaseSolenoid(18);

@@ -1828,24 +1828,24 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
         KillTimer(Timer);
         Timer = 0;}}}}
 
-void StrobeLights(byte State) {                       // switch between no lamps and normal lamp pattern (0-> stop, >2 -> strobe lamps with this pulse length
+void StrobeLights(byte Time) {                       // switch between no lamps and normal lamp pattern (0-> stop, >2 -> strobe lamps with this pulse length
   static byte Timer = 0;
   static byte PulseLength;
-  if (State) {
-    if (State == 1) {
+  if (Time) {
+    if (Time == 1) {
       LampPattern = LampBuffer;
-      State = 2;}
-    else if (State == 2) {
+      Time = 2;}
+    else if (Time == 2) {
       LampPattern = NoLamps;
-      State = 1;}
+      Time = 1;}
     else {
       if (!Timer) {
         StrobeLightsOn = true;
-        PulseLength = State;
-        State = 2;}
+        PulseLength = Time;
+        Time = 2;}
       else {
         return;}}
-    Timer = ActivateTimer(PulseLength, State, StrobeLights);}
+    Timer = ActivateTimer(10 * PulseLength, Time, StrobeLights);}
   else {
     if (Timer) {
       StrobeLightsOn = false;

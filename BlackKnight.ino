@@ -256,7 +256,7 @@ void AttractLampCycle(byte Event) {                   // play multiple lamp patt
   PatPointer = AttractFlow[AppByte2].FlowPat;         // set the pointer to the current series
   FlowRepeat = AttractFlow[AppByte2].Repeat;          // set the repetitions
   if (AppByte2 == 2) {
-    StrobeLights(30);}
+    StrobeLights(3);}
   else {
     StrobeLights(0);}
   AppByte2++;                                         // increase counter
