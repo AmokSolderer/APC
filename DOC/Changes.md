@@ -6,7 +6,9 @@
 
 * Bugfix in the AfterMusic(Sound) handling. When the StopPlayingMusic(Sound) command was immediately followed by PlayMusic(Sound) then the first AfterMusic(Sound) event was skipped.
 
-* The maximum number of effects that can be handled by the PlayFlashSequence command has been increased from 64 to 256. 
+* The maximum number of effects that can be handled by the PlayFlashSequence command has been increased from 64 to 256.
+
+* The StrobeLights() command has been reworked to make it more comfortable. You don't have to care about the StrobeLightsTimer any more. Just call Strobelights(Time) with Time > 2 to start lamp flickering with a period of (Time * 10ms). Call Strobelights(0) to turn off the flicker.
 
 ## July 2021
 

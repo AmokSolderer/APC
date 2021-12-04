@@ -69,7 +69,7 @@ To make the APC use this interface, you have to set the 'PinMame Sound' setting 
 ## Software preparation
 
 To run the software you need at least the Arduino IDE with the SPI and the SdFat libraries installed.  
-In the IDE you have to select 'Arduino DUE (Programming Port)' as your target board. Be sure to have all .ino files and the Sound.h from the APC repository in your working directory.
+In the IDE you have to select 'Arduino DUE (Programming Port)' as your target board. Be sure to have all .ino files and the Sound.h from the APC repository in your working directory. The name of this directory has to be APC.
 
 ## Sound
 
