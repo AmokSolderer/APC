@@ -1313,12 +1313,19 @@ void PB_ResetPlayersChestLamps(byte Player) {         // Reset the chest lamps f
   for (byte c=0; c<5; c++) {
     PB_ChestLamp[Player-1][c] = 0;}}
 
-void PB_2ndLock() {                                   // start new music when 1 ball is locked
+void PB_2ndLock2() {                                  // start new music when 1 ball is locked
   AfterSound = 0;
+  RestoreMusicVolume(25);                             // restore music volume after sound has been played
   ReleaseSolenoid(12);                                // turn on playfield GI
-  PB_EyeBlink(1);                                     // restart eye blinking
+  PB_EyeBlink(1);}                                    // restart eye blinking
+
+void PB_2ndLock(byte Dummy) {
+  UNUSED(Dummy);
+  AfterSound = PB_2ndLock2;
+  MusicVolume = 3;                                    // reduce music volume
   PlayMusic(50, "1_03L.snd");
-  QueueNextMusic("1_03L.snd");}                       // queue looping part as next music to be played
+  QueueNextMusic("1_03L.snd");                        // queue looping part as next music to be played
+  PlaySound(51, "0_c9.snd");}                         // 'partial link-up'
 
 void PB_HandleLock(byte State) {
   if (!State) {                                       // routine didn't call itself
@@ -1350,12 +1357,12 @@ void PB_HandleLock(byte State) {
             ActivateSolenoid(0, 13);                  // start visor motor
             PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
           else {                                      // multiball not yet running
-            StopPlayingMusic();
+            //StopPlayingMusic();
             ActivateSolenoid(0, 12);                  // turn off playfield GI
             PB_EyeBlink(0);                           // stop eye blinking
-            AfterSound = PB_2ndLock;
             PlayFlashSequence((byte*) PB_Ball_Locked);
-            PlaySound(51, "0_c9.snd");                // 'partial link-up'
+            PlayMusic(50, "1_80.snd");
+            ActivateTimer(1000, 0, PB_2ndLock);
             PB_GiveBall(1);}}                         // give second ball
         else {                                        // both balls in lock
           if (Multiballs == 1) {                      // multiball not yet running?
@@ -1376,14 +1383,37 @@ void PB_HandleLock(byte State) {
           else {
             PB_ClearOutLock(1);}}}}}}                 // eject 1 ball and close visor
 
+void PB_Multiball_RestoreLamps(byte Dummy) {
+  UNUSED(Dummy);
+  LampReturn = 0;
+  PB_EyeBlink(1);
+  StrobeLights(0);
+  LampPattern = LampColumns;}
+
+void PB_Multiball_SM(byte State) {                    // state machine for sound effects during multiball start
+  switch(State){
+  case 0:
+    PlayMusic(50, "1_04.snd");
+    QueueNextMusic("1_04L.snd");                      // queue looping part as next music to be played
+    PlaySound(51, "1_80.snd");
+    ActivateTimer(1000, 1, PB_Multiball_SM);
+    break;
+  case 1:
+    PlaySound(51, "1_80.snd");
+    ActivateTimer(2400, 2, PB_Multiball_SM);
+    break;
+  case 2:
+    PlaySound(51, "1_80.snd");
+    break;}}
+
 void PB_Multiball() {
-  PlayMusic(50, "1_04.snd");
-  QueueNextMusic("1_04L.snd");                        // queue looping part as next music to be played}
+  PlaySound(50, "1_80.snd");
   AfterSound = 0;
+  ActivateTimer(1200, 0, PB_Multiball_SM);
   PB_EyeFlash(0);
   PatPointer = PB_MultiballPat;                       // set the pointer to the lamp pattern
   FlowRepeat = 1;                                     // set the repetitions
-  LampReturn = PB_Multiball2;                         // call this when the lamp pattern has run out
+  LampReturn = PB_Multiball_RestoreLamps;             // call this when the lamp pattern has run out
   ShowLampPatterns(1);                                // play the lamp pattern
   StrobeLights(30);                                   // and strobe the lights while doing so
   ReleaseSolenoid(9);
@@ -1391,12 +1421,6 @@ void PB_Multiball() {
   ReleaseSolenoid(18);
   ReleaseSolenoid(12);
   PlayFlashSequence((byte*) PB_MultiballSeq);}
-
-void PB_Multiball2(byte Dummy) {
-  UNUSED(Dummy);
-  PB_EyeBlink(1);
-  StrobeLights(0);
-  LampPattern = LampColumns;}
 
 void PB_LampSweep(byte Step) {
   TurnOffLamp(Step);
