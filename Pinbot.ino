@@ -671,6 +671,24 @@ void PB_ClearOuthole(byte Event) {
     else {
       ActivateTimer(2000, 0, PB_ClearOuthole);}}}     // come back in 2s if outhole is blocked
 
+void PB_MultiballThunder2(byte Dummy) {
+  UNUSED(Dummy);
+  PlayMusic(50, "1_04.snd");                          // play non looping part of music track
+  QueueNextMusic("1_04L.snd");}                       // queue looping part as next music to be played
+
+void PB_MultiballThunder(byte State) {
+  if (State < 8) {
+    PlaySound(50, "0_d7.snd");
+    State++;
+    ActivateTimer(500, State, PB_MultiballThunder);}
+  else if (State < 9) {
+    MusicVolume = 0;
+    PlaySound(50, "0_fb.snd");
+    ActivateTimer(3300, 0, PB_MultiballThunder2);
+    ActivateTimer(6000, 9, PB_MultiballThunder);}
+  else {
+    StopPlayingSound();}}
+
 void PB_GameMain(byte Switch) {
   static bool RampSound;
   byte c=0;
@@ -947,8 +965,9 @@ void PB_GameMain(byte Switch) {
     uint16_t Buffer;
     PB_AddBonus(1);
     RampSound = false;
-    PlaySound(50, "1_a9.snd");
     if (PB_SolarValueTimer) {                         // solar ramp lit
+      MusicVolume = 3;                                // reduce music volume
+      PB_MultiballThunder(0);                         // play sound effects
       KillTimer(PB_SolarValueTimer);
       PB_SolarValueTimer = 0;
       RemoveBlinkLamp(35);
@@ -959,6 +978,7 @@ void PB_GameMain(byte Switch) {
       PB_SolarValue = 100;
       PB_ClearOutLock(0);}
     else {                                            // solar ramp not lit
+      PlaySound(50, "1_a9.snd");
       if (BonusMultiplier < 5) {                      // increase bonus multiplier
         TurnOnLamp(8+BonusMultiplier);                // turn on the corresponding lamp
         BonusMultiplier++;}
@@ -1584,7 +1604,8 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
       ReleaseSolenoid(11);                            // turn backbox GI back on
       if (APC_settings[Volume]) {
         analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
-      PlayMusic(50, "BS_S04.BIN");
+      PlayMusic(50, "1_0a.snd");                      // play non looping part of music track
+      QueueNextMusic("1_02L.snd");                    // queue looping part as next music to be played
       if (AppByte == 2) {                             // 2 balls detected in the trunk
         ActivateTimer(1000, 0, PB_BallEnd);}          // come back and check again
       else {
@@ -1599,7 +1620,7 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
       BlinkScore(0);                                  // stop score blinking
       PB_CycleDropLights(0);                          // stop the blinking drop target lights
       PB_ChestLightHandler(0);                        // stop chest animation
-      for (byte i=0; i<5; i++) {                           // turn off blinking row / column
+      for (byte i=0; i<5; i++) {                      // turn off blinking row / column
         RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
       PB_ClearChest();                                // turn off chest lamps
       if (!PB_ChestMode) {
@@ -1613,7 +1634,7 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
           RemoveBlinkLamp(15);}
         else {
           RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
-      for (byte i=0; i<4; i++) {                           // turn off all eject mode lamps
+      for (byte i=0; i<4; i++) {                      // turn off all eject mode lamps
         TurnOffLamp(13+i);}
       if (PB_BallSave == 2) {                         // ball saver has been triggered
         BlockOuthole = false;                         // remove outhole block
