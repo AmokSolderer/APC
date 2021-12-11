@@ -1155,7 +1155,7 @@ void PB_VisorOpen() {                                 // Play sound and music wh
   PB_ChestLightHandler(0);                            // stop chest animation
   PB_ChestPatterns = (byte*)PB_ExpandingSquares;
   PB_StartChestPattern(0);
-  RestoreMusicVolume(25);                             // restore music volume after sound has been played
+  RestoreMusicVolumeAfterSound(25);                   // restore music volume after sound has been played
   PlaySound(50, "0_db.snd");}                         // 'I am in your control'
 
 void PB_OpenVisorProc(byte Dummy) {                   // measures to open the visor
@@ -1372,7 +1372,7 @@ void PB_HandleLock(byte State) {
             PB_OpenVisorFlag = false;
             PB_EyeBlink(0);                           // turn off eye blinking
             PlaySound(50, "0_ae.snd");                // 'shoot for solar value'
-            RestoreMusicVolume(25);                   // restore music volume after sound has been played
+            RestoreMusicVolumeAfterSound(25);                   // restore music volume after sound has been played
             ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
             ActivateSolenoid(0, 13);                  // start visor motor
             PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
