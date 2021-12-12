@@ -130,6 +130,34 @@ const struct LampPat PB_AttractPat4[36] ={{150,0b10000001,0b00000101,0b10000000,
                                       
 const struct LampFlow PB_AttractFlow[5] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{2,PB_AttractPat4},{0,0}};
 
+const byte PB_GameStartPat[163] = {30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,0};
+
 const byte PB_OpenVisorPat[163] = {100,0b11111,0b11111,0b11111,0b11111,0b11111,
                                     50,0b00000,0b00000,0b00000,0b00000,0b00000,
                                     50,0b11111,0b11111,0b11111,0b11111,0b11111,
@@ -335,7 +363,7 @@ void PB_AttractModeSW(byte Select) {
     WriteLower("              ");
     Ball = 1;
     PB_AddPlayer();
-    for (byte i=1;i<5;i++) {                               // for all players
+    for (byte i=1;i<5;i++) {                          // for all players
       PB_Chest_Status[i] = 0;                         // reset the number of number of visor openings
       PB_ResetPlayersChestLamps(i);                   // reset the chest lamps
       PB_EnergyValue[i] = 25;                         // reset the energy value to 50K
@@ -354,9 +382,11 @@ void PB_AttractModeSW(byte Select) {
     if (!QuerySwitch(44)) {                           // ramp in up state?
       ActA_BankSol(6);}                               // put it down
     ActivateSolenoid(0, 12);                          // turn off playfield GI
+    PB_ChestMode = 20;                                // just play a chest pattern
+    PB_ChestPatterns = (byte*)PB_MultiballPat;        // set chest lamps pattern
+    PB_ChestLightHandler(100);                        // start player
     AfterSound = PB_GameStart;                        // release a new ball (2 expected balls in the trunk)
-    PlaySound(150, "0_ad.snd");
-    PB_ChestMode = 1;
+    PlaySound(51, "0_ad.snd");                        // 'Pinbot circuits activated'
     ActivateSolenoid(0, 23);                          // enable flipper fingers
     ActivateSolenoid(0, 24);
     break;
@@ -365,13 +395,13 @@ void PB_AttractModeSW(byte Select) {
     break;
   case 46:
     if (PB_CloseVisorFlag) {
-      PlaySound(50, "0_f3.snd");
+      PlaySound(51, "0_f3.snd");
       PB_CloseVisorFlag = false;
       ReleaseSolenoid(13);}
     break;
   case 47:
     if (PB_OpenVisorFlag) {
-      PlaySound(50, "0_f3.snd");
+      PlaySound(51, "0_f3.snd");
       PB_OpenVisorFlag = false;
       ReleaseSolenoid(13);}
     break;
@@ -538,7 +568,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         switch (Switch) {                             // was a skill shot target hit
         case 22:
           c = 20;
-          PlaySound(50, "0_91.snd");
+          PlaySound(50, "1_91.snd");
           break;
         case 23:
           c = 100;
@@ -546,7 +576,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
           break;
         case 24:
           c = 5;
-          PlaySound(50, "0_91.snd");
+          PlaySound(50, "1_91.snd");
           break;}
         PlayMusic(50, "1_01L.snd");                   // play music track
         QueueNextMusic("1_01L.snd");                  // track is looping so queue it also
