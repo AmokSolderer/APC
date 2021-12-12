@@ -12,7 +12,7 @@ byte PB_BallSave = 0;                                 // prevent immediate outla
 byte PB_ChestMode = 0;                                // current status of the chest and visor
 uint16_t PB_SolarValue = 100;                         // current solar value / 1000
 byte PB_SolarValueTimer = 0;                          // number of the timer for the solar value shot
-byte PB_DropTimer = 0;                                // number of the drop target timer
+//byte PB_DropTimer = 0;                                // number of the drop target timer
 byte PB_ChestLightsTimer = 0;                         // number of the timer controlling the chest lamp sequencing
 byte PB_LampSweepActive = 0;                          // determines whether the backbox lamp sweep is active
 byte PB_SkillMultiplier = 0;                          // Multiplier for the skill shot value
@@ -810,8 +810,6 @@ void PB_GameMain(byte Switch) {
     Serial.println((unsigned int)&DelaySolenoid);
     Serial.print("PB_EnergyOff = ");
     Serial.println((unsigned int)&PB_EnergyOff);
-    Serial.print("PB_ResetDropTargets = ");
-    Serial.println((unsigned int)&PB_ResetDropTargets);
     Serial.print("InLock = ");
     Serial.println((unsigned int)InLock);
     Serial.print("Multiballs = ");
@@ -1515,27 +1513,35 @@ void PB_ClearOutLock(byte CloseVisor) {
       ActivateTimer(2000, CloseVisor, PB_ClearOutLock);}}}
 
 void PB_HandleDropTargets(byte Target) {
-  PB_DropWait = false;                                // stop ignoring drop target switches
-  if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {  // all targets down
-    if (PB_DropTimer) {                               // any targets down before?
-      KillTimer(PB_DropTimer);                        // turn off timer
-      PB_DropTimer = 0;
-      PB_DropBlinkLamp = 41;
-      PB_CycleDropLights(1);                          // start the blinking drop target lights
-      RemoveBlinkLamp(17);}                           // stop blinking of timer lamp
-    Points[Player] += Multiballs * 25000;
-    ActA_BankSol(4);                                  // reset drop targets
-    PB_AdvancePlanet();}
+  static byte PB_DropTimer;
+  if (Target) {
+    PB_DropWait = false;                              // stop ignoring drop target switches
+    if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {  // all targets down
+      if (PB_DropTimer) {                             // any targets down before?
+        KillTimer(PB_DropTimer);                      // turn off timer
+        PB_DropTimer = 0;
+        PB_DropBlinkLamp = 41;
+        PB_CycleDropLights(1);                        // start the blinking drop target lights
+        RemoveBlinkLamp(17);}                         // stop blinking of timer lamp
+      Points[Player] += Multiballs * 25000;
+      ActA_BankSol(4);                                // reset drop targets
+      PB_AdvancePlanet();}
+    else {
+      if (!PB_DropTimer) {                            // first target hit
+        if (Target-8 == PB_DropBlinkLamp) {           // blinking target hit?
+          ActivateTimer(1000, 0, PB_RaiseRamp);       // raise ramp in 1s
+          AddBlinkLamp(34, 500);                      // blink energy lamp
+          PB_EnergyActive = true;                     // energy value on
+          ActivateTimer(game_settings[PB_EnergyTimer]*1000, 0, PB_EnergyOff);}
+        PB_CycleDropLights(0);                        // stop blinking of drop target lights
+        AddBlinkLamp(17, 500);                        // blink drop target timer lamp
+        PB_DropTimer = ActivateTimer(game_settings[PB_DropTime]*1000, 0, PB_HandleDropTargets);}}}
   else {
-    if (!PB_DropTimer) {                              // first target hit
-      if (Target-8 == PB_DropBlinkLamp) {             // blinking target hit?
-        ActivateTimer(1000, 0, PB_RaiseRamp);         // raise ramp in 1s
-        AddBlinkLamp(34, 500);                        // blink energy lamp
-        PB_EnergyActive = true;                       // energy value on
-        ActivateTimer(game_settings[PB_EnergyTimer]*1000, 0, PB_EnergyOff);}
-      PB_CycleDropLights(0);                          // stop blinking of drop target lights
-      AddBlinkLamp(17, 500);                          // blink drop target timer lamp
-      PB_DropTimer = ActivateTimer(game_settings[PB_DropTime]*1000, 0, PB_ResetDropTargets);}}}
+    RemoveBlinkLamp(17);                              // stop drop target timer lamp
+    PB_DropBlinkLamp = 41;
+    PB_DropTimer = 0;
+    PB_CycleDropLights(1);                            // start the blinking drop target lights
+    ActA_BankSol(4);}}                                // reset drop targets
 
 void PB_RaiseRamp(byte Dummy) {
   UNUSED (Dummy);
@@ -1557,13 +1563,13 @@ void PB_AdvancePlanet() {
         RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);} // stop blinking
       TurnOnLamp(PB_Planet[Player]+18);}}}
 
-void PB_ResetDropTargets(byte Dummy) {
-  UNUSED(Dummy);
-  RemoveBlinkLamp(17);                                // stop drop target timer lamp
-  PB_DropBlinkLamp = 41;
-  PB_DropTimer = 0;
-  PB_CycleDropLights(1);                              // start the blinking drop target lights
-  ActA_BankSol(4);}                                   // reset drop targets
+//void PB_ResetDropTargets(byte Dummy) {
+//  UNUSED(Dummy);
+//  RemoveBlinkLamp(17);                                // stop drop target timer lamp
+//  PB_DropBlinkLamp = 41;
+//  PB_DropTimer = 0;
+//  PB_CycleDropLights(1);                              // start the blinking drop target lights
+//  ActA_BankSol(4);}                                   // reset drop targets
 
 void PB_EnergyOff(byte Dummy) {
   UNUSED(Dummy);
