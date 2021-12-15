@@ -29,7 +29,7 @@ byte *PB_ChestPatterns;                               // pointer to the current 
 
 const unsigned int PB_SolTimes[32] = {50,30,30,70,50,200,30,30,0,0,0,0,0,0,150,150,50,0,50,50,50,50,0,0,50,150,150,150,150,150,150,150}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[10] = {3,4,5,17,19,22,6,20,21,0}; // coils to fire when the ball watchdog timer runs out
-const byte PB_OpenVisorSeq[151] = {26,1,29,9,15,4,12,4,16,2, 32,9,15,1,31,9,26,1,27,9, 29,2,28,9,12,5,32,2,29,7, 26,5,15,6,16,2,31,5,15,7, 26,4,27,7,29,6,28,9,12,4, 29,5,26,7,15,5,16,5,32,5, 15,4,31,5,26,7,29,5,27,11, 28,1,29,12,12,1,26,4,32,9, 15,3,31,7,16,5,27,5,15,3, 28,7,26,2,12,4,29,7,32,10 ,29,2,31,10,26,3,27,2,31,5, 15,2,28,9,16,4,12,7,15,1, 32,10,26,3,31,9,29,4,27,12, 28,2,29,10,26,2,12,3,15,7, 32,4,16,5,31,4,15,7,26,5,0};
+const byte PB_OpenVisorSeq[137] = {26,1,29,9,15,4,16,2, 32,9,15,1,31,9,26,1,27,9, 29,2,28,9,32,2,29,7, 26,5,15,6,16,2,31,5,15,7, 26,4,27,7,29,6,28,9, 29,5,26,7,15,5,16,5,32,5, 15,4,31,5,26,7,29,5,27,11, 28,1,29,12,26,4,32,9, 15,3,31,7,16,5,27,5,15,3, 28,7,26,2,29,7,32,10 ,29,2,31,10,26,3,27,2,31,5, 15,2,28,9,16,4,15,1, 32,10,26,3,31,9,29,4,27,12, 28,2,29,10,26,2,15,7, 32,4,16,5,31,4,15,7,26,5,0};
 const byte PB_MultiballSeq[69] = {16,5,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,7,0,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,5,15,10,8,0,0};
 const byte PB_ScoreEnergySeq[7] = {31,10,31,10,31,10,0};
 const byte PB_Ball_Locked[5] = {26,30,26,30,0};
@@ -130,33 +130,33 @@ const struct LampPat PB_AttractPat4[36] ={{150,0b10000001,0b00000101,0b10000000,
                                       
 const struct LampFlow PB_AttractFlow[5] = {{1,PB_AttractPat1},{10,PB_AttractPat2},{1,PB_AttractPat3},{2,PB_AttractPat4},{0,0}};
 
-const byte PB_GameStartPat[163] = {30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,
-                                   30,0b00000,0b00000,0b00000,0b00000,0b00000,
-                                   30,0b11111,0b11111,0b11111,0b11111,0b11111,0};
+const byte PB_GameStartPat[163] = {10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,
+                                   10,0b00000,0b00000,0b00000,0b00000,0b00000,
+                                   10,0b11111,0b11111,0b11111,0b11111,0b11111,0};
 
 const byte PB_OpenVisorPat[163] = {100,0b11111,0b11111,0b11111,0b11111,0b11111,
                                     50,0b00000,0b00000,0b00000,0b00000,0b00000,
@@ -383,7 +383,7 @@ void PB_AttractModeSW(byte Select) {
       ActA_BankSol(6);}                               // put it down
     ActivateSolenoid(0, 12);                          // turn off playfield GI
     PB_ChestMode = 20;                                // just play a chest pattern
-    PB_ChestPatterns = (byte*)PB_MultiballPat;        // set chest lamps pattern
+    PB_ChestPatterns = (byte*)PB_GameStartPat;        // set chest lamps pattern
     PB_ChestLightHandler(100);                        // start player
     AfterSound = PB_GameStart;                        // release a new ball (2 expected balls in the trunk)
     PlaySound(51, "0_ad.snd");                        // 'Pinbot circuits activated'
@@ -719,6 +719,14 @@ void PB_MultiballThunder(byte State) {
   else {
     StopPlayingSound();}}
 
+void PB_PlayEjectHoleSounds(byte Number) {
+  PlaySound(50, "1_83.snd");
+  Number--;
+  if (Number) {
+    ActivateTimer(400, Number, PB_PlayEjectHoleSounds);}
+  else {
+    PlaySound(50, "0_e9.snd");}}
+
 void PB_GameMain(byte Switch) {
   static bool RampSound;
   byte c=0;
@@ -969,10 +977,12 @@ void PB_GameMain(byte Switch) {
       PB_EjectIgnore = true;
       PB_AddBonus(1);
       if (PB_EjectMode[Player] < 5) {
+        PlaySound(50, "1_a3.snd");
         Points[Player] += 2000;
         ShowPoints(Player);
         ActivateTimer(1000, 3, PB_ClearEjectHole);}
       else {
+        ActivateTimer(400, 7, PB_PlayEjectHoleSounds);
         if (PB_EjectMode[Player] == 9) {
           RemoveBlinkLamp(15);
           TurnOnLamp(15);
@@ -1186,6 +1196,12 @@ void PB_VisorOpen() {                                 // Play sound and music wh
   RestoreMusicVolumeAfterSound(25);                   // restore music volume after sound has been played
   PlaySound(50, "0_db.snd");}                         // 'I am in your control'
 
+void PB_BlinkGI(byte Number) {
+  ActivateSolenoid(150, 12);
+  Number--;
+  if (Number) {
+    ActivateTimer(700, Number, PB_BlinkGI);}}
+
 void PB_OpenVisorProc(byte Dummy) {                   // measures to open the visor
   UNUSED(Dummy);
   PlaySound(50, "0_f1.snd");                          // moving visor sound
@@ -1206,6 +1222,7 @@ void PB_OpenVisorProc(byte Dummy) {                   // measures to open the vi
   FlowRepeat = 1;                                     // set the repetitions
   PB_CloseVisorFlag = false;
   ActivateSolenoid(4000, 11);                         // turn the backbox GI off
+  ActivateTimer(700, 7, PB_BlinkGI);                  // Blink with GI
   ActivateTimer(2000, 0, PB_OpenVisor);
   ActivateTimer(3000, 1, PB_EyeBlink);
   ActivateSolenoid(0, 13);}
@@ -1272,9 +1289,9 @@ void PB_ChestLightHandler(byte State) {               // handle chest lights tim
         PB_ChestMode++;                               // proceed to next row / column
         if (PB_ChestMode == 11) {                     // last row reached?
           PB_ChestMode = 1;}                          // start with first column
-        for (byte i=0; i<5; i++) {                         // turn off previous blinking row / column
+        for (byte i=0; i<5; i++) {                    // turn off previous blinking row / column
           RemoveBlinkLamp(PB_ChestRows[PB_ChestMode-1][i]);}
-        for (byte i=0; i<5; i++) {                         // turn on next blinking row / column
+        for (byte i=0; i<5; i++) {                    // turn on next blinking row / column
           AddBlinkLamp(PB_ChestRows[PB_ChestMode][i], 75);}
         Timer = ActivateTimer(1000, 12, PB_ChestLightHandler);}
       else {                                          // show ChestPatterns
@@ -1285,7 +1302,7 @@ void PB_ChestLightHandler(byte State) {               // handle chest lights tim
         for (byte x=0; x<5; x++) {                    // for all columns
           Mask = 1;                                   // mask to access the stored lamps for this player
           Buffer = PB_ChestPatterns[6*PatternCounter+x+1]; // buffer the current column
-          for (byte i=0; i<5; i++) {                       // for all rows
+          for (byte i=0; i<5; i++) {                  // for all rows
             if (PB_ChestLamp[Player-1][x] & Mask) {   // if the lamp is stored
               TurnOnLamp(28+8*x+i);}                  // turn it on
             else {                                    // otherwise
@@ -1400,7 +1417,7 @@ void PB_HandleLock(byte State) {
             PB_OpenVisorFlag = false;
             PB_EyeBlink(0);                           // turn off eye blinking
             PlaySound(50, "0_ae.snd");                // 'shoot for solar value'
-            RestoreMusicVolumeAfterSound(25);                   // restore music volume after sound has been played
+            RestoreMusicVolumeAfterSound(25);         // restore music volume after sound has been played
             ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
             ActivateSolenoid(0, 13);                  // start visor motor
             PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
@@ -1463,7 +1480,7 @@ void PB_Multiball() {
   FlowRepeat = 1;                                     // set the repetitions
   LampReturn = PB_Multiball_RestoreLamps;             // call this when the lamp pattern has run out
   ShowLampPatterns(1);                                // play the lamp pattern
-  StrobeLights(3);                                   // and strobe the lights while doing so
+  StrobeLights(3);                                    // and strobe the lights while doing so
   ReleaseSolenoid(9);
   ReleaseSolenoid(10);
   ReleaseSolenoid(18);
@@ -1573,9 +1590,9 @@ void PB_AdvancePlanet() {
 
 void PB_EnergyOff(byte Dummy) {
   UNUSED(Dummy);
-  RemoveBlinkLamp(34);                              // stop blinking of energy lamp
-  PB_EnergyActive = false;                          // energy value off
-  PB_DropRamp = true;}                              // ramp needs to be dropped
+  RemoveBlinkLamp(34);                                // stop blinking of energy lamp
+  PB_EnergyActive = false;                            // energy value off
+  PB_DropRamp = true;}                                // ramp needs to be dropped
 
 void PB_CycleDropLights(byte State) {                 // State = 0 -> Stop / State = 1 -> Start / State = 2 -> called by timer
   static byte Timer;
@@ -1617,7 +1634,7 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
   if ((AppByte == 5)||(AppByte < 3-Multiballs-InLock)) {  // something's wrong in the trunk
     InLock = 0;
     if (Multiballs == 1) {
-      for (byte i=0; i<2; i++) {                           // check how many balls are on the ball ramp
+      for (byte i=0; i<2; i++) {                      // check how many balls are on the ball ramp
         if (QuerySwitch(25+i)) {
           InLock++;}}}
     WriteLower(" BALL   ERROR ");
