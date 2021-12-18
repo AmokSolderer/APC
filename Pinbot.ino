@@ -40,7 +40,7 @@ const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
 const char PB_GameMusic[6][13] = {{"BS_M03.BIN"},{"BS_M05.BIN"},{"BS_M06.BIN"},{"BS_M07.BIN"},{"BS_M08.BIN"},{"BS_M09.BIN"}};
 const byte PB_ACselectRelay = 14;                     // solenoid number of the A/C select relay
 
-const struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,20},
+const struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,3,30},
     {" REACH PLANET ",HandleNumSetting,0,1,9},
     {" ENERGY TIMER ",HandleNumSetting,0,1,90},
     {"MULTBALVOLUME ",PB_HandleVolumeSetting,0,0,30},
@@ -238,7 +238,7 @@ const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
 #define PB_MultiballVolume 3                          // volume increase for the multiball
 #define PB_BallSaver 4                                // ball saver for the outlanes
 
-const byte PB_defaults[64] = {5,6,15,0,0,0,0,0,       // game default settings
+const byte PB_defaults[64] = {15,6,15,0,0,0,0,0,      // game default settings
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
@@ -1529,8 +1529,18 @@ void PB_ClearOutLock(byte CloseVisor) {
       ActivateSolenoid(0, 13);                        // activate visor motor
       ActivateTimer(2000, CloseVisor, PB_ClearOutLock);}}}
 
+void PB_DropTargetReset(byte Counter) {
+  PlaySound(51, "0_9b.snd");
+  Counter--;
+  if (Counter) {
+    ActivateTimer(110, Counter, PB_DropTargetReset);}
+  else {
+    PB_CycleDropLights(1);                          // start the blinking drop target lights
+    ActA_BankSol(4);}}                             // reset drop targets
+
 void PB_HandleDropTargets(byte Target) {
   static byte PB_DropTimer;
+  static uint16_t Time;
   if (Target) {
     PB_DropWait = false;                              // stop ignoring drop target switches
     if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {  // all targets down
@@ -1539,7 +1549,7 @@ void PB_HandleDropTargets(byte Target) {
         PB_DropTimer = 0;
         PB_DropBlinkLamp = 41;
         PB_CycleDropLights(1);                        // start the blinking drop target lights
-        RemoveBlinkLamp(17);}                         // stop blinking of timer lamp
+        TurnOffLamp(17);}                             // turn off timer lamp
       Points[Player] += Multiballs * 25000;
       ActA_BankSol(4);                                // reset drop targets
       PB_AdvancePlanet();}
@@ -1550,15 +1560,25 @@ void PB_HandleDropTargets(byte Target) {
           AddBlinkLamp(34, 500);                      // blink energy lamp
           PB_EnergyActive = true;                     // energy value on
           ActivateTimer(game_settings[PB_EnergyTimer]*1000, 0, PB_EnergyOff);}
+        Time = 0;                                     // reset drop target time
         PB_CycleDropLights(0);                        // stop blinking of drop target lights
-        AddBlinkLamp(17, 500);                        // blink drop target timer lamp
-        PB_DropTimer = ActivateTimer(game_settings[PB_DropTime]*1000, 0, PB_HandleDropTargets);}}}
+        PB_DropTimer = ActivateTimer(550, 0, PB_HandleDropTargets);}}}
   else {
-    RemoveBlinkLamp(17);                              // stop drop target timer lamp
-    PB_DropBlinkLamp = 41;
-    PB_DropTimer = 0;
-    PB_CycleDropLights(1);                            // start the blinking drop target lights
-    ActA_BankSol(4);}}                                // reset drop targets
+    uint16_t Length = 550 - (430 * Time / (1000 * game_settings[PB_DropTime])); // time to the next blink
+    Time = Time + Length;                             // total time
+    if (Time < 1000 * game_settings[PB_DropTime]) {   // total time < selected drop target time?
+      if (QueryLamp(17)) {
+        TurnOffLamp(17);
+        PlaySound(50, "0_a6.snd");}
+      else {
+        TurnOnLamp(17);
+        PlaySound(50, "0_a1.snd");}
+      PB_DropTimer = ActivateTimer(Length, 0, PB_HandleDropTargets);}
+    else {                                            // drop target time has run out
+      TurnOffLamp(17);
+      PB_DropBlinkLamp = 41;
+      PB_DropTimer = 0;
+      PB_DropTargetReset(5);}}}                       // initiate reset
 
 void PB_RaiseRamp(byte Dummy) {
   UNUSED (Dummy);
