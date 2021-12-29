@@ -50,8 +50,52 @@ const struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
 
-                                    // Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
-                                    // Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
+                                   // Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
+                                   // Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
+
+const struct LampPat PB_EnergyPat[43] =  {{80,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+                                          {80,0b01100000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+                                          {80,0b01110000,0b00000000,0b00000000,0b00000010,0b00000000,0b00000000,0b00000000},
+                                          {80,0b11110000,0b00000000,0b00000000,0b00000010,0b00000000,0b00000000,0b00000000},
+                                          {80,0b11110000,0b00000000,0b00001000,0b00000010,0b00000000,0b00000000,0b00000000},
+                                          {80,0b11110000,0b00000000,0b00011000,0b00001110,0b00000000,0b00000000,0b00000000},
+                                          {80,0b11110000,0b00000000,0b00111000,0b00011110,0b00001001,0b00000000,0b00000000},
+                                          {80,0b11110000,0b00000000,0b01111000,0b00111110,0b00011011,0b00001000,0b00000000},
+                                          {80,0b11110000,0b00000001,0b11111000,0b01111110,0b00111111,0b00011000,0b00001000},
+                                          {80,0b11110000,0b00000001,0b11111000,0b11111110,0b01111111,0b00111000,0b00011000},
+                                          {80,0b11110000,0b00000001,0b11111000,0b11111110,0b11111111,0b01111000,0b00111000},
+                                          {80,0b11110000,0b00000001,0b11111000,0b11111110,0b11111111,0b11111000,0b01111000},
+                                          {80,0b11110000,0b00001101,0b11111000,0b11111110,0b11111111,0b11111000,0b11111000},
+                                          {80,0b11110000,0b00001101,0b11111000,0b11111110,0b11111111,0b11111000,0b11111000},
+                                          {80,0b11110000,0b00011101,0b11111000,0b11111110,0b11111111,0b11111011,0b11111000},
+                                          {80,0b11110000,0b00111101,0b11111111,0b11111110,0b11111111,0b11111001,0b11111000},
+                                          {80,0b11110000,0b10111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111000},
+                                          {80,0b11110001,0b11111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111000},
+                                          {80,0b11111011,0b11111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111000},
+                                          {80,0b11111111,0b11111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111010},
+                                          {80,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111101,0b11111011},
+                                          {80,0b10111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111},
+                                          {80,0b10011111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111},
+                                          {80,0b10001111,0b11111111,0b11111111,0b11111101,0b11111111,0b11111111,0b11111111},
+                                          {80,0b00001111,0b11111111,0b11111111,0b11111101,0b11111111,0b11111111,0b11111111},
+                                          {80,0b00001111,0b11111111,0b11110111,0b11111101,0b11111111,0b11111111,0b11111111},
+                                          {80,0b00001111,0b11111111,0b11100111,0b11110001,0b11111111,0b11111111,0b11111111},
+                                          {80,0b00001111,0b11111111,0b11000111,0b11100001,0b11110110,0b11111111,0b11111111},
+                                          {80,0b00001111,0b11111111,0b10000111,0b11000001,0b11100100,0b11110111,0b11111111},
+                                          {80,0b00001111,0b11111110,0b00000111,0b10000001,0b11000000,0b11100111,0b11110111},
+                                          {80,0b00001111,0b11111110,0b00000111,0b00000001,0b10000000,0b11000111,0b11100111},
+                                          {80,0b00001111,0b11111110,0b00000111,0b00000001,0b00000000,0b10000111,0b11000111},
+                                          {80,0b00001111,0b11111110,0b00000111,0b00000001,0b00000000,0b00000111,0b10000111},
+                                          {80,0b00001111,0b11110010,0b00000111,0b00000001,0b00000000,0b00000111,0b00000111},
+                                          {80,0b00001111,0b11110010,0b00000111,0b00000001,0b00000000,0b00000111,0b00000111},
+                                          {80,0b00001111,0b11100010,0b00000111,0b00000001,0b00000000,0b00000100,0b00000111},
+                                          {80,0b00001111,0b11000010,0b00000000,0b00000001,0b00000000,0b00000110,0b00000111},
+                                          {80,0b00001111,0b01000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000111},
+                                          {80,0b00001110,0b00000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000111},
+                                          {80,0b00000100,0b00000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000111},
+                                          {80,0b00000000,0b00000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000101},
+                                          {80,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000010,0b00000100},
+                                          {0,0,0,0,0,0,0,0}};
 
 const struct LampPat PB_MultiballPat[20] ={{320,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                            {320,0b01100000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
@@ -234,7 +278,7 @@ const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
                                                       // offsets of settings in the settings array
 #define PB_DropTime 0                                 // drop target down time setting
 #define PB_ReachPlanet 1                              // target planet setting
-#define PB_EnergyTimer 2                              // energy timer setting
+#define PB_EnergyTime 2                               // energy timer setting
 #define PB_MultiballVolume 3                          // volume increase for the multiball
 #define PB_BallSaver 4                                // ball saver for the outlanes
 
@@ -727,6 +771,13 @@ void PB_PlayEjectHoleSounds(byte Number) {
   else {
     PlaySound(50, "0_e9.snd");}}
 
+void PB_EnergyRestoreLamps(byte Dummy) {
+  UNUSED(Dummy);
+  LampReturn = 0;
+  AfterSound = 0;
+  RestoreMusicVolume(10);
+  LampPattern = LampColumns;}
+
 void PB_GameMain(byte Switch) {
   static bool RampSound;
   byte c=0;
@@ -816,8 +867,6 @@ void PB_GameMain(byte Switch) {
     Serial.println((unsigned int)&PB_ClearOutLock);
     Serial.print("DelaySolenoid = ");
     Serial.println((unsigned int)&DelaySolenoid);
-    Serial.print("PB_EnergyOff = ");
-    Serial.println((unsigned int)&PB_EnergyOff);
     Serial.print("InLock = ");
     Serial.println((unsigned int)InLock);
     Serial.print("Multiballs = ");
@@ -1046,9 +1095,15 @@ void PB_GameMain(byte Switch) {
       WriteUpper2(" ENERGY VALUE ");
       WriteLower2("              ");
       ShowNumber(31, PB_EnergyValue[Player]*2000);
+      PlaySound(51, "0_ca.snd");
+      QueueNextSound("0_46.snd");
       PlayFlashSequence((byte*) PB_ScoreEnergySeq);
+      PatPointer = PB_EnergyPat;                      // set the pointer to the lamp pattern
+      FlowRepeat = 7;                                 // set the repetitions
+      LampReturn = PB_EnergyRestoreLamps;             // call this when the lamp pattern has run out
+      ShowLampPatterns(1);                            // play the lamp pattern
       ShowMessage(3);}
-    PB_EnergyOff(0);
+    PB_HandleEnergy(0);                               // turn off energy lamp and sounds
     break;
   case 46:                                            // visor closed
     if (PB_CloseVisorFlag) {
@@ -1535,12 +1590,53 @@ void PB_DropTargetReset(byte Counter) {
   if (Counter) {
     ActivateTimer(110, Counter, PB_DropTargetReset);}
   else {
-    PB_CycleDropLights(1);                          // start the blinking drop target lights
-    ActA_BankSol(4);}}                             // reset drop targets
+    PB_CycleDropLights(1);                            // start the blinking drop target lights
+    ActA_BankSol(4);}}                                // reset drop targets
+
+void PB_EnergyReset(byte Counter) {
+  PlaySound(51, "0_9b.snd");
+  Counter--;
+  if (Counter) {
+    ActivateTimer(110, Counter, PB_EnergyReset);}
+  else {
+    PB_EnergyActive = false;                        // energy value off
+    PB_DropRamp = true;}}                           // ramp needs to be dropped
+
+void PB_TurnOffLamp(byte Lamp) {
+  TurnOffLamp(Lamp);}
+
+void PB_HandleEnergy(byte State) {
+  static byte Timer = 0;
+  static uint16_t Time;
+  if ((State > 1) || ((State == 1) && !Timer)) {
+    if (State == 1) {
+      Time = 0;}
+    uint16_t Length = 550 - (430 * Time / (1000 * game_settings[PB_EnergyTime])); // time to the next blink
+    Time = Time + Length;                             // total time
+    if (Time < 1000 * game_settings[PB_EnergyTime]) { // total time < selected energy time?
+      TurnOnLamp(34);
+      PlaySound(50, "0_a2.snd");
+      ActivateTimer(Length/2, 34, PB_TurnOffLamp);
+      Timer = ActivateTimer(Length, 2, PB_HandleEnergy);}
+    else {                                            // energy time has run out
+      RestoreMusicVolume(10);
+      TurnOffLamp(34);
+      Timer = 0;
+      PB_EnergyReset(5);}}
+  else {
+    if (!State) {
+      TurnOffLamp(34);
+      RestoreMusicVolume(10);
+      if (Timer) {
+        KillTimer(Timer);}
+      Timer = 0;
+      PB_EnergyActive = false;                        // energy value off
+      PB_DropRamp = true;}}}                          // ramp needs to be dropped
 
 void PB_HandleDropTargets(byte Target) {
   static byte PB_DropTimer;
   static uint16_t Time;
+  static bool SoundState;
   if (Target) {
     PB_DropWait = false;                              // stop ignoring drop target switches
     if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {  // all targets down
@@ -1556,23 +1652,28 @@ void PB_HandleDropTargets(byte Target) {
     else {
       if (!PB_DropTimer) {                            // first target hit
         if (Target-8 == PB_DropBlinkLamp) {           // blinking target hit?
+          MusicVolume = 4;                              // reduce music volume
+          PlaySound(50, "0_71.snd");
           ActivateTimer(1000, 0, PB_RaiseRamp);       // raise ramp in 1s
-          AddBlinkLamp(34, 500);                      // blink energy lamp
           PB_EnergyActive = true;                     // energy value on
-          ActivateTimer(game_settings[PB_EnergyTimer]*1000, 0, PB_EnergyOff);}
+          ActivateTimer(500, 1, PB_HandleEnergy);}
         Time = 0;                                     // reset drop target time
+        SoundState = true;
         PB_CycleDropLights(0);                        // stop blinking of drop target lights
         PB_DropTimer = ActivateTimer(550, 0, PB_HandleDropTargets);}}}
   else {
     uint16_t Length = 550 - (430 * Time / (1000 * game_settings[PB_DropTime])); // time to the next blink
     Time = Time + Length;                             // total time
     if (Time < 1000 * game_settings[PB_DropTime]) {   // total time < selected drop target time?
-      if (QueryLamp(17)) {
-        TurnOffLamp(17);
-        PlaySound(50, "0_a6.snd");}
-      else {
-        TurnOnLamp(17);
-        PlaySound(50, "0_a1.snd");}
+      TurnOnLamp(17);
+      if (!PB_EnergyActive) {
+        if (SoundState) {
+          SoundState = false;
+          PlaySound(50, "0_a6.snd");}
+        else {
+          SoundState = true;
+          PlaySound(50, "0_a1.snd");}}
+      ActivateTimer(Length/2, 17, PB_TurnOffLamp);
       PB_DropTimer = ActivateTimer(Length, 0, PB_HandleDropTargets);}
     else {                                            // drop target time has run out
       TurnOffLamp(17);
@@ -1608,11 +1709,11 @@ void PB_AdvancePlanet() {
 //  PB_CycleDropLights(1);                              // start the blinking drop target lights
 //  ActA_BankSol(4);}                                   // reset drop targets
 
-void PB_EnergyOff(byte Dummy) {
-  UNUSED(Dummy);
-  RemoveBlinkLamp(34);                                // stop blinking of energy lamp
-  PB_EnergyActive = false;                            // energy value off
-  PB_DropRamp = true;}                                // ramp needs to be dropped
+//void PB_EnergyOff(byte Dummy) {
+//  UNUSED(Dummy);
+//  RemoveBlinkLamp(34);                                // stop blinking of energy lamp
+//  PB_EnergyActive = false;                            // energy value off
+//  PB_DropRamp = true;}                                // ramp needs to be dropped
 
 void PB_CycleDropLights(byte State) {                 // State = 0 -> Stop / State = 1 -> Start / State = 2 -> called by timer
   static byte Timer;

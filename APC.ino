@@ -1811,7 +1811,7 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
       if (APC_settings[BackboxLamps]) {               // backbox lamps in last column?
         LampPattern = ((PatPointer+Step-2)->Pattern);}// show the pattern
       else {                                          // backbox lamps in first column
-        LampPattern = ((PatPointer+Step-2)->Pattern)-1;}}// show the pattern shifted by onde column
+        LampPattern = ((PatPointer+Step-2)->Pattern)-1;}}// show the pattern shifted by one column
     Step++;                                           // increase the pattern number
     if (!((PatPointer+Step-2)->Duration)) {           // if the duration for the next pattern is 0
       Step = 2;                                       // reset the pattern
