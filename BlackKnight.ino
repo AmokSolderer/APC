@@ -264,6 +264,28 @@ void AttractLampCycle(byte Event) {                   // play multiple lamp patt
     AppByte2 = 0;}                                    // reset counter
   ShowLampPatterns(1);}                               // call the player
 
+void BK_AddScrollUpper(byte Step) {                   // shifts Step times and adds the text being in DisplayUpper2
+  static byte Position = 0;                           // stores the position in DisplayUpper2
+  byte Buffer1 = DisplayUpper[18];                    // get the leftmost character of the right display
+  byte Buffer2 = DisplayUpper[19];
+  for (byte i=1; i<8; i++) {                          // left display
+    DisplayUpper[2*i] = DisplayUpper[2*i+2];
+    DisplayUpper[2*i+1] = DisplayUpper[2*i+3];
+    DisplayUpper[2*i+16] = DisplayUpper[2*i+18];
+    DisplayUpper[2*i+17] = DisplayUpper[2*i+19];}
+  DisplayUpper[14] = Buffer1;
+  DisplayUpper[15] = Buffer2;
+  DisplayUpper[30] = DisplayUpper2[2*Position];       // fill the rightmost character of the right display
+  DisplayUpper[31] = DisplayUpper2[2*Position+1];
+  Step--;
+  if (Step) {
+    Position++;
+    if (Position == 8) {
+      Position++;}
+    ActivateTimer(50, Step, BK_AddScrollUpper);}
+  else {
+    Position = 0;}}
+
 void AttractScroll(byte Dummy) {
   UNUSED(Dummy);
   WriteUpper2("    APC       ");
@@ -388,7 +410,6 @@ void AttractModeSW(byte Event) {                      // Attract Mode switch beh
         LockedBalls[i] = 0;
         Points[i] = 0;}
       NewBall(3);                                     // release a new ball (3 expected balls in the trunk)
-      //digitalWrite(SpcSolEnable, HIGH);               // enable special solenoids
       ActivateSolenoid(0, 23);                        // enable flipper fingers
       ActivateSolenoid(0, 24);}}}
 
@@ -932,8 +953,7 @@ void ClearOuthole(byte Event) {
         LockedBalls[Player]--;                        // decrease number of locked balls
         if (LockedBalls[Player]) {                    // if player had two locked balls
           RemoveBlinkLamp(40);                        // remove the blinking lock arrow
-          LockChaseLight(1);}} // and restart the chase light
-      // ActivateTimer(1000, InLock, LastChanceLock);}
+          LockChaseLight(1);}}                        // and restart the chase light
       else {
         ActivateTimer(2000, 0, BallEnd);}}
     else {
@@ -1086,8 +1106,10 @@ void BallEnd2(byte Balls) {
         else {
           BallEnd3(Balls);}}
       else {                                          // it's a 4 Alpha + Credit display
+        if (APC_settings[Volume]) {
+          analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[BK_MultiballVolume]);} // increase volume
         PlayMusic(51, "BK_M02.snd");
-        CheckHighScore(Player);}}                     // call high score handling
+        CheckHighScore(0);}}                          // call high score handling
     else {
       BallEnd3(Balls);}}}
 
@@ -1117,63 +1139,79 @@ void BK_MuteSound(byte Dummy) {
   digitalWrite(VolumePin,HIGH);
   AfterSound = 0;}
 
-void CheckHighScore(byte Player) {                    // show congratulations
-  LampPattern = NoLamps;
-  ActivateSolenoid(0, 11);                            // turn off GI
-  ReleaseSolenoid(23);                                // disable flipper fingers
-  ReleaseSolenoid(24);
-  Points[0] = Points[1];
-  Points[1] = Points[Player];
-  WriteUpper("        GREAT ");
-  WriteLower(" SCORE PLAYER ");
-  ShowPoints(1);
-  Points[1] = Points[0];
-  *(DisplayLower+30) = DispPattern2[32 + 2 * Player];
-  *(DisplayLower+31) = DispPattern2[33 + 2 * Player];
-  Points[0] = Points[Player];
-  ByteBuffer = 0;
-  ActivateTimer(5000, Player, ShowInitialsMessage);}
-
-void ShowInitialsMessage(byte Player) {
-  switch (ByteBuffer) {
+void CheckHighScore(byte State) {                     // show congratulations
+  switch (State) {
   case 0:
-    WriteUpper("USE           ");
-    WriteLower("              ");
+    LampPattern = NoLamps;
+    ActivateSolenoid(0, 11);                            // turn off GI
+    ReleaseSolenoid(23);                                // disable flipper fingers
+    ReleaseSolenoid(24);
+    DisplayScore(1, Points[Player]);
+    DisplayScore(2, Points[Player]);
+    DisplayScore(3, Points[Player]);
+    DisplayScore(4, Points[Player]);
+    ActivateTimer(2000, 1, CheckHighScore);
     break;
   case 1:
-    WriteUpper("USE MAGNA     ");
+    WriteUpper2(" GREAT        ");
+    ActivateTimer(50, 0, ScrollUpper);
+    ActivateTimer(1000, 2, CheckHighScore);
     break;
   case 2:
-    WriteUpper("USE MAGNA SAVE");
+    WriteUpper2("  SCORE       ");
+    AddScrollUpper(0);
+    ActivateTimer(2000, 3, CheckHighScore);
     break;
   case 3:
-    WriteLower("BUTTONS       ");
+    WriteUpper2(" USE          ");
+    ActivateTimer(50, 0, ScrollUpper);
+    ActivateTimer(1200, 4, CheckHighScore);
     break;
   case 4:
-    WriteLower("BUTTONS   TO  ");
+    WriteUpper2("   MAGNA      ");
+    AddScrollUpper(0);
+    ActivateTimer(1200, 5, CheckHighScore);
     break;
   case 5:
-    WriteUpper("ENTER         ");
-    WriteLower("              ");
+    WriteUpper2(" SAVE         ");
+    BK_AddScrollUpper(7);
+    ActivateTimer(1200, 6, CheckHighScore);
     break;
   case 6:
-    WriteUpper("ENTER INITIALS");
+    WriteUpper2("BUTTONS       ");
+    BK_AddScrollUpper(8);
+    ActivateTimer(1200, 7, CheckHighScore);
     break;
   case 7:
-    WriteLower("PLAYER        ");
-    *(DisplayLower+14) = DispPattern2[32 + 2 * Player];
-    *(DisplayLower+15) = DispPattern2[33 + 2 * Player];
-    break;}
-  if (ByteBuffer == 7) {
+    WriteUpper2("  TO          ");
+    BK_AddScrollUpper(7);
+    ActivateTimer(1200, 8, CheckHighScore);
+    break;
+  case 8:
+    WriteUpper2("ENTER         ");
+    BK_AddScrollUpper(7);
+    ActivateTimer(1200, 9, CheckHighScore);
+    break;
+  case 9:
+    WriteUpper2(" NAME         ");
+    BK_AddScrollUpper(8);
+    ActivateTimer(1200, 10, CheckHighScore);
+    break;
+  case 10:
+    WriteLower2("PLAYER        ");
+    *(DisplayLower2+14) = DispPattern2[32 + 2 * Player];
+    *(DisplayLower2+15) = DispPattern2[33 + 2 * Player];
+    ScrollLower(0);
+    ActivateTimer(1000, 11, CheckHighScore);
+    break;
+  case 11:
     Switch_Pressed = EnterInitials;
     EnterIni[0] = 'A';
     EnterIni[1] = 'A';
     EnterIni[2] = 'A';
     ByteBuffer = 0;
-    ActivateTimer(500, 1, BlinkInitial);}
-  else {
-    ByteBuffer++;
-    ActivateTimer(1000, Player, ShowInitialsMessage);}}
+    ActivateTimer(500, 1, BlinkInitial);
+    break;}}
 
 void BlinkInitial(byte State) {                       // blink actual character
   if (State) {
@@ -1199,6 +1237,9 @@ void EnterInitials(byte Event) {
       *(DisplayLower+28) = DispPattern2[32 + 2 * (ByteBuffer2+1)];
       *(DisplayLower+29) = DispPattern2[33 + 2 * (ByteBuffer2+1)];
       LampPattern = LampColumns;
+      if (APC_settings[Volume]) {
+        analogWrite(VolumePin,255-APC_settings[Volume]);} // restore volume
+      ReleaseSolenoid(11);                            // turn GI back on
       ActivateSolenoid(0, 23);                        // enable flipper fingers
       ActivateSolenoid(0, 24);
       ActivateTimer(2000, 0, BallEnd3);}
@@ -1346,7 +1387,7 @@ void HandleDropTargets(byte Event) {
                 TurnOffLamp(DropTargets[Counter*2+i]+1);
                 TurnOffLamp(DropTargets[Counter*2+i]+2);}
               TurnOnLamp(41);                         // turn on the upper extra ball lamp
-              PlaySound(52, "0_32.snd");            // cheering
+              PlaySound(52, "0_32.snd");              // cheering
               PatPointer = ExBallPat;
               FlowRepeat = 10;
               LampReturn = BK_StopExballParty;
@@ -1356,7 +1397,6 @@ void HandleDropTargets(byte Event) {
   else {                                              // not all targets cleared
     if (QuerySwitch(DropTargets[Event]) || (QuerySwitch(DropTargets[Event]+1)) || (QuerySwitch(DropTargets[Event]+2))) { // any target down? (or false alarm)
       if (!DropTimer[Event]) {                        // no timer running for this bank already?
-        //StopPlayingMusic();
         PlayMusic(51, "BK_E14.snd");
         DropTimer[Event] = ActivateTimer(6000, Event, BlinkFaster); // start one
         AddBlinkLamp(DropLamp+Event, 500);}}}}        // and let the bank lamp blink
