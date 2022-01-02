@@ -23,7 +23,7 @@ bool DropWait[5];                                     // indicates that a waitin
 const byte BallSearchCoils[12] = {1,8,10,9,2,3,4,5,7,19,15,0}; // coils to fire when the ball watchdog timer runs out
 const unsigned int BK_SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,0,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
 const char BK_TestSounds[16][15] = {{"0_2f.snd"},{"0_30.snd"},{"0_31.snd"},{"0_32.snd"},{"0_33.snd"},{"0_15.snd"},{"0_36.snd"},{"0_37.snd"},
-    {"0_38.snd"},{"0_39.snd"},{"0_3a.snd"},{"0_3b.snd"},{"0_3c.snd"},{"BK_E14.bin"},{"0_3e.snd"},0};
+    {"0_38.snd"},{"0_39.snd"},{"0_3a.snd"},{"0_3b.snd"},{"0_3c.snd"},{"BK_E14.snd"},{"0_3e.snd"},0};
 
                                                       // offsets of settings in the settings array
 #define TimedMagna 0                                  // Timed Magna saves?
@@ -718,7 +718,7 @@ void GameMain(byte Event) {                           // game switch events
   case 14:                                            // right ramp
     if (LeftMysteryTimer) {                           // left mystery active?
       //StopPlayingMusic();
-      PlaySound(52, "BK_E19.bin");
+      PlaySound(52, "BK_E19.snd");
       ByteBuffer = ((byte)(TimerValue[LeftMysteryTimer])/2.56);
       if (ByteBuffer < 20) {
         Points[Player] += Multiballs * 20000;}        // at least 20000 points
@@ -740,7 +740,7 @@ void GameMain(byte Event) {                           // game switch events
     if (RightAfterMagna) {                            // if it's right after using the right magna save
       if (!game_settings[MultiballJackpot] || Multiballs == 1) {
         StopPlayingMusic();}
-      PlaySound(51, "BK_E20.bin");
+      PlaySound(51, "BK_E20.snd");
       AddBonus(5);
       Points[Player] += Multiballs * 10000;}          // add 10000 points
     else {
@@ -760,7 +760,7 @@ void GameMain(byte Event) {                           // game switch events
     if (LeftAfterMagna) {                             // if it's right after using the right magna save
       if (!game_settings[MultiballJackpot] || Multiballs == 1) {
         StopPlayingMusic();}
-      PlaySound(51, "BK_E20.bin");
+      PlaySound(51, "BK_E20.snd");
       AddBonus(5);
       Points[Player] += Multiballs * 10000;}          // add 10000 points
     else {
@@ -1078,9 +1078,16 @@ void BallEnd2(byte Balls) {
     BlockOuthole = false;}                            // remove outhole block
   else {                                              // Player has no extra balls
     if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
-      PlaySound(55, "0_24.snd");
       Switch_Pressed = DummyProcess;                  // Switches do nothing
-      CheckHighScore(Player);}
+      if (APC_settings[DisplayType]) {                // not a 4 Alpha + Credit display?
+        if (Points[Player] > HallOfFame.Scores[0]) {  // only top score counts
+          PlaySound(55, "0_24.snd");
+          HallOfFame.Scores[0] = Points[Player];}
+        else {
+          BallEnd3(Balls);}}
+      else {                                          // it's a 4 Alpha + Credit display
+        PlayMusic(51, "BK_M02.snd");
+        CheckHighScore(Player);}}                     // call high score handling
     else {
       BallEnd3(Balls);}}}
 
@@ -1112,6 +1119,7 @@ void BK_MuteSound(byte Dummy) {
 
 void CheckHighScore(byte Player) {                    // show congratulations
   LampPattern = NoLamps;
+  ActivateSolenoid(0, 11);                            // turn off GI
   ReleaseSolenoid(23);                                // disable flipper fingers
   ReleaseSolenoid(24);
   Points[0] = Points[1];
@@ -1349,7 +1357,7 @@ void HandleDropTargets(byte Event) {
     if (QuerySwitch(DropTargets[Event]) || (QuerySwitch(DropTargets[Event]+1)) || (QuerySwitch(DropTargets[Event]+2))) { // any target down? (or false alarm)
       if (!DropTimer[Event]) {                        // no timer running for this bank already?
         //StopPlayingMusic();
-        PlayMusic(51, "BK_E14.bin");
+        PlayMusic(51, "BK_E14.snd");
         DropTimer[Event] = ActivateTimer(6000, Event, BlinkFaster); // start one
         AddBlinkLamp(DropLamp+Event, 500);}}}}        // and let the bank lamp blink
 
@@ -1666,7 +1674,7 @@ void BK_StartJackpotMusic(byte Dummy) {
   UNUSED(Dummy);
   if (APC_settings[Volume]) {
     analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[BK_MultiballVolume]);} // increase volume
-  PlayMusic(70, "BK_M01.bin");
+  PlayMusic(70, "BK_M01.snd");
   BK_Jackpot(1);
   AfterSound = BK_PlayBgMusic;}
 
