@@ -137,7 +137,7 @@ bool PlayingMusic = false;                            // StartMusic done -> cont
 byte MusicVolume = 0;                                 // 0 = max volume
 File MusicFile;                                       // file handle for the music file (SD)
 byte AfterMusicPending = 0;                           // indicates an after music event -> 0 - no event, 1 - event pending, 2 - event is blocked by StopPlayingMusic
-void (*AfterMusic)() = 0;                             // program to execute after music file has ended
+void (*AfterMusic)(byte) = 0;                         // program to execute after music file has ended
 byte MusicPriority = 0;                               // stores the priority of the music file currently being played
 byte SBP = 0;                                         // Sound Buffer Pointer - next block to write to inside of the music buffer
 byte SoundIRpos = 0;                                  // next block of the sound buffer to be read from the interrupt
@@ -146,7 +146,7 @@ bool StartSound = false;                              // sound startup active ->
 bool PlayingSound = false;                            // StartSound done -> continuously playing sound
 File SoundFile;                                       // file handle for the sound file (SD)
 byte AfterSoundPending = 0;                           // indicates an after sound event -> 0 - no event, 1 - event pending, 2 - event is blocked by StopPlayingSound
-void (*AfterSound)() = 0;                             // program to execute after sound file has ended
+void (*AfterSound)(byte) = 0;                         // program to execute after sound file has ended
 byte SoundPriority = 0;                               // stores the priority of the sound file currently being played
 bool SoundPrio = false;                               // indicates which channel has to be processed first
 const char TestSounds[3][15] = {{"MUSIC.BIN"},{"SOUND.BIN"},0};
@@ -826,7 +826,7 @@ void loop() {
       if (AfterSoundPending == 1) {                   // is there an after sound event pending?
         AfterSoundPending = 0;                        // reset the flag
         if (AfterSound) {                             // really?
-          AfterSound();}}                             // call it
+          AfterSound(0);}}                            // call it
       else {                                          // no after sound event
         if (!StopMusic && (MBP != MusicIRpos)) {      // proceed with music
           ReadMusic();}
@@ -834,7 +834,7 @@ void loop() {
           if (AfterMusicPending == 1) {               // is there an after music event pending?
             AfterMusicPending = 0;                    // reset the flag
             if (AfterMusic) {                         // really?
-              AfterMusic();}}}}}}                     // call it
+              AfterMusic(0);}}}}}}                    // call it
   else {                                              // same as above but with the priority on music
     if (!StopMusic && (MBP != MusicIRpos)) {
       ReadMusic();}
@@ -842,14 +842,14 @@ void loop() {
       if (AfterMusicPending == 1) {
         AfterMusicPending = 0;
         if (AfterMusic) {
-          AfterMusic();}}
+          AfterMusic(0);}}
       else {
         if (!StopSound && (SBP != SoundIRpos)) {
           ReadSound();}
         if (AfterSoundPending == 1) {
           AfterSoundPending = 0;
           if (AfterSound) {
-            AfterSound();}}}}}
+            AfterSound(0);}}}}}
   if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) {  // Remote mode?
     if (APC_settings[ConnType] == 1) {                // onboard Pi selected?
       if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {  // onboard com off and Pi detected?
@@ -1332,8 +1332,6 @@ void ActA_BankSol(byte Solenoid) {
     SolWaiting[NextSolSlot][0] = Solenoid;
     SolWaiting[NextSolSlot][1] = 0;
     NextSolSlot++;
-//    if (NextSolSlot > 63) {
-//      NextSolSlot = 0;}
     ActSolenoid(0);}
   else {
     ErrorHandler(28,0,Solenoid);}}
@@ -1343,8 +1341,6 @@ void ActC_BankSol(byte Solenoid) {
     SolWaiting[NextSolSlot][0] = Solenoid+24;
     SolWaiting[NextSolSlot][1] = 0;
     NextSolSlot++;
-//    if (NextSolSlot > 63) {
-//      NextSolSlot = 0;}
     ActSolenoid(0);}
   else {
     ErrorHandler(29,0,Solenoid);}}
@@ -1358,8 +1354,6 @@ void PlayFlashSequence(byte* Sequence) {              // prepare for playing a f
       SolWaiting[NextSolSlot][1] = Sequence[x];
       x++;
       NextSolSlot++;}
-//      if (NextSolSlot > 63) {
-//        NextSolSlot = 0;}}
     else {
       ErrorHandler(30,0,0);
       break;}}
@@ -1403,9 +1397,7 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
           EndTimeAdder = 0;
           ActivateTimer(*(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1, 1, ActSolenoid);}
         SolWaiting[ActSolSlot][0] = 0;                // mark current slot as free
-        ActSolSlot++;}                                 // increase slot number
-//        if (ActSolSlot > 63) {                        // array end reached?
-//          ActSolSlot = 0;}}                           // start from zero
+        ActSolSlot++;}                                // increase slot number
       State = 1;}                                     // set routine state to active
     else if (C_BankActive){                           // nothing more to do and relay still active?
       if (EndTimeAdder) {                             // hold time of solenoid not yet over
@@ -1854,7 +1846,7 @@ void StrobeLights(byte Time) {                       // switch between no lamps 
     LampPattern = LampBuffer;}}
 
 void PlayMusic(byte Priority, const char* Filename) {
-  AfterMusicPending = 0;                              // TODO Check implications
+  AfterMusicPending = 0;
   if (StartMusic) {                                   // already in startup phase?
     MusicFile.close();                                // close the previous file
     StartMusic = 0;                                   // cancel the startup
@@ -1911,29 +1903,23 @@ void PlayRandomMusic(byte Priority, byte Amount, char* List) {
   Amount = random(Amount);
   PlayMusic(Priority, List+Amount*13);}
 
-void PlayNextMusic() {
-  QueueNextMusic(0);}
-
 void QueueNextMusic(const char* Filename) {
   static const char* NextMusicName;
   if (!Filename) {
     PlayMusic(50, NextMusicName);}
   else {
     NextMusicName = Filename;
-    AfterMusic = PlayNextMusic;}}
-
+    AfterMusic = (void(*)(byte)) QueueNextMusic;}}
 void RestoreMusicVol(byte Speed) {                    // restore max music volume with each step taking Speed*10ms
   static byte BufferedSpeed;
   if (Speed) {
     BufferedSpeed = Speed;}
-  else if (MusicVolume) {
-    MusicVolume--;
+  else {
+    AfterSound = 0;
     if (MusicVolume) {
-      ActivateTimer(10*BufferedSpeed, 0, RestoreMusicVol);}}}
-
-void CallRestoreMusicVolume() {                       // to call RestoreMusicVolume without any arguments (e.g. by AfterSound)
-  AfterSound = 0;
-  RestoreMusicVol(0);}
+      MusicVolume--;
+      if (MusicVolume) {
+        ActivateTimer(10*BufferedSpeed, 0, RestoreMusicVol);}}}}
 
 void RestoreMusicVolume(byte Speed) {                 // restore music volume immediately
   RestoreMusicVol(Speed);
@@ -1941,7 +1927,7 @@ void RestoreMusicVolume(byte Speed) {                 // restore music volume im
 
 void RestoreMusicVolumeAfterSound(byte Speed) {       // restore music volume after the current sound has finished
   RestoreMusicVol(Speed);
-  AfterSound = CallRestoreMusicVolume;}
+  AfterSound = RestoreMusicVol;}
 
 void FadeOutMusic(byte Speed) {
   analogWrite(VolumePin, 255-ByteBuffer3);
@@ -1952,7 +1938,7 @@ void FadeOutMusic(byte Speed) {
     StopPlayingMusic();}}
 
 void PlaySound(byte Priority, const char* Filename) {
-  AfterSoundPending = 0;                              // TODO Check implications
+  AfterSoundPending = 0;
   if (StartSound) {
     SoundFile.close();
     StartSound = 0;
@@ -2009,16 +1995,13 @@ void PlayRandomSound(byte Priority, byte Amount, char* List) {
   Amount = random(Amount);
   PlaySound(Priority, List+Amount*13);}
 
-void PlayNextSound() {
-  QueueNextSound(0);}
-
 void QueueNextSound(const char* Filename) {
   static const char* NextSoundName;
   if (!Filename) {
     PlaySound(50, NextSoundName);}
   else {
     NextSoundName = Filename;
-    AfterSound = PlayNextSound;}}
+    AfterSound = (void(*)(byte)) QueueNextSound;}}
 
 void Settings_Enter() {
   WriteUpper("   SETTINGS     ");                     // Show Test Mode

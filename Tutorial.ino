@@ -822,7 +822,8 @@ void TT_DisplayCycle(byte CharNo) {                   // Display cycle test
         DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}
   AppByte2 = ActivateTimer(500, CharNo, TT_DisplayCycle);}   // restart timer
 
-void TT_NextTestSound() {
+void TT_NextTestSound(byte Dummy) {
+  UNUSED(Dummy);
   if (QuerySwitch(73)) {                              // Up/Down switch pressed?
     AppByte++;}
   if (!TestSounds[AppByte][0]) {

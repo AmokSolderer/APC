@@ -863,5 +863,6 @@ void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
           DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}}
   AppByte2 = ActivateTimer(500, CharNo, BC_DisplayCycle);}   // restart timer
 
-void BC_RepeatMusic() {
+void BC_RepeatMusic(byte Dummy) {
+  UNUSED(Dummy);
   PlayMusic(50, "MUSIC.BIN");}

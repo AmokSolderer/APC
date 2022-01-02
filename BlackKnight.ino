@@ -409,7 +409,7 @@ void NewBall(byte Balls) {                            // release ball (Balls = e
   ShowAllPoints(0);
   ShowBonus();
   if (!((Player == 1) && (Ball == 1) && !InLock)) {   // skip for the first ball of the game to wait for speech sequence
-    BK_StartBgMusic();}
+    BK_StartBgMusic(0);}
   *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
   //*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
   LockChaseLight(1);
@@ -1099,14 +1099,14 @@ void BallEnd3(byte Balls) {
       TurnOffLamp(36);                                // bumper light off
       ReleaseSolenoid(23);                            // disable flipper fingers
       ReleaseSolenoid(24);
-      //digitalWrite(SpcSolEnable, LOW);              // disable special solenoids
       CheckForLockedBalls(0);
       TurnOffLamp(2);                                 // turn off Ball in Play lamp
       AfterSound = BK_MuteSound;                      // mute after next sound
       PlaySound(61, "0_23.snd");
       GameDefinition.AttractMode();}}}
 
-void BK_MuteSound() {
+void BK_MuteSound(byte Dummy) {
+  UNUSED(Dummy);
   digitalWrite(VolumePin,HIGH);
   AfterSound = 0;}
 
@@ -1224,7 +1224,7 @@ void EnterInitials(byte Event) {
 
 void AfterExBallRelease(byte Event) {
   UNUSED(Event);
-  BK_StartBgMusic();
+  BK_StartBgMusic(0);
   if (QuerySwitch(45)) {                              // ball still in the shooting lane?
     ActivateTimer(2000, Event, AfterExBallRelease);}  // come back in2s
   else {                                              // ball has been shot
@@ -1459,7 +1459,7 @@ void BK_Multiball2(byte Step) {
     if (game_settings[MultiballJackpot]) {
       AfterSound = BK_StartJackpotMusic;}
     else {
-      AfterSound = BK_ResumeBgMusic;}
+      AfterSound = BK_PlayBgMusic;}
     ActivateTimer(500, 1, BK_GiveMultiballs);}}
 
 void BK_GiveMultiballs(byte Step) {                   // release locked balls with multiball effects - call with Step = 1
@@ -1656,20 +1656,19 @@ void ShowBonus() {                                    // set lamps on bonus mete
     else {
       TurnOffLamp(BonusLamps[i]);}}}                  // otherwise turn it off
 
-void BK_StartBgMusic() {
+void BK_StartBgMusic(byte Dummy) {
+  UNUSED(Dummy);
   BK_PlayBgMusic(1);
-  AfterMusic = BK_ResumeBgMusic;
-  AfterSound = BK_ResumeBgMusic;}
+  AfterMusic = BK_PlayBgMusic;
+  AfterSound = BK_PlayBgMusic;}
 
-void BK_ResumeBgMusic() {
-  BK_PlayBgMusic(0);}
-
-void BK_StartJackpotMusic() {
+void BK_StartJackpotMusic(byte Dummy) {
+  UNUSED(Dummy);
   if (APC_settings[Volume]) {
     analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[BK_MultiballVolume]);} // increase volume
   PlayMusic(70, "BK_M01.bin");
   BK_Jackpot(1);
-  AfterSound = BK_ResumeBgMusic;}
+  AfterSound = BK_PlayBgMusic;}
 
 void BK_PlayBgMusic(byte State) {
   static byte CurrentBgMusic;
@@ -2006,7 +2005,8 @@ void SoundTest_Enter(byte Switch) {
     AfterSound = NextTestSound;
     PlaySound(50, (char*) BK_TestSounds[AppByte]);}}
 
-void NextTestSound() {
+void NextTestSound(byte Dummy) {
+  UNUSED(Dummy);
   if (QuerySwitch(73)) {                              // Up/Down switch pressed?
     AppByte++;}
   if (!BK_TestSounds[AppByte][0]) {
@@ -2019,7 +2019,7 @@ void NextTestSound() {
 
 void SoundTest(byte Switch) {
   if (Switch == 3) {
-    NextTestSound();}
+    NextTestSound(0);}
   if (Switch == 72) {
     AfterSound = 0;
     StopPlayingMusic();

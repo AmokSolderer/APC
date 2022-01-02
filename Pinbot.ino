@@ -468,7 +468,8 @@ void PB_AttractModeSW(byte Select) {
     break;
   }}
 
-void PB_GameStart() {
+void PB_GameStart(byte Dummy) {
+  UNUSED(Dummy);
   AfterSound = 0;
   PB_NewBall(2);
   ReleaseSolenoid(12);}                                // turn playfield GI back on
@@ -1243,7 +1244,8 @@ void PB_StartChestPattern(byte Dummy) {
   LampPattern = LampColumns;
   PB_ChestLightHandler(100);}
 
-void PB_VisorOpen() {                                 // Play sound and music when visor has opened
+void PB_VisorOpen(byte Dummy) {                       // Play sound and music when visor has opened
+  UNUSED(Dummy);
   PB_ChestLightHandler(0);                            // stop chest animation
   PB_ChestPatterns = (byte*)PB_ExpandingSquares;
   PB_StartChestPattern(0);
@@ -1432,19 +1434,21 @@ void PB_ResetPlayersChestLamps(byte Player) {         // Reset the chest lamps f
   for (byte c=0; c<5; c++) {
     PB_ChestLamp[Player-1][c] = 0;}}
 
-void PB_2ndLock2() {                                  // start new music when 1 ball is locked
-  AfterSound = 0;
-  RestoreMusicVolume(25);                             // restore music volume after sound has been played
-  ReleaseSolenoid(12);                                // turn on playfield GI
-  PB_EyeBlink(1);}                                    // restart eye blinking
-
-void PB_2ndLock(byte Dummy) {
-  UNUSED(Dummy);
-  AfterSound = PB_2ndLock2;
-  MusicVolume = 3;                                    // reduce music volume
-  PlayMusic(50, "1_03L.snd");
-  QueueNextMusic("1_03L.snd");                        // queue looping part as next music to be played
-  PlaySound(51, "0_c9.snd");}                         // 'partial link-up'
+void PB_2ndLock(byte State) {
+  switch(State) {
+  case 0:                                             // subsequent call as AfterSound
+    AfterSound = 0;
+    RestoreMusicVolume(25);                           // restore music volume after sound has been played
+    ReleaseSolenoid(12);                              // turn on playfield GI
+    PB_EyeBlink(1);                                   // restart eye blinking
+    break;
+  case 1:                                             // initial call
+    AfterSound = PB_2ndLock;
+    MusicVolume = 3;                                  // reduce music volume
+    PlayMusic(50, "1_03L.snd");
+    QueueNextMusic("1_03L.snd");                      // queue looping part as next music to be played
+    PlaySound(51, "0_c9.snd");                        // 'partial link-up'
+    break;}}
 
 void PB_HandleLock(byte State) {
   if (!State) {                                       // routine didn't call itself
@@ -1481,7 +1485,7 @@ void PB_HandleLock(byte State) {
             PB_EyeBlink(0);                           // stop eye blinking
             PlayFlashSequence((byte*) PB_Ball_Locked);
             PlayMusic(50, "1_80.snd");
-            ActivateTimer(1000, 0, PB_2ndLock);
+            ActivateTimer(1000, 1, PB_2ndLock);
             PB_GiveBall(1);}}                         // give second ball
         else {                                        // both balls in lock
           if (Multiballs == 1) {                      // multiball not yet running?
@@ -1509,37 +1513,37 @@ void PB_Multiball_RestoreLamps(byte Dummy) {
   StrobeLights(0);
   LampPattern = LampColumns;}
 
-void PB_Multiball_SM(byte State) {                    // state machine for sound effects during multiball start
+void PB_Multiball(byte State) {                       // state machine for sound effects during multiball start
   switch(State){
-  case 0:
+  case 0:                                             // initial call from AfterSound
+    PlaySound(50, "1_80.snd");
+    AfterSound = 0;
+    ActivateTimer(1200, 1, PB_Multiball);
+    PB_EyeFlash(0);
+    PatPointer = PB_MultiballPat;                     // set the pointer to the lamp pattern
+    FlowRepeat = 1;                                   // set the repetitions
+    LampReturn = PB_Multiball_RestoreLamps;           // call this when the lamp pattern has run out
+    ShowLampPatterns(1);                              // play the lamp pattern
+    StrobeLights(3);                                  // and strobe the lights while doing so
+    ReleaseSolenoid(9);
+    ReleaseSolenoid(10);
+    ReleaseSolenoid(18);
+    ReleaseSolenoid(12);
+    PlayFlashSequence((byte*) PB_MultiballSeq);
+    break;
+  case 1:
     PlayMusic(50, "1_04.snd");
     QueueNextMusic("1_04L.snd");                      // queue looping part as next music to be played
     PlaySound(51, "1_80.snd");
-    ActivateTimer(1000, 1, PB_Multiball_SM);
-    break;
-  case 1:
-    PlaySound(51, "1_80.snd");
-    ActivateTimer(2400, 2, PB_Multiball_SM);
+    ActivateTimer(1000, 2, PB_Multiball);
     break;
   case 2:
     PlaySound(51, "1_80.snd");
+    ActivateTimer(2400, 3, PB_Multiball);
+    break;
+  case 3:
+    PlaySound(51, "1_80.snd");
     break;}}
-
-void PB_Multiball() {
-  PlaySound(50, "1_80.snd");
-  AfterSound = 0;
-  ActivateTimer(1200, 0, PB_Multiball_SM);
-  PB_EyeFlash(0);
-  PatPointer = PB_MultiballPat;                       // set the pointer to the lamp pattern
-  FlowRepeat = 1;                                     // set the repetitions
-  LampReturn = PB_Multiball_RestoreLamps;             // call this when the lamp pattern has run out
-  ShowLampPatterns(1);                                // play the lamp pattern
-  StrobeLights(3);                                    // and strobe the lights while doing so
-  ReleaseSolenoid(9);
-  ReleaseSolenoid(10);
-  ReleaseSolenoid(18);
-  ReleaseSolenoid(12);
-  PlayFlashSequence((byte*) PB_MultiballSeq);}
 
 void PB_LampSweep(byte Step) {
   TurnOffLamp(Step);
@@ -1930,9 +1934,6 @@ void PB_BallEnd3(byte Dummy) {
       ReleaseSolenoid(23);                            // disable flipper fingers
       ReleaseSolenoid(24);
       LampPattern = NoLamps;                          // Turn off all lamps
-      //AfterMusic = GameDefinition.AttractMode;
-      //PlayMusic(50, "BS_S10.BIN");
-      //PB_CheckForLockedBalls(0);
       TurnOffLamp(3);                                 // turn off Ball in Play lamp
       GameDefinition.AttractMode();}}}
 
@@ -2042,7 +2043,8 @@ void PB_BlinkInitial(byte State) {                    // blink actual character
     State = 1;}
   ByteBuffer2 = ActivateTimer(100+State*2000, State, PB_BlinkInitial);}  // and come back
 
-void PB_EnterInitials2() {
+void PB_EnterInitials2(byte Dummy) {
+  UNUSED(Dummy);
   if (APC_settings[Volume]) {
     analogWrite(VolumePin, 255);}
   if (ByteBuffer > 2) {
@@ -2350,7 +2352,8 @@ void PB_DisplayCycle(byte CharNo) {                   // Display cycle test
         DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}
   AppByte2 = ActivateTimer(500, CharNo, PB_DisplayCycle);}   // restart timer
 
-void PB_NextTestSound() {
+void PB_NextTestSound(byte Dummy) {
+  UNUSED(Dummy);
   if (QuerySwitch(73)) {                              // Up/Down switch pressed?
     AppByte++;}
   if (!TestSounds[AppByte][0]) {
