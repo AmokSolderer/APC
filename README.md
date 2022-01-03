@@ -151,5 +151,5 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 6.1 [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7_Display) - an LED replacement display for System 7, purely numerical  
 6.2 [System 11a LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys11a_Display) - an LED replacement display for System 11a
 
-7 APC games - Complete games running natively on the APC (no PinMame)
-7.1 [Black Knight](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/BlackKnight.md)
+7 APC games - Complete games running natively on the APC (no PinMame)  
+7.1 [Black Knight](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/BlackKnight.md) - Complete game code with some additional features

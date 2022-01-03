@@ -1929,13 +1929,16 @@ void RestoreMusicVolumeAfterSound(byte Speed) {       // restore music volume af
   RestoreMusicVol(Speed);
   AfterSound = RestoreMusicVol;}
 
-void FadeOutMusic(byte Speed) {
-  analogWrite(VolumePin, 255-ByteBuffer3);
-  if (ByteBuffer3) {
-    ByteBuffer3--;
-    ActivateTimer(Speed, Speed, FadeOutMusic);}
+void FadeOutMusic(byte Param) {                       // call with Param = time step / 10 -> volume is halved every time step
+  static byte Speed;
+  if (Param) {
+    Speed = Param;}
+  MusicVolume++;
+  if (MusicVolume < 6) {
+    ActivateTimer(Speed*10, 0, FadeOutMusic);}
   else {
-    StopPlayingMusic();}}
+    StopPlayingMusic();
+    MusicVolume = 0;}}
 
 void PlaySound(byte Priority, const char* Filename) {
   AfterSoundPending = 0;
