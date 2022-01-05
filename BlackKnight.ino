@@ -1008,7 +1008,7 @@ void BK_BallEnd(byte Event) {
         BK_Jackpot(0);
         if (APC_settings[Volume]) {
           analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
-        StopPlayingMusic();
+        FadeOutMusic(100);
         PlaySound(60, "0_28.snd");}
       if (BallsInTrunk == 3) {                        // 3 balls in trunk?
         ActivateTimer(1000, 0, BK_BallEnd);}
@@ -1717,7 +1717,7 @@ void BK_StartJackpotMusic(byte Dummy) {
   UNUSED(Dummy);
   if (APC_settings[Volume]) {
     analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[BK_MultiballVolume]);} // increase volume
-  PlayMusic(70, "BK_M01.snd");
+  PlayMusic(51, "BK_M01.snd");
   BK_Jackpot(1);
   AfterSound = BK_PlayBgMusic;}
 
