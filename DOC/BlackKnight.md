@@ -38,7 +38,7 @@ The same needs to be done for the High Score table feature. In this case the nam
 | 5 | Ball eject strength  | - | - | 30 | Numerical setting - range 0 - 30 / activation time of the ball ramp thrower (solenoid 6) in ms. Adjust this to avoid that the ball is bouncing back into the trunk
 | 6 | Reset High | - | - | - | No setting - resets the high scores for this game |
 | 7 | Restore Default | - | - | - | No setting - restores the default settings |
-| 8 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 8 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## Things to do
 
