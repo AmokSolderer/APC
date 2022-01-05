@@ -24,7 +24,7 @@ The same needs to be done for the High Score table feature. In this case the nam
 
 | Number | Text  | Item Nr | Item Text | Default | Comment |
 |--|--|--|--|--|--|
-| 0 | Timed Magna | - | - | No | Bool setting | see features description |
+| 0 | Timed Magna | - | - | No | Bool setting - see features description |
 | 1 | Replay Score | 0 | 1000000 | X | Set 1 million as replay score |
 | 1 |  | 1 | 1500000 | - | Set 1.5 million as replay score |
 | 1 |  | 2 | 2000000 | - | Set 2 million as replay score |
