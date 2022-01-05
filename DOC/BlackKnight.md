@@ -33,10 +33,12 @@ The same needs to be done for the High Score table feature. In this case the nam
 | 2 |  | 1 | 500000 | - | Set 500K as multiball jackpot |
 | 2 |  | 2 | 750000 | - | Set 750K as multiball jackpot |
 | 2 |  | 3 | 1000000 | - | Set 1 million as multiball jackpot |
-| 3 | Multiball volume | - | - | 0 | Numerical setting - range 0 - 30 / can be used to increase the volume during multiball and high score entry. Does only work when the digital volume control of the APC is used and not the old volume pot |
-| 4 | Reset High | - | - | - | No setting - resets the high scores for this game |
-| 5 | Restore Default | - | - | - | No setting - restores the default settings |
-| 6 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 3 | Multiball volume | - | - | 0 | Numerical setting - range 0 - 30 / can be used to increase the volume during multiball. Does only work when the digital volume control of the APC is used and not the old volume pot |
+| 4 | High Score volume | - | - | 0 | Numerical setting - range 0 - 30 / can be used to increase the volume during high score entry. Does only work when the digital volume control of the APC is used and not the old volume pot |
+| 5 | Ball eject strength  | - | - | 30 | Numerical setting - range 0 - 30 / activation time of the ball ramp thrower (solenoid 6) in ms. Can be adjuted to avoid that the ball is bouncing back into the trunk
+| 6 | Reset High | - | - | - | No setting - resets the high scores for this game |
+| 7 | Restore Default | - | - | - | No setting - restores the default settings |
+| 8 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## Things to do
 

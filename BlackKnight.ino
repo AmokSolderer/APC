@@ -29,9 +29,11 @@ const char BK_TestSounds[16][15] = {{"0_2f.snd"},{"0_30.snd"},{"0_31.snd"},{"0_3
 #define BK_TimedMagna 0                               // Timed Magna saves?
 #define BK_ReplayScore 1                              // without credits being implemented just show some respect
 #define BK_MultiballJackpot 2                         // optional multiball jackpot
-#define BK_MultiballVolume 3                          // increase volume during multiball
+#define BK_MultiballVolume 3                          // increase volume during multiball when digital volume control is used
+#define BK_HighScoreVolume 4                          // increase volume during high score entry when digital volume control is used
+#define BK_BallEjectStrength 5                        // activation time of the ball ramp thrower (solenoid 6) in ms
 
-const byte BK_defaults[64] = {0,0,0,0,0,0,0,0,        // game default settings
+const byte BK_defaults[64] = {0,0,0,0,0,30,0,0,       // game default settings
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
@@ -43,10 +45,12 @@ const byte BK_defaults[64] = {0,0,0,0,0,0,0,0,        // game default settings
 const char BK_TxTJackpot[4][17] = {{"           OFF  "},{"        500000  "},{"        750000  "},{"       1000000  "}};
 const char BK_TxTReplayScore[4][17] = {{"       1000000  "},{"       1500000  "},{"       2000000  "},{"       2500000  "}};
 
-const struct SettingTopic BK_setList[8] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
+const struct SettingTopic BK_setList[10] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
                                     {" REPLAY SCORE ",HandleTextSetting,&BK_TxTReplayScore[0][0],0,3},
                                     {" MBALL JACKPOT",HandleTextSetting,&BK_TxTJackpot[0][0],0,3},
                                     {"MULTBALVOLUME ",BK_HandleVolumeSetting,0,0,30},
+                                    {" HSCOREVOLUME ",BK_HandleVolumeSetting,0,0,30},
+                                    {" EJECT STRNGTH",HandleNumSetting,0,10,50},
                                     {" RESET  HIGH  ",BK_ResetHighScores,0,0,0},
                                     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
                                     {"  EXIT SETTNGS",ExitSettings,0,0,0},
@@ -480,7 +484,7 @@ void BK_NewBall(byte Balls) {                         // release ball (Balls = e
       TurnOffLamp(9);}}
   Switch_Released = BK_CheckShooterLaneSwitch;
   if (!QuerySwitch(45)) {
-    ActivateSolenoid(0, 6);                           // release ball
+    ActivateSolenoid(game_settings[BK_BallEjectStrength], 6); // release ball
     Switch_Pressed = BK_BallReleaseCheck;             // set switch check to enter game
     CheckReleaseTimer = ActivateTimer(5000, Balls-1, BK_CheckReleasedBall);} // start release watchdog
   else {
@@ -569,7 +573,7 @@ void BK_CheckReleasedBall(byte Balls) {               // ball release watchdog
     WriteLower("              ");
     ShowAllPoints(0);
     BlinkScore(1);
-    ActivateSolenoid(0, 6);}
+    ActivateSolenoid(game_settings[BK_BallEjectStrength], 6);}
   byte c = BK_CountBallsInTrunk();
   if (c == Balls) {                                   // expected number of balls in trunk
     WriteUpper("  BALL MISSING");
@@ -585,7 +589,7 @@ void BK_CheckReleasedBall(byte Balls) {               // ball release watchdog
         WriteLower("              ");
         ShowAllPoints(0);
         BlinkScore(1);
-        ActivateSolenoid(0, 6);}}}                    // release again
+        ActivateSolenoid(game_settings[BK_BallEjectStrength], 6);}}}  // release again
   CheckReleaseTimer = ActivateTimer(5000, Balls, BK_CheckReleasedBall);}
 
 void BK_PlaySpinnerSound(byte Event) {                // play the sounds of the lit spinner - start with Event = 0
@@ -1105,7 +1109,7 @@ void BK_BallEnd2(byte Balls) {
           BK_BallEnd3(Balls);}}
       else {                                          // it's a 4 Alpha + Credit display
         if (APC_settings[Volume]) {
-          analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[BK_MultiballVolume]);} // increase volume
+          analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[BK_HighScoreVolume]);} // increase volume
         PlayMusic(51, "BK_M02.snd");
         BK_CheckHighScore(0);}}                       // call high score handling
     else {
