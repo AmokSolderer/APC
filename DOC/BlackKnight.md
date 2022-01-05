@@ -24,7 +24,7 @@ The same needs to be done for the High Score table feature. In this case the nam
 
 | Number | Text  | Item Nr | Item Text | Default | Comment |
 |--|--|--|--|--|--|
-| 0 | Timed Magna | - | - | No | Bool setting |
+| 0 | Timed Magna | - | - | No | Bool setting | see features description |
 | 1 | Replay Score | 0 | 1000000 | X | Set 1 million as replay score |
 | 1 |  | 1 | 1500000 | - | Set 1.5 million as replay score |
 | 1 |  | 2 | 2000000 | - | Set 2 million as replay score |
@@ -35,7 +35,7 @@ The same needs to be done for the High Score table feature. In this case the nam
 | 2 |  | 3 | 1000000 | - | Set 1 million as multiball jackpot |
 | 3 | Multiball volume | - | - | 0 | Numerical setting - range 0 - 30 / can be used to increase the volume during multiball. Does only work when the digital volume control of the APC is used and not the old volume pot |
 | 4 | High Score volume | - | - | 0 | Numerical setting - range 0 - 30 / can be used to increase the volume during high score entry. Does only work when the digital volume control of the APC is used and not the old volume pot |
-| 5 | Ball eject strength  | - | - | 30 | Numerical setting - range 0 - 30 / activation time of the ball ramp thrower (solenoid 6) in ms. Can be adjuted to avoid that the ball is bouncing back into the trunk
+| 5 | Ball eject strength  | - | - | 30 | Numerical setting - range 0 - 30 / activation time of the ball ramp thrower (solenoid 6) in ms. Adjust this to avoid that the ball is bouncing back into the trunk
 | 6 | Reset High | - | - | - | No setting - resets the high scores for this game |
 | 7 | Restore Default | - | - | - | No setting - restores the default settings |
 | 8 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
