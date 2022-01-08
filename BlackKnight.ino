@@ -1110,7 +1110,7 @@ void BK_BallEnd2(byte Balls) {
       else {                                          // it's a 4 Alpha + Credit display
         if (APC_settings[Volume]) {
           analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[BK_HighScoreVolume]);} // increase volume
-        PlayMusic(51, "BK_M02.snd");
+        PlayMusic(52, "BK_M02.snd");
         BK_CheckHighScore(0);}}                       // call high score handling
     else {
       BK_BallEnd3(Balls);}}}
@@ -1717,7 +1717,7 @@ void BK_StartJackpotMusic(byte Dummy) {
   UNUSED(Dummy);
   if (APC_settings[Volume]) {
     analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[BK_MultiballVolume]);} // increase volume
-  PlayMusic(51, "BK_M01.snd");
+  PlayMusic(52, "BK_M01.snd");
   BK_Jackpot(1);
   AfterSound = BK_PlayBgMusic;}
 
