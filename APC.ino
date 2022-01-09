@@ -1929,6 +1929,10 @@ void RestoreMusicVolumeAfterSound(byte Speed) {       // restore music volume af
   RestoreMusicVol(Speed);
   AfterSound = RestoreMusicVol;}
 
+void FadeOutMusic2(byte Dummy) {
+  UNUSED(Dummy);
+  MusicVolume = 0;}
+
 void FadeOutMusic(byte Param) {                       // call with Param = time step / 10 -> volume is halved every time step
   static byte Speed;
   if (Param) {
@@ -1938,7 +1942,7 @@ void FadeOutMusic(byte Param) {                       // call with Param = time 
     ActivateTimer(Speed*10, 0, FadeOutMusic);}
   else {
     StopPlayingMusic();
-    MusicVolume = 0;}}
+    ActivateTimer(10, 0, FadeOutMusic2);}}
 
 void PlaySound(byte Priority, const char* Filename) {
   AfterSoundPending = 0;

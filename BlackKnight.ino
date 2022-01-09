@@ -1008,7 +1008,7 @@ void BK_BallEnd(byte Event) {
         BK_Jackpot(0);
         if (APC_settings[Volume]) {
           analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
-        FadeOutMusic(100);
+        FadeOutMusic(50);
         PlaySound(60, "0_28.snd");}
       if (BallsInTrunk == 3) {                        // 3 balls in trunk?
         ActivateTimer(1000, 0, BK_BallEnd);}
@@ -1244,7 +1244,7 @@ void BK_EnterInitials(byte Event) {
       ReleaseSolenoid(11);                            // turn GI back on
       ActivateSolenoid(0, 23);                        // enable flipper fingers
       ActivateSolenoid(0, 24);
-      FadeOutMusic(100);
+      FadeOutMusic(50);
       ActivateTimer(2000, 0, BK_BallEnd3);}
     else {
       BK_BlinkInitial(1);}

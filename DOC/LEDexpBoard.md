@@ -8,6 +8,8 @@ Up to now the SW of this board is designed to use the LED strip as a replacement
 
 The hardware is quite simple and mainly consists of an Arduino Mini and a bit of logic to connect it to the HW extension interface of the APC.
 
+![Pic_Led_Exp](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/PICS/LED_ExpBoard.jpg)
+
 The schematic, Gerber (and drilling) as well as an SVG file are located in the [APC_LED_exp](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_LED_exp) folder.
 
 ## Software

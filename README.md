@@ -20,7 +20,7 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 ### Special features
 
 * Hardware extensions interface (the pinout is compatible to the Sound Overlay Solenoid Board used in games like Whirlwind, but it is upgraded a bit to support all kind of self made hardware)
-* A socket for a Raspberry Pi which can be used to run PinMame of the APC board
+* A socket for a Raspberry Pi which can be used to run PinMame from the APC board
 * [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) are game specific code blocks that act like a man-in-the-middle between the game HW and PinMame. That means even if your game is running in PinMame you can still introduce some changes. Take a look at my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) to see how a few lines of code can change a game dramatically.
 
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards at a price of well below 100€ per board. You can write your game SW completely from scratch or you can use PinMame and PinMameExceptions to implement smaller changes with minimum effort. Typical examples are:
@@ -153,7 +153,7 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 5 Additional APC hardware - boards that might come in handy with the APC  
 5.1 [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  
 5.2 [APC solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) - to control additional features  
-5.3 [System 7 alphanumeric display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha) - to have alphanumerical displays in a pre System 11 machine  
+5.3 [System 7 alphanumeric display](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Sys7Alpha.md) - to have alphanumerical displays in a pre System 11 machine  
 
 6 Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
 6.1 [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7_Display) - an LED replacement display for System 7, purely numerical  
