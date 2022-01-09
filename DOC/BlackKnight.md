@@ -1,7 +1,7 @@
 # The APC Black Knight
 
 This page is about the BlackKnight.ino game SW which is part of the APC SW. Note that you have to have the Black Knight sound files for this game to work.  
-Some features like the High Score table are only available when my '4 Alpha+Credit' display is used.
+Some features like the High Score table are only available when my [4 Alpha+Credit](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Sys7Alpha.md) display is used.
 
 ![APC Black Knight](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/PICS/BK.jpg)
 
