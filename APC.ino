@@ -330,7 +330,7 @@ void Init_System() {
   else {                                              // no SD card?
     for(i=0;i<64;i++) {                               // use default settings
       APC_settings[i] = APC_defaults[i];}}
-  if ((APC_settings[DisplayType] == 1) || (APC_settings[DisplayType] == 2)) { // display with numerical lower row
+  if (APC_settings[DisplayType] && (APC_settings[DisplayType] != 3)) { // display with numerical lower row
     DispPattern2 = NumLower;}                         // use patterns for num displays
   if (APC_settings[DisplayType] < 6) {                // non BCD display
     WriteLower("APC REV         ");
@@ -443,9 +443,8 @@ void TC7_Handler() {                                  // interrupt routine - run
 
   // Display columns
 
-  //REG_PIOA_SODR = 524288;                            // disable latch outputs to hide writing cycle
   if (APC_settings[DisplayType] < 6) {                // Sys11 display
-    if (APC_settings[DisplayType] == 3)               // BK2K type display with inverted segments
+    if (APC_settings[DisplayType] == 3 || APC_settings[DisplayType] == 5) // BK2K or Riverboat type display with inverted segments
       REG_PIOC_SODR = AllData;
     else                                              // all other Sys11 displays
       REG_PIOC_CODR = AllData;
@@ -559,7 +558,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 
   // Display segments
 
-  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+  if (APC_settings[DisplayType] == 3 || APC_settings[DisplayType] == 5) {  // 2x16 alphanumeric display with inverted segments
     REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
     byte Buf = ~(*(DispRow1+2*DispCol));
     REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the upper row

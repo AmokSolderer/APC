@@ -851,7 +851,7 @@ void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
         else {
           CharNo = CharNo+2;}}                        // otherwise show next character
       for (i=0; i<16; i++) {                          // use for all alpha digits
-        if ((APC_settings[DisplayType] != 3) && ((i==0) || (i==8))) {
+        if ((APC_settings[DisplayType] != 3 && APC_settings[DisplayType] != 4 && APC_settings[DisplayType] != 5) && ((i==0) || (i==8))) {
           DisplayUpper[2*i] = LeftCredit[CharNo];
           DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
           DisplayLower[2*i] = RightCredit[CharNo];
@@ -859,8 +859,12 @@ void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
         else {
           DisplayUpper[2*i] = DispPattern1[CharNo];
           DisplayUpper[2*i+1] = DispPattern1[CharNo+1];
-          DisplayLower[2*i] = DispPattern2[CharNo];
-          DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}}
+          if (APC_settings[DisplayType] == 4 || APC_settings[DisplayType] == 5) { // 16 digit numerical
+            DisplayLower[2*i] = DispPattern2[CharNo];
+            DisplayLower[2*i+1] = DispPattern2[CharNo];}
+          else {
+            DisplayLower[2*i] = DispPattern2[CharNo];
+            DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}}}
   AppByte2 = ActivateTimer(500, CharNo, BC_DisplayCycle);}   // restart timer
 
 void BC_RepeatMusic(byte Dummy) {
