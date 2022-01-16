@@ -995,6 +995,15 @@ bool WriteToHwExt(byte Data, byte Selects) {          // write data and selects 
     HwExtBufPos = BufPosition;                        // store new buffer position
     return true;}}                                    // return OK signal
 
+byte ConvertTaxi(byte Number) {                       // convert data for games with 2x16 character and additional numerical displays
+  const byte NumMaskTaxi[8] = {8,16,32,1,128,2,4,64};
+  byte Pattern = 0;
+  for (byte c=0; c<8; c++) {
+    if (Number & 1) {
+      Pattern |= NumMaskTaxi[c];}
+    Number = Number >> 1;}
+  return Pattern;}
+
 byte ConvertNumUpper(byte Number, byte Pattern) {     // convert a number to be shown in the upper row of numerical displays
   const byte NumMaskUpper[5] = {184,64,4,2,1};        // Bitmasks for the upper row of numerical displays
   if (Number > 200) {                                 // show blank?

@@ -861,7 +861,7 @@ void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
           DisplayUpper[2*i+1] = DispPattern1[CharNo+1];
           if (APC_settings[DisplayType] == 4 || APC_settings[DisplayType] == 5) { // 16 digit numerical
             DisplayLower[2*i] = DispPattern2[CharNo];
-            DisplayLower[2*i+1] = DispPattern2[CharNo];}
+            DisplayLower[2*i+1] = ConvertTaxi(DispPattern2[CharNo]);}
           else {
             DisplayLower[2*i] = DispPattern2[CharNo];
             DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}}}
