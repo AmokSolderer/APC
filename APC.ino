@@ -21,6 +21,7 @@ const char APC_Version[6] = "00.23";                  // Current APC version - i
 
 void HandleBoolSetting(bool change);
 void HandleTextSetting(bool change);
+void HandleDisplaySetting(bool change);
 void HandleNumSetting(bool change);
 void HandleVolumeSetting(bool change);
 void RestoreDefaults(bool change);
@@ -195,7 +196,7 @@ const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"    
 const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "}};
 
 const struct SettingTopic APC_setList[14] = {
-    {"DISPLAY TYPE    ",HandleTextSetting,&TxTDisplaySelect[0][0],0,7},
+    {"DISPLAY TYPE    ",HandleDisplaySetting,&TxTDisplaySelect[0][0],0,7},
     {" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
     {" NO OF  BALLS   ",HandleNumSetting,0,1,5},
     {"  FREE  GAME    ",HandleBoolSetting,0,0,0},
@@ -1124,7 +1125,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
       *(DisplayLower+16) = ConvertNumLower((byte) *(DisplayText+3)-48,(byte) *(DisplayLower+16));}}}
 
 void WriteUpper(const char* DisplayText) {            
-  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
     for (i=0; i<16; i++) {
       *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
@@ -1141,7 +1142,7 @@ void WriteUpper(const char* DisplayText) {
         *(DisplayUpper+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}}}
 
 void WriteLower(const char* DisplayText) {
-  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
     for (i=0; i<16; i++) {
       *(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
@@ -1158,7 +1159,7 @@ void WriteLower(const char* DisplayText) {
         *(DisplayLower+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}}}
 
 void WriteUpper2(const char* DisplayText) {
-  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
     for (i=0; i<16; i++) {
       *(DisplayUpper2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
@@ -1170,7 +1171,7 @@ void WriteUpper2(const char* DisplayText) {
       *(DisplayUpper2+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
 
 void WriteLower2(const char* DisplayText) {
-  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
     for (i=0; i<16; i++) {
       *(DisplayLower2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
@@ -1182,7 +1183,7 @@ void WriteLower2(const char* DisplayText) {
       *(DisplayLower2+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
 
 void ScrollUpper(byte Step) {                         // call with Step = 0 and the text being in DisplayUpper2
-  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
     for (i=0; i<30; i++) {
       DisplayUpper[i] = DisplayUpper[i+2];}
     DisplayUpper[30] = DisplayUpper2[2*Step];         // add the corresponding char of DisplayUpper2
@@ -1244,7 +1245,7 @@ void ScrollLower(byte Step) {                         // call with Step = 0 and 
     ActivateTimer(50, Step, ScrollLower);}}           // come back
 
 void ScrollLower2(byte Step) {                        // call with Step = 0 and the text being in DisplayUpper2
-  if (APC_settings[DisplayType] == 3) {               // 2x16 alphanumeric display (BK2K type)
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
     for (i=0; i<30; i++) {
       DisplayLower[i] = DisplayLower[i+2];}
     DisplayLower[30] = DisplayLower2[2*Step];         // add the corresponding char of DisplayLower2
@@ -2023,7 +2024,7 @@ void SelectSettings(byte Switch) {                    // select system or game s
   case 0:                                             // for the initial call
     WriteUpper("SYSTEM SETTNGS  ");
     WriteLower("                ");
-    if ((APC_settings[DisplayType] != 2) && (APC_settings[DisplayType] != 3) && (APC_settings[DisplayType] != 4) && (APC_settings[DisplayType] != 5)) { // No Credit display
+    if ((APC_settings[DisplayType] != 3) && (APC_settings[DisplayType] != 4) && (APC_settings[DisplayType] != 5)) { // not a 2x16 character display
       byte CreditBuffer[4];
       CreditBuffer[0] = 48;
       CreditBuffer[1] = 48;
@@ -2048,7 +2049,7 @@ void SelectSettings(byte Switch) {                    // select system or game s
     if (AppByte) {                                    // switch between game and system settings
       WriteUpper("SYSTEM SETTNGS  ");
       WriteLower("                ");
-      if (APC_settings[DisplayType] != 3) {           // not a BK2K display?
+      if ((APC_settings[DisplayType] != 3) && (APC_settings[DisplayType] != 4) && (APC_settings[DisplayType] != 5)) { // not a 2x16 character display
         byte CreditBuffer[4];
         CreditBuffer[0] = 48;
         CreditBuffer[1] = 48;
@@ -2059,7 +2060,7 @@ void SelectSettings(byte Switch) {                    // select system or game s
     else {
       WriteUpper("  GAME SETTNGS  ");
       WriteLower("                ");
-      if (APC_settings[DisplayType] != 3) {           // not a BK2K display?
+      if ((APC_settings[DisplayType] != 3) && (APC_settings[DisplayType] != 4) && (APC_settings[DisplayType] != 5)) { // not a 2x16 character display
         byte CreditBuffer[4];
         CreditBuffer[0] = 48;
         CreditBuffer[1] = 49;
@@ -2103,7 +2104,7 @@ void SelSetting(byte Switch) {                        // Switch mode of the sett
     /* no break */
   case 0:                                             // show the current setting
     WriteUpper( SettingsList[AppByte].Text);          // show the text
-    if (APC_settings[DisplayType] != 3) {             // not a Sys11c display?
+    if ((APC_settings[DisplayType] != 3) && (APC_settings[DisplayType] != 4) && (APC_settings[DisplayType] != 5)) { // not a 2x16 character display
       if (APC_settings[DisplayType] == 6) {           // Sys6 display
         *(DisplayLower+12) = ConvertNumUpper((byte) AppByte / 10,(byte) *(DisplayLower+12));
         *(DisplayLower+14) = ConvertNumUpper((byte) ((AppByte) % 10),(byte) *(DisplayLower+14));}
@@ -2190,6 +2191,29 @@ void HandleNumSetting(bool change) {                  // handling method for num
         SettingsPointer[AppByte]--;}}}                // if limit not reached just decrease the numeric value
   WriteLower("                ");
   DisplayScore(4,SettingsPointer[AppByte]);}          // show the current value
+
+void HandleDisplaySetting(bool change) {              // handling method for display settings
+  if (change) {                                       // if the start button has been pressed
+    AppByte2 = 1;                                     // set the change indicator
+    if (QuerySwitch(73)) {                            // go forward or backward depending on UpDown switch
+      if (SettingsPointer[AppByte] == SettingsList[AppByte].UpperLimit) { // last text setting reached?
+        SettingsPointer[AppByte] = 0;}                // start from 0
+      else {
+        SettingsPointer[AppByte]++;}}                 // if limit not reached just choose the next entry
+    else {
+      if (!SettingsPointer[AppByte]) {                // entry 0 reached?
+        SettingsPointer[AppByte] = SettingsList[AppByte].UpperLimit;} // go to the last entry
+      else {
+        SettingsPointer[AppByte]--;}}                 // if limit not reached just choose the previous entry
+    if (APC_settings[DisplayType] && (APC_settings[DisplayType] != 3)) { // display with numerical lower row
+      DispPattern2 = NumLower;}                       // use patterns for num displays
+    else {
+      DispPattern2 = AlphaLower;}}
+  if (APC_settings[DisplayType] > 5) {                // numerical display?
+    WriteLower("                ");
+    DisplayScore(4,SettingsPointer[AppByte]);}
+  else {
+    WriteLower(SettingsList[AppByte].TxTpointer+17*SettingsPointer[AppByte]);}} // show the current text element
 
 void HandleTextSetting(bool change) {                 // handling method for text settings
   if (change) {                                       // if the start button has been pressed
