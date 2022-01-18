@@ -1091,6 +1091,23 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
           *(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
           *(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}}
     break;
+  case 4:                                             // Sys11 Taxi
+  case 5:                                             // Sys11 Riverboat Gambler
+    if (Player == 1) {
+      for (i=0;i<16;i++) {                            // for all digits
+        if (*(DisplayText+i) & 128) {                 // comma set?
+          *(DisplayUpper+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
+          *(DisplayUpper+2*i+1) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
+        else {
+          *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
+          *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}}
+    else {
+      for (i=0;i<16;i++) {                            // for all digits
+        if (*(DisplayText+i) & 128) {                 // comma set?
+          *(DisplayLower+2*i) = 1 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)];}
+        else {
+          *(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];}}}
+    break;
   case 6:                                             // Sys6 display
     if (Player) {                                     // player display?
       if (Player < 3) {                               // upper row?
