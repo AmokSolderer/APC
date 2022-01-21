@@ -62,7 +62,7 @@ void EX_StepperMotor(byte State) {                    // control stepper motor
       MainTimer = ActivateTimer(RefTime, 1, EX_StepperMotor); // restart main timer
       ActivateSolenoid(PWMtime/2, 14);                // generate PWM pulse on first solenoid
       ActivateTimer(PWMtime/4, 2, EX_StepperMotor);}  // come back to generate pulse on second solenoid
-      break;
+    break;
   case 1:                                             // timeout has occurred as no pulses from PinMame have been detected recently
     MainTimer = 0;                                    // indicate that main timer is not active
     ActivateSolenoid(PWMtime/2, 14);                  // generate last step on the solenoids anyway
@@ -599,7 +599,7 @@ void EX_Init(byte GameNumber) {
     break;
   case 20:                                            // Jungle Lord
     EX_EjectSolenoid = 2;                             // specify eject coil for improved ball release
-    USB_SolTimes[20] = 0;                             // allow permanent on state for magna save relais
+    USB_SolTimes[20] = 0;                             // allow permanent on state for magna save relay
     USB_SolTimes[21] = 0;
     PinMameException = EX_JungleLord;                 // use exception rules for Jungle Lord
     break;
@@ -608,7 +608,7 @@ void EX_Init(byte GameNumber) {
     break;
   case 34:                                            // Black Knight
     EX_EjectSolenoid = 6;                             // specify eject coil for improved ball release
-    USB_SolTimes[8] = 0;                              // allow permanent on state for magna save relais
+    USB_SolTimes[8] = 0;                              // allow permanent on state for magna save relay
     USB_SolTimes[9] = 0;
     PinMameException = EX_BlackKnight;                // use exception rules for Jungle Lord
     break;

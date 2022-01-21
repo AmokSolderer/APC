@@ -16,7 +16,7 @@ The picture below shows 2 versions of the driver board. The lower (older) one is
 
 ![Sys7Alpha](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/PICS/Sys7_Alpha.jpg)
 
-The second shot shows the upper board in my System7 Black Knight with all the cables for the actual display boards connected.
+The next shot shows the upper board in my System7 Black Knight with all the cables for the actual display boards connected.
 
 ![Sys7AlphaBK](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/PICS/Sys7_Alpha2.jpg)
 

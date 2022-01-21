@@ -655,6 +655,7 @@ void USB_SerialCommand() {
             case 6:                                   // ASCII with comma
               WritePlayerDisplay((char*)USB_SerialBuffer, 2);
               break;}}
+          break;
         case 6:                                       // Sys3 - 6 display
         case 7:                                       // Sys7 + 9 display
           switch (USB_DisplayProtocol[2]) {           // which protocol shall be used?
