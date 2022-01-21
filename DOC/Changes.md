@@ -13,6 +13,14 @@ The purpose of this is to enable state machines that are initially called from t
 
 * The StrobeLights() command has been reworked to make it more comfortable. You don't have to care about the StrobeLightsTimer any more. Just call Strobelights(Time) with Time > 2 to start lamp flickering with a period of (Time * 10ms). Call Strobelights(0) to turn off the flicker.
 
+* Support for 2x16 character displays with additional numerical displays has been added.
+
+### Misc
+
+* The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
+
+* My [APC Black Knight](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/BlackKnight.md) game code has been updated.
+
 ## July 2021
 
 I got a notification from Mouser that the TDA7496 audio amplifier IC won't be produced any longer.
