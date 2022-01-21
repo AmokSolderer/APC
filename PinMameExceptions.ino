@@ -46,6 +46,32 @@ void EX_BallRelease(byte State) {                     // repeat ball eject in ca
     ActivateSolenoid(40, EX_EjectSolenoid);           // activate the shooter lane feeder again
     Timer = ActivateTimer(3000, 2, EX_BallRelease);}} // and restart the timer
 
+void EX_StepperMotor(byte State) {                    // control stepper motor
+  static byte MainTimer = 0;                          // number of the main timer
+  static unsigned int RefTime;                        // stores the start value of the main timer
+  static unsigned int PWMtime;                        // stores the PWM time for the active cycle
+  switch(State) {                                     // state machine
+  case 0:                                             // procedure is called from solenoid exception
+    if (!MainTimer) {                                 // initial call, stepper motor not yet running
+      RefTime = 60;                                   // set timeout to 60ms
+      MainTimer = ActivateTimer(RefTime, 1, EX_StepperMotor);}  // start main timer
+    else {                                            // not the first solenoid call from PinMame as main timer is already running
+      PWMtime = RefTime - TimerValue[MainTimer];      // calculate time difference between PinMame's solenoid pulses
+      KillTimer(MainTimer);                           // cancel timeout
+      RefTime = PWMtime + 10;                         // set new timeout value based on last PWM cycle time
+      MainTimer = ActivateTimer(RefTime, 1, EX_StepperMotor); // restart main timer
+      ActivateSolenoid(PWMtime/2, 14);                // generate PWM pulse on first solenoid
+      ActivateTimer(PWMtime/4, 2, EX_StepperMotor);}  // come back to generate pulse on second solenoid
+      break;
+  case 1:                                             // timeout has occurred as no pulses from PinMame have been detected recently
+    MainTimer = 0;                                    // indicate that main timer is not active
+    ActivateSolenoid(PWMtime/2, 14);                  // generate last step on the solenoids anyway
+    ActivateTimer(PWMtime/4, 2, EX_StepperMotor);
+    break;
+  case 2:                                             // generate pulse on second solenoid
+    ActivateSolenoid(PWMtime/2, 15);
+    break;}}
+
 byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for sending me this code
   static byte SoundSeries[5] = {0, 0, 0, 0, 0};       // buffer to handle pre system11 sound series
   static byte PlayingMultiballSound = 0;

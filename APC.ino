@@ -1151,7 +1151,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
       *(DisplayLower+16) = ConvertNumLower((byte) *(DisplayText+3)-48,(byte) *(DisplayLower+16));}}}
 
 void WriteUpper(const char* DisplayText) {            
-  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // 2x16 character display
     for (i=0; i<16; i++) {
       *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
@@ -1168,7 +1168,7 @@ void WriteUpper(const char* DisplayText) {
         *(DisplayUpper+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}}}
 
 void WriteLower(const char* DisplayText) {
-  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // 2x16 character display
     for (i=0; i<16; i++) {
       *(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
@@ -1185,7 +1185,7 @@ void WriteLower(const char* DisplayText) {
         *(DisplayLower+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}}}
 
 void WriteUpper2(const char* DisplayText) {
-  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // 2x16 character display
     for (i=0; i<16; i++) {
       *(DisplayUpper2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
@@ -1197,7 +1197,7 @@ void WriteUpper2(const char* DisplayText) {
       *(DisplayUpper2+18+2*i+1) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
 
 void WriteLower2(const char* DisplayText) {
-  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // 2x16 character display
     for (i=0; i<16; i++) {
       *(DisplayLower2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
@@ -1209,7 +1209,7 @@ void WriteLower2(const char* DisplayText) {
       *(DisplayLower2+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
 
 void ScrollUpper(byte Step) {                         // call with Step = 0 and the text being in DisplayUpper2
-  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
+  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // 2x16 character display
     for (i=0; i<30; i++) {
       DisplayUpper[i] = DisplayUpper[i+2];}
     DisplayUpper[30] = DisplayUpper2[2*Step];         // add the corresponding char of DisplayUpper2
