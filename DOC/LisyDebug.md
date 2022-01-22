@@ -43,3 +43,33 @@ Don't forget to select 'Exit Settings' to store your changes to the APC's SD car
 To start the Debug Mode, turn off your machine and set Lisy jumper 3 before turning it back on. The system will now log the selected debug information, but this doesn't mean that it is immediately stored on Lisy's SD card. You should therefore not just turn your pinball machine off after your debug session, but press the Shutdown Switch SW1 which will initiate a controlled shutdown of Lisy. After that you can turn off your machine and remove the SD card of the Raspberry Pi.
 
 The log file is located in the /lisy/lisy_m/debug folder.
+
+## Remote debug Mode
+
+Lisy can also be controlled remotely via WiFi. In this mode it'll just print all information directly into your shell, including the debug log. Hence, you don't have to bother with removing the SD card any more, since all the required information is already on your screen.
+
+If you have set-up the WiFi configuration of your Lisy system, you can use the Remote Debug Mode as follows:  
+With your pinball machine switched off, connect the jumpers 1 (No Autostart) and 3 (Debug Mode).  
+After you've turned on the power, wait for the yellow LED to light up. Now Lisy has booted and is waiting for instructions.  
+First you have to obtain the IP adress of Lisy in your WiFi network. Now open a shell on your PC and connect to Lisy via ssh: 
+ 
+    ssh pi@IP-adress
+
+Log into the system by using lisy80 as the password.  
+Now it depends whether you're using the Pi on an APC 3 or on a Lisy_Mini board. In case of the APC 3 you have to use
+
+    ./run_lisy_apc
+    
+to start PinMame and with a Lisy_Mini board it's
+
+    ./run_lisy_mini
+    
+### Remote mode and Lisy updates
+
+The run_lisy_apc and run_lisy_mini commands are not automatically updated with your Lisy system when the update is done via Lisy Control. That means you have to change these scripts manually. Let's use the run_lisy_apc script as an example. Normally it looks as follows:
+
+    sudo ./lisy/xpinmame.vid_lisy -nosound -skip_disclaimer -skip_gameinfo -nvram_directory /pinmame/nvram -rp /boot/lisy/lisy_m/roms lisy_apc
+    #sudo /usr/local/bin/lisy -nosound -skip_disclaimer -skip_gameinfo -nvram_directory /pinmame/nvram -rp /boot/lisy/lisy_m/roms lisy_apc
+    
+To activate the Lisy update you just have to move the comment sign from the second to the first line and you're done.  
+Note that you have to issue an rw command first in order to set Lisy into read/write mode.
