@@ -48,12 +48,13 @@ The log file is located in the /lisy/lisy_m/debug folder.
 
 Lisy can also be controlled remotely via WiFi. In this mode it'll just print all information directly into your shell, including the debug log. Hence, you don't have to bother with removing the SD card any more, since all the required information is already on your screen.
 
-If you have set-up the WiFi configuration of your Lisy system, you can use the Remote Debug Mode as follows:  
+If you have set-up the WiFi configuration of your Lisy system, you can use the Remote Debug Mode as follows:
+
 With your pinball machine switched off, connect the jumpers 1 (No Autostart) and 3 (Debug Mode).  
 After you've turned on the power, wait for the yellow LED to light up. Now Lisy has booted and is waiting for instructions.  
-First you have to obtain the IP adress of Lisy in your WiFi network. Now open a shell on your PC and connect to Lisy via ssh: 
+First you have to obtain the IP address of Lisy in your WiFi network. Then open up a shell on your PC and use this address to connect to Lisy via ssh: 
  
-    ssh pi@IP-adress
+    ssh pi@IP-address
 
 Log into the system by using lisy80 as the password.  
 Now it depends whether you're using the Pi on an APC 3 or on a Lisy_Mini board. In case of the APC 3 you have to use
@@ -64,9 +65,12 @@ to start PinMame and with a Lisy_Mini board it's
 
     ./run_lisy_mini
     
+These commands will run Lisy and print a complete log into your shell.
+
 ### Remote mode and Lisy updates
 
-The run_lisy_apc and run_lisy_mini commands are not automatically updated with your Lisy system when the update is done via Lisy Control. That means you have to change these scripts manually. Let's use the run_lisy_apc script as an example. Normally it looks as follows:
+The run_lisy_apc and run_lisy_mini commands are not automatically updated with your Lisy system when the update is done via Lisy Control. That means you have to change these scripts manually.  
+Let's use the run_lisy_apc script as an example. Normally it looks as follows:
 
     sudo ./lisy/xpinmame.vid_lisy -nosound -skip_disclaimer -skip_gameinfo -nvram_directory /pinmame/nvram -rp /boot/lisy/lisy_m/roms lisy_apc
     #sudo /usr/local/bin/lisy -nosound -skip_disclaimer -skip_gameinfo -nvram_directory /pinmame/nvram -rp /boot/lisy/lisy_m/roms lisy_apc
