@@ -64,6 +64,10 @@ As the pre System11 displays cannot show letters, the corresponding sound number
 
 Most sound problems like lags and stuttering are caused by the performance of the SD card. Take a look at the [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) section for more.
 
+### Unknown Command errors
+
+If you're using the APC with Lisy/PinMame and the 'Unknown Command' error message followed by a number pops up on your lower displays then you have a problem with your serial communication. This is a severe problem which needs to be fixed. You can learn how to do this in the [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) section.
+
 ## Programming exceptions
 
 The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. To enable this for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.  

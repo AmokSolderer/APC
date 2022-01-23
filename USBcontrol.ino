@@ -1075,7 +1075,7 @@ void USB_SerialCommand() {
     if (APC_settings[SolenoidExp]) {                  // sol exp board selected
       WriteToHwExt(0, 128+4);
       WriteToHwExt(0, 4);}
-    if (APC_settings[DisplayType] == 3) {             // 2x16 alphanumeric display (BK2K type)
+    if (APC_settings[DisplayType] == 3 || APC_settings[DisplayType] == 4 || APC_settings[DisplayType] == 5) {             // 2x16 character display
       WriteUpper2("UNKNOWN COMMAND ");}
     else {
       WriteUpper2("UNKNOWNCOMMAND  ");}
