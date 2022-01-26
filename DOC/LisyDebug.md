@@ -15,9 +15,21 @@ The basic mode of Lisy is selected by the Lisy_Jumpers P12 which are depicted be
 |5|Not used||
 |6|Not used||
 
+## Setting up WiFi
+
+All the features described below do require a working WiFi which means you have to put a WiFi capable Raspberry Pi (Zero or Pi3) on your APC board.
+
+To set up WiFi you have to find the following file on your Lisy SD-card
+
+    /lisy/lisy/ wpa_supplicant.conf
+    
+and change the country, 'ssid' and 'psk' settings to those of your wireless network.
+
+For more information about Lisy and WiFi, please read the 'Wireless config' section in the Lisy manual.
+
 ## Updating Lisy
 
-If you have a WiFi capable Raspberry Pi you can use the incremental update function for minor updates instead of having to write a new Lisy-image to the SD card. Take a look at the 'Wireless config' section in the Lisy manual to learn how to set-up the WiFi.
+With WiFi working you can use the incremental update function for minor updates instead of having to write a new Lisy-image to the SD card. 
 
 With WiFi set-up and the system being switched off, connect the jumper 4 (Lisy Control) and power up your machine.  
 After booting up, Lisy will try to connect to your WiFi. If the connection is successful, the obtained IP address is shown in the pinball displays.  
