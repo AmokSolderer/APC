@@ -111,6 +111,12 @@ byte SettingsRepeatTimer = 0;                         // number of the timer of 
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte CheckReleaseTimer = 0;                           // number of the timer for the ball release check
 byte ShowMessageTimer = 0;                            // number of the timer to show a temporary message
+bool BlockPrioTimers = false;                         // blocks the prio timer interrupt while timer properties are being changed
+byte ActivePrioTimers = 0;                            // Number of active prio timers
+unsigned int PrioTimerValue[9];                       // Timer value
+byte PrioTimerArgument[9];
+void (*PrioTimerEvent[9])(byte);                      // pointers to the procedures to be executed on the prio timer event
+
 bool BlockTimers = false;                             // blocks the timer interrupt while timer properties are being changed
 byte ActiveTimers = 0;                                // Number of active timers
 unsigned int TimerValue[64];                          // Timer values
@@ -119,7 +125,6 @@ byte RunOutTimers[2][30];                             // two stacks of timers wi
 byte TimerEvents[2];                                  // contains the number of pending timer events in each stack
 byte TimerArgument[64];
 void (*TimerEvent[64])(byte);                         // pointers to the procedures to be executed on the timer event
-void (*TimerBuffer)(byte);
 void (*Switch_Pressed)(byte);                         // Pointer to current behavior mode for activated switches
 void (*Switch_Released)(byte);                        // Pointer to current behavior mode for released switches
 char EnterIni[3];
@@ -512,26 +517,48 @@ void TC7_Handler() {                                  // interrupt routine - run
       SwDrv = 0;
       REG_PIOC_SODR = 32768+16384;}}                  // use Sel12 and disable Sel13
 
-  // Timers
+  // Priority Timer
 
-  if (!BlockTimers) {
-    Buff = ActiveTimers;
-    i = 1;
-    while (Buff) {                                    // Number of timers to process (active timers)
-      if (TimerValue[i]) {                            // Timer active?
-        Buff--;                                       // Decrease number of timers to process
-        TimerValue[i]--;                              // Decrease timer value
-        if (TimerValue[i]==0) {                       // Timer run out?
+  if (ActivePrioTimers) {                             // do not execute if activate or kill procedure is currently running
+    byte Buffer = ActivePrioTimers;
+    byte x = 1;
+    while (Buffer) {                                  // Number of prio timers to process (active timers)
+      if (PrioTimerValue[x]) {                        // Timer active?
+        Buffer--;                                     // Decrease number of timers to process
+        PrioTimerValue[x]--;                          // Decrease timer value
+        if (!PrioTimerValue[x]) {                     // Timer run out?
+          void (*TimerBuffer)(byte) = PrioTimerEvent[x];
+          if (!TimerBuffer) {
+            ErrorHandler(40,0,x);}
+          else {
+            PrioTimerEvent[x] = 0;
+            TimerBuffer(PrioTimerArgument[x]);}       // execute timer procedure
+          if (!ActivePrioTimers) {
+            ErrorHandler(41,x,0);}
+          else {
+            ActivePrioTimers--;}}}                    // reduce number of active timers
+      x++;}}                                          // increase timer counter
+
+  // Timer
+
+  if (!BlockTimers) {                                 // do not execute if activate or kill procedure is currently running
+    byte Buffer = ActiveTimers;
+    byte x = 1;
+    while (Buffer) {                                  // Number of timers to process (active timers)
+      if (TimerValue[x]) {                            // Timer active?
+        Buffer--;                                     // Decrease number of timers to process
+        TimerValue[x]--;                              // Decrease timer value
+        if (!TimerValue[x]) {                         // Timer run out?
           c = 0;
           while (RunOutTimers[TimerStack][c]) {
             c++;}
-          RunOutTimers[TimerStack][c] = i;
+          RunOutTimers[TimerStack][c] = x;
           TimerEvents[TimerStack]++;                  // increase the number of pending timer events
           if (!ActiveTimers) {                        // number of active timers already 0?
-            ErrorHandler(9,i,0);}                     // that's wrong
+            ErrorHandler(9,x,0);}                     // that's wrong
           else {
             ActiveTimers--;}}}                        // reduce number of active timers
-      i++;}}
+      x++;}}                                          // increase timer counter
 
   // Solenoids
 
@@ -812,7 +839,7 @@ void loop() {
       if (RunOutTimers[1-TimerStack][c]) {            // number of run out timer found?
         TimerEvents[1-TimerStack]--;                  // decrease number of pending events
         i = RunOutTimers[1-TimerStack][c];            // buffer the timer number
-        TimerBuffer = TimerEvent[i];                  // Buffer the event for this timer
+        void (*TimerBuffer)(byte) = TimerEvent[i];    // Buffer the event for this timer
         if (!TimerBuffer) {                           // TimerEvent must be specified
           ErrorHandler(20,0,c);}
         RunOutTimers[1-TimerStack][c] = 0;            // delete the timer from the list
@@ -928,17 +955,50 @@ bool QueryLamp(byte Lamp) {
   Lamp--;
   return LampColumns[Lamp / 8] & 1<<(Lamp % 8);}
 
+byte ActivatePrioTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
+  if (ActivePrioTimers < 8) {                         // only 8 prio timers allowed
+    byte i = 1;
+    BlockPrioTimers = true;                           // block IRQ prio timer handling to avoid interference
+    while (PrioTimerEvent[i]) {                       // search for a free timer
+      i++;}
+    PrioTimerArgument[i] = Argument;                  // initialize it
+    PrioTimerEvent[i] = EventPointer;
+    PrioTimerValue[i] = Value;
+    ActivePrioTimers++;                               // increase the number of active prio timers
+    BlockPrioTimers = false;                          // release the IRQ block
+    return i;}                                        // and return its number
+  else {
+    ErrorHandler(42,0,0);
+    return 0;}}
+
+void KillPrioTimer(byte TimerNo) {
+  BlockPrioTimers = true;                             // block IRQ prio timer handling to avoid interference
+  if (PrioTimerValue[TimerNo]) {                      // timer still active?
+    if (!ActivePrioTimers) {                          // number of active prio timers already 0?
+      ErrorHandler(45, TimerNo,(uint) TimerEvent[TimerNo]);}
+    else {
+      ActivePrioTimers--;}}                           // reduce number of active prio timers
+  else {
+    ErrorHandler(46, TimerNo,(uint) TimerEvent[TimerNo]);}
+  PrioTimerValue[TimerNo] = 0;                        // set counter to 0
+  PrioTimerEvent[TimerNo] = 0;                        // clear Timer Event
+  BlockPrioTimers = false;}                           // release the IRQ block
+
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
-  byte i = 1;                                         // reset counter
-  BlockTimers = true;                                 // block IRQ timer handling to avoid interference
-  while (TimerEvent[i]) {                             // search for a free timer
-    i++;}
-  TimerArgument[i] = Argument;                        // initialize it
-  TimerEvent[i] = EventPointer;
-  TimerValue[i] = Value;
-  ActiveTimers++;                                     // increase the number of active timers
-  BlockTimers = false;                                // release the IRQ block
-  return i;}                                          // and return its number
+  if (ActiveTimers < 63) {
+    byte i = 1;                                       // reset counter
+    BlockTimers = true;                               // block IRQ timer handling to avoid interference
+    while (TimerEvent[i]) {                           // search for a free timer
+      i++;}
+    TimerArgument[i] = Argument;                      // initialize it
+    TimerEvent[i] = EventPointer;
+    TimerValue[i] = Value;
+    ActiveTimers++;                                   // increase the number of active timers
+    BlockTimers = false;                              // release the IRQ block
+    return i;}                                        // and return its number
+  else {
+    ErrorHandler(18,0,0);
+    return 0;}}
 
 void KillAllTimers() {
   BlockTimers = true;                                 // block IRQ timer handling to avoid interference
