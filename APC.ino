@@ -2028,7 +2028,7 @@ void FadeOutMusic(byte Param) {                       // call with Param = time 
     ActivateTimer(Speed*10, 0, FadeOutMusic);}
   else {
     StopPlayingMusic();
-    ActivateTimer(10, 0, FadeOutMusic2);}}
+    ActivateTimer(100, 0, FadeOutMusic2);}}
 
 void PlaySound(byte Priority, const char* Filename) {
   AfterSoundPending = 0;
