@@ -26,6 +26,7 @@ void HandleNumSetting(bool change);
 void HandleVolumeSetting(bool change);
 void RestoreDefaults(bool change);
 void ExitSettings(bool change);
+void HandleLEDs(byte LampCol);
 
 const byte AlphaUpper[128] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
     63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,136,0,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
@@ -195,12 +196,12 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 #define BackboxLamps 10																// Column of backbox lamps
 
 const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{"   TUTORIAL     "}};
-const char TxTLEDSelect[3][17] = {{"   NO   LEDS    "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
+const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
 const char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{"123456123456    "},{"12345671234567  "}};
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "}};
 
-const struct SettingTopic APC_setList[14] = {
+const struct SettingTopic APC_setList[15] = {
     {"DISPLAY TYPE    ",HandleDisplaySetting,&TxTDisplaySelect[0][0],0,7},
     {" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
     {" NO OF  BALLS   ",HandleNumSetting,0,1,5},
@@ -208,7 +209,8 @@ const struct SettingTopic APC_setList[14] = {
     {"CONNECT TYPE    ",HandleTextSetting,&TxTConType[0][0],0,2},
     {"  DIM  INSERTS  ",HandleBoolSetting,0,0,0},
     {"SPEAKER VOLUME  ",HandleVolumeSetting,0,0,255},
-    {"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,2},
+    {"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,3},
+    {" NO OF   LEDS   ",HandleNumSetting,0,1,64},
     {"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
 		{"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,1},
@@ -416,6 +418,7 @@ void Init_System2(byte State) {                       // state = 0 will restore 
     ActivateTimer(2000, 0, EnterAttractMode);}
   else {
     delay(2000);
+    HandleLEDs(0);
     EnterAttractMode(0);}}
 
 void EnterAttractMode(byte Event) {                   // Enter the attract mode from a timer
@@ -428,8 +431,6 @@ void TC7_Handler() {                                  // interrupt routine - run
   static byte DispCol = 0;                            // display column being illuminated at the moment
   static byte LampCol = 0;                            // lamp column being illuminated at the moment
   static uint16_t LampColMask = 2;                    // mask for lamp column select
-  static bool LEDFlag;                                // stores whether the select has to be triggered by the rising or falling edge
-  static byte LEDCount = 0;                           // points to the next command byte to be send to the LED exp board
   const uint32_t HwExtSelMask[5] = {2097152, 536870912, 512, 67108864, 8192}; // mask for sel5, sel6, sel7, SPI_CS1, Sel14
   int i;                                              // general purpose counter
   uint32_t Buff;
@@ -622,7 +623,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 
   // Lamps
 
-  if (!APC_settings[LEDsetting]) {
+  if (APC_settings[LEDsetting] < 2) {                 // matrix lamps active?
     if (LampWait == LampPeriod) {                     // Waiting time has passed
       LampCol++;                                      // prepare for next lamp column
       LampColMask = LampColMask<<1;
@@ -643,49 +644,12 @@ void TC7_Handler() {                                  // interrupt routine - run
           c = *(LampPattern+LampCol);}}               // all other columns are referenced via LampPattern
       REG_PIOC_SODR = c<<1;                           // write lamp pattern
       REG_PIOC_SODR = 33554432;                       // use Sel1
-      REG_PIOC_CODR = AllSelects + AllData;           // clear all select signals and the data bus
+      REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
       REG_PIOC_SODR = LampColMask;
       LampWait = 1;                                   // restart lamp waiting counter
       REG_PIOC_SODR = 268435456;}                     // use Sel0
     else {                                            // waiting time has not yet passed
       LampWait++;}}                                   // increase wait counter
-  else {                                              // LEDs selected
-    if (LampCol > 19) {                               // 20ms over
-      LampCol = 0;}                                   // start from the beginning
-    if (LampCol < 8) {                                // the first 8 cycles are for transmitting the status of the lamp matrix
-      byte LampData;
-      if (!LampCol){                                  // max column reached?
-        LampData = LampColumns[LampCol];}
-      else {
-        LampData = *(LampPattern+LampCol);}
-      if (LEDFlag) {
-        LEDFlag = false;
-        WriteToHwExt(LampData, 1);}                   // write lamp pattern with Sel5 falling edge
-      else {
-        LEDFlag = true;
-        WriteToHwExt(LampData, 129);}}                // activate Sel5 rising edge
-    else {                                            // the lamp matrix is already sent
-      if ((LampCol < 13) || LEDCount) {               // still time to send a command or command still running?
-        if (LEDCommandBytes) {                        // are there any pending LED commands?
-          if (LEDFlag) {
-            LEDFlag = false;
-            WriteToHwExt(LEDCommand[LEDCount], 1);}   // write LED command with Sel5 falling edge
-          else {
-            LEDFlag = true;
-            WriteToHwExt(LEDCommand[LEDCount], 129);}
-          LEDCount++;                                 // increase the counter
-          if (LEDCount == LEDCommandBytes) {          // not all command bytes sent?
-            LEDCommandBytes = 0;
-            LEDCount = 0;}}}
-      else {                                          // LampCol > 13
-        if (LampCol == 17) {                          // time to sync
-          if (LEDFlag) {
-            LEDFlag = false;
-            WriteToHwExt(170, 1);}                    // write sync command with Sel5 falling edge
-          else {
-            LEDFlag = true;
-            WriteToHwExt(170, 129);}}}}
-    LampCol++;}
 
   // Hardware extension interface
 
@@ -926,6 +890,51 @@ void ReadSound() {                                    // same as above but for t
     StopSound = SBP;
     SoundFile.close();}
   SoundPrio = false;}
+
+void HandleLEDs(byte LampCol) {                         // LEDs selected
+  static bool PolarityFlag;                           // stores whether the select has to be triggered by the rising or falling edge
+  static byte CommandCount = 0;                       // points to the next command byte to be send to the LED exp board
+  //static byte LampCol = 0;                            // lamp column being illuminated at the moment
+
+  if (LampCol > 19) {                               // 20ms over
+    LampCol = 0;}                                   // start from the beginning
+  if (LampCol < 8) {                                // the first 8 cycles are for transmitting the status of the lamp matrix
+    byte LampData;
+    if (!LampCol){                                  // max column reached?
+      LampData = LampColumns[LampCol];}
+    else {
+      LampData = *(LampPattern+LampCol);}
+    if (PolarityFlag) {
+      PolarityFlag = false;
+      WriteToHwExt(LampData, 1);}                   // write lamp pattern with Sel5 falling edge
+    else {
+      PolarityFlag = true;
+      WriteToHwExt(LampData, 129);}}                // activate Sel5 rising edge
+  else {                                            // the lamp matrix is already sent
+    if ((LampCol < 13) || CommandCount) {               // still time to send a command or command still running?
+      if (LEDCommandBytes) {                        // are there any pending LED commands?
+        if (PolarityFlag) {
+          PolarityFlag = false;
+          WriteToHwExt(LEDCommand[CommandCount], 1);}   // write LED command with Sel5 falling edge
+        else {
+          PolarityFlag = true;
+          WriteToHwExt(LEDCommand[CommandCount], 129);}
+        CommandCount++;                                 // increase the counter
+        if (CommandCount == LEDCommandBytes) {          // not all command bytes sent?
+          LEDCommandBytes = 0;
+          CommandCount = 0;}}}
+    else {                                          // LampCol > 13
+      if (LampCol == 17) {                          // time to sync
+        if (PolarityFlag) {
+          PolarityFlag = false;
+          WriteToHwExt(170, 1);}                    // write sync command with Sel5 falling edge
+        else {
+          PolarityFlag = true;
+          WriteToHwExt(170, 129);}
+        ActivateTimer(3, 0, HandleLEDs);
+        return;}}}
+  LampCol++;
+  ActivateTimer(1, LampCol, HandleLEDs);}
 
 void SwitchPressed(int SwNumber) {
   Serial.print(" Switch pressed ");
