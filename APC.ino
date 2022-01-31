@@ -9,7 +9,7 @@ SdFat SD;
 #define SwMax 72                                      // number of existing switches (max. 72)
 #define LampMax 64                                    // number of existing lamps (max. 64)
 #define DispColumns 16                                // Number of columns of the used display unit
-#define AllSelects 871338496                          // mask for all port C pins belonging to select signals except special switch Sel13 and HW_ext latch select Sel14
+#define AllSelects 938447360                          // mask for all port C pins belonging to select signals except special switch Sel13 and HW_ext latch select Sel14
 #define Sel5 2097152                                  // mask for the Sel5 select signal
 #define HwExtSels 606077440                           // mask for all Hw extension port select signals
 #define Sel14 8192                                    // mask for the Sel14 select signal
@@ -411,6 +411,8 @@ void Init_System2(byte State) {                       // state = 0 will restore 
   if (APC_settings[LEDsetting]) {
     REG_PIOC_SODR = Sel14;}                           // enable the HW_ext_latch
   if (State) {
+    if(APC_settings[LEDsetting]) {                    // LEDs selected?
+      LEDinit();}                                     // set them up
     ActivateTimer(2000, 0, EnterAttractMode);}
   else {
     delay(2000);
@@ -896,6 +898,9 @@ void LEDhandling(byte Command, byte Arg) {            // main LED handler
   static byte SpecialCommand[20];                     // command bytes to be send to the LED exp board
   static byte CommandCount = 0;                       // points to the next command byte to be send to the LED exp board
   switch(Command) {
+  case 0:                                             // stop LEDhandling
+
+    break;
   case 1:                                             // init
     ActivateTimer(1, Arg, LEDtimer);
     break;
