@@ -646,11 +646,11 @@ void USB_SerialCommand() {
               for (i=0; i<16; i++) {
                 *(DisplayLower+2*i) = ConvertPattern(0, USB_SerialBuffer[i]);}
               break;
-//            case 4:                                   // 14 segment pattern (2 bytes)
-//              for (i=0; i<16; i++) {
-//                *(DisplayLower+2*i) = ConvertPattern(0, USB_SerialBuffer[2*i]);
-//                *(DisplayLower+2*i+1) = ConvertPattern(1, USB_SerialBuffer[2*i+1]);}
-//              break;
+            case 4:                                   // 14 segment pattern (2 bytes)
+              for (i=0; i<16; i++) {
+                *(DisplayLower+2*i) = ConvertPattern(0, USB_SerialBuffer[2*i]);
+                *(DisplayLower+2*i+1) = ConvertPattern(1, USB_SerialBuffer[2*i+1]);}
+              break;
             case 5:                                   // ASCII
             case 6:                                   // ASCII with comma
               WritePlayerDisplay((char*)USB_SerialBuffer, 2);

@@ -23,7 +23,7 @@ To set up WiFi you have to find the following file on your Lisy SD-card
 
     /lisy/lisy/ wpa_supplicant.conf
     
-and change the country, 'ssid' and 'psk' settings to those of your wireless network.
+and change the settings for 'country', 'ssid' and 'psk' to those of your wireless network.
 
 For more information about Lisy and WiFi, please read the 'Wireless config' section in the Lisy manual.
 
