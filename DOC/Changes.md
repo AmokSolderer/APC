@@ -15,6 +15,8 @@ The purpose of this is to enable state machines that are initially called from t
 
 * Support for 2x16 character displays with additional numerical displays has been added.
 
+* SW support for the [LED_expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) has been upgraded.
+
 ### Misc
 
 * The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
