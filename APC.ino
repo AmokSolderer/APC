@@ -891,15 +891,16 @@ void ReadSound() {                                    // same as above but for t
     SoundFile.close();}
   SoundPrio = false;}
 
-void LEDhandling(byte Command, byte Arg) {            // main LED handler
+byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static bool PolarityFlag;                           // stores whether the select has to be triggered by the rising or falling edge
+  static byte EndSequence = 0;                        // indicator needed for a graceful exit
   static byte LEDstatus[8];                           // stores the status of 64 LEDs
   static byte SpecialCommandBytes = 0;                // number of command bytes to be send to the LED exp board
   static byte SpecialCommand[20];                     // command bytes to be send to the LED exp board
   static byte CommandCount = 0;                       // points to the next command byte to be send to the LED exp board
   switch(Command) {
   case 0:                                             // stop LEDhandling
-
+    EndSequence = 1;                                  // initiate exit
     break;
   case 1:                                             // init
     ActivateTimer(1, Arg, LEDtimer);
@@ -909,13 +910,16 @@ void LEDhandling(byte Command, byte Arg) {            // main LED handler
       Arg = 0;}                                       // start from the beginning
     if (Arg < 8) {                                    // the first 8 cycles are for transmitting the status of the lamp matrix
       byte LampData;
-      if (APC_settings[LEDsetting] > 1) {             // playfield LEDs selected?
-        if (!Arg){                                    // max column reached?
-          LampData = LampColumns[Arg];}
-        else {
-          LampData = *(LampPattern+Arg);}}
-      else {                                          // additional LEDs selected
-        LampData = LEDstatus[Arg];}
+      if (EndSequence) {                              // end sequence running
+        LampData = 0;}
+      else {                                          // normal operation
+        if (APC_settings[LEDsetting] > 1) {           // playfield LEDs selected?
+          if (!Arg){                                  // max column reached?
+            LampData = LampColumns[Arg];}
+          else {
+            LampData = *(LampPattern+Arg);}}
+        else {                                        // additional LEDs selected
+          LampData = LEDstatus[Arg];}}
       if (PolarityFlag) {                             // data bus of LED_exp board works with toggling select
         PolarityFlag = false;
         WriteToHwExt(LampData, 1);}                   // write lamp pattern with Sel5 falling edge
@@ -943,39 +947,40 @@ void LEDhandling(byte Command, byte Arg) {            // main LED handler
           else {
             PolarityFlag = true;
             WriteToHwExt(170, 129);}
+          if (EndSequence) {                          // the end is near
+            if (EndSequence < 2) {                    // just not yet
+              EndSequence++;}
+            else {                                    // this is the end
+              EndSequence = 0;
+              break;}}
           ActivateTimer(3, 0, LEDtimer);
           break;}}}
     Arg++;
     ActivateTimer(1, Arg, LEDtimer);
     break;
   case 3:                                             // turn on LED
-    Arg--;
     LEDstatus[Arg / 8] |= 1<<(Arg % 8);
     break;
   case 4:                                             // turn off LED
-    Arg--;
     LEDstatus[Arg / 8] &= 255-(1<<(Arg % 8));
     break;
-  case 5:                                             // write command
+  case 5:                                             // query LED
+    return LEDstatus[Arg / 8] & 1<<(Arg % 8);
+  case 6:                                             // write command
     SpecialCommand[SpecialCommandBytes] = Arg;
     SpecialCommandBytes++;
     break;
-  case 6:                                             // execute command
+  case 7:                                             // execute command
     CommandCount = SpecialCommandBytes;
     SpecialCommandBytes = 0;
-    break;}}
+    break;}
+return(0);}
 
 void LEDinit() {
   LEDhandling(1, 0);}
 
 void LEDtimer(byte Step) {
   LEDhandling(2, Step);}
-
-void TurnOnLED(byte LED) {
-  LEDhandling(3, LED);}
-
-void TurnOffLED(byte LED) {
-  LEDhandling(4, LED);}
 
 void LEDchangeColor(byte LED, byte Red, byte Green, byte Blue) {
   LEDhandling(5, 192);
@@ -1000,16 +1005,25 @@ bool QuerySwitch(byte Switch) {                       // return status of switch
   return !(SwitchRows[Switch / 8] & SwitchMask[Switch % 8]);}
 
 void TurnOnLamp(byte Lamp) {
-  Lamp--;
-  LampColumns[Lamp / 8] |= 1<<(Lamp % 8);}
+  if (Lamp < 65) {                                    // is it a matrix lamp?
+    Lamp--;
+    LampColumns[Lamp / 8] |= 1<<(Lamp % 8);}
+  else {                                              // lamp numbers > 64 are additional LEDs
+    LEDhandling(3, Lamp - 65);}}
 
 void TurnOffLamp(byte Lamp) {
-  Lamp--;
-  LampColumns[Lamp /8] &= 255-(1<<(Lamp % 8));}
+  if (Lamp < 65) {                                    // is it a matrix lamp?
+    Lamp--;
+    LampColumns[Lamp /8] &= 255-(1<<(Lamp % 8));}
+  else {                                              // lamp numbers > 64 are additional LEDs
+    LEDhandling(4, Lamp - 65);}}
 
 bool QueryLamp(byte Lamp) {
-  Lamp--;
-  return LampColumns[Lamp / 8] & 1<<(Lamp % 8);}
+  if (Lamp < 65) {                                    // is it a matrix lamp?
+    Lamp--;
+    return LampColumns[Lamp / 8] & 1<<(Lamp % 8);}
+  else {                                              // lamp numbers > 64 are additional LEDs
+    return LEDhandling(5, Lamp - 65);}}
 
 byte ActivatePrioTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
   if (ActivePrioTimers < 8) {                         // only 8 prio timers allowed

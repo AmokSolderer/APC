@@ -359,20 +359,15 @@ void USB_SerialCommand() {
     USB_WriteByte((byte) 73);
     break;
   case 10:                                            // get status of lamp
-    if (USB_SerialBuffer[0] < 65) {                   // max 64 lamps
-      USB_WriteByte((byte) QueryLamp(USB_SerialBuffer[0]));}
-    else {
-      USB_WriteByte((byte) 2);}
+    USB_WriteByte((byte) QueryLamp(USB_SerialBuffer[0]));
     break;
   case 11:                                            // turn on lamp
     if (!PinMameException(LampOnCommand, USB_SerialBuffer[0])){ // check for machine specific exceptions
-      if (USB_SerialBuffer[0] < 65) {                 // max 64 lamps
-        TurnOnLamp(USB_SerialBuffer[0]);}}
+      TurnOnLamp(USB_SerialBuffer[0]);}
     break;
   case 12:                                            // turn off lamp
     if (!PinMameException(LampOffCommand, USB_SerialBuffer[0])){  // check for machine specific exceptions
-      if (USB_SerialBuffer[0] < 65) {                 // max 64 lamps
-        TurnOffLamp(USB_SerialBuffer[0]);}}
+      TurnOffLamp(USB_SerialBuffer[0]);}
     break;
   case 19:                                            // get number of modern lights
     USB_WriteByte((byte) 0);
