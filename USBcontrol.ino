@@ -226,9 +226,6 @@ void USB_SerialCommand() {
   static byte Command;
   static byte USB_BufferPointer;                      // pointer for the SerialBuffer
   static bool CommandPending;
-  //static byte SoundSeries[3] = {0,0,1};               // buffer to handle pre system11 sound series
-  //static byte LastCh1Sound;                           // preSys11: stores the number of the last sound that has been played on Ch1
-  static byte LEDCommandCounter;                      // for sending LED command via USB
   byte c = 0;
   byte i = 0;
   if (!CommandPending) {                              // any unfinished business?
@@ -362,20 +359,15 @@ void USB_SerialCommand() {
     USB_WriteByte((byte) 73);
     break;
   case 10:                                            // get status of lamp
-    if (USB_SerialBuffer[0] < 65) {                   // max 64 lamps
-      USB_WriteByte((byte) QueryLamp(USB_SerialBuffer[0]));}
-    else {
-      USB_WriteByte((byte) 2);}
+    USB_WriteByte((byte) QueryLamp(USB_SerialBuffer[0]));
     break;
   case 11:                                            // turn on lamp
     if (!PinMameException(LampOnCommand, USB_SerialBuffer[0])){ // check for machine specific exceptions
-      if (USB_SerialBuffer[0] < 65) {                 // max 64 lamps
-        TurnOnLamp(USB_SerialBuffer[0]);}}
+      TurnOnLamp(USB_SerialBuffer[0]);}
     break;
   case 12:                                            // turn off lamp
     if (!PinMameException(LampOffCommand, USB_SerialBuffer[0])){  // check for machine specific exceptions
-      if (USB_SerialBuffer[0] < 65) {                 // max 64 lamps
-        TurnOffLamp(USB_SerialBuffer[0]);}}
+      TurnOffLamp(USB_SerialBuffer[0]);}
     break;
   case 19:                                            // get number of modern lights
     USB_WriteByte((byte) 0);
@@ -1048,12 +1040,10 @@ void USB_SerialCommand() {
     WriteToHwExt(USB_SerialBuffer[0], USB_SerialBuffer[1]);
     break;
   case 81:                                            // queue LED command
-    LEDCommand[LEDCommandCounter] = USB_SerialBuffer[0];
-    LEDCommandCounter++;
+    LEDhandling(3, USB_SerialBuffer[0]);
     break;
   case 82:                                            // send queue
-    LEDCommandBytes = LEDCommandCounter;
-    LEDCommandCounter = 0;
+    LEDhandling(6, 4);
     break;
   case 100:                                           // init
     USB_WatchdogHandler(1);
