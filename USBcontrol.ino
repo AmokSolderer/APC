@@ -143,6 +143,8 @@ void USB_SwitchHandler(byte Switch) {
     switch (Switch) {
     case 8:                                           // high score reset
       digitalWrite(Blanking, LOW);                    // invoke the blanking
+      StopPlayingMusic();
+      StopPlayingSound();
       break;
     case 72:                                          // advance button
       while (USB_ChangedSwitches[i] && (i<63)) {
