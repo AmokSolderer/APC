@@ -897,10 +897,10 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static byte LEDstatus[8];                           // stores the status of 64 LEDs
   static byte SpcCommandLength[8];                    // length in bytes of commands to be send to the LED exp board
   static byte SpcBuffer[20];                          // command bytes to be send to the LED exp board
-  static byte BufferRead = 0;
-  static byte BufferWrite = 0;
+  static byte BufferRead = 0;                         // read pointer for ringbuffer SpcBuffer
+  static byte BufferWrite = 0;                        // write pointer for ringbuffer SpcBuffer
   static byte SpcWriteCount = 0;                      // points to the next command byte to be send to the LED exp board
-  static byte SpcReadCount = 0;
+  static byte SpcReadCount = 0;                       // counter for bytes to transmit
   switch(Command) {
   case 0:                                             // stop LEDhandling
     EndSequence = 1;                                  // initiate exit
@@ -930,27 +930,27 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         PolarityFlag = true;
         WriteToHwExt(LampData, 129);}}                // activate Sel5 rising edge
     else {                                            // the lamp matrix is already sent
-      if (Arg == 10 && SpcCommandLength[0]) {
-        SpcReadCount = SpcCommandLength[0];
+      if (Arg == 10 && SpcCommandLength[0]) {         // command for Led_exp board pending?
+        SpcReadCount = SpcCommandLength[0];           // get number of bytes to transmit
         byte i = 0;
-        do {
+        do {                                          // move buffer up by one entry
           i++;
           SpcCommandLength[i-1] = SpcCommandLength[i];}
         while(SpcCommandLength[i]);}
-      if (SpcReadCount) {
-        if (PolarityFlag) {
+      if (SpcReadCount) {                             // still command bytes to transmit?
+        if (PolarityFlag) {                           // data bus of LED_exp board works with toggling select
           PolarityFlag = false;
           WriteToHwExt(SpcBuffer[BufferRead], 1);}    // write LED command with Sel5 falling edge
         else {
           PolarityFlag = true;
           WriteToHwExt(SpcBuffer[BufferRead], 129);}
-        SpcReadCount--;
-        BufferRead++;                                 // increase the counter
-        if (BufferRead > 19) {
-          BufferRead = 0;}}
+        SpcReadCount--;                               // reduce number of bytes to transmit
+        BufferRead++;                                 // increase the read counter for ringbuffer
+        if (BufferRead > 19) {                        // end reached?
+          BufferRead = 0;}}                           // start over
       else {                                          // LampCol > 13
         if (Arg > 16) {                               // time to sync
-          if (PolarityFlag) {
+          if (PolarityFlag) {                         // data bus of LED_exp board works with toggling select
             PolarityFlag = false;
             WriteToHwExt(170, 1);}                    // write sync command with Sel5 falling edge
           else {
@@ -962,7 +962,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
             else {                                    // this is the end
               EndSequence = 0;
               break;}}
-          ActivateTimer(3, 0, LEDtimer);
+          ActivateTimer(3, 0, LEDtimer);              // sync needs 3ms
           break;}}}
     Arg++;
     ActivateTimer(1, Arg, LEDtimer);
@@ -976,22 +976,22 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   case 5:                                             // query LED
     return LEDstatus[Arg / 8] & 1<<(Arg % 8);
   case 6:                                             // write command
-    BufferWrite++;
-    if (BufferWrite > 19) {
-      BufferWrite = 0;}
-    if (BufferWrite == BufferRead) {
-      return(1);}
-    SpcBuffer[BufferWrite] = Arg;
-    SpcWriteCount++;
+    SpcBuffer[BufferWrite] = Arg;                     // write to ringbuffer
+    SpcWriteCount++;                                  // count number of bytes to transmit
+    BufferWrite++;                                    // increase write pointer
+    if (BufferWrite > 19) {                           // end of ringbuffer reached?
+      BufferWrite = 0;}                               // start over
+    if (BufferWrite == BufferRead) {                  // ringbuffer full?
+      return(1);}                                     // terminate write attempt
     break;
   case 7:                                             // execute command
     byte i = 0;
-    while (SpcCommandLength[i]) {
+    while (SpcCommandLength[i]) {                     // look for a free slot
       i++;}
-    if (i > 7) {
+    if (i > 7) {                                      // no more than 8 commands at a time
       return(1);}
-    SpcCommandLength[i] = SpcWriteCount;
-    SpcWriteCount = 0;
+    SpcCommandLength[i] = SpcWriteCount;              // write length of command to buffer
+    SpcWriteCount = 0;                                // reset number for command entry
     break;}
   return(0);}
 
@@ -1001,12 +1001,12 @@ void LEDinit() {
 void LEDtimer(byte Step) {
   LEDhandling(2, Step);}
 
-void LEDchangeColor(byte LED, byte Red, byte Green, byte Blue) {
-  LEDhandling(5, 192);
-  LEDhandling(5, Red);
-  LEDhandling(5, Green);
-  LEDhandling(5, Blue);
-  LEDhandling(6, 4);}
+void LEDsetColor(byte Red, byte Green, byte Blue) {
+  LEDhandling(6, 192);
+  LEDhandling(6, Red);
+  LEDhandling(6, Green);
+  LEDhandling(6, Blue);
+  LEDhandling(7, 4);}
 
 void SwitchPressed(int SwNumber) {
   Serial.print(" Switch pressed ");
