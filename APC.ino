@@ -895,9 +895,12 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static bool PolarityFlag;                           // stores whether the select has to be triggered by the rising or falling edge
   static byte EndSequence = 0;                        // indicator needed for a graceful exit
   static byte LEDstatus[8];                           // stores the status of 64 LEDs
-  static byte SpecialCommandBytes = 0;                // number of command bytes to be send to the LED exp board
-  static byte SpecialCommand[20];                     // command bytes to be send to the LED exp board
-  static byte CommandCount = 0;                       // points to the next command byte to be send to the LED exp board
+  static byte SpcCommandLength[8];                    // length in bytes of commands to be send to the LED exp board
+  static byte SpcBuffer[20];                          // command bytes to be send to the LED exp board
+  static byte BufferRead = 0;
+  static byte BufferWrite = 0;
+  static byte SpcWriteCount = 0;                      // points to the next command byte to be send to the LED exp board
+  static byte SpcReadCount = 0;
   switch(Command) {
   case 0:                                             // stop LEDhandling
     EndSequence = 1;                                  // initiate exit
@@ -927,20 +930,26 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         PolarityFlag = true;
         WriteToHwExt(LampData, 129);}}                // activate Sel5 rising edge
     else {                                            // the lamp matrix is already sent
-      if ((Arg < 13) || CommandCount) {               // still time to send a command or command still running?
-        if (SpecialCommandBytes) {                    // are there any pending LED commands?
-          if (PolarityFlag) {
-            PolarityFlag = false;
-            WriteToHwExt(SpecialCommand[CommandCount], 1);} // write LED command with Sel5 falling edge
-          else {
-            PolarityFlag = true;
-            WriteToHwExt(SpecialCommand[CommandCount], 129);}
-          CommandCount++;                             // increase the counter
-          if (CommandCount == SpecialCommandBytes) {  // not all command bytes sent?
-            SpecialCommandBytes = 0;
-            CommandCount = 0;}}}
+      if (Arg == 10 && SpcCommandLength[0]) {
+        SpcReadCount = SpcCommandLength[0];
+        byte i = 0;
+        do {
+          i++;
+          SpcCommandLength[i-1] = SpcCommandLength[i];}
+        while(SpcCommandLength[i]);}
+      if (SpcReadCount) {
+        if (PolarityFlag) {
+          PolarityFlag = false;
+          WriteToHwExt(SpcBuffer[BufferRead], 1);}    // write LED command with Sel5 falling edge
+        else {
+          PolarityFlag = true;
+          WriteToHwExt(SpcBuffer[BufferRead], 129);}
+        SpcReadCount--;
+        BufferRead++;                                 // increase the counter
+        if (BufferRead > 19) {
+          BufferRead = 0;}}
       else {                                          // LampCol > 13
-        if (Arg == 17) {                              // time to sync
+        if (Arg > 16) {                               // time to sync
           if (PolarityFlag) {
             PolarityFlag = false;
             WriteToHwExt(170, 1);}                    // write sync command with Sel5 falling edge
@@ -967,14 +976,24 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   case 5:                                             // query LED
     return LEDstatus[Arg / 8] & 1<<(Arg % 8);
   case 6:                                             // write command
-    SpecialCommand[SpecialCommandBytes] = Arg;
-    SpecialCommandBytes++;
+    BufferWrite++;
+    if (BufferWrite > 19) {
+      BufferWrite = 0;}
+    if (BufferWrite == BufferRead) {
+      return(1);}
+    SpcBuffer[BufferWrite] = Arg;
+    SpcWriteCount++;
     break;
   case 7:                                             // execute command
-    CommandCount = SpecialCommandBytes;
-    SpecialCommandBytes = 0;
+    byte i = 0;
+    while (SpcCommandLength[i]) {
+      i++;}
+    if (i > 7) {
+      return(1);}
+    SpcCommandLength[i] = SpcWriteCount;
+    SpcWriteCount = 0;
     break;}
-return(0);}
+  return(0);}
 
 void LEDinit() {
   LEDhandling(1, 0);}

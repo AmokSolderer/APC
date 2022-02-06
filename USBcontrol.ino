@@ -1040,10 +1040,10 @@ void USB_SerialCommand() {
     WriteToHwExt(USB_SerialBuffer[0], USB_SerialBuffer[1]);
     break;
   case 81:                                            // queue LED command
-    LEDhandling(3, USB_SerialBuffer[0]);
+    LEDhandling(6, USB_SerialBuffer[0]);
     break;
   case 82:                                            // send queue
-    LEDhandling(6, 4);
+    LEDhandling(7, 4);
     break;
   case 100:                                           // init
     USB_WatchdogHandler(1);
