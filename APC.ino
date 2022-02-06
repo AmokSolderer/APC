@@ -1001,7 +1001,7 @@ void LEDinit() {
 void LEDtimer(byte Step) {
   LEDhandling(2, Step);}
 
-void LEDsetColor(byte Red, byte Green, byte Blue) {
+void LEDallColorMode(byte Red, byte Green, byte Blue) {
   LEDhandling(6, 192);
   LEDhandling(6, Red);
   LEDhandling(6, Green);
