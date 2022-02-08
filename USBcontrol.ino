@@ -1045,7 +1045,7 @@ void USB_SerialCommand() {
     LEDhandling(6, USB_SerialBuffer[0]);
     break;
   case 82:                                            // send queue
-    LEDhandling(7, 4);
+    LEDhandling(7, USB_SerialBuffer[0]);
     break;
   case 100:                                           // init
     USB_WatchdogHandler(1);

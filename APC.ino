@@ -1015,7 +1015,7 @@ void LEDsetColorMode(byte Mode) {                     // Mode = 0 -> lamps being
 
 void LEDchangeColor(byte LED) {                       // the color of the selected LED is changed to LEDsetColor
   LEDhandling(6, 195);
-  LEDhandling(6, LED);
+  LEDhandling(6, LED - 65);
   LEDhandling(7, 2);}
 
 void SwitchPressed(int SwNumber) {
