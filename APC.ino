@@ -1001,12 +1001,22 @@ void LEDinit() {
 void LEDtimer(byte Step) {
   LEDhandling(2, Step);}
 
-void LEDallColorMode(byte Red, byte Green, byte Blue) {
+void LEDsetColor(byte Red, byte Green, byte Blue) {   // set a new color
   LEDhandling(6, 192);
   LEDhandling(6, Red);
   LEDhandling(6, Green);
   LEDhandling(6, Blue);
   LEDhandling(7, 4);}
+
+void LEDsetColorMode(byte Mode) {                     // Mode = 0 -> lamps being lit get the LEDsetColor
+  if (Mode < 3) {                                     // Mode 1 -> lamps keep their color
+    LEDhandling(6, 64 + Mode);                        // Mode 2 -> lamps set in the following frame get the new color immediately
+    LEDhandling(7, 1);}}
+
+void LEDchangeColor(byte LED) {                       // the color of the selected LED is changed to LEDsetColor
+  LEDhandling(6, 195);
+  LEDhandling(6, LED);
+  LEDhandling(7, 2);}
 
 void SwitchPressed(int SwNumber) {
   Serial.print(" Switch pressed ");
