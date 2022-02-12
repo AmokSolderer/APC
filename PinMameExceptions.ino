@@ -600,6 +600,8 @@ byte EX_Rollergames(byte Type, byte Command){
 		return(0);}}
 
 byte EX_BlockAll(byte Type, byte Command) {
+  UNUSED(Type);
+  UNUSED(Command);
   return(1);}
 
 byte EX_Blank(byte Type, byte Command){

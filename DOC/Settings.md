@@ -54,8 +54,9 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 5 | Dim inserts | - | - | No | Bool setting - brightness of playfield lamps is set to 50% when on |
 | 6 | Speaker volume | - | - | 0 | Numerical setting - range 1 - 255 / must be set to 0 when volume pot is connected at 10J4 / 1J16 |
 | 7 | LED lamps | 0 | No LEDs | X | The APC_LED_exp board is not used |
-| 7 |  | 1 | Playfld only | - | The APC_LED_exp board is only used for the lamps 9 - 64 |
-| 7 |  | 2 | PlayfldBackbox | - | The APC_LED_exp board is used for all lamps |
+| 7 |  | 1 | Additional | - | The APC_LED_exp board is used for the lamps 65+ |
+| 7 |  | 2 | Playfld only | - | The APC_LED_exp board is only used for the lamps 9 - 64 |
+| 7 |  | 3 | PlayfldBackbox | - | The APC_LED_exp board is used for the lamps 1 - 64 |
 | 8 | Sol Exp Board | - | - | No | Bool setting - will use the solenoid expander board for solenoids 26 - 33 if set
 | 9 | Debug Mode | - | - | No | Bool setting - Active debug mode will show the number of active timers in the credit display and will stop the game on error |
 | 10 | Backbox Lamps | 0| Column 1 | X | Backbox lamps are in lamp column 1 |

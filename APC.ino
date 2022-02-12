@@ -171,7 +171,7 @@ struct SettingTopic {                                 // one topic of a list of 
   byte UpperLimit;};                                  // if text setting -> amount of text entries -1 / if num setting -> upper limit of selection value
 
 const char APC_set_file_name[13] = "APC_SET.BIN";
-const byte APC_defaults[64] =  {0,3,3,1,2,0,0,1,      // system default settings
+const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
     0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,
@@ -583,7 +583,6 @@ void TC7_Handler() {                                  // interrupt routine - run
     SolLatch = 0;
     SolChange = false;}                               // reset flag
 
-  // REG_PIOA_CODR = 524288;                             // enable latch outputs to send the pattern to display
   REG_PIOC_CODR = AllSelects - HwExtSels + AllData;   // clear all select signals and the data bus
 
   // Display segments
@@ -606,8 +605,6 @@ void TC7_Handler() {                                  // interrupt routine - run
     REG_PIOC_SODR = Buf<<1;                           // set 1st byte of the display pattern for the lower row
     REG_PIOC_SODR = 65536;}                           // use Sel11
   else {
-    //REG_PIOD_CODR = 15;                               // clear strobe select signals
-    //REG_PIOD_SODR = DispCol;                          // set display column
     REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals except HwExtSels and the data bus
     REG_PIOC_SODR = *(DispRow1+2*DispCol)<<1;         // set 1st byte of the display pattern for the upper row
     REG_PIOC_SODR = 524288;                           // use Sel8
@@ -902,12 +899,15 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static byte BufferWrite = 0;                        // write pointer for ringbuffer SpcBuffer
   static byte SpcWriteCount = 0;                      // points to the next command byte to be send to the LED exp board
   static byte SpcReadCount = 0;                       // counter for bytes to transmit
+  static byte Timer = 0;
   switch(Command) {
   case 0:                                             // stop LEDhandling
     EndSequence = 1;                                  // initiate exit
+    //WriteToHwExt(5, 130);
     break;
   case 1:                                             // init
-    ActivateTimer(1, Arg, LEDtimer);
+    if (!Timer) {
+      Timer = ActivateTimer(1, Arg, LEDtimer);}
     break;
   case 2:                                             // timer call
     if (Arg > 19) {                                   // 20ms over
@@ -963,10 +963,10 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
             else {                                    // this is the end
               EndSequence = 0;
               break;}}
-          ActivateTimer(3, 0, LEDtimer);              // sync needs 3ms
+          Timer = ActivateTimer(3, 0, LEDtimer);      // sync needs 3ms
           break;}}}
     Arg++;
-    ActivateTimer(1, Arg, LEDtimer);
+    Timer = ActivateTimer(1, Arg, LEDtimer);
     break;
   case 3:                                             // turn on LED
     LEDstatus[Arg / 8] |= 1<<(Arg % 8);
