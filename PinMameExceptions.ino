@@ -12,8 +12,6 @@
 #define WriteToDisplay3 11
 #define WriteToDisplay4 12
 
-byte (*PinMameException)(byte, byte);
-
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
@@ -600,6 +598,9 @@ byte EX_Rollergames(byte Type, byte Command){
 		return(0);
 	default:                                            // use default treatment for undefined types
 		return(0);}}
+
+byte EX_BlockAll(byte Type, byte Command) {
+  return(1);}
 
 byte EX_Blank(byte Type, byte Command){
   switch(Type){

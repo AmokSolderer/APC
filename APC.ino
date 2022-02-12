@@ -26,6 +26,7 @@ void HandleNumSetting(bool change);
 void HandleVolumeSetting(bool change);
 void RestoreDefaults(bool change);
 void ExitSettings(bool change);
+byte (*PinMameException)(byte, byte);
 
 const byte AlphaUpper[128] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
     63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,136,0,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
@@ -2196,6 +2197,7 @@ void QueueNextSound(const char* Filename) {
     AfterSound = (void(*)(byte)) QueueNextSound;}}
 
 void Settings_Enter() {
+  PinMameException = EX_BlockAll;                     // block all remote control commands
   WriteUpper("   SETTINGS     ");                     // Show Test Mode
   WriteLower("                ");
   LampPattern = NoLamps;                              // Turn off all lamps
