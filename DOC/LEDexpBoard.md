@@ -2,7 +2,8 @@
 
 The purpose of this board is to control a WS2812 based RGB LED strip with the APC.
 
-Depending on the 'LED lamps' setting the LED strip is used as a replacement for the controlled lamps (1-64) or the LEDs are added to the normal lamps which means the first LED corresponds to lamp number 65. That means, if you choose 'playfield' in the 'LED lamps' setting in the 'System Settings' menu of the APC, the normal controlled lamps will be switched off and the LED strip will be used instead. The first LED of the strip will then work as lamp 1 and so on. If you choose 'additional' the normal lampx matrix will stay active and the LEDs get the numbers 64+X.  
+Depending on the 'LED lamps' setting the LED strip is used as a replacement for the controlled lamps (1-64) or the LEDs are added to the normal lamps which means the first LED corresponds to lamp number 65. Hence, if you choose 'playfield' in the 'LED lamps' setting in the 'System Settings' menu of the APC, the normal controlled lamps will be switched off and the LED strip will be used instead. The first LED of the strip will then work as lamp 1 and so on. If you choose 'additional' the normal lamp matrix will stay active and the LEDs will get the numbers 64+X.
+
 The normal TurnOnLamp/TurnOffLamp commands are also used to control LEDs. When the status of an LED changes it's brightness will change gradually in 5 steps over 100ms which is similar to a lightbulb.
 
 The APC API features some special commands which work only with LEDs and not with normal matrix lamps.  
