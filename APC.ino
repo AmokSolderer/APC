@@ -903,7 +903,6 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   switch(Command) {
   case 0:                                             // stop LEDhandling
     EndSequence = 1;                                  // initiate exit
-    //WriteToHwExt(5, 130);
     break;
   case 1:                                             // init
     if (!Timer) {
@@ -962,6 +961,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
               EndSequence++;}
             else {                                    // this is the end
               EndSequence = 0;
+              Timer = 0;
               break;}}
           Timer = ActivateTimer(3, 0, LEDtimer);      // sync needs 3ms
           break;}}}
