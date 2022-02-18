@@ -187,7 +187,7 @@ void BC_AttractMode() {                               // Attract Mode
   AppByte2 = 0;
   LampReturn = BC_AttractLampCycle;
   ActivateTimer(1000, 0, BC_AttractLampCycle);
-  BC_AttractDisplayCycle(0);}
+  BC_AttractDisplayCycle(1);}
 
 void BC_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
   UNUSED(Event);
@@ -200,27 +200,43 @@ void BC_AttractLampCycle(byte Event) {                // play multiple lamp patt
 
 void BC_AttractDisplayCycle(byte Step) {
   BC_CheckForLockedBalls(0);
+  static byte Timer0 = 0;
+  static byte Timer1 = 0;
+  static byte Timer2 = 0;
   switch (Step) {
   case 0:
+    if (Timer0) {
+      KillTimer(Timer0);
+      Timer0 = 0;}
+    if (Timer1) {
+      KillTimer(Timer1);
+      Timer1 = 0;}
+    if (Timer2) {
+      KillTimer(Timer2);
+      Timer2 = 0;}
+    ScrollUpper(100);
+    ScrollLower2(100);
+    break;
+  case 1:
     WriteUpper2("APC BASE CODE   ");
-    ActivateTimer(50, 0, ScrollUpper);
+    Timer1 = ActivateTimer(50, 5, BC_AttractDisplayCycle);
     WriteLower2("                ");
-    ActivateTimer(1000, 0, ScrollLower2);
+    Timer2 = ActivateTimer(1000, 6, BC_AttractDisplayCycle);
     if (NoPlayers) {                                  // if there were no games before skip the next step
       Step++;}
     else {
-      Step = 2;}
+      Step = 3;}
     break;
-  case 1:
+  case 2:
     WriteUpper2("                ");                  // erase display
     WriteLower2("                ");
     for (i=1; i<=NoPlayers; i++) {                    // display the points of all active players
       ShowNumber(8*i-1, Points[i]);}
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower2);
+    Timer1 = ActivateTimer(50, 5, BC_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, BC_AttractDisplayCycle);
     Step++;
     break;
-  case 2:                                             // Show highscores
+  case 3:                                             // Show highscores
     WriteUpper2("1>              ");
     WriteLower2("2>              ");
     for (i=0; i<3; i++) {
@@ -230,11 +246,11 @@ void BC_AttractDisplayCycle(byte Step) {
       *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
     ShowNumber(15, HallOfFame.Scores[0]);
     ShowNumber(31, HallOfFame.Scores[1]);
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower2);
+    Timer1 = ActivateTimer(50, 5, BC_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, BC_AttractDisplayCycle);
     Step++;
     break;
-  case 3:
+  case 4:
     WriteUpper2("3>              ");
     WriteLower2("4>              ");
     for (i=0; i<3; i++) {
@@ -244,10 +260,19 @@ void BC_AttractDisplayCycle(byte Step) {
       *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
     ShowNumber(15, HallOfFame.Scores[2]);
     ShowNumber(31, HallOfFame.Scores[3]);
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower2);
-    Step = 0;}
-  ActivateTimer(4000, Step, BC_AttractDisplayCycle);}
+    Timer1 = ActivateTimer(50, 5, BC_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, BC_AttractDisplayCycle);
+    Step = 1;
+    break;
+  case 5:
+    Timer1 = 0;
+    ScrollUpper(0);
+    return;
+  case 6:
+    Timer2 = 0;
+    ScrollLower2(0);
+    return;}
+  Timer0 = ActivateTimer(4000, Step, BC_AttractDisplayCycle);}
 
 void BC_AttractModeSW(byte Button) {                  // Attract Mode switch behaviour
   switch (Button) {
@@ -279,7 +304,7 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
     if (BC_CountBallsInTrunk() == game_settings[BCset_InstalledBalls] || (BC_CountBallsInTrunk() == game_settings[BCset_InstalledBalls]-1 && QuerySwitch(game_settings[BCset_PlungerLaneSwitch]))) { // Ball missing?
       Switch_Pressed = DummyProcess;                  // Switches do nothing
       ShowLampPatterns(0);                            // stop lamp animations
-      KillAllTimers();
+      BC_AttractDisplayCycle(0);                      // stop display animations
       if (APC_settings[Volume]) {                     // system set to digital volume control?
         analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
       else {

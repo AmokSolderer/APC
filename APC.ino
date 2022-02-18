@@ -1368,91 +1368,115 @@ void WriteLower2(const char* DisplayText) {
       *(DisplayLower2+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
       *(DisplayLower2+18+2*i+1) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)+1];}}}
 
-void ScrollUpper(byte Step) {                         // call with Step = 0 and the text being in DisplayUpper2
-  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // 2x16 character display
-    for (i=0; i<30; i++) {
-      DisplayUpper[i] = DisplayUpper[i+2];}
-    DisplayUpper[30] = DisplayUpper2[2*Step];         // add the corresponding char of DisplayUpper2
-    DisplayUpper[31] = DisplayUpper2[2*Step+1];
-    Step++;}                                          // increase step
-  else {                                              // dont use columns 0 and 8 as they are reserved for the credit display
+void ScrollUpper(byte Step) {                         // call with Step = 0 and the text being in DisplayUpper2 / stop with Step = 100
+  static byte Timer = 0;
+  if (Step == 100) {                                  // stop command
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}}
+  else {                                              // normal call
+    if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // 2x16 character display
+      for (i=0; i<30; i++) {
+        DisplayUpper[i] = DisplayUpper[i+2];}
+      DisplayUpper[30] = DisplayUpper2[2*Step];       // add the corresponding char of DisplayUpper2
+      DisplayUpper[31] = DisplayUpper2[2*Step+1];
+      Step++;}                                        // increase step
+    else {                                            // dont use columns 0 and 8 as they are reserved for the credit display
+      if (!Step) {
+        Step++;}
+      for (i=2; i<14; i++) {                          // scroll display 1
+        DisplayUpper[i] = DisplayUpper[i+2];}
+      DisplayUpper[14] = DisplayUpper[18];            // add put the leftmost char of the display 2 to the end
+      DisplayUpper[15] = DisplayUpper[19];
+      for (i=18; i<30; i++) {                         // scroll display 2
+        DisplayUpper[i] = DisplayUpper[i+2];}
+      DisplayUpper[30] = DisplayUpper2[2*Step];       // add the corresponding char of DisplayUpper2
+      DisplayUpper[31] = DisplayUpper2[2*Step+1];
+      Step++;                                         // increase step
+      if (Step == 8) {                                // skip position 9 (belongs to the credit display
+        Step++;}}
+    if (Step < 16) {                                  // if its not already over
+      Timer = ActivateTimer(50, Step, ScrollUpper);}}}  // come back
+
+void AddScrollUpper(byte Step) {                      // call with Step = 0 and the text being in DisplayUpper2 / stop with Step = 100
+  static byte Timer = 0;
+  if (Step == 100) {                                  // stop command
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}}
+  else {                                              // normal call
     if (!Step) {
       Step++;}
-    for (i=2; i<14; i++) {                            // scroll display 1
-      DisplayUpper[i] = DisplayUpper[i+2];}
-    DisplayUpper[14] = DisplayUpper[18];              // add put the leftmost char of the display 2 to the end
-    DisplayUpper[15] = DisplayUpper[19];
-    for (i=18; i<30; i++) {                           // scroll display 2
-      DisplayUpper[i] = DisplayUpper[i+2];}
-    DisplayUpper[30] = DisplayUpper2[2*Step];         // add the corresponding char of DisplayUpper2
+    if (Step > 8) {                                   // scroll into the left display?
+      for (i=0; i<2*(Step-9);i++) {                   // for all characters in the left display that have to be scrolled
+        DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];} // scroll them
+      DisplayUpper[14] = DisplayUpper[18];            // get the leftmost character of the right display
+      DisplayUpper[15] = DisplayUpper[19];
+      for (i=0; i<12; i++) {                          // scroll the right display by 6 characters
+        DisplayUpper[18+i] = DisplayUpper[20+i];}}
+    else {                                            // scroll only the right display
+      for (i=0; i<2*(Step-1); i++) {
+        DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];}}
+    DisplayUpper[30] = DisplayUpper2[2*Step];         // fill the rightmost character of the right display
     DisplayUpper[31] = DisplayUpper2[2*Step+1];
-    Step++;                                           // increase step
+    Step++;
     if (Step == 8) {                                  // skip position 9 (belongs to the credit display
-      Step++;}}
-  if (Step < 16) {                                    // if its not already over
-    ActivateTimer(50, Step, ScrollUpper);}}           // come back
+      Step++;}
+    if (!DisplayUpper[32-(2*Step)] && !DisplayUpper[33-(2*Step)] && Step < 14) {  // stop when reaching anything else but blanks or after 14 characters
+      Timer = ActivateTimer(50, Step, AddScrollUpper);}}}
 
-void AddScrollUpper(byte Step) {                      // call with Step = 0 and the text being in DisplayUpper2
-  if (!Step) {
-    Step++;}
-  if (Step > 8) {                                     // scroll into the left display?
-    for (i=0; i<2*(Step-9);i++) {                     // for all characters in the left display that have to be scrolled
-      DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];} // scroll them
-    DisplayUpper[14] = DisplayUpper[18];              // get the leftmost character of the right display
-    DisplayUpper[15] = DisplayUpper[19];
-    for (i=0; i<12; i++) {                            // scroll the right display by 6 characters
-      DisplayUpper[18+i] = DisplayUpper[20+i];}}
-  else {                                              // scroll only the right display
-    for (i=0; i<2*(Step-1); i++) {
-      DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];}}
-  DisplayUpper[30] = DisplayUpper2[2*Step];           // fill the rightmost character of the right display
-  DisplayUpper[31] = DisplayUpper2[2*Step+1];
-  Step++;
-  if (Step == 8) {                                    // skip position 9 (belongs to the credit display
-    Step++;}
-  if (!DisplayUpper[32-(2*Step)] && !DisplayUpper[33-(2*Step)] && Step < 14) {  // stop when reaching anything else but blanks or after 14 characters
-    ActivateTimer(50, Step, AddScrollUpper);}}
-
-void ScrollLower(byte Step) {                         // call with Step = 0 and the text being in DisplayLower2
-    if (!Step) {
-    Step++;}
-  if (Step < 8) {                                     // do display 3 first
-    for (i=2; i<14; i++) {                            // scroll display 3
-      DisplayLower[i] = DisplayLower[i+2];}
-    DisplayLower[14] = DisplayLower2[2*Step];         // add the corresponding char of DisplayLower2
-    DisplayLower[15] = DisplayLower2[2*Step+1];}
-  else {                                              // do display 4
-    for (i=18; i<30; i++) {                           // scroll display 4
-      DisplayLower[i] = DisplayLower[i+2];}
-    DisplayLower[30] = DisplayLower2[2*Step+2];       // add the corresponding char of DisplayLower2
-    DisplayLower[31] = DisplayLower2[2*Step+3];}
-  Step++;
-  if (Step < 15) {                                    // if its not already over
-    ActivateTimer(50, Step, ScrollLower);}}           // come back
-
-void ScrollLower2(byte Step) {                        // call with Step = 0 and the text being in DisplayUpper2
-  if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
-    for (i=0; i<30; i++) {
-      DisplayLower[i] = DisplayLower[i+2];}
-    DisplayLower[30] = DisplayLower2[2*Step];         // add the corresponding char of DisplayLower2
-    DisplayLower[31] = DisplayLower2[2*Step+1];
-    Step++;}                                          // increase step
-  else {
+void ScrollLower(byte Step) {                         // call with Step = 0 and the text being in DisplayLower2 / stop with Step = 100
+  static byte Timer = 0;
+  if (Step == 100) {                                  // stop command
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}}
+  else {                                              // normal call
     if (!Step) {
       Step++;}
-    for (i=2; i<14; i++) {                            // scroll display 1
-      DisplayLower[i] = DisplayLower[i+2];}
-    DisplayLower[14] = DisplayLower[18];              // add put the leftmost char of the display 2 to the end
-    DisplayLower[15] = DisplayLower[19];
-    for (i=18; i<30; i++) {                           // scroll display 2
-      DisplayLower[i] = DisplayLower[i+2];}
-    DisplayLower[30] = DisplayLower2[2*Step];         // add the corresponding char of DisplayLower2
-    DisplayLower[31] = DisplayLower2[2*Step+1];
-    Step++;                                           // increase step
-    if (Step == 8) {                                  // skip position 9 (belongs to the credit display
-      Step++;}}
-  if (Step < 16) {                                    // if its not already over
-    ActivateTimer(50, Step, ScrollLower2);}}          // come back
+    if (Step < 8) {                                   // do display 3 first
+      for (i=2; i<14; i++) {                          // scroll display 3
+        DisplayLower[i] = DisplayLower[i+2];}
+      DisplayLower[14] = DisplayLower2[2*Step];       // add the corresponding char of DisplayLower2
+      DisplayLower[15] = DisplayLower2[2*Step+1];}
+    else {                                            // do display 4
+      for (i=18; i<30; i++) {                         // scroll display 4
+        DisplayLower[i] = DisplayLower[i+2];}
+      DisplayLower[30] = DisplayLower2[2*Step+2];     // add the corresponding char of DisplayLower2
+      DisplayLower[31] = DisplayLower2[2*Step+3];}
+    Step++;
+    if (Step < 15) {                                  // if its not already over
+      Timer = ActivateTimer(50, Step, ScrollLower);}}}  // come back
+
+void ScrollLower2(byte Step) {                        // call with Step = 0 and the text being in DisplayUpper2 / stop with Step = 100
+  static byte Timer = 0;
+  if (Step == 100) {                                  // stop command
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}}
+  else {                                              // normal call
+    if ((APC_settings[DisplayType] == 3) || (APC_settings[DisplayType] == 4) || (APC_settings[DisplayType] == 5)) { // not a 2x16 character display
+      for (i=0; i<30; i++) {
+        DisplayLower[i] = DisplayLower[i+2];}
+      DisplayLower[30] = DisplayLower2[2*Step];       // add the corresponding char of DisplayLower2
+      DisplayLower[31] = DisplayLower2[2*Step+1];
+      Step++;}                                        // increase step
+    else {
+      if (!Step) {
+        Step++;}
+      for (i=2; i<14; i++) {                          // scroll display 1
+        DisplayLower[i] = DisplayLower[i+2];}
+      DisplayLower[14] = DisplayLower[18];            // add put the leftmost char of the display 2 to the end
+      DisplayLower[15] = DisplayLower[19];
+      for (i=18; i<30; i++) {                         // scroll display 2
+        DisplayLower[i] = DisplayLower[i+2];}
+      DisplayLower[30] = DisplayLower2[2*Step];       // add the corresponding char of DisplayLower2
+      DisplayLower[31] = DisplayLower2[2*Step+1];
+      Step++;                                         // increase step
+      if (Step == 8) {                                // skip position 9 (belongs to the credit display
+        Step++;}}
+    if (Step < 16) {                                  // if its not already over
+      Timer = ActivateTimer(50, Step, ScrollLower2);}}}  // come back
 
 void ShowMessage(byte Seconds) {                      // switch to the second display buffer for Seconds
   if (Seconds) {                                      // time <> 0?
