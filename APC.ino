@@ -85,7 +85,7 @@ bool StrobeLightsOn;                                  // Indicates that the play
 const struct LampPat *PatPointer;                     // Pointer to the lamp flow to be shown
 struct LampPat {                                      // a lamp pattern sequence played by ShowLampPatterns
   uint16_t Duration;
-  byte Pattern[7];};
+  byte Pattern[8];};
 struct LampFlow {                                     // defines a series of lamp patterns shown by AttractLampCycle
   uint16_t Repeat;
   const struct LampPat *FlowPat;};
@@ -196,7 +196,7 @@ const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{" 
 const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
 const char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{"123456123456    "},{"12345671234567  "}};
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
-const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "}};
+const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "},{"        NONE    "}};
 
 const struct SettingTopic APC_setList[14] = {
     {"DISPLAY TYPE    ",HandleDisplaySetting,&TxTDisplaySelect[0][0],0,7},
@@ -210,7 +210,7 @@ const struct SettingTopic APC_setList[14] = {
    // {" NO OF   LEDS   ",HandleNumSetting,0,1,64},
     {"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
-		{"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,1},
+		{"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,2},
     {"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS  ",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
@@ -625,13 +625,13 @@ void TC7_Handler() {                                  // interrupt routine - run
     if (LampWait == LampPeriod) {                     // Waiting time has passed
       LampCol++;                                      // prepare for next lamp column
       LampColMask = LampColMask<<1;
-      if (APC_settings[BackboxLamps]) {               // backbox lamps in last column?
+      if (APC_settings[BackboxLamps]) {               // backbox lamps not in first column
         if (LampCol == 8){                            // max column exceeded?
           LampCol = 0;
           LampColMask = 2;}
-        if (LampCol == 7){                            // max column reached?
+        if (LampCol == 7 && APC_settings[BackboxLamps] == 1){ // max column reached?
           c = LampColumns[LampCol];}                  // last column is from LampColumns
-        else {
+        else {                                        // game has no backbox lamps
           c = *(LampPattern+LampCol);}}               // all other columns are referenced via LampPattern
       else {                                          // backbox lamps in first column
         if (LampCol == 8){                            // max column exceeded?
@@ -2005,15 +2005,9 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
       Step++;}
     unsigned int Buffer = (PatPointer+Step-2)->Duration;  // buffer the duration for the current pattern
     if (StrobeLightsOn) {
-      if (APC_settings[BackboxLamps]) {               // backbox lamps in last column?
-        LampBuffer = ((PatPointer+Step-2)->Pattern);} // show the pattern
-      else {                                          // backbox lamps in first column
-        LampBuffer = ((PatPointer+Step-2)->Pattern)-1;}} // show the pattern shifted by one column
+      LampBuffer = ((PatPointer+Step-2)->Pattern);}   // show the pattern
     else {
-      if (APC_settings[BackboxLamps]) {               // backbox lamps in last column?
-        LampPattern = ((PatPointer+Step-2)->Pattern);}// show the pattern
-      else {                                          // backbox lamps in first column
-        LampPattern = ((PatPointer+Step-2)->Pattern)-1;}}// show the pattern shifted by one column
+      LampPattern = ((PatPointer+Step-2)->Pattern);}  // show the pattern
     Step++;                                           // increase the pattern number
     if (!((PatPointer+Step-2)->Duration)) {           // if the duration for the next pattern is 0
       Step = 2;                                       // reset the pattern

@@ -61,6 +61,7 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 9 | Debug Mode | - | - | No | Bool setting - Active debug mode will show the number of active timers in the credit display and will stop the game on error |
 | 10 | Backbox Lamps | 0| Column 1 | X | Backbox lamps are in lamp column 1 |
 | 10 |  | 1 | Column 8 | - | Backbox lamps are in lamp column 8 |
+| 10 |  | 2 | None | - | game has no controlled backbox lamps |
 | 11 | Restore Default | - | - | - | No setting - restores the default settings |
 | 12 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 

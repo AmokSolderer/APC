@@ -19,6 +19,10 @@ The purpose of this is to enable state machines that are initially called from t
 
 * Exception rules for System 11 F-14 Tomcat have been added. Sound files for F-14 are also available (Thanks to Snux)
 
+* A new setting 'none' has been added to the 'Backbox Lamps' setting in the system settings. This is for the ShowLampPatterns command to know which lamps not to include in lamp animations.
+
+* The ShowLampPatterns command has been changed to support also games without any controlled lamps in the backbox. For this the Pattern array in LampPat has been changed from 7 to 8 entries. If your a game has the first column of lamps in the backbox you have to select 'column1' in the 'Backbox Lamps' seeting and add a zero after the duration. For games with the last row of lamps in the backbox change the setting to 'column8' and add a zero at the end of the pattern part of LampPat.
+
 ### Misc
 
 * The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
