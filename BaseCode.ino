@@ -216,7 +216,7 @@ void BC_AttractDisplayCycle(byte Step) {
       Timer2 = 0;}
     ScrollUpper(100);
     ScrollLower2(100);
-    break;
+    return;
   case 1:
     WriteUpper2("APC BASE CODE   ");
     Timer1 = ActivateTimer(50, 5, BC_AttractDisplayCycle);

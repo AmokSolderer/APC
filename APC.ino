@@ -1396,7 +1396,9 @@ void ScrollUpper(byte Step) {                         // call with Step = 0 and 
       if (Step == 8) {                                // skip position 9 (belongs to the credit display
         Step++;}}
     if (Step < 16) {                                  // if its not already over
-      Timer = ActivateTimer(50, Step, ScrollUpper);}}}  // come back
+      Timer = ActivateTimer(50, Step, ScrollUpper);}  // come back
+    else {
+      Timer = 0;}}}
 
 void AddScrollUpper(byte Step) {                      // call with Step = 0 and the text being in DisplayUpper2 / stop with Step = 100
   static byte Timer = 0;
@@ -1446,7 +1448,9 @@ void ScrollLower(byte Step) {                         // call with Step = 0 and 
       DisplayLower[31] = DisplayLower2[2*Step+3];}
     Step++;
     if (Step < 15) {                                  // if its not already over
-      Timer = ActivateTimer(50, Step, ScrollLower);}}}  // come back
+      Timer = ActivateTimer(50, Step, ScrollLower);}  // come back
+    else {
+      Timer = 0;}}}
 
 void ScrollLower2(byte Step) {                        // call with Step = 0 and the text being in DisplayUpper2 / stop with Step = 100
   static byte Timer = 0;
@@ -1476,7 +1480,9 @@ void ScrollLower2(byte Step) {                        // call with Step = 0 and 
       if (Step == 8) {                                // skip position 9 (belongs to the credit display
         Step++;}}
     if (Step < 16) {                                  // if its not already over
-      Timer = ActivateTimer(50, Step, ScrollLower2);}}}  // come back
+      Timer = ActivateTimer(50, Step, ScrollLower2);} // come back
+    else {
+      Timer = 0;}}}
 
 void ShowMessage(byte Seconds) {                      // switch to the second display buffer for Seconds
   if (Seconds) {                                      // time <> 0?
