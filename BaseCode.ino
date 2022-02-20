@@ -199,12 +199,11 @@ void BC_AttractLampCycle(byte Event) {                // play multiple lamp patt
   ShowLampPatterns(1);}                               // call the player
 
 void BC_AttractDisplayCycle(byte Step) {
-  BC_CheckForLockedBalls(0);
   static byte Timer0 = 0;
   static byte Timer1 = 0;
   static byte Timer2 = 0;
   switch (Step) {
-  case 0:
+  case 0:                                             // stop command
     if (Timer0) {
       KillTimer(Timer0);
       Timer0 = 0;}
@@ -214,10 +213,10 @@ void BC_AttractDisplayCycle(byte Step) {
     if (Timer2) {
       KillTimer(Timer2);
       Timer2 = 0;}
-    ScrollUpper(100);
+    ScrollUpper(100);                                 // stop scrolling
     ScrollLower2(100);
     return;
-  case 1:
+  case 1:                                             // attract mode title 'page'
     WriteUpper2("APC BASE CODE   ");
     Timer1 = ActivateTimer(50, 5, BC_AttractDisplayCycle);
     WriteLower2("                ");
@@ -227,7 +226,7 @@ void BC_AttractDisplayCycle(byte Step) {
     else {
       Step = 3;}
     break;
-  case 2:
+  case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
     WriteLower2("                ");
     for (i=1; i<=NoPlayers; i++) {                    // display the points of all active players
@@ -264,7 +263,7 @@ void BC_AttractDisplayCycle(byte Step) {
     Timer2 = ActivateTimer(900, 6, BC_AttractDisplayCycle);
     Step = 1;
     break;
-  case 5:
+  case 5:                                             // scrolling routine called here to keep track of the timer
     Timer1 = 0;
     ScrollUpper(0);
     return;
@@ -272,7 +271,8 @@ void BC_AttractDisplayCycle(byte Step) {
     Timer2 = 0;
     ScrollLower2(0);
     return;}
-  Timer0 = ActivateTimer(4000, Step, BC_AttractDisplayCycle);}
+  BC_CheckForLockedBalls(0);                          // check for a ball in the outhole
+  Timer0 = ActivateTimer(4000, Step, BC_AttractDisplayCycle);}  // come back for the next 'page'
 
 void BC_AttractModeSW(byte Button) {                  // Attract Mode switch behaviour
   switch (Button) {
@@ -311,7 +311,7 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
         digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
       for (i=0; i< 8; i++) {                          // turn off all lamps
         LampColumns[i] = 0;}
-      LampPattern = LampColumns;
+      LampPattern = LampColumns;                      // lamps are not controlled by a fixed pattern any more
       NoPlayers = 0;
       WriteUpper("                ");
       WriteLower("                ");
