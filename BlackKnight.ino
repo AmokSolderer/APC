@@ -244,7 +244,7 @@ void BK_AttractMode() {                               // Attract Mode
   LampReturn = BK_AttractLampCycle;
   AddBlinkLamp(4, 150);                               // blink Game Over lamp
   ActivateTimer(1000, 0, BK_AttractLampCycle);
-  BK_AttractDisplayCycle(0);}
+  BK_AttractDisplayCycle(1);}
 
 void BK_CheckForLockedBalls(byte Event) {             // check if balls are locked and release them
   UNUSED(Event);
@@ -290,38 +290,52 @@ void BK_AddScrollUpper(byte Step) {                   // shifts Step times and a
   else {
     Position = 0;}}
 
-void BK_AttractScroll(byte Dummy) {
-  UNUSED(Dummy);
-  WriteUpper2("    APC       ");
-  AddScrollUpper(0);}
-
-void BK_AttractDisplayCycle(byte Event) {
-  BK_CheckForLockedBalls(0);
-  switch (Event) {
-  case 0:
+void BK_AttractDisplayCycle(byte Step) {
+  static byte Timer0 = 0;
+  static byte Timer1 = 0;
+  static byte Timer2 = 0;
+  static byte Timer3 = 0;
+  switch (Step) {
+  case 0:                                             // stop command
+    if (Timer0) {
+      KillTimer(Timer0);
+      Timer0 = 0;}
+    if (Timer1) {
+      KillTimer(Timer1);
+      Timer1 = 0;}
+    if (Timer2) {
+      KillTimer(Timer2);
+      Timer2 = 0;}
+    if (Timer3) {
+      KillTimer(Timer3);
+      Timer3 = 0;}
+    ScrollUpper(100);                                 // stop scrolling
+    ScrollLower(100);
+    AddScrollUpper(100);
+    return;
+  case 1:                                             // attract mode title 'page'
     WriteUpper2("  THE         ");
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, BK_AttractScroll);
+    Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
+    Timer3 = ActivateTimer(900, 7, BK_AttractDisplayCycle);
     WriteLower2(" BLACK KNIGHT ");
-    ActivateTimer(1400, 0, ScrollLower);
-    if (NoPlayers) {
-      Event++;}
+    Timer2 = ActivateTimer(1400, 6, BK_AttractDisplayCycle);
+    if (NoPlayers) {                                  // if there were no games before skip the next step
+      Step++;}
     else {
-      Event = 2;}
+      Step = 3;}
     break;
-  case 1:
-    WriteUpper2("              ");                    // erase display
-    WriteLower2("              ");
+  case 2:                                             // show scores of previous game
+    WriteUpper2("                ");                  // erase display
+    WriteLower2("                ");
     for (i=1; i<=NoPlayers; i++) {                    // display the points of all active players
       ShowNumber(8*i-1, Points[i]);}
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower);
-    Event++;
+    Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, BK_AttractDisplayCycle);
+    Step++;
     break;
-  case 2:                                             // Show highscores
-    AddBlinkLamp(6, 150);                             // blink Highest Score lamp
-    WriteUpper2("1>            ");
-    WriteLower2("2>            ");
+  case 3:                                             // Show highscores
+    WriteUpper2("1>              ");
+    WriteLower2("2>              ");
     for (i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
@@ -329,14 +343,13 @@ void BK_AttractDisplayCycle(byte Event) {
       *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
     ShowNumber(15, HallOfFame.Scores[0]);
     ShowNumber(31, HallOfFame.Scores[1]);
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower);
-    Event++;
+    Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, BK_AttractDisplayCycle);
+    Step++;
     break;
-  case 3:
-    RemoveBlinkLamp(6);                               // stop blinking of Highest Score lamp
-    WriteUpper2("3>            ");
-    WriteLower2("4>            ");
+  case 4:
+    WriteUpper2("3>              ");
+    WriteLower2("4>              ");
     for (i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
@@ -344,10 +357,25 @@ void BK_AttractDisplayCycle(byte Event) {
       *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
     ShowNumber(15, HallOfFame.Scores[2]);
     ShowNumber(31, HallOfFame.Scores[3]);
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower);
-    Event = 0;}
-  ActivateTimer(4000, Event, BK_AttractDisplayCycle);}
+    Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, BK_AttractDisplayCycle);
+    Step = 1;
+    break;
+  case 5:                                             // scrolling routine called here to keep track of the timer
+    Timer1 = 0;
+    ScrollUpper(0);
+    return;
+  case 6:
+    Timer2 = 0;
+    ScrollLower(0);
+    return;
+  case 7:
+    Timer3 = 0;
+    WriteUpper2("    APC       ");
+    AddScrollUpper(0);
+    return;}
+  BK_CheckForLockedBalls(0);                          // check for a ball in the outhole
+  Timer0 = ActivateTimer(4000, Step, BK_AttractDisplayCycle);}  // come back for the next 'page'
 
 void BK_AttractModeSW(byte Event) {                   // Attract Mode switch behaviour
   switch (Event) {
@@ -370,6 +398,9 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
     CheckReleaseTimer = 0;
     RemoveBlinkLamp(4);                               // stop blinking of Game Over lamp
     RemoveBlinkLamp(6);                               // stop blinking of Highest Score lamp
+    StrobeLights(0);
+    ShowLampPatterns(0);                              // stop lamp animations
+    BK_AttractDisplayCycle(0);                        // stop display animations
     BK_TestMode_Enter();
     break;
   case 3:                                             // start game
@@ -378,11 +409,11 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
       randomSeed(TC_ReadCV(TC2, 1));
       AfterSound = BK_StartBgMusic;
       PlayRandomSound(61, 5, (char *)BK_NewGameSounds);
-      ShowLampPatterns(0);
+      ShowLampPatterns(0);                            // stop lamp animations
       RemoveBlinkLamp(4);
       RemoveBlinkLamp(6);
       Switch_Pressed = DummyProcess;                  // Switches do nothing
-      KillAllTimers();                                // stop the lamp cycling
+      BK_AttractDisplayCycle(0);                      // stop display animations
       if (APC_settings[Volume]) {                     // system set to digital volume control?
         analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
       else {
@@ -1846,7 +1877,7 @@ void BK_HandleVolumeSetting(bool change) {
 // Test mode
 
 void BK_TestMode_Enter() {
-  KillAllTimers();
+  //KillAllTimers();
   ActivateSolenoid(0, 23);                            // enable flipper fingers
   ActivateSolenoid(0, 24);
   Switch_Pressed = DummyProcess;                      // Switches do nothing

@@ -1425,7 +1425,9 @@ void AddScrollUpper(byte Step) {                      // call with Step = 0 and 
     if (Step == 8) {                                  // skip position 9 (belongs to the credit display
       Step++;}
     if (!DisplayUpper[32-(2*Step)] && !DisplayUpper[33-(2*Step)] && Step < 14) {  // stop when reaching anything else but blanks or after 14 characters
-      Timer = ActivateTimer(50, Step, AddScrollUpper);}}}
+      Timer = ActivateTimer(50, Step, AddScrollUpper);}
+    else {
+      Timer = 0;}}}
 
 void ScrollLower(byte Step) {                         // call with Step = 0 and the text being in DisplayLower2 / stop with Step = 100
   static byte Timer = 0;

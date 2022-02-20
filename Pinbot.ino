@@ -314,64 +314,94 @@ void PB_AttractMode() {
   AddBlinkLamp(1, 150);                               // blink Game Over lamp
   LampReturn = PB_AttractLampCycle;
   PB_AttractLampCycle(1);
-  PB_AttractDisplayCycle(0);}
+  PB_AttractDisplayCycle(1);}
 
-void PB_AttractDisplayCycle(byte Event) {
-  PB_CheckForLockedBalls(0);
-  switch (Event) {
-  case 0:
-    WriteUpper2("THE APC       ");
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(2000, 0, PB_AttractScroll);
-    WriteLower2("              ");
-    ActivateTimer(1400, 0, ScrollLower);
-    if (NoPlayers) {                                  // was there a previous game?
-      Event++;}                                       // proceed to case 1 next time
-    else {                                            // no previous games since power on
-      Event = 2;}                                     // skip case 1
+void PB_AttractDisplayCycle(byte Step) {
+  static byte Timer0 = 0;
+  static byte Timer1 = 0;
+  static byte Timer2 = 0;
+  static byte Timer3 = 0;
+  switch (Step) {
+  case 0:                                             // stop command
+    if (Timer0) {
+      KillTimer(Timer0);
+      Timer0 = 0;}
+    if (Timer1) {
+      KillTimer(Timer1);
+      Timer1 = 0;}
+    if (Timer2) {
+      KillTimer(Timer2);
+      Timer2 = 0;}
+    if (Timer3) {
+      KillTimer(Timer3);
+      Timer3 = 0;}
+    ScrollUpper(100);                                 // stop scrolling
+    ScrollLower(100);
+    AddScrollUpper(100);
+    return;
+  case 1:                                             // attract mode title 'page'
+    WriteUpper2("THE APC         ");
+    Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
+    Timer3 = ActivateTimer(2000, 7, PB_AttractDisplayCycle);
+    WriteLower2("                ");
+    Timer2 = ActivateTimer(1400, 6, PB_AttractDisplayCycle);
+    if (NoPlayers) {                                  // if there were no games before skip the next step
+      Step++;}
+    else {
+      Step = 3;}
     break;
-  case 1:                                             // show points of previous game
-    WriteUpper2("              ");                    // erase display
-    WriteLower2("              ");
-    for (byte i=1; i<=NoPlayers; i++) {                    // display the points of all active players
+  case 2:                                             // show scores of previous game
+    WriteUpper2("                ");                  // erase display
+    WriteLower2("                ");
+    for (i=1; i<=NoPlayers; i++) {                    // display the points of all active players
       ShowNumber(8*i-1, Points[i]);}
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower);
-    Event++;
+    Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);
+    Step++;
     break;
-  case 2:                                             // Show highscores
-    WriteUpper2("1>     2>     ");
-    WriteLower2("              ");
-    for (byte i=0; i<3; i++) {
+  case 3:                                             // Show highscores
+    WriteUpper2("1>              ");
+    WriteLower2("2>              ");
+    for (i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-      *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
-      *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
-    ShowNumber(23, HallOfFame.Scores[0]);
+      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
+      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
+    ShowNumber(15, HallOfFame.Scores[0]);
     ShowNumber(31, HallOfFame.Scores[1]);
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower2);
-    Event++;
+    Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);
+    Step++;
     break;
-  case 3:
-    WriteUpper2("3>     4>     ");
-    WriteLower2("              ");
-    for (byte i=0; i<3; i++) {
+  case 4:
+    WriteUpper2("3>              ");
+    WriteLower2("4>              ");
+    for (i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-      *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
-      *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
-    ShowNumber(23, HallOfFame.Scores[2]);
+      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
+      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
+    ShowNumber(15, HallOfFame.Scores[2]);
     ShowNumber(31, HallOfFame.Scores[3]);
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower2);
-    Event = 0;}
-  ActivateTimer(4000, Event, PB_AttractDisplayCycle);}
-
-void PB_AttractScroll(byte Dummy) {
-  UNUSED(Dummy);
-  WriteUpper2("PINBOT        ");
-  AddScrollUpper(0);}
+    Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);
+    Step = 1;
+    break;
+  case 5:                                             // scrolling routine called here to keep track of the timer
+    Timer1 = 0;
+    ScrollUpper(0);
+    return;
+  case 6:
+    Timer2 = 0;
+    ScrollLower(0);
+    return;
+  case 7:
+    Timer3 = 0;
+    WriteUpper2("PINBOT        ");
+    AddScrollUpper(0);
+    return;}
+  PB_CheckForLockedBalls(0);                          // check for a ball in the outhole
+  Timer0 = ActivateTimer(4000, Step, PB_AttractDisplayCycle);}  // come back for the next 'page'
 
 void PB_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
   static byte State = 1;
@@ -391,7 +421,7 @@ void PB_AttractModeSW(byte Select) {
   case 3:                                             // credit button
     RemoveBlinkLamp(1);                               // stop the blinking of the game over lamp
     ShowLampPatterns(0);                              // stop lamp animations
-    KillAllTimers();
+    PB_AttractDisplayCycle(0);                        // stop display animations
     if (APC_settings[Volume]) {                       // system set to digital volume control?
       analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
     else {
@@ -451,9 +481,8 @@ void PB_AttractModeSW(byte Select) {
   case 72:
     Switch_Pressed = DummyProcess;
     RemoveBlinkLamp(1);                               // stop the blinking of the game over lamp
-    BlinkScore(0);
     ShowLampPatterns(0);                              // stop lamp animations
-    KillAllTimers();
+    PB_AttractDisplayCycle(0);                        // stop display animations
     LampPattern = NoLamps;                            // Turn off all lamps
     ReleaseAllSolenoids();
     if (APC_settings[DebugMode]) {                    // deactivate serial interface in debug mode
@@ -807,8 +836,6 @@ void PB_GameMain(byte Switch) {
     Serial.println((unsigned int)&PB_AttractDisplayCycle);
     Serial.print("PB_AttractLampCycle = ");
     Serial.println((unsigned int)&PB_AttractLampCycle);
-    Serial.print("PB_AttractScroll = ");
-    Serial.println((unsigned int)&PB_AttractScroll);
     Serial.print("ScrollUpper = ");
     Serial.println((unsigned int)&ScrollUpper);
     Serial.print("ScrollLower = ");
