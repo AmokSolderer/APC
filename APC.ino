@@ -2018,8 +2018,8 @@ void ShowLEDpatterns(byte Step) {
     if (Step == 1) {
       Step++;}
     unsigned int Buffer = *(LEDpatDuration+Step-2);
-    LEDsetColor(*(LEDpointer+8*Step-2), *(LEDpointer+8*Step-1), *(LEDpointer+8*Step));
-    LEDpattern = LEDpointer+8*Step+3;                 // TODO adapt
+    LEDsetColor(*(LEDpointer+11*(Step-2)), *(LEDpointer+11*(Step-2)+1), *(LEDpointer+11*(Step-2)+2));
+    LEDpattern = LEDpointer+11*(Step-2)+3;                 // TODO adapt
     Step++;
     if (!(*(LEDpatDuration+Step-2))) {
       Timer = 0;
