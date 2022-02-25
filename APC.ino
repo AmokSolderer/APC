@@ -29,7 +29,7 @@ void ExitSettings(bool change);
 byte (*PinMameException)(byte, byte);
 
 const byte AlphaUpper[128] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
-    63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,136,0,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
+    63,0,6,0,93,4,15,4,102,4,107,4,123,4,14,0,127,4,111,4,0,0,0,0,0,136,65,4,0,34,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 < = > and fill bytes
     126,4,15,21,57,0,15,17,121,4,120,4,59,4,118,4,0,17,23,0,112,136,49,0,54,10,54,130,63,0, // Pattern A B C D E F G H I J K L M N O
     124,4,63,128,124,132,107,4,8,17,55,0,48,40,54,160,0,170,0,26,9,40,0,0,0,0,0,0,0,0,1,0}; // Pattern P Q R S T U V W X Y Z _
 
@@ -39,7 +39,7 @@ const byte AlphaLower[128] = {0,0,0,0,0,0,0,0,182,35,0,0,0,0,0,0,0,0,0,0,2,247,2
     94,2,252,4,94,6,182,2,16,33,236,0,68,80,204,20,0,212,0,224,48,80,0,0,0,0,0,0,0,0,32,0}; // Pattern P Q R S T U V W X Y Z _
 
 const byte NumLower[118] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // Blank and fill bytes for lower row numeric displays
-    252,0,136,0,122,0,186,0,142,0,182,0,246,0,152,0,254,0,190,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0, // 0 1 2 3 4 5 6 7 8 9 = and fill bytes
+    252,0,136,0,122,0,186,0,142,0,182,0,246,0,152,0,254,0,190,0,0,0,0,0,70,0,34,0,138,0,184,0,0,0, // 0 1 2 3 4 5 6 7 8 9 = and fill bytes
     222,0,230,0,116,0,234,0,118,0,86,0,246,0,206,0,68,0,232,0,206,0,100,0,194,0,194,0,226,0, // Pattern A B C D E F G H I J K L M N O
     94,0,252,0,66,0,182,0,84,0,236,0,236,0,236,0,206,0,78,0,122,0}; // Pattern P Q R S T U V W X Y Z
 
@@ -78,7 +78,11 @@ byte DisplayUpper[32];                                // changeable display buff
 byte DisplayLower[32];
 byte DisplayUpper2[32];                               // second changeable display buffer
 byte DisplayLower2[32];
-const byte *LampPattern;                              // determines which lamp pattern is to be shown (for Lamps > 8)
+const uint16_t *LEDpatDuration;                       // sets the time until the next LED pattern is shown
+const byte *LEDpattern;                               // determines which LED pattern is to be shown (only active with 'LED lamps' = 'Additional' and depends on the 'No of LEDs' setting)
+const byte *LEDpointer;                               // Pointer to the LED flow to be shown
+void (*LEDreturn)(byte);                              // Pointer to the procedure to be executed after the LED flow has been shown
+const byte *LampPattern;                              // determines which lamp pattern is to be shown (depends on the 'Backbox Lamps' setting)
 const byte *LampBuffer;
 byte LampColumns[8];                                  // stores the status of all lamp columns
 bool StrobeLightsOn;                                  // Indicates that the playfield lamps are strobing
@@ -907,6 +911,8 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   case 1:                                             // init
     if (!Timer) {
       Timer = ActivateTimer(1, Arg, LEDtimer);}
+    if (APC_settings[LEDsetting] == 1) {              // LEDsetting = Additional?
+      LEDpattern = LEDstatus;}                        // switch to standard LED array
     break;
   case 2:                                             // timer call
     if (Arg > 19) {                                   // 20ms over
@@ -922,7 +928,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
           else {
             LampData = *(LampPattern+Arg);}}
         else {                                        // additional LEDs selected
-          LampData = LEDstatus[Arg];}}
+          LampData = *(LEDpattern+Arg);}}
       if (PolarityFlag) {                             // data bus of LED_exp board works with toggling select
         PolarityFlag = false;
         WriteToHwExt(LampData, 1);}                   // write lamp pattern with Sel5 falling edge
@@ -2005,6 +2011,27 @@ void ShowFileNotFound(String Filename) {              // show file not found mes
   WriteUpper2(NameBuffer);                            // write filename to message buffer
   WriteLower2(" NOT    FOUND   ");
   ShowMessage(5);}                                    // switch to message buffer for 5 seconds
+
+void ShowLEDpatterns(byte Step) {
+  static byte Timer = 0;
+  if ((Step > 1) || (Step ==1 && !Timer)) {           // no kill signal
+    if (Step == 1) {
+      Step++;}
+    unsigned int Buffer = *(LEDpatDuration+Step-2);
+    LEDsetColor(*(LEDpointer+8*Step-2), *(LEDpointer+8*Step-1), *(LEDpointer+8*Step));
+    LEDpattern = LEDpointer+8*Step+3;                 // TODO adapt
+    Step++;
+    if (!(*(LEDpatDuration+Step-2))) {
+      Timer = 0;
+      if (LEDreturn) {
+        LEDreturn(0);}
+      return;}
+    Timer = ActivateTimer(Buffer, Step, ShowLEDpatterns);}
+  else {
+    if (!Step) {
+      if (Timer) {
+        KillTimer(Timer);
+        Timer = 0;}}}}
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being one - stop with step being zero
   static byte Timer = 0;
