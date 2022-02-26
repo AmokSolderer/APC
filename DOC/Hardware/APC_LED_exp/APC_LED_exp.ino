@@ -9,7 +9,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ80
 
 byte RecByte = 0;                                       // received byte
 bool RecFlag;
-bool LampStatus[64];                                    // current status of each lamp
+byte LampStatus[8];                                     // current status of each lamp
 byte LampMax[64][3];                                    // current max color values of each lamp
 byte LampMaxSel[3] = {255, 255, 255};                   // selected max color values
 byte i = 0;                                             // universal buffer
@@ -18,8 +18,8 @@ byte Sync = 8;                                          // ms after last Sync
 byte Mode = 0;                                          // Mode 0 -> lamps being lit get the ColorSelect color / Mode 1 -> lamps keep their color / Mode 2 -> lamps set in the following frame get the new color immediately
 byte Command = 0;                                       // LED command currently being processed
 byte CommandCount = 0;                                  // counts the bytes received by the color select command
-bool TurnOn[6][64];                                     // the list of the lamps currently being turned on
-bool TurnOff[6][64];                                    // the list of the lamps currently being turned off
+byte TurnOn[6][8];                                      // the list of the lamps currently being turned on
+byte TurnOff[6][8];                                     // the list of the lamps currently being turned off
 
 void setup() {
   pixels.begin();
@@ -44,47 +44,61 @@ void loop() {
     RecFlag = !RecFlag;
     if (Sync<8) {                                       // if the last sync happened less than 8 cycles ago
       if (Mode < 2) {
-        for (i=0;i<8;i++) {                             // for the 8 lamps currently being processed
-          for (c=0;c<5;c++) {                           // and 5 brightness levels
-            if (TurnOn[c][Sync*8+i]) {                  // check if current lamp is in the turn-on phase
-              if (c) {                                  // if it hasn't reached the last level yet
-                pixels.setPixelColor(Sync*8+i, pixels.Color(LampMax[Sync*8+i][0]/5*(5-c),LampMax[Sync*8+i][1]/5*(5-c),LampMax[Sync*8+i][2]/5*(5-c)));}
-              else {                                    // for the last level turn it fully on
-                pixels.setPixelColor(Sync*8+i, pixels.Color(LampMax[Sync*8+i][0],LampMax[Sync*8+i][1],LampMax[Sync*8+i][2]));}}
-            TurnOn[c][Sync*8+i] = TurnOn[c+1][Sync*8+i];
-            if (TurnOff[c][Sync*8+i]) {                 // check if current lamp is in the turn-off phase
-              if (c) {                                  // if it hasn't reached the last level yet
-                pixels.setPixelColor(Sync*8+i, pixels.Color(LampMax[Sync*8+i][0]/5*(c),LampMax[Sync*8+i][1]/5*(c),LampMax[Sync*8+i][2]/5*(c)));}
-              else {                                    // for the last level turn it completely off
-                pixels.setPixelColor(Sync*8+i,pixels.Color(0,0,0));}}
-            TurnOff[c][Sync*8+i] = TurnOff[c+1][Sync*8+i];}}
-        for (i=0;i<8;i++) {
-          if ((RecByte & 1) && !LampStatus[Sync*8+i]) { // Turn on lamps
-            if (Mode == 0) {                            // New lit lamps get a new color
-              for (c=0;c<3;c++) {                       // set max brightness of lamp to selected max value
-                LampMax[Sync*8+i][c] = LampMaxSel[c];}}
-            LampStatus[Sync*8+i] = true;
-            TurnOn[5][Sync*8+i] = true;}
-          else {
-            TurnOn[5][Sync*8+i] = false;}
-          if (!(RecByte & 1) && LampStatus[Sync*8+i]) { // Turn off lamps
-            LampStatus[Sync*8+i] = false;
-            TurnOff[5][Sync*8+i] = true;}
-          else {
-            TurnOff[5][Sync*8+i] = false;}
-          RecByte = RecByte>>1;}}
+        for (c=0;c<5;c++) {                             // for 5 brightness levels
+          if (TurnOn[c][Sync]) {                        // anything to do in this byte?
+            byte Mask = 1;                              // initialize bitmask
+            for (i=0;i<8;i++) {                         // for the 8 lamps currently being processed
+              if (TurnOn[c][Sync] & Mask) {
+                if (c) {
+                  pixels.setPixelColor(Sync*8+i, pixels.Color(LampMax[Sync*8+i][0]/5*(5-c),LampMax[Sync*8+i][1]/5*(5-c),LampMax[Sync*8+i][2]/5*(5-c)));}
+                else {                                  // for the last level turn it fully on
+                  pixels.setPixelColor(Sync*8+i, pixels.Color(LampMax[Sync*8+i][0],LampMax[Sync*8+i][1],LampMax[Sync*8+i][2]));}}
+              Mask = Mask << 1;}}
+          TurnOn[c][Sync] = TurnOn[c+1][Sync];
+          if (TurnOff[c][Sync]) {
+            byte Mask = 1;                              // initialize bitmask
+            for (i=0;i<8;i++) {                         // for the 8 lamps currently being processed
+              if (TurnOff[c][Sync] & Mask) {
+                if (c) {
+                  pixels.setPixelColor(Sync*8+i, pixels.Color(LampMax[Sync*8+i][0]/5*(c),LampMax[Sync*8+i][1]/5*(c),LampMax[Sync*8+i][2]/5*(c)));}
+                else {                                  // for the last level turn it completely off
+                  pixels.setPixelColor(Sync*8+i,pixels.Color(0,0,0));}}
+              Mask = Mask << 1;}}
+          TurnOff[c][Sync] = TurnOff[c+1][Sync];}
+        if (RecByte != LampStatus[Sync]) {              // any status changes?
+          byte Mask = 1;                                // initialize bitmask
+          for (i=0;i<8;i++) {
+            if ((RecByte & Mask) && !(LampStatus[Sync] & Mask)) { // lamp turned on
+              if (Mode == 0) {                          // New lit lamps get a new color
+                for (c=0;c<3;c++) {                     // set max brightness of lamp to selected max value
+                  LampMax[Sync*8+i][c] = LampMaxSel[c];}}
+              LampStatus[Sync] |= Mask;
+              TurnOn[5][Sync] |= Mask;}
+            else {
+              TurnOn[5][Sync] &= (255 - Mask);}
+            if (!(RecByte & Mask) && (LampStatus[Sync] & Mask)) { // lamp turned off
+              LampStatus[Sync] &= (255 - Mask);
+              TurnOff[5][Sync] |= Mask;}
+            else {
+              TurnOff[5][Sync] &= (255 - Mask);}
+            Mask = Mask << 1;}}
+        else {
+          TurnOn[5][Sync] = 0;
+          TurnOff[5][Sync] = 0;}}
       else {                                            // selected lamps get the selected color immediately
-        for (i=0;i<8;i++) {                             // for the 8 lamps currently being processed
-          if (RecByte & 1) {                            // lamp set?
-            for (c=0;c<5;c++) {                         // and 5 brightness levels
-              TurnOff[c][Sync*8+i] = false;             // stop all fading
-              TurnOn[c][Sync*8+i] = false;}
-            for (c=0;c<3;c++) {                         // set max brightness of lamp to selected max value
-              LampMax[Sync*8+i][c] = LampMaxSel[c];}
-            pixels.setPixelColor(Sync*8+i, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}
-          RecByte = RecByte>>1;}}
+        if (RecByte) {                                  // any lamps set?
+          byte Mask = 1;
+          for (i=0;i<8;i++) {                           // for the 8 lamps currently being processed
+            if (RecByte & Mask) {                       // lamp set in RecByte?
+              for (c=0;c<5;c++) {                       // and 5 brightness levels
+                TurnOn[c][Sync] &= (255 - Mask);        // stop lamp from TurningOn - Off
+                TurnOff[c][Sync] &= (255 - Mask);}
+              for (c=0;c<3;c++) {                       // set max brightness of lamp to selected max value
+                LampMax[Sync*8+i][c] = LampMaxSel[c];}
+              pixels.setPixelColor(Sync*8+i, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}
+            Mask = Mask << 1;}}}
       Sync++;}                                          // increase the counter
-    else {
+    else {                                              // LED patterns are done
       if (CommandCount) {                               // still bytes to read for this command
         CommandCount--;
         switch (Command) {
