@@ -98,7 +98,6 @@ void (*LampReturn)(byte);                             // Pointer to the procedur
 byte BlinkTimers = 0;                                 // number of active blink timers
 byte BlinkTimer[65];                                  // timer used for blinking lamps
 byte BlinkingNo[65];                                  // number of lamps using this BlinkTimer
-bool BlinkState[65];                                  // current state of the lamps of this blink timer
 unsigned int BlinkPeriod[65];                         // blink period for this timer
 byte BlinkingLamps[65][65];                           // [BlinkTimer] used by these [lamps]
 byte SolMax = 24;                                     // maximum number of solenoids
@@ -192,9 +191,10 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 #define DimInserts  5                                 // Reduce lighting time of playfield lamps by 50%
 #define Volume  6                                     // Volume of the speaker
 #define LEDsetting  7                                 // Setting for the APC_LED_EXP board
-#define SolenoidExp 8                                 // Solenoid expander present?
-#define DebugMode  9                                  // debug mode enabled?
-#define BackboxLamps 10																// Column of backbox lamps
+#define NumOfLEDs 8                                   // The length of the LED stripe. Setting is only effective when 'Additional' is selected as 'LED lamps' setting
+#define SolenoidExp 9                                 // Solenoid expander present?
+#define DebugMode  10                                 // debug mode enabled?
+#define BackboxLamps 11																// Column of backbox lamps
 
 const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{"   TUTORIAL     "}};
 const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
@@ -202,7 +202,7 @@ const char TxTDisplaySelect[8][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "},{"        NONE    "}};
 
-const struct SettingTopic APC_setList[14] = {
+const struct SettingTopic APC_setList[15] = {
     {"DISPLAY TYPE    ",HandleDisplaySetting,&TxTDisplaySelect[0][0],0,7},
     {" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
     {" NO OF  BALLS   ",HandleNumSetting,0,1,5},
@@ -211,7 +211,7 @@ const struct SettingTopic APC_setList[14] = {
     {"  DIM  INSERTS  ",HandleBoolSetting,0,0,0},
     {"SPEAKER VOLUME  ",HandleVolumeSetting,0,0,255},
     {"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,3},
-   // {" NO OF   LEDS   ",HandleNumSetting,0,1,64},
+    {" NO OF   LEDS   ",HandleNumSetting,0,1,192},
     {"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
 		{"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,2},
@@ -896,7 +896,9 @@ void ReadSound() {                                    // same as above but for t
 byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static bool PolarityFlag;                           // stores whether the select has to be triggered by the rising or falling edge
   static byte EndSequence = 0;                        // indicator needed for a graceful exit
-  static byte LEDstatus[8];                           // stores the status of 64 LEDs
+  static byte *LEDstatus;                             // points to the status memory of the LEDs
+  static byte NumOfLEDbytes = 0;                      // stores the length of the LEDstatus memory
+  static byte LengthOfSyncCycle = 0;                  // stores the length of the sync cycle in ms
   static byte SpcCommandLength[8];                    // length in bytes of commands to be send to the LED exp board
   static byte SpcBuffer[20];                          // command bytes to be send to the LED exp board
   static byte BufferRead = 0;                         // read pointer for ringbuffer SpcBuffer
@@ -907,17 +909,33 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   switch(Command) {
   case 0:                                             // stop LEDhandling
     EndSequence = 1;                                  // initiate exit
+    free(LEDstatus);                                  // TODO LEDhandling
     break;
   case 1:                                             // init
-    if (!Timer) {
-      Timer = ActivateTimer(1, Arg, LEDtimer);}
+    if (!Timer) {                                     // initial call?
+      if (APC_settings[LEDsetting] == 1) {            // LEDsetting = Additional?
+        NumOfLEDbytes = APC_settings[NumOfLEDs] / 8;  // calculate the needed memory for LEDstatus
+        if (APC_settings[NumOfLEDs] % 8) {
+          NumOfLEDbytes++;}
+        LEDstatus = (byte *) malloc(NumOfLEDbytes);}  // and allocate it
+      Timer = ActivateTimer(1, Arg, LEDtimer);}       // start main timer
+    else if (APC_settings[LEDsetting] == 1) {         // already running and LEDsetting = Additional?
+      NumOfLEDbytes = APC_settings[NumOfLEDs] / 8;    // calculate the needed memory for LEDstatus
+      if (APC_settings[NumOfLEDs] % 8) {
+        NumOfLEDbytes++;}
+      LEDstatus = (byte *) realloc(LEDstatus, NumOfLEDbytes);}  // and reallocate it
+    LengthOfSyncCycle = APC_settings[NumOfLEDs] / 24; // calculate the required length of the sync cycle
+    if (APC_settings[NumOfLEDs] % 24) {
+      LengthOfSyncCycle++;}
     if (APC_settings[LEDsetting] == 1) {              // LEDsetting = Additional?
+      for (byte i=0; i<NumOfLEDbytes; i++) {
+        LEDstatus[i] = 0;}
       LEDpattern = LEDstatus;}                        // switch to standard LED array
     break;
   case 2:                                             // timer call
-    if (Arg > 19) {                                   // 20ms over
+    if (Arg > NumOfLEDbytes + LengthOfSyncCycle + 6) {  // Sync over
       Arg = 0;}                                       // start from the beginning
-    if (Arg < 8) {                                    // the first 8 cycles are for transmitting the status of the lamp matrix
+    if (Arg < NumOfLEDbytes) {                        // the first 8 cycles are for transmitting the status of the lamp matrix
       byte LampData;
       if (EndSequence) {                              // end sequence running
         LampData = 0;}
@@ -936,7 +954,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         PolarityFlag = true;
         WriteToHwExt(LampData, 129);}}                // activate Sel5 rising edge
     else {                                            // the lamp matrix is already sent
-      if (Arg == 10 && SpcCommandLength[0]) {         // command for Led_exp board pending?
+      if (Arg == NumOfLEDbytes && SpcCommandLength[0]) {  // command for Led_exp board pending?
         SpcReadCount = SpcCommandLength[0];           // get number of bytes to transmit
         byte i = 0;
         do {                                          // move buffer up by one entry
@@ -955,7 +973,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         if (BufferRead > 19) {                        // end reached?
           BufferRead = 0;}}                           // start over
       else {                                          // LampCol > 13
-        if (Arg > 16) {                               // time to sync
+        if (Arg > NumOfLEDbytes + 6) {                // time to sync
           if (PolarityFlag) {                         // data bus of LED_exp board works with toggling select
             PolarityFlag = false;
             WriteToHwExt(170, 1);}                    // write sync command with Sel5 falling edge
@@ -1905,18 +1923,23 @@ void SwitchDisplay(byte Event) {                      // switch between differen
     DispRow2 = DisplayLower2;}}
 
 void BlinkLamps(byte BlTimer) {
+  static byte BlinkState[8];
   byte c = 0;
+  bool CurrentState = BlinkState[BlTimer / 8] & 1<<(BlTimer % 8);
   for (byte i=0; i<BlinkingNo[BlTimer]; i++) {        // for all lamps controlled by this blink timer
     while (!BlinkingLamps[BlTimer][c]) {              // skip unused lamp slots
       c++;
       if (c > 65) {                                   // max 64 blink timers possible (starting from 1)
         ErrorHandler(3,BlTimer,BlinkingNo[BlTimer]);}}// show error 3
-        if (BlinkState[BlTimer]) {                    // toggle the state of the lamps
-          TurnOnLamp(BlinkingLamps[BlTimer][c]);}
-        else {
-          TurnOffLamp(BlinkingLamps[BlTimer][c]);}
+    if (CurrentState) {                               // toggle the state of the lamps
+      TurnOnLamp(BlinkingLamps[BlTimer][c]);}
+    else {
+      TurnOffLamp(BlinkingLamps[BlTimer][c]);}
     c++;}
-  BlinkState[BlTimer] = !BlinkState[BlTimer];         // invert the target state for the next run
+  if (CurrentState) {                                 // invert the target state for the next run
+    BlinkState[BlTimer / 8] &= 255-(1<<(BlTimer & 8));}
+  else {
+    BlinkState[BlTimer / 8] |= 1<<(BlTimer % 8);}
   BlinkTimer[BlTimer] = ActivateTimer(BlinkPeriod[BlTimer], BlTimer, BlinkLamps);} // and start a new timer
 
 void AddBlinkLamp(byte Lamp, unsigned int Period) {
@@ -1951,7 +1974,7 @@ void AddBlinkLamp(byte Lamp, unsigned int Period) {
           ErrorHandler(6,0,Lamp);}}                   // show error 6
       BlinkingLamps[x][0] = Lamp;                     // add the lamp
       BlinkingNo[x] = 1;                              // set the number of lamps for this timer to 1
-      BlinkState[x] = true;                           // start with lamps on
+      //BlinkState[x] = true;                           // start with lamps on
       BlinkPeriod[x] = Period;
       BlinkTimers++;                                  // increase the number of blink timers
       BlinkTimer[x] = ActivateTimer(Period, x, BlinkLamps);}}} // start a timer and store it's number

@@ -57,13 +57,13 @@ const struct SettingTopic BK_setList[10] = {{" TIMED  MAGNA ",HandleBoolSetting,
                                     {"",NULL,0,0,0}};
 
 const byte LEDflow[88] = {255,0,0,0b11111111,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
-                          200,50,0,0b01111111,0b10000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
-                          150,100,0,0b00111111,0b11000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
-                          100,150,0,0b00011111,0b11100000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
-                          50,200,0,0b00001111,0b11110000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
-                          0,250,50,0b00000111,0b11111000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
-                          0,250,100,0b00000011,0b11111100,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
-                          0,250,150,0b00000001,0b11111110,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000};
+                          200,50,0,0b00000001,0b00000000,0b00000001,0b00000000,0b00000001,0b00000001,0b00000000,0b00000000,
+                          150,100,0,0b00000010,0b00000000,0b00000010,0b00000000,0b00000010,0b00000010,0b00000000,0b00000000,
+                          100,150,0,0b00000100,0b00000000,0b00000100,0b00000000,0b00000100,0b00000100,0b00000000,0b00000000,
+                          50,200,0,0b00001000,0b00000000,0b00001000,0b00000000,0b00001000,0b00001000,0b00000000,0b00000000,
+                          0,250,50,0b00010000,0b00000000,0b00010000,0b00000000,0b00010000,0b00010000,0b00000000,0b00000000,
+                          0,250,100,0b00100000,0b00000000,0b00100000,0b00000000,0b00100000,0b00100000,0b00000000,0b00000000,
+                          0,250,150,0b01000000,0b00000000,0b01000000,0b00000000,0b01000000,0b01000000,0b00000000,0b00000000};
 const uint16_t LEDdur[9] = {1000,1000,1000,1000,1000,1000,1000,1000,0};
 
                                   //  Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
@@ -322,6 +322,7 @@ void BK_AttractDisplayCycle(byte Step) {
     ScrollUpper(100);                                 // stop scrolling
     ScrollLower(100);
     AddScrollUpper(100);
+    RemoveBlinkLamp(6);
     return;
   case 1:                                             // attract mode title 'page'
     WriteUpper2("  THE         ");
@@ -344,6 +345,7 @@ void BK_AttractDisplayCycle(byte Step) {
     Step++;
     break;
   case 3:                                             // Show highscores
+    AddBlinkLamp(6, 150);                             // blink Highest Score lamp
     WriteUpper2("1>              ");
     WriteLower2("2>              ");
     for (i=0; i<3; i++) {
@@ -358,6 +360,7 @@ void BK_AttractDisplayCycle(byte Step) {
     Step++;
     break;
   case 4:
+    RemoveBlinkLamp(6);                               // stop blinking of Highest Score lamp
     WriteUpper2("3>              ");
     WriteLower2("4>              ");
     for (i=0; i<3; i++) {
@@ -393,6 +396,7 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
     digitalWrite(Blanking, LOW);                      // invoke the blanking
     break;
   case 9:
+    LEDsetColorMode(2);
     LEDpointer = LEDflow;
     LEDpatDuration = LEDdur;
     ShowLEDpatterns(1);

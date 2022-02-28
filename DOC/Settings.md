@@ -57,13 +57,14 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 7 |  | 1 | Additional | - | The APC_LED_exp board is used for the lamps 65+ |
 | 7 |  | 2 | Playfld only | - | The APC_LED_exp board is only used for the lamps 9 - 64 |
 | 7 |  | 3 | PlayfldBackbox | - | The APC_LED_exp board is used for the lamps 1 - 64 |
-| 8 | Sol Exp Board | - | - | No | Bool setting - will use the solenoid expander board for solenoids 26 - 33 if set
-| 9 | Debug Mode | - | - | No | Bool setting - Active debug mode will show the number of active timers in the credit display and will stop the game on error |
-| 10 | Backbox Lamps | 0| Column 1 | X | Backbox lamps are in lamp column 1 |
-| 10 |  | 1 | Column 8 | - | Backbox lamps are in lamp column 8 |
-| 10 |  | 2 | None | - | game has no controlled backbox lamps |
-| 11 | Restore Default | - | - | - | No setting - restores the default settings |
-| 12 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 8 | No of LEDs | - | - | 64 | Numerical setting - range 1 - 192 / The length of the LED stripe. Setting is only effective when 'Additional' is selected as 'LED lamps' setting|
+| 9 | Sol Exp Board | - | - | No | Bool setting - will use the solenoid expander board for solenoids 26 - 33 if set
+| 10 | Debug Mode | - | - | No | Bool setting - Active debug mode will show the number of active timers in the credit display and will stop the game on error |
+| 11 | Backbox Lamps | 0| Column 1 | X | Backbox lamps are in lamp column 1 |
+| 11 |  | 1 | Column 8 | - | Backbox lamps are in lamp column 8 |
+| 11 |  | 2 | None | - | game has no controlled backbox lamps |
+| 12 | Restore Default | - | - | - | No setting - restores the default settings |
+| 13 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## Game Settings in Remote Control mode
 
@@ -77,5 +78,5 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 2 | | 1 | Board | - | PinMame sounds are played on an external audio board |
 | 3 | PinMame game | - | - | 0 | Numerical setting - PinMame game number |
 | 4 | Lisy Debug | - | - | 0 | Numerical setting according to the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page |
-| 5 | RestoreDefault | - | - | - | No setting - restores the default settings |
-| 6 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 5 | Restore Default | - | - | - | No setting - restores the default settings |
+| 6 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |

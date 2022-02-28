@@ -87,7 +87,8 @@ A list of the settings and a brief description of how to use them can be found o
 ## The assembly
 
 As the boards have the component names printed at the corresponding locations, you can just use the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/Assembly/APC_BOMnonSMD.pdf) to identify the  right component to put there.  
-Pay attention to the polarity of the electrolytic capacitors C2, C9 and C11. The rectangular pad does always belong to the plus pin of the cap.
+Pay attention to the polarity of the electrolytic capacitors C2, C9 and C11. The rectangular pad does always belong to the plus pin of the cap.  
+The resistor networks RR1, RR7 and RR8 have to be populated in the correct orientation also. There's a marking for pin 1 printed on the APC boards. On the resistor networks pin 1 is usually marked with a dot.
 
 ## Getting your board started
 
