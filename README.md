@@ -23,7 +23,8 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 * A socket for a Raspberry Pi which can be used to run PinMame from the APC board
 * [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) are game specific code blocks that act like a man-in-the-middle between the game HW and PinMame. That means even if your game is running in PinMame you can still introduce some changes. Take a look at my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) to see how a few lines of code can change a game dramatically.
 
-To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards at a price of well below 100€ per board. You can write your game SW completely from scratch or you can use PinMame and PinMameExceptions to implement smaller changes with minimum effort. Typical examples are:
+To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards at a price of well below 100€ per board. You can write your game SW completely from scratch or you can use PinMame and PinMameExceptions to implement smaller changes with minimum effort.  
+Typical examples for the use of PinMameExceptions are:
 
 * Pre System11 games usually use just one audio channel, so you could add a background music track. Wouldn't it be great if your Disco Fever would play old Disco music in the BG?
 * Add HW toys like a shaker motor or flashers and the necessary rules to drive them. If your game has no solennoid drivers left, then just add the [Solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) to get 8 more. You can also use the [LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) to control RGB-LED stripes or just connect your own individual HW.
