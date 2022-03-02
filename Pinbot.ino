@@ -360,28 +360,28 @@ void PB_AttractDisplayCycle(byte Step) {
     Step++;
     break;
   case 3:                                             // Show highscores
-    WriteUpper2("1>              ");
-    WriteLower2("2>              ");
+    WriteUpper2("1>     2>     ");
+    WriteLower2("              ");
     for (i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
       *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
       *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
-    ShowNumber(15, HallOfFame.Scores[0]);
+    ShowNumber(23, HallOfFame.Scores[0]);
     ShowNumber(31, HallOfFame.Scores[1]);
     Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);
     Step++;
     break;
   case 4:
-    WriteUpper2("3>              ");
-    WriteLower2("4>              ");
+    WriteUpper2("3>     4>     ");
+    WriteLower2("              ");
     for (i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
       *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
       *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
-    ShowNumber(15, HallOfFame.Scores[2]);
+    ShowNumber(23, HallOfFame.Scores[2]);
     ShowNumber(31, HallOfFame.Scores[3]);
     Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);

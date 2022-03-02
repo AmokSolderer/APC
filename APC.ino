@@ -198,7 +198,7 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 
 const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{"   TUTORIAL     "}};
 const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
-const char TxTDisplaySelect[9][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{"DATA EAST 2X16 "},{"123456123456    "},{"12345671234567  "}};
+const char TxTDisplaySelect[9][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{" DATA EAST 2X16"},{"123456123456    "},{"12345671234567  "}};
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "},{"        NONE    "}};
 
@@ -339,8 +339,10 @@ void Init_System() {
   else {                                              // no SD card?
     for(i=0;i<64;i++) {                               // use default settings
       APC_settings[i] = APC_defaults[i];}}
-  if (APC_settings[DisplayType] && (APC_settings[DisplayType] != 3 || APC_settings[DisplayType] != 6)) { // display with numerical lower row
+  if (APC_settings[DisplayType] && APC_settings[DisplayType] != 3 && APC_settings[DisplayType] != 6) { // display with numerical lower row
     DispPattern2 = NumLower;}                         // use patterns for num displays
+  else {
+    DispPattern2 = AlphaLower;}
   if (APC_settings[DisplayType] < 7) {                // non BCD display
     WriteLower("APC REV         ");
     *(DisplayLower+24) = DispPattern2[2*(APC_Version[0]-32)];
@@ -385,8 +387,10 @@ void Init_System2(byte State) {                       // state = 0 will restore 
     WriteUpper("NO GAMESELECTD  ");
     while (true) {}
   }
-  if (APC_settings[DisplayType] && (APC_settings[DisplayType] != 3 || APC_settings[DisplayType] != 6)) { // display with numerical lower row
+  if (APC_settings[DisplayType] && APC_settings[DisplayType] != 3 && APC_settings[DisplayType] != 6) { // display with numerical lower row
     DispPattern2 = NumLower;}                         // use patterns for num displays
+  else {
+    DispPattern2 = AlphaLower;}
   if (SDfound) {
     File HighScore = SD.open(GameDefinition.HighScoresFileName);
     if (!HighScore) {
@@ -912,6 +916,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     free(LEDstatus);                                  // TODO LEDhandling
     break;
   case 1:                                             // init
+    {byte Buffer = NumOfLEDbytes;
     if (!Timer) {                                     // initial call?
       if (APC_settings[LEDsetting] == 1) {            // LEDsetting = Additional?
         NumOfLEDbytes = APC_settings[NumOfLEDs] / 8;  // calculate the needed memory for LEDstatus
@@ -927,11 +932,11 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     LengthOfSyncCycle = APC_settings[NumOfLEDs] / 24; // calculate the required length of the sync cycle
     if (APC_settings[NumOfLEDs] % 24) {
       LengthOfSyncCycle++;}
-    if (APC_settings[LEDsetting] == 1) {              // LEDsetting = Additional?
+    if (APC_settings[LEDsetting] == 1 && NumOfLEDbytes != Buffer) { // LEDsetting = Additional and number of LEDs has changed?
       for (byte i=0; i<NumOfLEDbytes; i++) {
         LEDstatus[i] = 0;}
       LEDpattern = LEDstatus;}                        // switch to standard LED array
-    break;
+    break;}
   case 2:                                             // timer call
     if (Arg > NumOfLEDbytes + LengthOfSyncCycle + 6) {  // Sync over
       Arg = 0;}                                       // start from the beginning
