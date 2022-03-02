@@ -11,8 +11,8 @@ const byte USB_CommandLength[110] = {0,0,0,0,0,0,0,1,0,0,   // Length of USB com
                               2,1,2,0,0,0,0,0,0,0,    // Length of USB commands from 80 - 89
                               0,0,0,0,0,0,0,0,0,0,    // Length of USB commands from 90 - 99
                               0,0,0,0,0,0,0,0,0,0};   // Length of USB commands from 100 - 109
-const byte USB_DisplayDigitNum[8][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
-const byte USB_DisplayTypes[8][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
+const byte USB_DisplayDigitNum[9][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
+const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{0,4,4,0,0,0},{0,4,4,0,0,0},{0,4,3,3,0,0},{0,4,3,3,3,0},{1,1,1,1,1,0},{1,2,2,2,2,0}};
 
                                                       // offsets of settings in the settings array
 #define USB_Watchdog 0                                // watchdog enable setting
@@ -339,11 +339,12 @@ void USB_SerialCommand() {
     case 1:                                           // Sys11 Pinbot
     case 2:                                           // Sys11 F-14
     case 5:                                           // Sys11 Riverboat Gambler
-    case 6:                                           // Sys3 - 6
-    case 7:                                           // Sys7 + 9
+    case 7:                                           // Sys3 - 6
+    case 8:                                           // Sys7 + 9
       USB_WriteByte((byte) 5);
       break;
     case 3:                                           // Sys11 BK2K
+    case 6:                                           // DE 2x16
       USB_WriteByte((byte) 3);
       break;
     case 4:                                           // Sys11 Taxi
@@ -453,8 +454,8 @@ void USB_SerialCommand() {
           WritePlayerDisplay((char*)USB_SerialBuffer, 0);
           break;}
       break;
-      case 6:                                         // Sys3 - 6 display
-      case 7:                                         // Sys7 + 9 display
+      case 7:                                         // Sys3 - 6 display
+      case 8:                                         // Sys7 + 9 display
         switch (USB_DisplayProtocol[0]) {             // which protocol shall be used?
         case 1:                                       // BCD
         case 2:                                       // BCD with comma
@@ -507,6 +508,7 @@ void USB_SerialCommand() {
       case 3:                                         // Sys11 BK2K
       case 4:                                         // Sys11 Taxi
       case 5:                                         // Sys11 Riverboat Gambler
+      case 6:                                         // DE 2x16
         switch (USB_DisplayProtocol[1]) {             // which protocol shall be used?
         case 1:                                       // BCD
           for (i=0; i<16; i++) {
@@ -539,8 +541,8 @@ void USB_SerialCommand() {
           WritePlayerDisplay((char*)USB_SerialBuffer, 1);
           break;}
         break;
-      case 6:                                         // Sys3 - 6 display
-      case 7:                                         // Sys7 + 9 display
+      case 7:                                         // Sys3 - 6 display
+      case 8:                                         // Sys7 + 9 display
         switch (USB_DisplayProtocol[1]) {             // which protocol shall be used?
         case 1:                                       // BCD
         case 2:                                       // BCD with comma
@@ -623,6 +625,7 @@ void USB_SerialCommand() {
           break;
         case 4:                                       // Sys11 Taxi
         case 5:                                       // Sys11 Riverboat Gambler
+        case 6:                                       // DE 2x16
           if (!game_settings[USB_Debug]) {            // display can be used for debug information
             switch (USB_DisplayProtocol[2]) {         // which protocol shall be used?
             case 1:                                   // BCD
@@ -650,8 +653,8 @@ void USB_SerialCommand() {
               WritePlayerDisplay((char*)USB_SerialBuffer, 2);
               break;}}
           break;
-        case 6:                                       // Sys3 - 6 display
-        case 7:                                       // Sys7 + 9 display
+        case 7:                                       // Sys3 - 6 display
+        case 8:                                       // Sys7 + 9 display
           switch (USB_DisplayProtocol[2]) {           // which protocol shall be used?
           case 1:                                     // BCD
           case 2:                                     // BCD with comma
@@ -732,8 +735,8 @@ void USB_SerialCommand() {
         for (i=0; i<7; i++) {                         // 7 segment pattern assumed (1 byte)
           *(DisplayLower+2*i+1) = ConvertPattern(1, USB_SerialBuffer[i]);}
         break;
-      case 6:                                         // Sys3 - 6 display
-      case 7:                                         // Sys7 + 9 display
+      case 7:                                         // Sys3 - 6 display
+      case 8:                                         // Sys7 + 9 display
         switch (USB_DisplayProtocol[3]) {             // which protocol shall be used?
         case 1:                                       // BCD
         case 2:                                       // BCD with comma
@@ -814,8 +817,8 @@ void USB_SerialCommand() {
         for (i=0; i<7; i++) {                         // 7 segment pattern assumed (1 byte)
           *(DisplayLower+2*i+17) = ConvertPattern(1, USB_SerialBuffer[i]);}
         break;
-      case 6:                                         // Sys3 - 6 display
-      case 7:                                         // Sys7 + 9 display
+      case 7:                                         // Sys3 - 6 display
+      case 8:                                         // Sys7 + 9 display
         switch (USB_DisplayProtocol[4]) {             // which protocol shall be used?
         case 1:                                       // BCD
         case 2:                                       // BCD with comma
@@ -1067,7 +1070,7 @@ void USB_SerialCommand() {
     if (APC_settings[SolenoidExp]) {                  // sol exp board selected
       WriteToHwExt(0, 128+4);
       WriteToHwExt(0, 4);}
-    if (APC_settings[DisplayType] == 3 || APC_settings[DisplayType] == 4 || APC_settings[DisplayType] == 5) {             // 2x16 character display
+    if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
       WriteUpper2("UNKNOWN COMMAND ");}
     else {
       WriteUpper2("UNKNOWNCOMMAND  ");}
@@ -1148,12 +1151,12 @@ byte USB_GenerateFilename(byte Channel, byte Sound, char* FileName) {
   if (game_settings[USB_Debug] == 2) {                // display can be used for debug information
     if (Channel == 1) {
       if (SD.exists(FileName)) {                      // sound file present?
-        if (APC_settings[DisplayType] < 6) {          // Sys11 type display?
+        if (APC_settings[DisplayType] < 7) {          // Sys11 type display?
           *(DisplayLower+2) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the sound to be played
           *(DisplayLower+3) = DispPattern2[2 * (FileName[2] - 32) + 1];
           *(DisplayLower+4) = DispPattern2[2 * (FileName[3] - 32)];
           *(DisplayLower+5) = DispPattern2[2 * (FileName[3] - 32) + 1];}
-        else if (APC_settings[DisplayType] == 6) {    // Sys3-6 type display
+        else if (APC_settings[DisplayType] == 7) {    // Sys3-6 type display
           *(DisplayLower) = ConvertNumLower(Sound / 100,(byte) *(DisplayLower));
           *(DisplayLower+2) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower));
           *(DisplayLower+4) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+2));}
@@ -1161,12 +1164,12 @@ byte USB_GenerateFilename(byte Channel, byte Sound, char* FileName) {
           *(DisplayLower+2) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower+2));
           *(DisplayLower+4) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+4));}}
       else {                                          // sound file doesn't exist
-        if (APC_settings[DisplayType] < 6) {          // Sys11 type display?
+        if (APC_settings[DisplayType] < 7) {          // Sys11 type display?
           *(DisplayLower+12) = DispPattern2[2 * (FileName[2] - 32)]; // show the number of the missing sound
           *(DisplayLower+13) = DispPattern2[2 * (FileName[2] - 32) + 1];
           *(DisplayLower+14) = DispPattern2[2 * (FileName[3] - 32)];
           *(DisplayLower+15) = DispPattern2[2 * (FileName[3] - 32) + 1];}
-        else if (APC_settings[DisplayType] == 6) {    // Sys3 - 6 type display
+        else if (APC_settings[DisplayType] == 7) {    // Sys3 - 6 type display
           *(DisplayLower+6) = ConvertNumLower(Sound / 100,(byte) *(DisplayLower+6));
           *(DisplayLower+8) = ConvertNumLower(Sound / 10,(byte) *(DisplayLower+8));
           *(DisplayLower+10) = ConvertNumLower(Sound % 10,(byte) *(DisplayLower+10));}

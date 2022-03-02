@@ -593,7 +593,7 @@ void BC_Testmode(byte Select) {
       *(DisplayLower+16) = 0;
       *(DisplayUpper) = 0;
       *(DisplayUpper+16) = 0;
-      if (APC_settings[DisplayType] < 6) {            // Sys11 display
+      if (APC_settings[DisplayType] < 7) {            // Sys11 display
         WriteUpper("DISPLAY TEST    ");
         WriteLower("                ");}
       else {                                          // Sys3 - 9 display
@@ -604,7 +604,7 @@ void BC_Testmode(byte Select) {
       AppByte2 = 0;
       break;
     case 3:                                           // credit button
-      if (APC_settings[DisplayType] < 6) {            // Sys11 display
+      if (APC_settings[DisplayType] < 7) {            // Sys11 display
         WriteUpper("0000000000000000");
         WriteLower("0000000000000000");
         AppByte2 = ActivateTimer(1000, 32, BC_DisplayCycle);}
@@ -625,7 +625,7 @@ void BC_Testmode(byte Select) {
       switch(Select) {                                // switch events
       case 0:                                         // init (not triggered by switch)
         AppByte2 = 0;
-        if (APC_settings[DisplayType] < 6) {          // Sys11 display
+        if (APC_settings[DisplayType] < 7) {          // Sys11 display
           WriteUpper(" SWITCH EDGES   ");
           WriteLower("                ");}
         else {                                        // Sys3 - 9 display
@@ -648,12 +648,12 @@ void BC_Testmode(byte Select) {
           break;}
         /* no break */
       default:                                        // all other switches
-        if (APC_settings[DisplayType] == 6) {         // Sys6 display?
+        if (APC_settings[DisplayType] == 7) {         // Sys6 display?
           for (byte i=0; i<10; i++) {                 // move all characters in the lower display row 4 chars to the left
             DisplayLower[2*i] = DisplayLower[2*i+8];}
           *(DisplayLower+24) = ConvertNumLower((byte) Select / 10, 0); // and insert the switch number to the right of the row
           *(DisplayLower+26) = ConvertNumLower((byte) (Select % 10), 0);}
-        else if (APC_settings[DisplayType] == 7) {    // Sys7 display?
+        else if (APC_settings[DisplayType] == 8) {    // Sys7 display?
           for (byte i=1; i<24; i++) {                 // move all characters in the lower display row 4 chars to the left
             DisplayLower[i] = DisplayLower[i+8];}
           *(DisplayLower+28) = ConvertNumLower((byte) Select / 10, 0); // and insert the switch number to the right of the row
@@ -669,7 +669,7 @@ void BC_Testmode(byte Select) {
       case 2:                                           // solenoid test
         switch(Select) {                                // switch events
         case 0:                                         // init (not triggered by switch)
-          if (APC_settings[DisplayType] < 6) {          // Sys11 display
+          if (APC_settings[DisplayType] < 7) {          // Sys11 display
             WriteUpper("  COIL  TEST    ");
             WriteLower("                ");}
           else {                                        // Sys3 - 9 display
@@ -695,7 +695,7 @@ void BC_Testmode(byte Select) {
         case 3:                                           // single lamp test
           switch(Select) {                                // switch events
           case 0:                                         // init (not triggered by switch)
-            if (APC_settings[DisplayType] < 6) {          // Sys11 display
+            if (APC_settings[DisplayType] < 7) {          // Sys11 display
               WriteUpper(" SINGLE LAMP    ");
               WriteLower("                ");}
             else {                                        // Sys3 - 9 display
@@ -724,7 +724,7 @@ void BC_Testmode(byte Select) {
           case 4:                                           // all lamps test
             switch(Select) {                                // switch events
             case 0:                                         // init (not triggered by switch)
-              if (APC_settings[DisplayType] < 6) {          // Sys11 display
+              if (APC_settings[DisplayType] < 7) {          // Sys11 display
                 WriteUpper("  ALL   LAMPS   ");
                 WriteLower("                ");}
               else {                                        // Sys3 - 9 display
@@ -750,7 +750,7 @@ void BC_Testmode(byte Select) {
             case 5:                                           // all music test
               switch(Select) {                                // switch events
               case 0:                                         // init (not triggered by switch)
-                if (APC_settings[DisplayType] < 6) {          // Sys11 display
+                if (APC_settings[DisplayType] < 7) {          // Sys11 display
                   WriteUpper(" MUSIC  TEST    ");
                   WriteLower("                ");}
                 else {                                        // Sys3 - 9 display
@@ -782,10 +782,10 @@ void BC_Testmode(byte Select) {
 
 void BC_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
   if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    if (APC_settings[DisplayType] == 6) {             // Sys6 display?
+    if (APC_settings[DisplayType] == 7) {             // Sys6 display?
       *(DisplayLower+24) = ConvertNumLower((byte) CurrentLamp / 10, 0); // and insert the switch number to the right of the row
       *(DisplayLower+26) = ConvertNumLower((byte) (CurrentLamp % 10), 0);}
-    else if (APC_settings[DisplayType] == 7) {        // Sys7 display?
+    else if (APC_settings[DisplayType] == 8) {        // Sys7 display?
       *(DisplayLower+28) = ConvertNumLower((byte) CurrentLamp / 10, 0); // and insert the switch number to the right of the row
       *(DisplayLower+30) = ConvertNumLower((byte) (CurrentLamp % 10), 0);}
     else {                                            // Sys11 display
@@ -823,10 +823,10 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
       AppBool = false;
       Solenoid++;}}
   else {                                              // if A bank solenoid
-    if (APC_settings[DisplayType] == 6) {             // Sys6 display?
+    if (APC_settings[DisplayType] == 7) {             // Sys6 display?
       *(DisplayLower+24) = ConvertNumLower((byte) Solenoid / 10, 0); // and insert the switch number to the right of the row
       *(DisplayLower+26) = ConvertNumLower((byte) (Solenoid % 10), 0);}
-    else if (APC_settings[DisplayType] == 7) {        // Sys7 display?
+    else if (APC_settings[DisplayType] == 8) {        // Sys7 display?
       *(DisplayLower+28) = ConvertNumLower((byte) Solenoid / 10, 0); // and insert the switch number to the right of the row
       *(DisplayLower+30) = ConvertNumLower((byte) (Solenoid % 10), 0);}
     else {                                            // Sys11 display
@@ -844,7 +844,7 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
       if (QuerySwitch(73)) {                          // Up/Down switch pressed?
         AppBool = true;}}
     else {
-      if (APC_settings[DisplayType] < 6) {            // Sys11 display?
+      if (APC_settings[DisplayType] < 7) {            // Sys11 display?
         *(DisplayLower+30) = DispPattern2[(' '-32)*2];// delete the C
         *(DisplayLower+31) = DispPattern2[(' '-32)*2+1];}
       if (QuerySwitch(73)) {                          // Up/Down switch pressed?
@@ -876,7 +876,7 @@ void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
         else {
           CharNo = CharNo+2;}}                        // otherwise show next character
       for (i=0; i<16; i++) {                          // use for all alpha digits
-        if ((APC_settings[DisplayType] != 3 && APC_settings[DisplayType] != 4 && APC_settings[DisplayType] != 5) && ((i==0) || (i==8))) {
+        if ((APC_settings[DisplayType] < 3 || APC_settings[DisplayType] > 6) && ((i==0) || (i==8))) {
           DisplayUpper[2*i] = LeftCredit[CharNo];
           DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
           DisplayLower[2*i] = RightCredit[CharNo];

@@ -810,7 +810,7 @@ void TT_DisplayCycle(byte CharNo) {                   // Display cycle test
       else {
         CharNo = CharNo+2;}}                          // otherwise show next character
     for (i=0; i<16; i++) {                            // use for all alpha digits
-      if ((APC_settings[DisplayType] != 3) && ((i==0) || (i==8))) {
+      if ((APC_settings[DisplayType] < 3 || APC_settings[DisplayType] > 6) && ((i==0) || (i==8))) {
         DisplayUpper[2*i] = LeftCredit[CharNo];
         DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
         DisplayLower[2*i] = RightCredit[CharNo];
