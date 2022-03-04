@@ -1946,7 +1946,7 @@ void BlinkLamps(byte BlTimer) {
       TurnOffLamp(BlinkingLamps[BlTimer][c]);}
     c++;}
   if (CurrentState) {                                 // invert the target state for the next run
-    BlinkState[BlTimer / 8] &= 255-(1<<(BlTimer & 8));}
+    BlinkState[BlTimer / 8] &= 255-(1<<(BlTimer % 8));}
   else {
     BlinkState[BlTimer / 8] |= 1<<(BlTimer % 8);}
   BlinkTimer[BlTimer] = ActivateTimer(BlinkPeriod[BlTimer], BlTimer, BlinkLamps);} // and start a new timer
