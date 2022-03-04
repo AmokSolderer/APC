@@ -916,27 +916,29 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     free(LEDstatus);                                  // TODO LEDhandling
     break;
   case 1:                                             // init
-    {byte Buffer = NumOfLEDbytes;
-    if (!Timer) {                                     // initial call?
-      if (APC_settings[LEDsetting] == 1) {            // LEDsetting = Additional?
-        NumOfLEDbytes = APC_settings[NumOfLEDs] / 8;  // calculate the needed memory for LEDstatus
-        if (APC_settings[NumOfLEDs] % 8) {
-          NumOfLEDbytes++;}
-        LEDstatus = (byte *) malloc(NumOfLEDbytes);}  // and allocate it
-      Timer = ActivateTimer(1, Arg, LEDtimer);}       // start main timer
-    else if (APC_settings[LEDsetting] == 1) {         // already running and LEDsetting = Additional?
+    if (APC_settings[LEDsetting] == 1) {              // LEDsetting = Additional?
+      byte Buffer = NumOfLEDbytes;
       NumOfLEDbytes = APC_settings[NumOfLEDs] / 8;    // calculate the needed memory for LEDstatus
       if (APC_settings[NumOfLEDs] % 8) {
         NumOfLEDbytes++;}
-      LEDstatus = (byte *) realloc(LEDstatus, NumOfLEDbytes);}  // and reallocate it
-    LengthOfSyncCycle = APC_settings[NumOfLEDs] / 24; // calculate the required length of the sync cycle
-    if (APC_settings[NumOfLEDs] % 24) {
-      LengthOfSyncCycle++;}
-    if (APC_settings[LEDsetting] == 1 && NumOfLEDbytes != Buffer) { // LEDsetting = Additional and number of LEDs has changed?
-      for (byte i=0; i<NumOfLEDbytes; i++) {
-        LEDstatus[i] = 0;}
-      LEDpattern = LEDstatus;}                        // switch to standard LED array
-    break;}
+      LengthOfSyncCycle = APC_settings[NumOfLEDs] / 24; // calculate the required length of the sync cycle
+      if (APC_settings[NumOfLEDs] % 24) {
+        LengthOfSyncCycle++;}
+      if (Timer) {                                    // LED handling already running ?
+        if (NumOfLEDbytes != Buffer) {                // required memory size has changed?
+          LEDstatus = (byte *) realloc(LEDstatus, NumOfLEDbytes); // reallocate new memory
+          for (byte i=0; i<NumOfLEDbytes; i++) {      // and delete it
+            LEDstatus[i] = 0;}}}
+      else {                                          // initial call?
+        LEDstatus = (byte *) malloc(NumOfLEDbytes);   // allocate memory
+        for (byte i=0; i<NumOfLEDbytes; i++) {        // and delete it
+          LEDstatus[i] = 0;}
+        Timer = ActivateTimer(1, Arg, LEDtimer);}     // start main timer
+      LEDpattern = LEDstatus;}                        // show LEDstatus
+    else {                                            // LEDsetting != Additional
+      if (!Timer) {
+        Timer = ActivateTimer(1, Arg, LEDtimer);}}    // start main timer
+    break;
   case 2:                                             // timer call
     if (Arg > NumOfLEDbytes + LengthOfSyncCycle + 6) {  // Sync over
       Arg = 0;}                                       // start from the beginning

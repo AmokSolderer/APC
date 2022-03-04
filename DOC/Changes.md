@@ -15,13 +15,15 @@ The purpose of this is to enable state machines that are initially called from t
 
 * Support for 2x16 character displays with additional numerical displays has been added.
 
-* SW support for the [LED_expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) has been upgraded.
+* SW support for the [LED_expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) has been upgraded. Therefore the new system setting 'No of LEDs' has been added as [setting 8](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Settings.md#system-settings). This might require resetting the system settings to the defaults.
 
 * Exception rules for System 11 F-14 Tomcat have been added. Sound files for F-14 are also available (Thanks to Snux)
 
 * A new setting 'none' has been added to the 'Backbox Lamps' setting in the system settings. This is for the ShowLampPatterns command to know which lamps not to include in lamp animations.
 
 * The ShowLampPatterns command has been changed to support also games without any controlled lamps in the backbox. For this the Pattern array in LampPat has been changed from 7 to 8 entries. If your a game has the first column of lamps in the backbox you have to select 'column1' in the 'Backbox Lamps' seeting and add a zero after the duration. For games with the last row of lamps in the backbox change the setting to 'column8' and add a zero at the end of the pattern part of LampPat.
+
+* Data East 2x16 displays are now supported. Therefore the entry 'Data East 2x16' has been added to the 'Display Type' setting in the system settings. As a side effect the numerical only displays move up one setting. Hence, if you have a System 3 - 9 type of display you have to re-adjust your display setting.
 
 ### Misc
 

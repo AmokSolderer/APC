@@ -36,11 +36,12 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 0 | Display Type | 0 | 4 Alpha+Credit | X | 4x 7 digit alphanumeric + credit |
 | 0 |  | 1 | Sys11 Pinbot | - | 2x 7 digit alphanumeric + 2x 7 digit numeric + credit |
 | 0 |  | 2 | Sys11 F-14 | - | 2x 7 digit alphanumeric + 2x 7 digit numeric |
-| 0 |  | 3 | Sys11 BK2K | - | 2x 16 digit alphanumeric |
-| 0 |  | 4 | Sys11 Taxi | - | 2x 16 digit alphanumeric + 1x 7 digit numeric|
-| 0 |  | 5 | Sys11 Riverboat | - | 2x 16 digit alphanumeric + 2x 7 digit numeric|
-| 0 |  | 6 | 6 | - | 4x 6 digit numeric + credit|
-| 0 |  | 7 | 7 | - | 4x 7 digit numeric + credit|
+| 0 |  | 3 | Sys11 BK2K | - | 2x 16 digit alphanumeric (inverted segments)|
+| 0 |  | 4 | Sys11 Taxi | - | 2x 16 digit alphanumeric + 1x 7 digit numeric (non inverted segements)|
+| 0 |  | 5 | Sys11 Riverboat | - | 2x 16 digit alphanumeric + 2x 7 digit numeric (inverted segments)|
+| 0 |  | 6 | Data East 2x16 | - | 2x 16 digit alphanumeric (non inverted segements)|
+| 0 |  | 7 | 7 | - | 4x 6 digit numeric + credit (System 3 - 6)|
+| 0 |  | 8 | 8 | - | 4x 7 digit numeric + credit (System 7 + 9)|
 | 1 | Active Game | 0 | Base Code | - | The very basics of a game SW |
 | 1 |  | 1 | Black Knight | - | My own Black Knight game SW |
 | 1 |  | 2 | Pinbot | - | My own Pinbot game SW |
