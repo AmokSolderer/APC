@@ -109,7 +109,7 @@ void loop() {
           LampMax[RecByte][0] = LampMaxSel[0];
           LampMax[RecByte][1] = LampMaxSel[1];
           LampMax[RecByte][2] = LampMaxSel[2];
-          if (LampStatus[RecByte]) {
+          if (LampStatus[RecByte / 8] &= 255-(1<<(RecByte % 8))) {  // LED on?
             pixels.setPixelColor(RecByte, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}
           break;
         default:                                        // unknown command
