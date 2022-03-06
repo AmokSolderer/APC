@@ -43,7 +43,7 @@ void loop() {
     //Serial.println(RecByte);
     RecFlag = !RecFlag;
     if (Sync<8) {                                       // if the last sync happened less than 8 cycles ago
-      if (Mode < 2) {
+      if (Mode < 2) {                                   // LEDs fade on and off
         for (c=0;c<5;c++) {                             // for 5 brightness levels
           if (TurnOn[c][Sync]) {                        // anything to do in this byte?
             byte Mask = 1;                              // initialize bitmask
@@ -85,18 +85,23 @@ void loop() {
         else {
           TurnOn[5][Sync] = 0;
           TurnOff[5][Sync] = 0;}}
-      else {                                            // selected lamps get the selected color immediately
-        if (RecByte) {                                  // any lamps set?
-          byte Mask = 1;
-          for (i=0;i<8;i++) {                           // for the 8 lamps currently being processed
-            if (RecByte & Mask) {                       // lamp set in RecByte?
-              for (c=0;c<5;c++) {                       // and 5 brightness levels
-                TurnOn[c][Sync] &= (255 - Mask);        // stop lamp from TurningOn - Off
-                TurnOff[c][Sync] &= (255 - Mask);}
-              for (c=0;c<3;c++) {                       // set max brightness of lamp to selected max value
-                LampMax[Sync*8+i][c] = LampMaxSel[c];}
-              pixels.setPixelColor(Sync*8+i, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}
-            Mask = Mask << 1;}}}
+      else {                                            // Mode > 1
+        if (Mode < 4) {                                 // selected lamps get the selected color immediately
+          if (RecByte) {                                // any lamps set?
+            byte Mask = 1;
+            for (i=0;i<8;i++) {                         // for the 8 lamps currently being processed
+              if (RecByte & Mask) {                     // lamp set in RecByte?
+                if (Mode == 2)  {                       // selected LEDs are also turned on
+                  for (c=0;c<5;c++) {                   // and 5 brightness levels
+                    TurnOn[c][Sync] &= (255 - Mask);    // stop lamp from TurningOn - Off
+                    TurnOff[c][Sync] &= (255 - Mask);}
+                  pixels.setPixelColor(Sync*8+i, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}
+                else {                                  // Mode = 3
+                  if (LampStatus[Sync] & Mask) {        // LED on?
+                    pixels.setPixelColor(Sync*8+i, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}}
+                for (c=0;c<3;c++) {                     // set max brightness of lamp to selected max value
+                  LampMax[Sync*8+i][c] = LampMaxSel[c];}}
+              Mask = Mask << 1;}}}}
       Sync++;}                                          // increase the counter
     else {                                              // LED patterns are done
       if (CommandCount) {                               // still bytes to read for this command
@@ -126,6 +131,12 @@ void loop() {
           break;
         case 66:                                        // Mode 2 -> lamps set in the following frame get the new color immediately
           Mode = 2;
+          break;
+        case 67:                                        // Mode 3 -> only the color of the LEDs is changed, but they're not turned on
+          Mode = 3;
+          break;
+        case 68:                                        // Mode 4 -> LED state is frozen
+          Mode = 4;
           break;
         case 170:                                       // sync command
           Sync = 0;                                     // the next four cycles (8 bytes) represent a lamp pattern
