@@ -3,8 +3,10 @@
 ## Selecting the correct display
 
 The preselected display setting is set for early System11 displays. That means if you have a pre System11 (numbers only) display or a Black Knight 2000 (BK2K / 2 x 16 alphanumeric) you have to adjust the display setting first. In order to get there blindly, the display setting is the very first one.  
-To get there you have to keep the Advance key pressed for more than 1s with the Up/Down key being in up position. Wait 4s and then press the Game Start button slowly but repeatedly until you can read the display contents. Pre Sys11 displays cannot show any text, so for the 6 digit displays (Sys3 - 6) a single 6 is shown on the player 4 display. For 7 digit displays (Sys7 and 9) it's a 7.  
+To get there you have to keep the Advance key pressed for more than 1s with the Up/Down key being in up position. Wait 4s and then press the Game Start button slowly but repeatedly until you can read the display contents. Pre Sys11 displays cannot show any text, so for the 6 digit displays (Sys3 - 6) a single 7 is shown on the player 4 display. For 7 digit displays (Sys7 and 9) it's an 8.  
 After the correct display is selected, press Up/Down to get it down and Game Start to go back one setting to 'Exit Settings'. Now release the Up/Down button and press Game Start again to save the settings and return to the attract mode.
+
+The complete re-initialization of the display is done when you EXIT the system settings. That means your lower row might still look a bit odd even though you've selected the correct display until you exit the settings.
 
 I did two videos to show what I've described above:
 
