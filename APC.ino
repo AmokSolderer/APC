@@ -1040,9 +1040,9 @@ void LEDsetColor(byte Red, byte Green, byte Blue) {   // set a new color
   LEDhandling(6, Blue);
   LEDhandling(7, 4);}
 
-void LEDsetColorMode(byte Mode) {                     // Mode = 0 -> lamps being lit get the LEDsetColor
-  if (Mode < 5) {                                     // Mode 1 -> lamps keep their color
-    LEDhandling(6, 64 + Mode);                        // Mode 2 -> lamps set in the following frame get the new color immediately
+void LEDsetColorMode(byte Mode) {                     // Mode 0 -> lamps being lit get the LEDsetColor / Mode 1 -> lamps keep their color
+  if (Mode < 5) {                                     // Mode 2 -> lamps set in the following frame get the new color immediately / Mode 3 -> only the color of the LEDs is changed, but they're not turned on
+    LEDhandling(6, 64 + Mode);                        // Mode 4 -> LED state is frozen
     LEDhandling(7, 1);}}
 
 void LEDchangeColor(byte LED) {                       // the color of the selected LED is changed to LEDsetColor

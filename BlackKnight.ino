@@ -390,6 +390,27 @@ void BK_AttractDisplayCycle(byte Step) {
   BK_CheckForLockedBalls(0);                          // check for a ball in the outhole
   Timer0 = ActivateTimer(4000, Step, BK_AttractDisplayCycle);}  // come back for the next 'page'
 
+byte LEDcolorPattern[8] = {0b11111111,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000};
+
+void BK_SelectBulkLEDcolor(byte State) {
+  switch (State) {
+  case 1:
+    LEDsetColorMode(4);
+    LEDpattern = LEDcolorPattern;
+    ActivateTimer(20, 2, BK_SelectBulkLEDcolor);
+    break;
+  case 2:
+    LEDsetColorMode(3);
+    ActivateTimer(20, 3, BK_SelectBulkLEDcolor);
+    break;
+  case 3:
+    LEDsetColorMode(1);
+    ActivateTimer(20, 4, BK_SelectBulkLEDcolor);
+    break;
+  case 4:
+    LEDinit();
+    break;}}
+
 void BK_AttractModeSW(byte Event) {                   // Attract Mode switch behaviour
   switch (Event) {
   case 8:                                             // high score reset
@@ -400,6 +421,9 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
     LEDpointer = LEDflow;
     LEDpatDuration = LEDdur;
     ShowLEDpatterns(1);
+    break;
+  case 10:
+    BK_SelectBulkLEDcolor(1);
     break;
   case 20:                                            // outhole
     ActivateTimer(200, 0, BK_CheckForLockedBalls);    // check again in 200ms
