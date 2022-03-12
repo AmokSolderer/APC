@@ -25,8 +25,8 @@ See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impr
 
 ### Special features
 
-* Hardware extensions interface (the pinout is compatible to the Sound Overlay Solenoid Board used in games like Whirlwind, but it is upgraded a bit to support all kind of self made hardware)
-* A socket for a Raspberry Pi which can be used to run PinMame from the APC board
+* Hardware extensions interface. The pinout is compatible to the Sound Overlay Solenoid Board used in games like Whirlwind, but it is upgraded a bit to support all kind of self made hardware
+* A socket for a Raspberry Pi which can be used to run PinMame on the APC board
 * [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) are game specific code blocks that act like a man-in-the-middle between the game HW and PinMame. That means even if your game is running in PinMame you can still introduce some changes. Take a look at my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) to see how a few lines of code can change a game dramatically.
 
 Typical examples for the use of PinMameExceptions are:
@@ -77,7 +77,7 @@ The APC hardware status is mature. I have version 2.0 in use since January 2018 
 
 The APC features an HW extensions interface which is an 8 bit bus with several enable signals. At the moment there're two extension board available, but you could use it for all kinds of additional hardware.
 
-The first board is an LED expansion board to control WS2812 based LED-Strips with the APC. For more information about this board please refer to the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware).
+The first board is an LED expansion board to control WS2812 based LED-Strips with the APC. For more information about this board please refer to the [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) section.
 
 The following picture shows the APC 2.0 in a Black Knight with the LED Expansion board connected to the hardware extensions interface.
 
@@ -87,9 +87,9 @@ A short video with this setup can be found here :
 
 [Hardware extensions interface video](https://youtu.be/8BnVTpKq-2Y)
 
-The second board is a driver for 8 additional solenoids. The current version is only suited for use with an own power supply (e.g. for 24V shaker motors).
+The second board is a [driver for 8 additional solenoids](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md). The current version is mainly suited for use with an own power supply (e.g. for 24V shaker motors).
 
-I use special alphanumerical displays in my Black Knight which can also be found in the HW section as well as an LED replacement for the original System7 numerical displays.
+I use [special alphanumerical displays](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Sys7Alpha.md) in my Black Knight which can also be found in the HW section as well as an LED replacement for the original System7 numerical displays.
 
 ## Current Status (June 2021)
 
