@@ -95,6 +95,7 @@ void loop() {
                   for (c=0;c<5;c++) {                   // and 5 brightness levels
                     TurnOn[c][Sync] &= (255 - Mask);    // stop lamp from TurningOn - Off
                     TurnOff[c][Sync] &= (255 - Mask);}
+                  LampStatus[Sync] |= Mask;             // turn on lamp
                   pixels.setPixelColor(Sync*8+i, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}
                 else {                                  // Mode = 3
                   if (LampStatus[Sync] & Mask) {        // LED on?

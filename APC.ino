@@ -1047,7 +1047,9 @@ void LEDsetColorMode(byte Mode) {                     // Mode 0 -> lamps being l
 
 void LEDchangeColor(byte LED) {                       // the color of the selected LED is changed to LEDsetColor
   LEDhandling(6, 195);
-  LEDhandling(6, LED - 65);
+  if (APC_settings[LEDsetting] == 1) {                // LEDsetting = Additional?
+    LED = LED - 65;}                                  // additional LEDs are numbered from 65 upwards
+  LEDhandling(6, LED);
   LEDhandling(7, 2);}
 
 void SwitchPressed(int SwNumber) {
@@ -2044,23 +2046,23 @@ void ShowFileNotFound(String Filename) {              // show file not found mes
   WriteLower2(" NOT    FOUND   ");
   ShowMessage(5);}                                    // switch to message buffer for 5 seconds
 
-void ShowLEDpatterns(byte Step) {
+void ShowLEDpatterns(byte Step) {                     // call with Step = 1 to start and Step = 0 to terminate
   static byte Timer = 0;
   if ((Step > 1) || (Step ==1 && !Timer)) {           // no kill signal
     if (Step == 1) {
       Step++;}
     unsigned int Buffer = *(LEDpatDuration+Step-2);
-    LEDsetColor(*(LEDpointer+11*(Step-2)), *(LEDpointer+11*(Step-2)+1), *(LEDpointer+11*(Step-2)+2));
+    LEDsetColor(*(LEDpointer+11*(Step-2)), *(LEDpointer+11*(Step-2)+1), *(LEDpointer+11*(Step-2)+2)); // select the color
     LEDpattern = LEDpointer+11*(Step-2)+3;                 // TODO adapt
     Step++;
-    if (!(*(LEDpatDuration+Step-2))) {
+    if (!(*(LEDpatDuration+Step-2))) {                // stop if Duration is zero
       Timer = 0;
       if (LEDreturn) {
         LEDreturn(0);}
       return;}
-    Timer = ActivateTimer(Buffer, Step, ShowLEDpatterns);}
+    Timer = ActivateTimer(Buffer, Step, ShowLEDpatterns);}  // come back if not
   else {
-    if (!Step) {
+    if (!Step) {                                      // kill signal received
       if (Timer) {
         KillTimer(Timer);
         Timer = 0;}}}}

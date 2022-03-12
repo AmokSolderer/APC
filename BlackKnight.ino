@@ -56,16 +56,6 @@ const struct SettingTopic BK_setList[10] = {{" TIMED  MAGNA ",HandleBoolSetting,
                                     {"  EXIT SETTNGS",ExitSettings,0,0,0},
                                     {"",NULL,0,0,0}};
 
-const byte LEDflow[88] = {255,0,0,0b11111111,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
-                          200,50,0,0b00000001,0b00000000,0b00000001,0b00000000,0b00000001,0b00000001,0b00000000,0b00000000,
-                          150,100,0,0b00000010,0b00000000,0b00000010,0b00000000,0b00000010,0b00000010,0b00000000,0b00000000,
-                          100,150,0,0b00000100,0b00000000,0b00000100,0b00000000,0b00000100,0b00000100,0b00000000,0b00000000,
-                          50,200,0,0b00001000,0b00000000,0b00001000,0b00000000,0b00001000,0b00001000,0b00000000,0b00000000,
-                          0,250,50,0b00010000,0b00000000,0b00010000,0b00000000,0b00010000,0b00010000,0b00000000,0b00000000,
-                          0,250,100,0b00100000,0b00000000,0b00100000,0b00000000,0b00100000,0b00100000,0b00000000,0b00000000,
-                          0,250,150,0b01000000,0b00000000,0b01000000,0b00000000,0b01000000,0b01000000,0b00000000,0b00000000};
-const uint16_t LEDdur[9] = {1000,1000,1000,1000,1000,1000,1000,1000,0};
-
                                   //  Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
                                   //  Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
 const struct LampPat BK_ExBallPat[13] = {{50,0,0b10000000,0b00000000,0b00000000,0b00000000,0b01000000,0b00000000,0b00000000},
@@ -390,40 +380,10 @@ void BK_AttractDisplayCycle(byte Step) {
   BK_CheckForLockedBalls(0);                          // check for a ball in the outhole
   Timer0 = ActivateTimer(4000, Step, BK_AttractDisplayCycle);}  // come back for the next 'page'
 
-byte LEDcolorPattern[8] = {0b11111111,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000};
-
-void BK_SelectBulkLEDcolor(byte State) {
-  switch (State) {
-  case 1:
-    LEDsetColorMode(4);
-    LEDpattern = LEDcolorPattern;
-    ActivateTimer(20, 2, BK_SelectBulkLEDcolor);
-    break;
-  case 2:
-    LEDsetColorMode(3);
-    ActivateTimer(20, 3, BK_SelectBulkLEDcolor);
-    break;
-  case 3:
-    LEDsetColorMode(1);
-    ActivateTimer(20, 4, BK_SelectBulkLEDcolor);
-    break;
-  case 4:
-    LEDinit();
-    break;}}
-
 void BK_AttractModeSW(byte Event) {                   // Attract Mode switch behaviour
   switch (Event) {
   case 8:                                             // high score reset
     digitalWrite(Blanking, LOW);                      // invoke the blanking
-    break;
-  case 9:
-    LEDsetColorMode(2);
-    LEDpointer = LEDflow;
-    LEDpatDuration = LEDdur;
-    ShowLEDpatterns(1);
-    break;
-  case 10:
-    BK_SelectBulkLEDcolor(1);
     break;
   case 20:                                            // outhole
     ActivateTimer(200, 0, BK_CheckForLockedBalls);    // check again in 200ms
