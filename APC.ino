@@ -934,7 +934,29 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         for (byte i=0; i<NumOfLEDbytes; i++) {        // and delete it
           LEDstatus[i] = 0;}
         Timer = ActivateTimer(1, Arg, LEDtimer);}     // start main timer
-      LEDpattern = LEDstatus;}                        // show LEDstatus
+      LEDpattern = LEDstatus;                         // show LEDstatus
+      SpcBuffer[BufferWrite] = 193;                   // write to ringbuffer
+      SpcWriteCount++;                                // count number of bytes to transmit
+      BufferWrite++;                                  // increase write pointer
+      if (BufferWrite > 19) {                         // end of ringbuffer reached?
+        BufferWrite = 0;}                             // start over
+      if (BufferWrite == BufferRead) {                // ringbuffer full?
+        return(1);}                                   // terminate write attempt
+      SpcBuffer[BufferWrite] = NumOfLEDbytes;         // write to ringbuffer
+      SpcWriteCount++;                                // count number of bytes to transmit
+      BufferWrite++;                                  // increase write pointer
+      if (BufferWrite > 19) {                         // end of ringbuffer reached?
+        BufferWrite = 0;}                             // start over
+      if (BufferWrite == BufferRead) {                // ringbuffer full?
+        return(1);}                                   // terminate write attempt
+      byte i = 0;
+      while (SpcCommandLength[i]) {                   // look for a free slot
+        i++;}
+      if (i > 7) {                                    // no more than 8 commands at a time
+        return(1);}
+      SpcCommandLength[i] = SpcWriteCount;            // write length of command to buffer
+      SpcWriteCount = 0;                              // reset number for command entry
+    }
     else {                                            // LEDsetting != Additional
       if (!Timer) {
         Timer = ActivateTimer(1, Arg, LEDtimer);}}    // start main timer
@@ -994,7 +1016,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
               EndSequence = 0;
               Timer = 0;
               break;}}
-          Timer = ActivateTimer(3, 0, LEDtimer);      // sync needs 3ms
+          Timer = ActivateTimer(LengthOfSyncCycle, 0, LEDtimer); // sync time depends on number of LEDs
           break;}}}
     Arg++;
     Timer = ActivateTimer(1, Arg, LEDtimer);

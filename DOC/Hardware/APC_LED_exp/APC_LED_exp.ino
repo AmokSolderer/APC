@@ -4,8 +4,6 @@
 #include <avr/power.h>
 #endif
 #define PIN            12
-#define NUMPIXELS      64
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 byte RecByte = 0;                                       // received byte
 bool RecFlag;
@@ -18,8 +16,10 @@ byte Command = 0;                                       // LED command currently
 byte CommandCount = 0;                                  // counts the bytes received by the color select command
 byte OwnCommands = 0;                                   // indicate active own LED commands
 byte OwnCommandStep = 0;                                // needed for own LED commands
+byte NumOfLEDbytes = 8;                                 // stores the length of the transferred LED pattern
 byte TurnOn[6][8];                                      // the list of the lamps currently being turned on
 byte TurnOff[6][8];                                     // the list of the lamps currently being turned off
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NumOfLEDbytes*8, PIN, NEO_GRB + NEO_KHZ800);
 const byte OwnPattern[6][3] = {{0,0,0},{0,50,0},{0,100,0},{0,150,0},{0,200,0},{0,250,0}};
 
 void setup() {
@@ -39,9 +39,9 @@ void loop() {
   if ((PINB && 1) != RecFlag) {                         // get byte
     RecByte = PIND;                                     // store it
     RecFlag = !RecFlag;
-    if (Sync<8) {                                       // if the last sync happened less than 8 cycles ago
+    if (Sync < NumOfLEDbytes) {                         // still LED pattern bytes to transfer?
       if (Mode < 2) {                                   // LEDs fade on and off
-        for (byte c=0;c<5;c++) {                             // for 5 brightness levels
+        for (byte c=0;c<5;c++) {                        // for 5 brightness levels
           if (TurnOn[c][Sync]) {                        // anything to do in this byte?
             byte Mask = 1;                              // initialize bitmask
             for (byte i=0;i<8;i++) {                    // for the 8 lamps currently being processed
@@ -120,6 +120,10 @@ void loop() {
         case 192:                                       // color select command
           LampMaxSel[2-CommandCount] = RecByte;
           break;
+        case 193:                                       // configure number of LED bytes
+          NumOfLEDbytes = RecByte;
+          pixels.updateLength(NumOfLEDbytes*8);         // set new strip length
+          break;
         case 195:                                       // set color for LED
           LampMax[RecByte][0] = LampMaxSel[0];
           LampMax[RecByte][1] = LampMaxSel[1];
@@ -148,7 +152,7 @@ void loop() {
         case 68:                                        // Mode 4 -> LED state is frozen
           Mode = 4;
           break;
-        case 100:
+        case 100:                                       // execute OwnCommand
           OwnCommands |= 1;                             // activate OwnCommand number 1
           break;
         case 101:
@@ -164,6 +168,10 @@ void loop() {
         case 192:                                       // color select command
           Command = 192;
           CommandCount = 3;                             // 3 bytes to read for this command
+          break;
+        case 193:                                       // configure number of LED bytes
+          Command = 193;
+          CommandCount = 1;
           break;
         case 195:                                       // set color for LED
           Command = 195;
