@@ -981,7 +981,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         WriteToHwExt(LampData, 1);}                   // write lamp pattern with Sel5 falling edge
       else {
         PolarityFlag = true;
-        WriteToHwExt(LampData, 129);}}                // activate Sel5 rising edge
+        WriteToHwExt(LampData, 131);}}                // activate Sel5 rising edge
     else {                                            // the lamp matrix is already sent
       if (Arg == NumOfLEDbytes && SpcCommandLength[0]) {  // command for Led_exp board pending?
         SpcReadCount = SpcCommandLength[0];           // get number of bytes to transmit
