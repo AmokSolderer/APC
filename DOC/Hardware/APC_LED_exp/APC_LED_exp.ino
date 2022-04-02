@@ -121,8 +121,7 @@ void loop() {
           LampMaxSel[2-CommandCount] = RecByte;
           break;
         case 193:                                       // configure number of LED bytes
-          NumOfLEDbytes = RecByte;
-          pixels.updateLength(NumOfLEDbytes*8);         // set new strip length
+          OwnCommands = RecByte;                        // store new number of LEDs
           break;
         case 195:                                       // set color for LED
           LampMax[RecByte][0] = LampMaxSel[0];
@@ -164,6 +163,11 @@ void loop() {
         case 170:                                       // sync command
           Sync = 0;                                     // the next four cycles (8 bytes) represent a lamp pattern
           pixels.show();                                // update the LEDs
+          if (Command == 193) {
+            NumOfLEDbytes = OwnCommands;
+            pixels.updateLength(NumOfLEDbytes*8);       // set new strip length
+            Command = 0;                                // command is done
+            CommandCount = 0;}
           break;
         case 192:                                       // color select command
           Command = 192;
@@ -171,7 +175,7 @@ void loop() {
           break;
         case 193:                                       // configure number of LED bytes
           Command = 193;
-          CommandCount = 1;
+          CommandCount = 30;                            // run until sync
           break;
         case 195:                                       // set color for LED
           Command = 195;

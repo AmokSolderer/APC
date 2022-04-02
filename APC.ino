@@ -900,10 +900,10 @@ void ReadSound() {                                    // same as above but for t
 
 byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static bool PolarityFlag;                           // stores whether the select has to be triggered by the rising or falling edge
-  static byte EndSequence = 0;                        // indicator needed for a graceful exit
+  static byte ChangeSequence = 0;                        // indicator needed for a graceful exit
   static byte *LEDstatus;                             // points to the status memory of the LEDs
-  static byte NumOfLEDbytes = 0;                      // stores the length of the LEDstatus memory
-  static byte LengthOfSyncCycle = 0;                  // stores the length of the sync cycle in ms
+  static byte NumOfLEDbytes = 8;                      // stores the length of the LEDstatus memory
+  static byte LengthOfSyncCycle = 3;                  // stores the length of the sync cycle in ms
   static byte SpcCommandLength[8];                    // length in bytes of commands to be send to the LED exp board
   static byte SpcBuffer[20];                          // command bytes to be send to the LED exp board
   static byte BufferRead = 0;                         // read pointer for ringbuffer SpcBuffer
@@ -913,26 +913,23 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static byte Timer = 0;
   switch(Command) {
   case 0:                                             // stop LEDhandling
-    EndSequence = 1;                                  // initiate exit
-    free(LEDstatus);                                  // TODO LEDhandling
+    if (Timer) {                                      // LEDhandling active?
+      ChangeSequence = 1;                             // initiate exit
+      free(LEDstatus);}                                  // TODO LEDhandling
     break;
   case 1:                                             // init
     if (APC_settings[LEDsetting] == 1) {              // LEDsetting = Additional?
-      byte Buffer = NumOfLEDbytes;
-      NumOfLEDbytes = APC_settings[NumOfLEDs] / 8;    // calculate the needed memory for LEDstatus
+      byte NewLEDbytes = APC_settings[NumOfLEDs] / 8;    // calculate the needed memory for LEDstatus
       if (APC_settings[NumOfLEDs] % 8) {
-        NumOfLEDbytes++;}
-      LengthOfSyncCycle = APC_settings[NumOfLEDs] / 24; // calculate the required length of the sync cycle
-      if (APC_settings[NumOfLEDs] % 24) {
-        LengthOfSyncCycle++;}
+        NewLEDbytes++;}
       if (Timer) {                                    // LED handling already running ?
-        if (NumOfLEDbytes != Buffer) {                // required memory size has changed?
-          LEDstatus = (byte *) realloc(LEDstatus, NumOfLEDbytes); // reallocate new memory
-          for (byte i=0; i<NumOfLEDbytes; i++) {      // and delete it
+        if (NumOfLEDbytes != NewLEDbytes) {           // required memory size has changed?
+          LEDstatus = (byte *) realloc(LEDstatus, NewLEDbytes); // reallocate new memory
+          for (byte i=0; i<NewLEDbytes; i++) {        // and delete it
             LEDstatus[i] = 0;}}}
       else {                                          // initial call?
-        LEDstatus = (byte *) malloc(NumOfLEDbytes);   // allocate memory
-        for (byte i=0; i<NumOfLEDbytes; i++) {        // and delete it
+        LEDstatus = (byte *) malloc(NewLEDbytes);     // allocate memory
+        for (byte i=0; i<NewLEDbytes; i++) {          // and delete it
           LEDstatus[i] = 0;}
         Timer = ActivateTimer(1, Arg, LEDtimer);}     // start main timer
       LEDpattern = LEDstatus;                         // show LEDstatus
@@ -943,7 +940,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         BufferWrite = 0;}                             // start over
       if (BufferWrite == BufferRead) {                // ringbuffer full?
         return(1);}                                   // terminate write attempt
-      SpcBuffer[BufferWrite] = NumOfLEDbytes;         // write to ringbuffer
+      SpcBuffer[BufferWrite] = NewLEDbytes;           // write to ringbuffer
       SpcWriteCount++;                                // count number of bytes to transmit
       BufferWrite++;                                  // increase write pointer
       if (BufferWrite > 19) {                         // end of ringbuffer reached?
@@ -957,8 +954,10 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         return(1);}
       SpcCommandLength[i] = SpcWriteCount;            // write length of command to buffer
       SpcWriteCount = 0;                              // reset number for command entry
-    }
+      ChangeSequence = 5;}                            // initiate sequence to change the number of LEDs
     else {                                            // LEDsetting != Additional
+      NumOfLEDbytes = 8;
+      LengthOfSyncCycle = 3;
       if (!Timer) {
         Timer = ActivateTimer(1, Arg, LEDtimer);}}    // start main timer
     break;
@@ -967,7 +966,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
       Arg = 0;}                                       // start from the beginning
     if (Arg < NumOfLEDbytes) {                        // the first 8 cycles are for transmitting the status of the lamp matrix
       byte LampData;
-      if (EndSequence) {                              // end sequence running
+      if (ChangeSequence) {                           // end sequence running
         LampData = 0;}
       else {                                          // normal operation
         if (APC_settings[LEDsetting] > 1) {           // playfield LEDs selected?
@@ -986,6 +985,8 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     else {                                            // the lamp matrix is already sent
       if (Arg == NumOfLEDbytes && SpcCommandLength[0]) {  // command for Led_exp board pending?
         SpcReadCount = SpcCommandLength[0];           // get number of bytes to transmit
+        if (ChangeSequence == 5) {                    // is the number of LEDs going to be changed?
+          ChangeSequence++;}                          // initiate next step
         byte i = 0;
         do {                                          // move buffer up by one entry
           i++;
@@ -1010,13 +1011,22 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
           else {
             PolarityFlag = true;
             WriteToHwExt(170, 129);}
-          if (EndSequence) {                          // the end is near
-            if (EndSequence < 2) {                    // just not yet
-              EndSequence++;}
-            else {                                    // this is the end
-              EndSequence = 0;
-              Timer = 0;
-              break;}}
+          if (ChangeSequence) {                       // something special
+            if (ChangeSequence < 2) {                 // the end is near
+              ChangeSequence++;}
+            else {
+              if (ChangeSequence == 2) {              // this is the end
+                ChangeSequence = 0;
+                Timer = 0;
+                break;}
+              else if (ChangeSequence == 6) {         // command to change the number of LEDs is already sent?
+                NumOfLEDbytes = APC_settings[NumOfLEDs] / 8;    // calculate the needed memory for LEDstatus
+                if (APC_settings[NumOfLEDs] % 8) {
+                  NumOfLEDbytes++;}
+                LengthOfSyncCycle = APC_settings[NumOfLEDs] / 24; // calculate the required length of the sync cycle
+                if (APC_settings[NumOfLEDs] % 24) {
+                  LengthOfSyncCycle++;}
+                ChangeSequence = 0;}}}                // done changing the number of LEDs
           Timer = ActivateTimer(LengthOfSyncCycle, 0, LEDtimer); // sync time depends on number of LEDs
           break;}}}
     Arg++;
@@ -2312,6 +2322,7 @@ void Settings_Enter() {
   WriteUpper("   SETTINGS     ");                     // Show Test Mode
   WriteLower("                ");
   LampPattern = NoLamps;                              // Turn off all lamps
+  LEDhandling(0, 0);                                  // Stop LEDhandling
   AppByte = 0;
   AppByte2 = 0;
   Switch_Pressed = SelectSettings;
