@@ -843,10 +843,11 @@ void loop() {
       else {
         if (!StopSound && (SBP != SoundIRpos)) {
           ReadSound();}
-        if (AfterSoundPending == 1) {
-          AfterSoundPending = 0;
-          if (AfterSound) {
-            AfterSound(0);}}}}}
+        else {
+          if (AfterSoundPending == 1) {
+            AfterSoundPending = 0;
+            if (AfterSound) {
+              AfterSound(0);}}}}}}
   if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) {  // Remote mode?
     if (APC_settings[ConnType] == 1) {                // onboard Pi selected?
       if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {  // onboard com off and Pi detected?
@@ -2205,6 +2206,7 @@ void QueueNextMusic(const char* Filename) {
   else {
     NextMusicName = Filename;
     AfterMusic = (void(*)(byte)) QueueNextMusic;}}
+
 void RestoreMusicVol(byte Speed) {                    // restore max music volume with each step taking Speed*10ms
   static byte BufferedSpeed;
   if (Speed) {

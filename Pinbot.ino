@@ -52,48 +52,48 @@ const struct SettingTopic PB_setList[9] = {{"DROP TG TIME  ",HandleNumSetting,0,
                                      // Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
                                      // Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
 
-const struct LampPat PB_EjectHole[43] = {{140,0,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000010,0b00000100},
-                                          {140,0,0b00000000,0b00000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000101},
-                                          {140,0,0b00000100,0b00000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000111},
-                                          {140,0,0b00001110,0b00000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000111},
-                                          {140,0,0b00001111,0b01000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000111},
-                                          {140,0,0b00001111,0b11000010,0b00000000,0b00000001,0b00000000,0b00000110,0b00000111},
-                                          {140,0,0b00001111,0b11100010,0b00000111,0b00000001,0b00000000,0b00000100,0b00000111},
-                                          {140,0,0b00001111,0b11110010,0b00000111,0b00000001,0b00000000,0b00000111,0b00000111},
-                                          {140,0,0b00001111,0b11110010,0b00000111,0b00000001,0b00000000,0b00000111,0b00000111},
-                                          {140,0,0b00001111,0b11111110,0b00000111,0b00000001,0b00000000,0b00000111,0b10000111},
-                                          {140,0,0b00001111,0b11111110,0b00000111,0b00000001,0b00000000,0b10000111,0b11000111},
-                                          {140,0,0b00001111,0b11111110,0b00000111,0b00000001,0b10000000,0b11000111,0b11100111},
-                                          {140,0,0b00001111,0b11111110,0b00000111,0b10000001,0b11000000,0b11100111,0b11110111},
-                                          {140,0,0b00001111,0b11111111,0b10000111,0b11000001,0b11100100,0b11110111,0b11111111},
-                                          {140,0,0b00001111,0b11111111,0b11000111,0b11100001,0b11110110,0b11111111,0b11111111},
-                                          {140,0,0b00001111,0b11111111,0b11100111,0b11110001,0b11111111,0b11111111,0b11111111},
-                                          {140,0,0b00001111,0b11111111,0b11110111,0b11111101,0b11111111,0b11111111,0b11111111},
-                                          {140,0,0b00001111,0b11111111,0b11111111,0b11111101,0b11111111,0b11111111,0b11111111},
-                                          {140,0,0b10001111,0b11111111,0b11111111,0b11111101,0b11111111,0b11111111,0b11111111},
-                                          {140,0,0b10011111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111},
-                                          {140,0,0b10111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111},
-                                          {140,0,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111101,0b11111011},
-                                          {140,0,0b11111111,0b11111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111010},
-                                          {140,0,0b11111011,0b11111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111000},
-                                          {140,0,0b11110001,0b11111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111000},
-                                          {140,0,0b11110000,0b10111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111000},
-                                          {140,0,0b11110000,0b00111101,0b11111111,0b11111110,0b11111111,0b11111001,0b11111000},
-                                          {140,0,0b11110000,0b00011101,0b11111000,0b11111110,0b11111111,0b11111011,0b11111000},
-                                          {140,0,0b11110000,0b00001101,0b11111000,0b11111110,0b11111111,0b11111000,0b11111000},
-                                          {140,0,0b11110000,0b00001101,0b11111000,0b11111110,0b11111111,0b11111000,0b11111000},
-                                          {140,0,0b11110000,0b00000001,0b11111000,0b11111110,0b11111111,0b11111000,0b01111000},
-                                          {140,0,0b11110000,0b00000001,0b11111000,0b11111110,0b11111111,0b01111000,0b00111000},
-                                          {140,0,0b11110000,0b00000001,0b11111000,0b11111110,0b01111111,0b00111000,0b00011000},
-                                          {140,0,0b11110000,0b00000001,0b11111000,0b01111110,0b00111111,0b00011000,0b00001000},
-                                          {140,0,0b11110000,0b00000000,0b01111000,0b00111110,0b00011011,0b00001000,0b00000000},
-                                          {140,0,0b11110000,0b00000000,0b00111000,0b00011110,0b00001001,0b00000000,0b00000000},
-                                          {140,0,0b11110000,0b00000000,0b00011000,0b00001110,0b00000000,0b00000000,0b00000000},
-                                          {140,0,0b11110000,0b00000000,0b00001000,0b00000010,0b00000000,0b00000000,0b00000000},
-                                          {140,0,0b11110000,0b00000000,0b00000000,0b00000010,0b00000000,0b00000000,0b00000000},
-                                          {140,0,0b01110000,0b00000000,0b00000000,0b00000010,0b00000000,0b00000000,0b00000000},
-                                          {140,0,0b01100000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
-                                          {140,0,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+const struct LampPat PB_EjectHole[43] = {{40,0,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000010,0b00000100},
+                                          {40,0,0b00000000,0b00000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000101},
+                                          {40,0,0b00000100,0b00000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000111},
+                                          {40,0,0b00001110,0b00000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000111},
+                                          {40,0,0b00001111,0b01000000,0b00000000,0b00000001,0b00000000,0b00000010,0b00000111},
+                                          {40,0,0b00001111,0b11000010,0b00000000,0b00000001,0b00000000,0b00000110,0b00000111},
+                                          {40,0,0b00001111,0b11100010,0b00000111,0b00000001,0b00000000,0b00000100,0b00000111},
+                                          {40,0,0b00001111,0b11110010,0b00000111,0b00000001,0b00000000,0b00000111,0b00000111},
+                                          {40,0,0b00001111,0b11110010,0b00000111,0b00000001,0b00000000,0b00000111,0b00000111},
+                                          {40,0,0b00001111,0b11111110,0b00000111,0b00000001,0b00000000,0b00000111,0b10000111},
+                                          {40,0,0b00001111,0b11111110,0b00000111,0b00000001,0b00000000,0b10000111,0b11000111},
+                                          {40,0,0b00001111,0b11111110,0b00000111,0b00000001,0b10000000,0b11000111,0b11100111},
+                                          {40,0,0b00001111,0b11111110,0b00000111,0b10000001,0b11000000,0b11100111,0b11110111},
+                                          {40,0,0b00001111,0b11111111,0b10000111,0b11000001,0b11100100,0b11110111,0b11111111},
+                                          {40,0,0b00001111,0b11111111,0b11000111,0b11100001,0b11110110,0b11111111,0b11111111},
+                                          {40,0,0b00001111,0b11111111,0b11100111,0b11110001,0b11111111,0b11111111,0b11111111},
+                                          {40,0,0b00001111,0b11111111,0b11110111,0b11111101,0b11111111,0b11111111,0b11111111},
+                                          {40,0,0b00001111,0b11111111,0b11111111,0b11111101,0b11111111,0b11111111,0b11111111},
+                                          {40,0,0b10001111,0b11111111,0b11111111,0b11111101,0b11111111,0b11111111,0b11111111},
+                                          {40,0,0b10011111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111},
+                                          {40,0,0b10111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111},
+                                          {40,0,0b11111111,0b11111111,0b11111111,0b11111111,0b11111111,0b11111101,0b11111011},
+                                          {40,0,0b11111111,0b11111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111010},
+                                          {40,0,0b11111011,0b11111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111000},
+                                          {40,0,0b11110001,0b11111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111000},
+                                          {40,0,0b11110000,0b10111111,0b11111111,0b11111110,0b11111111,0b11111101,0b11111000},
+                                          {40,0,0b11110000,0b00111101,0b11111111,0b11111110,0b11111111,0b11111001,0b11111000},
+                                          {40,0,0b11110000,0b00011101,0b11111000,0b11111110,0b11111111,0b11111011,0b11111000},
+                                          {40,0,0b11110000,0b00001101,0b11111000,0b11111110,0b11111111,0b11111000,0b11111000},
+                                          {40,0,0b11110000,0b00001101,0b11111000,0b11111110,0b11111111,0b11111000,0b11111000},
+                                          {40,0,0b11110000,0b00000001,0b11111000,0b11111110,0b11111111,0b11111000,0b01111000},
+                                          {40,0,0b11110000,0b00000001,0b11111000,0b11111110,0b11111111,0b01111000,0b00111000},
+                                          {40,0,0b11110000,0b00000001,0b11111000,0b11111110,0b01111111,0b00111000,0b00011000},
+                                          {40,0,0b11110000,0b00000001,0b11111000,0b01111110,0b00111111,0b00011000,0b00001000},
+                                          {40,0,0b11110000,0b00000000,0b01111000,0b00111110,0b00011011,0b00001000,0b00000000},
+                                          {40,0,0b11110000,0b00000000,0b00111000,0b00011110,0b00001001,0b00000000,0b00000000},
+                                          {40,0,0b11110000,0b00000000,0b00011000,0b00001110,0b00000000,0b00000000,0b00000000},
+                                          {40,0,0b11110000,0b00000000,0b00001000,0b00000010,0b00000000,0b00000000,0b00000000},
+                                          {40,0,0b11110000,0b00000000,0b00000000,0b00000010,0b00000000,0b00000000,0b00000000},
+                                          {40,0,0b01110000,0b00000000,0b00000000,0b00000010,0b00000000,0b00000000,0b00000000},
+                                          {40,0,0b01100000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+                                          {40,0,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {0,0,0,0,0,0,0,0,0}};
 
 const struct LampPat PB_EnergyPat[43] =  {{16,0,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
@@ -586,7 +586,7 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
   BonusMultiplier = 1;                                // reset bonus multiplier
   for (byte i=0; i<4; i++) {                          // turn off the corresponding lamps
     TurnOffLamp(9+i);}
-  PB_SkillMultiplier = 0;                             // reset skill shot multiplier
+  PB_SkillMultiplier = 0;                             // TODO reset skill shot multiplier
   *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
   BlinkScore(1);                                      // turn on score blinking
   PB_ClearChest();                                    // turn off chest lamps
@@ -694,11 +694,16 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
           c = 5;
           PlaySound(50, "1_91.snd");
           break;}
-        if (InLock) {
-          PlayMusic(50, "1_03L.snd");}                // play 2nd lock music track
-        else {
-          PlayMusic(50, "1_01L.snd");}                // play main theme
-        QueueNextMusic("1_01L.snd");                  // track is looping so queue it also
+        if (!PB_ChestMode) {                          // visor is open
+          if (InLock) {
+            PlayMusic(50, "1_03L.snd");               // play 2nd lock music track
+            QueueNextMusic("1_03L.snd");}
+          else {
+            PlayMusic(50, "1_02.snd");                // play open visor theme
+            QueueNextMusic("1_02L.snd");}}
+        else {                                        // visor is not open
+          PlayMusic(50, "1_01L.snd");                 // play main theme
+          QueueNextMusic("1_01L.snd");}               // track is looping so queue it also
         WriteUpper2(" VORTEX   X   ");
         WriteLower2("              ");
         ShowNumber(31, c * PB_SkillMultiplier * 1000);// show skill shot points
@@ -1102,7 +1107,7 @@ void PB_GameMain(byte Switch) {
         PlaySound(50, "1_a3.snd");
         PatPointer = PB_EjectHole;                    // set the pointer to the lamp pattern
         FlowRepeat = 1;                               // set the repetitions
-        LampReturn = 0;                               // call this when the lamp pattern has run out
+        LampReturn = PB_EnergyRestoreLamps;           // call this when the lamp pattern has run out
         ShowLampPatterns(1);                          // play the lamp pattern
         Points[Player] += 2000;
         ShowPoints(Player);
@@ -1565,6 +1570,7 @@ void PB_HandleLock(byte State) {
             PB_GiveBall(1);}}                         // give second ball
         else {                                        // both balls in lock
           if (Multiballs == 1) {                      // multiball not yet running?
+            InLock = 0;
             StopPlayingMusic();
             PB_EyeBlink(0);                           // turn off eye blinking
             ActivateSolenoid(0, 11);                  // turn off GI
@@ -1775,34 +1781,50 @@ void PB_AdvancePlanet(byte State) {
     else {
 
       if  (PB_Planet[Player] == 10 || PB_Planet[Player] == game_settings[PB_ReachPlanet]) { //  10 = Sun
-
+        if (PB_Planet[Player] == 10) {                // is it the sun?
+            // TODO add sun fuzz
+        }
+        else {                                        // panet reached
+          PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
+          PlaySound(51, "1_ab.snd");}
         TurnOnLamp(51);}                              // light special
       else {
-        ActC_BankSol(8);                                // sun flasher
+        ActC_BankSol(8);                              // sun flasher
         char FileName[13] = "0_e1_000.snd";
         FileName[7] = 48 + (PB_Planet[Player] % 10);
         FileName[6] = 48 + (PB_Planet[Player] / 10);
         PlaySound(51, (char*) FileName);
+        QueueNextSound("0_e1_000.snd");
         ActivateTimer(500, 2, PB_AdvancePlanet);
+        ActivateTimer(4050, 21, PB_AdvancePlanet);    // reset AfterSound
         RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);}} // stop blinking
     break;
   case 2:                                             // first step
-    TurnOnLamp(27);
-    State++;
-    ActivateTimer(350, State, PB_AdvancePlanet);
+    if (PB_Planet[Player] < 9) {
+      TurnOnLamp(27);
+      ActivateTimer(350, State+1, PB_AdvancePlanet);}
+    else {
+      AddBlinkLamp(27, 100);
+      State = 20;
+      ActivateTimer(1000, 20, PB_AdvancePlanet);}
     break;
   case 20:                                            // animation reached planet
+    RemoveBlinkLamp(18 + PB_Planet[Player]);
+    TurnOnLamp(18 + PB_Planet[Player]);
     if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {
       AddBlinkLamp(18+game_settings[PB_ReachPlanet], 100);}
     break;
+  case 21:                                            // reset AfterSound
+    AfterSound = 0;
+    break;
   default:                                            // all intermediate steps
     TurnOffLamp(30 - State);
-    TurnOnLamp(29 - State);
-    if (State < 10 - PB_Planet[Player]) {
-      State++;}
+    if (State < 11 - PB_Planet[Player]) {
+      TurnOnLamp(29 - State);
+      ActivateTimer(350, State+1, PB_AdvancePlanet);}
     else {
-      State = 20;}
-    ActivateTimer(350, State, PB_AdvancePlanet);}}
+      AddBlinkLamp(18 + PB_Planet[Player], 100);
+      ActivateTimer(1000, 20, PB_AdvancePlanet);}}}
 
 void PB_CycleDropLights(byte State) {                 // State = 0 -> Stop / State = 1 -> Start / State = 2 -> called by timer
   static byte Timer;
@@ -1909,7 +1931,7 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         WriteUpper2(" BONUS        ");
         ShowNumber(15, Bonus*1000);
         StopPlayingMusic();
-        PlaySound(50, "0_2c.snd");
+        PlaySound(52, "0_2c.snd");
         ActivateTimer(200, 0, PB_CountBonus);}}}}
 
 void PB_CountBonus(byte State) {
@@ -1924,7 +1946,7 @@ void PB_CountBonus(byte State) {
     ActivateTimer(1000, 12, PB_CountBonus);}
   else if (State == 12) {
     WritePlayerDisplay((char*) "  1X   ", 1);
-    PlaySound(50, "0_3e.snd");
+    PlaySound(52, "0_3e.snd");
     TotalBonus = Bonus*1000;
     DisplayScore(2, TotalBonus);
     if (BonusMultiplier > 1) {
@@ -1933,7 +1955,7 @@ void PB_CountBonus(byte State) {
       ActivateTimer(1000, 20, PB_CountBonus);}}
   else if (State == 13) {
     WritePlayerDisplay((char*) "  2X   ", 1);
-    PlaySound(50, "0_3e.snd");
+    PlaySound(52, "0_3e.snd");
     TotalBonus = Bonus*2000;
     DisplayScore(2, TotalBonus);
     if (BonusMultiplier > 2) {
@@ -1942,7 +1964,7 @@ void PB_CountBonus(byte State) {
       ActivateTimer(1000, 20, PB_CountBonus);}}
   else if (State == 14) {
     WritePlayerDisplay((char*) "  3X   ", 1);
-    PlaySound(50, "0_3e.snd");
+    PlaySound(52, "0_3e.snd");
     TotalBonus = Bonus*3000;
     DisplayScore(2, TotalBonus);
     if (BonusMultiplier > 3) {
@@ -1951,7 +1973,7 @@ void PB_CountBonus(byte State) {
       ActivateTimer(1000, 20, PB_CountBonus);}}
   else if (State == 15) {
     WritePlayerDisplay((char*) "  4X   ", 1);
-    PlaySound(50, "0_3e.snd");
+    PlaySound(52, "0_3e.snd");
     TotalBonus = Bonus*4000;
     DisplayScore(2, TotalBonus);
     if (BonusMultiplier > 4) {
@@ -1960,13 +1982,13 @@ void PB_CountBonus(byte State) {
       ActivateTimer(1000, 20, PB_CountBonus);}}
   else if (State == 16) {
     WritePlayerDisplay((char*) "  5X   ", 1);
-    PlaySound(50, "0_49.snd");
+    PlaySound(52, "0_49.snd");
     PB_PlayMultiplierSequence(1);
     TotalBonus = Bonus*5000;
     DisplayScore(2, TotalBonus);
     ActivateTimer(1000, 20, PB_CountBonus);}
   else if (State == 20) {
-    PlaySound(50, "0_5d.snd");
+    PlaySound(52, "0_5d.snd");
     DisplayScore(1, Points[Player]);
     ActivateTimer(100, 21, PB_CountBonus);}
   else if (State == 21) {
@@ -1978,7 +2000,7 @@ void PB_CountBonus(byte State) {
     if (TotalBonus) {
       ActivateTimer(29, 21, PB_CountBonus);}
     else {
-      PlaySound(50, "0_65.snd");
+      PlaySound(52, "0_65.snd");
       PB_PlayMultiplierSequence(0);
       ActivateTimer(1000, 22, PB_CountBonus);}}
   else {
@@ -1991,7 +2013,7 @@ void PB_BallEnd2() {
     AddBlinkLamp(33, 250);                            // Let the extra ball lamp blink
     ExBalls--;
     ActivateTimer(1100, 0, PB_AfterExBallRelease);
-    ActivateTimer(100, AppByte, PB_NewBall);}
+    ActivateTimer(100, AppByte, PB_GiveBall);}
   else {                                              // Player has no extra balls
     TurnOffLamp(51);
     if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
