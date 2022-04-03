@@ -14,6 +14,7 @@ byte Sync = 8;                                          // ms after last Sync
 byte Mode = 0;                                          // Mode 0 -> lamps being lit get the ColorSelect color / Mode 1 -> lamps keep their color / Mode 2 -> lamps set in the following frame get the new color immediately
 byte Command = 0;                                       // LED command currently being processed
 byte CommandCount = 0;                                  // counts the bytes received by the color select command
+byte SystemFlags = 0;                                   // to indicate special system states
 byte OwnCommands = 0;                                   // indicate active own LED commands
 byte OwnCommandStep = 0;                                // needed for own LED commands
 byte NumOfLEDbytes = 8;                                 // stores the length of the transferred LED pattern
@@ -122,6 +123,7 @@ void loop() {
           break;
         case 193:                                       // configure number of LED bytes
           OwnCommands = RecByte;                        // store new number of LEDs
+          SystemFlags = 1;                              // indicate special treatment at sync
           break;
         case 195:                                       // set color for LED
           LampMax[RecByte][0] = LampMaxSel[0];
@@ -163,11 +165,9 @@ void loop() {
         case 170:                                       // sync command
           Sync = 0;                                     // the next four cycles (8 bytes) represent a lamp pattern
           pixels.show();                                // update the LEDs
-          if (Command == 193) {
+          if (SystemFlags) {                            // number of LEDs has changed
             NumOfLEDbytes = OwnCommands;
-            pixels.updateLength(NumOfLEDbytes*8);       // set new strip length
-            Command = 0;                                // command is done
-            CommandCount = 0;}
+            pixels.updateLength(NumOfLEDbytes*8);}      // set new strip length
           break;
         case 192:                                       // color select command
           Command = 192;
@@ -175,7 +175,7 @@ void loop() {
           break;
         case 193:                                       // configure number of LED bytes
           Command = 193;
-          CommandCount = 30;                            // run until sync
+          CommandCount = 1;
           break;
         case 195:                                       // set color for LED
           Command = 195;
