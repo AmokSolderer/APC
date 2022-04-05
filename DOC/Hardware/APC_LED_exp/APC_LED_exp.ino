@@ -7,9 +7,9 @@
 
 byte RecByte = 0;                                       // received byte
 bool RecFlag;
-byte LampStatus[8];                                     // current status of each lamp
-byte LampMax[64][3];                                    // current max color values of each lamp
-byte LampMaxSel[3] = {255, 255, 255};                   // selected max color values
+byte LampStatus[24];                                     // current status of each lamp
+byte LampMax[192][3];                                    // current max color values of each lamp
+byte LampMaxSel[3] = {200, 200, 200};                   // selected max color values
 byte Sync = 8;                                          // ms after last Sync
 byte Mode = 0;                                          // Mode 0 -> lamps being lit get the ColorSelect color / Mode 1 -> lamps keep their color / Mode 2 -> lamps set in the following frame get the new color immediately
 byte Command = 0;                                       // LED command currently being processed
@@ -18,8 +18,8 @@ byte SystemFlags = 0;                                   // to indicate special s
 byte OwnCommands = 0;                                   // indicate active own LED commands
 byte OwnCommandStep = 0;                                // needed for own LED commands
 byte NumOfLEDbytes = 8;                                 // stores the length of the transferred LED pattern
-byte TurnOn[6][8];                                      // the list of the lamps currently being turned on
-byte TurnOff[6][8];                                     // the list of the lamps currently being turned off
+byte TurnOn[6][24];                                      // the list of the lamps currently being turned on
+byte TurnOff[6][24];                                     // the list of the lamps currently being turned off
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NumOfLEDbytes*8, PIN, NEO_GRB + NEO_KHZ800);
 const byte OwnPattern[6][3] = {{0,0,0},{0,50,0},{0,100,0},{0,150,0},{0,200,0},{0,250,0}};
 
@@ -166,7 +166,9 @@ void loop() {
           Sync = 0;                                     // the next four cycles (8 bytes) represent a lamp pattern
           pixels.show();                                // update the LEDs
           if (SystemFlags) {                            // number of LEDs has changed
+            SystemFlags = 0;
             NumOfLEDbytes = OwnCommands;
+            OwnCommands = 0;
             pixels.updateLength(NumOfLEDbytes*8);}      // set new strip length
           break;
         case 192:                                       // color select command
