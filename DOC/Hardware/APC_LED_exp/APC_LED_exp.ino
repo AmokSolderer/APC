@@ -183,4 +183,10 @@ void loop() {
           Command = 195;
           CommandCount = 1;
           break;
+        case 196:                                       // turn off all LEDs
+          for (byte i=0;i<NumOfLEDbytes*8;i++) {        // for all LEDs
+            pixels.setPixelColor(i, pixels.Color(0,0,0)); // turn them off
+            LampStatus[i / 8] &= 255-(1<<(i % 8));}     // and change the status to off
+          pixels.show();                                // update the LEDs
+          break;
         }}}}}

@@ -900,7 +900,7 @@ void ReadSound() {                                    // same as above but for t
 
 byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static bool PolarityFlag;                           // stores whether the select has to be triggered by the rising or falling edge
-  static byte ChangeSequence = 0;                        // indicator needed for a graceful exit
+  static byte ChangeSequence = 0;                     // indicator needed for change operations
   static byte *LEDstatus;                             // points to the status memory of the LEDs
   static byte NumOfLEDbytes = 8;                      // stores the length of the LEDstatus memory
   static byte LengthOfSyncCycle = 3;                  // stores the length of the sync cycle in ms
@@ -915,11 +915,25 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   case 0:                                             // stop LEDhandling
     if (Timer) {                                      // LEDhandling active?
       ChangeSequence = 1;                             // initiate exit
-      free(LEDstatus);}                                  // TODO LEDhandling
+      free(LEDstatus);                                  // TODO LEDhandling
+      SpcBuffer[BufferWrite] = 196;                   // write stop command to ringbuffer
+      SpcWriteCount++;                                // count number of bytes to transmit
+      BufferWrite++;                                  // increase write pointer
+      if (BufferWrite > 19) {                         // end of ringbuffer reached?
+        BufferWrite = 0;}                             // start over
+      if (BufferWrite == BufferRead) {                // ringbuffer full?
+        return(1);}                                   // terminate write attempt
+      byte i = 0;
+      while (SpcCommandLength[i]) {                   // look for a free slot
+        i++;}
+      if (i > 7) {                                    // no more than 8 commands at a time
+        return(1);}
+      SpcCommandLength[i] = SpcWriteCount;            // write length of command to buffer
+      SpcWriteCount = 0;}                             // reset number for command entry
     break;
   case 1:                                             // init
     if (APC_settings[LEDsetting] == 1) {              // LEDsetting = Additional?
-      byte NewLEDbytes = APC_settings[NumOfLEDs] / 8;    // calculate the needed memory for LEDstatus
+      byte NewLEDbytes = APC_settings[NumOfLEDs] / 8; // calculate the needed memory for LEDstatus
       if (APC_settings[NumOfLEDs] % 8) {
         NewLEDbytes++;}
       if (Timer) {                                    // LED handling already running ?
@@ -964,7 +978,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   case 2:                                             // timer call
     if (Arg > NumOfLEDbytes + LengthOfSyncCycle + 6) {  // Sync over
       Arg = 0;}                                       // start from the beginning
-    if (Arg < NumOfLEDbytes) {                        // the first 8 cycles are for transmitting the status of the lamp matrix
+    if (Arg < NumOfLEDbytes) {                        // the first cycles are for transmitting the status of the lamp matrix
       byte LampData;
       if (ChangeSequence) {                           // end sequence running
         LampData = 0;}
@@ -1018,7 +1032,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
               if (ChangeSequence == 2) {              // this is the end
                 ChangeSequence = 0;
                 Timer = 0;
-                break;}
+                return(0);}
               else if (ChangeSequence == 6) {         // command to change the number of LEDs is already sent?
                 NumOfLEDbytes = APC_settings[NumOfLEDs] / 8;    // calculate the needed memory for LEDstatus
                 if (APC_settings[NumOfLEDs] % 8) {
