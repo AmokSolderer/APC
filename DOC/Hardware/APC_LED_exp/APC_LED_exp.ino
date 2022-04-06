@@ -185,8 +185,13 @@ void loop() {
           break;
         case 196:                                       // turn off all LEDs
           for (byte i=0;i<NumOfLEDbytes*8;i++) {        // for all LEDs
-            pixels.setPixelColor(i, pixels.Color(0,0,0)); // turn them off
-            LampStatus[i / 8] &= 255-(1<<(i % 8));}     // and change the status to off
+            pixels.setPixelColor(i, pixels.Color(0,0,0));} // turn them off
+          for (byte i=0;i<NumOfLEDbytes;i++) {          // for all LED bytes
+            for (byte x=0;x<6;x++) {                    // disable fading
+              TurnOn[x][i] = 0;
+              TurnOff[x][i] = 0;}
+            LampStatus[i] = 0;}                         // change the status to off
+          NumOfLEDbytes = 8;                            // back to default
           pixels.show();                                // update the LEDs
           break;
         }}}}}
