@@ -914,11 +914,8 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   switch(Command) {
   case 0:                                             // stop LEDhandling
     if (Timer) {                                      // LEDhandling active?
-      if (Arg < NumOfLEDbytes) {
-        ChangeSequence = 2;}                          // stop command can be sent at the end of the cycle
-      else {
-        ChangeSequence = 1;}                          // one more sync needed
-      free(LEDstatus);                                  // TODO LEDhandling
+      ChangeSequence = 2;                             // one more sync needed
+      free(LEDstatus);                                                              // TODO LEDhandling
       SpcBuffer[BufferWrite] = 196;                   // write stop command to ringbuffer
       BufferWrite++;                                  // increase write pointer
       if (BufferWrite > 19) {                         // end of ringbuffer reached?
@@ -978,6 +975,8 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     if (Arg < NumOfLEDbytes) {                        // the first cycles are for transmitting the status of the lamp matrix
       byte LampData;
       if (ChangeSequence) {                           // end sequence running
+        if (ChangeSequence > 1) {
+          ChangeSequence--;}
         LampData = 0;}
       else {                                          // normal operation
         if (APC_settings[LEDsetting] > 1) {           // playfield LEDs selected?
@@ -995,14 +994,13 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         WriteToHwExt(LampData, 131);}}                // activate Sel5 rising edge
     else {                                            // the lamp matrix is already sent
       if (Arg == NumOfLEDbytes && SpcCommandLength[0]) {  // command for Led_exp board pending?
+        if (ChangeSequence < 2) {                     // turn off command to be sent?
         SpcReadCount = SpcCommandLength[0];           // get number of bytes to transmit
-//        if (ChangeSequence == 5) {                    // is the number of LEDs going to be changed?
-//          ChangeSequence++;}                          // initiate next step
         byte i = 0;
         do {                                          // move buffer up by one entry
           i++;
           SpcCommandLength[i-1] = SpcCommandLength[i];}
-        while(SpcCommandLength[i]);}
+        while(SpcCommandLength[i]);}}
       if (SpcReadCount) {                             // still command bytes to transmit?
         if (PolarityFlag) {                           // data bus of LED_exp board works with toggling select
           PolarityFlag = false;
@@ -1017,8 +1015,8 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
       else {                                          // no command bytes left
         if (Arg > NumOfLEDbytes + 6) {                // time to sync
           if (ChangeSequence) {                       // something special
-            if (ChangeSequence < 2) {                 // the end is near
-              ChangeSequence++;}                      // just not yet
+            if (ChangeSequence > 1) {                 // the end is near
+              ChangeSequence--;}                      // just not yet
             else {                                    // this is the end
               ChangeSequence = 0;
               NumOfLEDbytes = 8;                      // back to default values

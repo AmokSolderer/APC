@@ -192,6 +192,7 @@ void loop() {
               TurnOff[x][i] = 0;}
             LampStatus[i] = 0;}                         // change the status to off
           NumOfLEDbytes = 8;                            // back to default
+          Sync = NumOfLEDbytes;
           pixels.show();                                // update the LEDs
           break;
         }}}}}
