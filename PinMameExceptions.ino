@@ -349,6 +349,26 @@ byte EX_BlackKnight(byte Type, byte Command){
   default:
     return(0);}}
 
+byte EX_Comet(byte Type, byte Command) {
+  if (Type == SoundCommandCh1) {                      // sound commands for channel 1
+    if (!Command || Command > 253) {                 // sound command 0x00 and 0xff -> stop sound
+      AfterMusic = 0;
+      StopPlayingMusic();
+      StopPlayingSound();}
+    else if (Command == 11) { }                       // ignore sound command 0x0b
+    else if (Command == 47) {                         // play BG music
+      PlayMusic(50, "0_2f.snd");
+      QueueNextMusic("0_2f.snd");}                    // track is looping so queue it also
+    else {                                            // handle standard sound
+      if (Command == 9) {
+        MusicVolume = 4;}                             // reduce music volume
+      if (Command == 241) {
+        RestoreMusicVolumeAfterSound(25);}            // and restore it
+      char FileName[9] = "0_00.snd";
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}}
+  return(0);}                                         // no exception rule found for this type so proceed as normal
+
 byte EX_Pinbot(byte Type, byte Command){
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
@@ -681,6 +701,9 @@ void EX_Init(byte GameNumber) {
     USB_SolTimes[8] = 0;                              // allow permanent on state for magna save relay
     USB_SolTimes[9] = 0;
     PinMameException = EX_BlackKnight;                // use exception rules for Jungle Lord
+    break;
+  case 39:                                            // use exception rules for Comet
+    PinMameException = EX_Comet;
     break;
   case 43:                                            // Pinbot
     PinMameException = EX_Pinbot;                     // use exception rules for Pinbot
