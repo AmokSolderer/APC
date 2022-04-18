@@ -39,6 +39,7 @@ At the moment the list of available sound packages is still quite short, but we 
 |7|Black Knight| URL available on request| |
 |7|Jungle Lord| URL available on request| Works great. Sound samples are also good. |
 |7|Pharaoh| Ask Grangeomatic in the Pinside forum| PinMameExceptions also done by Grangeomatic |
+|9|Comet|URL available on request| Works great. Sound samples are also good. |
 |11a|Pinbot| URL available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW.|
 |11a|F-14 Tomcat| Ask Snux in the Pinside forum | PinMameExceptions also done by Snux |
 |11c|Rollergames| URL available on request| There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. The issue doesn't seem to affect the Windows version of PinMame. Please contact me if you have any idea what the root cause might be. |
@@ -70,19 +71,11 @@ So if you have additional information to fill these gaps please tell us and we'r
 |Prefix|Command / Hex|Comment|
 |--|--|--|
 |00|00|Stop Sound|
-|00|55|Unknown command, currently ignored|
-|00|69|Seems to be a sound as PinMame plays one when this command is entered. But this sound is played at the start of multiball where it is completely misplaced, therefore it is currently ignored|
-|00|aa|Unknown command, currently ignored|
-|00|ff|Unknown command, currently ignored|
 |01|00|Stop Music|
-|01|01 - 08|Music tracks, which are probably looped - looping not yet implemented|
-|01|1d - 30|Unknown commands, currently ignored|
+|01|01 - 08|Looped music tracks, some of them have an intro before the looping part begins|
 |01|40 - 42|Transistions and endings for looped music|
-|01|4f - 59|Unknown commands, currently ignored|
 |01|7f|Stop sounds of prefix 01|
 |01|6X|Music volume setting 0x60 is full volume 0x64 is almost nothing|
-|01|aa|Unknown command, currently ignored|
-|01|ff|Unknown command, currently ignored|
 
 Prefix 01 plays music and sounds simultaneously. It looks like sound numbers below 0x80 are for music and the rest is for sounds. As the APC has only two independent sound channels, only the music of prefix 01 is played on the APC's music channel while the sounds are being forwarded to the sound channel.
 

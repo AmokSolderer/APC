@@ -351,7 +351,7 @@ byte EX_BlackKnight(byte Type, byte Command){
 
 byte EX_Comet(byte Type, byte Command) {
   if (Type == SoundCommandCh1) {                      // sound commands for channel 1
-    if (!Command || Command > 253) {                 // sound command 0x00 and 0xff -> stop sound
+    if (!Command || Command > 253) {                  // sound command 0x00 and 0xff -> stop sound
       AfterMusic = 0;
       StopPlayingMusic();
       StopPlayingSound();}
@@ -702,8 +702,8 @@ void EX_Init(byte GameNumber) {
     USB_SolTimes[9] = 0;
     PinMameException = EX_BlackKnight;                // use exception rules for Jungle Lord
     break;
-  case 39:                                            // use exception rules for Comet
-    PinMameException = EX_Comet;
+  case 39:                                            // Comet
+    PinMameException = EX_Comet;                      // use exception rules for Comet
     break;
   case 43:                                            // Pinbot
     PinMameException = EX_Pinbot;                     // use exception rules for Pinbot

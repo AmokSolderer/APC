@@ -25,6 +25,8 @@ The purpose of this is to enable state machines that are initially called from t
 
 * Data East 2x16 displays are now supported. Therefore the entry 'Data East 2x16' has been added to the 'Display Type' setting in the system settings. As a side effect the numerical only displays move up one setting. Hence, if you have a System 3 - 9 type of display you have to re-adjust your display setting.
 
+* Exception rules for System 9 Comet have been added. Sound files for Comet are also available
+
 ### Misc
 
 * The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.

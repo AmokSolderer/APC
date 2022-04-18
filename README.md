@@ -103,7 +103,7 @@ The PinMame support is still under development and even if a generation is basic
 |4| Yes | Not yet | Yes|  |
 |6| Yes | Yes | Yes |  |
 |7| Yes | Yes | Yes | Needs two additional wires |
-|9| Yes | soon | Yes |  |
+|9| Yes | Yes | Yes |  |
 |11| Yes | Yes | Yes |  |
 |11a| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
 |11b| Not yet | Not yet | Yes |  |
