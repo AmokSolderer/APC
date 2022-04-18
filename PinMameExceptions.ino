@@ -507,7 +507,7 @@ byte EX_Comet(byte Type, byte Command) {
         BlindPinmame = 0;}                            // and don't fool PinMame any longer
       return(1);}                                     // hide this switch from PinMame
     else {                                            // normal mode
-      if (Command == 44 || Command == 31) {           // outlanes
+      if ((Command == 44 && (game_settings[USB_Option1] & 2)) || (Command == 31 && (game_settings[USB_Option1] & 1))) { // Ball Saver for outlanes active?
         if ((LastSwitch > 32) && (LastSwitch < 43)) { // ball dropped from the bumpers directly into the outlane?
           if (QueryLamp(60)) {                        // extra ball lamp lit?
             BlindPinmame = 2;}
