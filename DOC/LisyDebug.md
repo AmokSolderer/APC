@@ -15,9 +15,21 @@ The basic mode of Lisy is selected by the Lisy_Jumpers P12 which are depicted be
 |5|Not used||
 |6|Not used||
 
+## Setting up WiFi
+
+All the features described below do require a working WiFi which means you have to put a WiFi capable Raspberry Pi (Zero or Pi3) on your APC board.
+
+To set up WiFi you have to find the following file on your Lisy SD-card
+
+    /lisy/lisy/ wpa_supplicant.conf
+    
+and change the settings for 'country', 'ssid' and 'psk' to those of your wireless network.
+
+For more information about Lisy and WiFi, please read the 'Wireless config' section in the Lisy manual.
+
 ## Updating Lisy
 
-If you have a WiFi capable Raspberry Pi you can use the incremental update function for minor updates instead of having to write a new Lisy-image to the SD card. Take a look at the 'Wireless config' section in the Lisy manual to learn how to set-up the WiFi.
+With WiFi working you can use the incremental update function for minor updates instead of having to write a new Lisy-image to the SD card. 
 
 With WiFi set-up and the system being switched off, connect the jumper 4 (Lisy Control) and power up your machine.  
 After booting up, Lisy will try to connect to your WiFi. If the connection is successful, the obtained IP address is shown in the pinball displays.  
@@ -43,3 +55,37 @@ Don't forget to select 'Exit Settings' to store your changes to the APC's SD car
 To start the Debug Mode, turn off your machine and set Lisy jumper 3 before turning it back on. The system will now log the selected debug information, but this doesn't mean that it is immediately stored on Lisy's SD card. You should therefore not just turn your pinball machine off after your debug session, but press the Shutdown Switch SW1 which will initiate a controlled shutdown of Lisy. After that you can turn off your machine and remove the SD card of the Raspberry Pi.
 
 The log file is located in the /lisy/lisy_m/debug folder.
+
+## Remote debug Mode
+
+Lisy can also be controlled remotely via WiFi. In this mode it'll just print all information directly into your shell, including the debug log. Hence, you don't have to bother with removing the SD card any more, since all the required information is already on your screen.
+
+If you have set-up the WiFi configuration of your Lisy system, you can use the Remote Debug Mode as follows:
+
+With your pinball machine switched off, connect the jumpers 1 (No Autostart) and 3 (Debug Mode).  
+After you've turned on the power, wait for the yellow LED to light up. Now Lisy has booted and is waiting for instructions.  
+First you have to obtain the IP address of Lisy in your WiFi network. Then open up a shell on your PC and use this address to connect to Lisy via ssh: 
+ 
+    ssh pi@IP-address
+
+Log into the system by using lisy80 as the password.  
+Now it depends whether you're using the Pi on an APC 3 or on a Lisy_Mini board. In case of the APC 3 you have to use
+
+    ./run_lisy_apc
+    
+to start PinMame and with a Lisy_Mini board it's
+
+    ./run_lisy_mini
+    
+These commands will run Lisy and print a complete log into your shell.
+
+### Remote mode and Lisy updates
+
+The run_lisy_apc and run_lisy_mini commands are not automatically updated with your Lisy system when the update is done via Lisy Control. That means you have to change these scripts manually.  
+Let's use the run_lisy_apc script as an example. Normally it looks as follows:
+
+    sudo ./lisy/xpinmame.vid_lisy -nosound -skip_disclaimer -skip_gameinfo -nvram_directory /pinmame/nvram -rp /boot/lisy/lisy_m/roms lisy_apc
+    #sudo /usr/local/bin/lisy -nosound -skip_disclaimer -skip_gameinfo -nvram_directory /pinmame/nvram -rp /boot/lisy/lisy_m/roms lisy_apc
+    
+To activate the Lisy update you just have to move the comment sign from the second to the first line and you're done.  
+Note that you have to issue an rw command first in order to set Lisy into read/write mode.

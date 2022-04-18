@@ -21,7 +21,14 @@ Note that the board preview of JLCPCB doesn't work with the APC boards. This als
 
 As most of the components are SMD and have already been populated by the board manufacturer there's only a few components left for you to assemble. You can find a list of these components with their respective order number from [Mouser](http://www.mouser.com) and [Reichelt](http://www.reichelt.de) in the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/Assembly/APC_BOMnonSMD.pdf)
 
-The german electronics retailer Reichelt doesn't sell all required components, but some (especially connectors) are much cheaper compared to Mouser, so for people in Europe it might still make sense to order them separately. 
+The german electronics retailer Reichelt doesn't sell all required components, but some (especially connectors) are much cheaper compared to Mouser, so for people in Europe it might still make sense to order them separately.
+
+### TDA7496 availability
+
+I got a notification from Mouser that the TDA7496 audio amplifier IC won't be produced any longer.
+
+At the moment I don't have the time to select a new amplifier IC, change the board design and do the necessary tests. I might do it in the future if the IC is not available any more.  
+That means you should try to get these ICs before you order any boards.
 
 ## Preparation
 
@@ -62,7 +69,7 @@ To make the APC use this interface, you have to set the 'PinMame Sound' setting 
 ## Software preparation
 
 To run the software you need at least the Arduino IDE with the SPI and the SdFat libraries installed.  
-In the IDE you have to select 'Arduino DUE (Programming Port)' as your target board. Be sure to have all .ino files and the Sound.h from the APC repository in your working directory.
+In the IDE you have to select 'Arduino DUE (Programming Port)' as your target board. Be sure to have all .ino files and the Sound.h from the APC repository in your working directory. The name of this directory has to be APC.
 
 ## Sound
 
@@ -80,7 +87,8 @@ A list of the settings and a brief description of how to use them can be found o
 ## The assembly
 
 As the boards have the component names printed at the corresponding locations, you can just use the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/Assembly/APC_BOMnonSMD.pdf) to identify the  right component to put there.  
-Pay attention to the polarity of the electrolytic capacitors C2, C9 and C11. The rectangular pad does always belong to the plus pin of the cap.
+Pay attention to the polarity of the electrolytic capacitors C2, C9 and C11. The rectangular pad does always belong to the plus pin of the cap.  
+The resistor networks RR1, RR7 and RR8 have to be populated in the correct orientation also. There's a marking for pin 1 printed on the APC boards. On the resistor networks pin 1 is usually marked with a dot.
 
 ## Getting your board started
 

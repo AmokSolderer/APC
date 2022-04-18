@@ -1,5 +1,45 @@
 # APC News and Changelog
 
+## TBD
+
+### New SW Version V0.23
+
+* Bugfix in the AfterMusic(Sound) handling. When the StopPlayingMusic(Sound) command was immediately followed by PlayMusic(Sound) then the first AfterMusic(Sound) event was skipped.
+
+* The types of AfterSound and AfterMusic have been changed from void (*)() to void (*)(byte). The Music/Sound routines call them with the argument = 0 when the Music/Sound file has run out.  
+The purpose of this is to enable state machines that are initially called from the Music/Sound routines with the argument = 0 and can then recall themself after each step with the argument being set accordingly.
+
+* The maximum number of effects that can be handled by the PlayFlashSequence command has been increased from 64 to 256.
+
+* The StrobeLights() command has been reworked to make it more comfortable. You don't have to care about the StrobeLightsTimer any more. Just call Strobelights(Time) with Time > 2 to start lamp flickering with a period of (Time * 10ms). Call Strobelights(0) to turn off the flicker.
+
+* Support for 2x16 character displays with additional numerical displays has been added.
+
+* SW support for the [LED_expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) has been upgraded. Therefore the new system setting 'No of LEDs' has been added as [setting 8](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Settings.md#system-settings). This might require resetting the system settings to the defaults.
+
+* Exception rules for System 11 F-14 Tomcat have been added. Sound files for F-14 are also available (Thanks to Snux)
+
+* A new setting 'none' has been added to the 'Backbox Lamps' setting in the system settings. This is for the ShowLampPatterns command to know which lamps not to include in lamp animations.
+
+* The ShowLampPatterns command has been changed to support also games without any controlled lamps in the backbox. For this the Pattern array in LampPat has been changed from 7 to 8 entries. If your a game has the first column of lamps in the backbox you have to select 'column1' in the 'Backbox Lamps' seeting and add a zero after the duration. For games with the last row of lamps in the backbox change the setting to 'column8' and add a zero at the end of the pattern part of LampPat.
+
+* Data East 2x16 displays are now supported. Therefore the entry 'Data East 2x16' has been added to the 'Display Type' setting in the system settings. As a side effect the numerical only displays move up one setting. Hence, if you have a System 3 - 9 type of display you have to re-adjust your display setting.
+
+* Exception rules for System 9 Comet have been added. Sound files for Comet are also available
+
+### Misc
+
+* The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
+
+* My [APC Black Knight](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/BlackKnight.md) game code has been updated.
+
+## July 2021
+
+I got a notification from Mouser that the TDA7496 audio amplifier IC won't be produced any longer.
+
+At the moment I don't have the time to select a new amplifier IC, change the board design and do the necessary tests. I might do it in the future if the IC is not available any more.  
+That means you should try to get these ICs before you order any boards.
+
 ## June 2021
 
 ### New SW Version V0.22

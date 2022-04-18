@@ -64,6 +64,10 @@ As the pre System11 displays cannot show letters, the corresponding sound number
 
 Most sound problems like lags and stuttering are caused by the performance of the SD card. Take a look at the [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) section for more.
 
+### Unknown Command errors
+
+If you're using the APC with Lisy/PinMame and the 'Unknown Command' error message followed by a number pops up on your lower displays then you have a problem with your serial communication. This is a severe problem which needs to be fixed. You can learn how to do this in the [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) section.
+
 ## Programming exceptions
 
 The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. To enable this for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.  
@@ -267,4 +271,5 @@ Last but not least we have to switch off the timer when the shooter lane switch 
 These were just a few simple examples of what you could do with exception handling, but with this you could even do significant changes of the rules without having to program the whole game by yourself.
 
 Refer to PinMameExceptions.ino to see all the above mentioned changes in place.  
-For more information about using the APC API read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md#2-basic-game-functions) tutorial.
+For more information about using the APC API read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md#2-basic-game-functions) tutorial.  
+Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see an example. The corresponding code can be found in PinMameExceptions.ino in the AmokPrivate branch on Github.

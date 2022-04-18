@@ -3,8 +3,10 @@
 ## Selecting the correct display
 
 The preselected display setting is set for early System11 displays. That means if you have a pre System11 (numbers only) display or a Black Knight 2000 (BK2K / 2 x 16 alphanumeric) you have to adjust the display setting first. In order to get there blindly, the display setting is the very first one.  
-To get there you have to keep the Advance key pressed for more than 1s with the Up/Down key being in up position. Wait 4s and then press the Game Start button slowly but repeatedly until you can read the display contents. Pre Sys11 displays cannot show any text, so for the 6 digit displays (Sys3 - 6) a single 6 is shown on the player 4 display. For 7 digit displays (Sys7 and 9) it's a 7.  
+To get there you have to keep the Advance key pressed for more than 1s with the Up/Down key being in up position. Wait 4s and then press the Game Start button slowly but repeatedly until you can read the display contents. Pre Sys11 displays cannot show any text, so for the 6 digit displays (Sys3 - 6) a single 7 is shown on the player 4 display. For 7 digit displays (Sys7 and 9) it's an 8.  
 After the correct display is selected, press Up/Down to get it down and Game Start to go back one setting to 'Exit Settings'. Now release the Up/Down button and press Game Start again to save the settings and return to the attract mode.
+
+The complete re-initialization of the display is done when you EXIT the system settings. That means your lower row might still look a bit odd even though you've selected the correct display until you exit the settings.
 
 I did two videos to show what I've described above:
 
@@ -36,11 +38,12 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 0 | Display Type | 0 | 4 Alpha+Credit | X | 4x 7 digit alphanumeric + credit |
 | 0 |  | 1 | Sys11 Pinbot | - | 2x 7 digit alphanumeric + 2x 7 digit numeric + credit |
 | 0 |  | 2 | Sys11 F-14 | - | 2x 7 digit alphanumeric + 2x 7 digit numeric |
-| 0 |  | 3 | Sys11 BK2K | - | 2x 16 digit alphanumeric |
-| 0 |  | 4 | Sys11 Taxi | - | 2x 16 digit alphanumeric + 1x 7 digit numeric|
-| 0 |  | 5 | Sys11 Riverboat | - | 2x 16 digit alphanumeric + 2x 7 digit numeric|
-| 0 |  | 6 | 6 | - | 4x 6 digit numeric + credit|
-| 0 |  | 7 | 7 | - | 4x 7 digit numeric + credit|
+| 0 |  | 3 | Sys11 BK2K | - | 2x 16 digit alphanumeric (inverted segments)|
+| 0 |  | 4 | Sys11 Taxi | - | 2x 16 digit alphanumeric + 1x 7 digit numeric (non inverted segments)|
+| 0 |  | 5 | Sys11 Riverboat | - | 2x 16 digit alphanumeric + 2x 7 digit numeric (inverted segments)|
+| 0 |  | 6 | Data East 2x16 | - | 2x 16 digit alphanumeric (non inverted segments)|
+| 0 |  | 7 | 7 | - | 4x 6 digit numeric + credit (System 3 - 6)|
+| 0 |  | 8 | 8 | - | 4x 7 digit numeric + credit (System 7 + 9)|
 | 1 | Active Game | 0 | Base Code | - | The very basics of a game SW |
 | 1 |  | 1 | Black Knight | - | My own Black Knight game SW |
 | 1 |  | 2 | Pinbot | - | My own Pinbot game SW |
@@ -54,14 +57,17 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 5 | Dim inserts | - | - | No | Bool setting - brightness of playfield lamps is set to 50% when on |
 | 6 | Speaker volume | - | - | 0 | Numerical setting - range 1 - 255 / must be set to 0 when volume pot is connected at 10J4 / 1J16 |
 | 7 | LED lamps | 0 | No LEDs | X | The APC_LED_exp board is not used |
-| 7 |  | 1 | Playfld only | - | The APC_LED_exp board is only used for the lamps 9 - 64 |
-| 7 |  | 2 | PlayfldBackbox | - | The APC_LED_exp board is used for all lamps |
-| 8 | Sol Exp Board | - | - | No | Bool setting - will use the solenoid expander board for solenoids 26 - 33 if set
-| 9 | Debug Mode | - | - | No | Bool setting - Active debug mode will show the number of active timers in the credit display and will stop the game on error |
-| 10 | Backbox Lamps | 0| Column 1 | X | Backbox lamps are in lamp column 1 |
-| 10 |  | 1 | Column 8 | - | Backbox lamps are in lamp column 8 |
-| 11 | Restore Default | - | - | - | No setting - restores the default settings |
-| 12 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 7 |  | 1 | Additional | - | The APC_LED_exp board is used for the lamps 65+ |
+| 7 |  | 2 | Playfld only | - | The APC_LED_exp board is only used for the lamps 9 - 64 |
+| 7 |  | 3 | PlayfldBackbox | - | The APC_LED_exp board is used for the lamps 1 - 64 |
+| 8 | No of LEDs | - | - | 64 | Numerical setting - range 1 - 192 / The length of the LED stripe. Setting is only effective when 'Additional' is selected as 'LED lamps' setting|
+| 9 | Sol Exp Board | - | - | No | Bool setting - will use the solenoid expander board for solenoids 26 - 33 if set
+| 10 | Debug Mode | - | - | No | Bool setting - Active debug mode will show the number of active timers in the credit display and will stop the game on error |
+| 11 | Backbox Lamps | 0| Column 1 | X | Backbox lamps are in lamp column 1 |
+| 11 |  | 1 | Column 8 | - | Backbox lamps are in lamp column 8 |
+| 11 |  | 2 | None | - | game has no controlled backbox lamps |
+| 12 | Restore Default | - | - | - | No setting - restores the default settings |
+| 13 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## Game Settings in Remote Control mode
 
@@ -75,5 +81,5 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 2 | | 1 | Board | - | PinMame sounds are played on an external audio board |
 | 3 | PinMame game | - | - | 0 | Numerical setting - PinMame game number |
 | 4 | Lisy Debug | - | - | 0 | Numerical setting according to the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page |
-| 5 | RestoreDefault | - | - | - | No setting - restores the default settings |
-| 6 | Exit Settngs | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 5 | Restore Default | - | - | - | No setting - restores the default settings |
+| 6 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
