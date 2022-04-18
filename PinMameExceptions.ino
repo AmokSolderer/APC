@@ -474,7 +474,10 @@ byte EX_BlackKnight(byte Type, byte Command){
     return(0);}}
 
 byte EX_Comet(byte Type, byte Command) {
-  if (Type == SoundCommandCh1) {                      // sound commands for channel 1
+  static byte LastSwitch;                             // stores the number of the last activated switch
+  static byte BlindPinmame;                           // hide switches from PinMame while active
+  switch(Type) {
+  case SoundCommandCh1:                               // sound commands for channel 1
     if (!Command || Command > 253) {                  // sound command 0x00 and 0xff -> stop sound
       AfterMusic = 0;
       StopPlayingMusic();
@@ -490,8 +493,34 @@ byte EX_Comet(byte Type, byte Command) {
         RestoreMusicVolumeAfterSound(25);}            // and restore it
       char FileName[9] = "0_00.snd";
       if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-        PlaySound(51, (char*) FileName);}}}
-  return(0);}                                         // no exception rule found for this type so proceed as normal
+        PlaySound(51, (char*) FileName);}}
+    return(0);                                        // no exception rule found for this type so proceed as normal
+  case SwitchActCommand:                              // activated switches
+    if (BlindPinmame) {                               // hide switches from PinMame
+      if (Command == 45) {                            // outhole switch?
+        ActivateSolenoid(40, 1);                      // kick ball into plunger lane
+        RemoveBlinkLamp(60);                          // stop blinking the extra ball lamps
+        RemoveBlinkLamp(5);
+        if (BlindPinmame > 1) {                       // extra ball lamps were on before?
+          TurnOnLamp(60);
+          TurnOnLamp(5);}
+        BlindPinmame = 0;}                            // and don't fool PinMame any longer
+      return(1);}                                     // hide this switch from PinMame
+    else {                                            // normal mode
+      if (Command == 44 || Command == 31) {           // outlanes
+        if ((LastSwitch > 32) && (LastSwitch < 43)) { // ball dropped from the bumpers directly into the outlane?
+          if (QueryLamp(60)) {                        // extra ball lamp lit?
+            BlindPinmame = 2;}
+          else {                                      // extra ball lamp not lit
+            BlindPinmame = 1;}
+          AddBlinkLamp(60, 150);                      // blink extra ball lamps
+          AddBlinkLamp(5, 150);
+          return(1);}}                                // hide this switch from PinMame
+      else {                                          // switches are reported normally
+        LastSwitch = Command;}}
+    return(0);
+  default:
+    return(0);}}                                      // switch will also be reported to PinMame.
 
 byte EX_Pinbot(byte Type, byte Command){
   switch(Type){
