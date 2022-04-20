@@ -273,3 +273,42 @@ These were just a few simple examples of what you could do with exception handli
 Refer to PinMameExceptions.ino to see all the above mentioned changes in place.  
 For more information about using the APC API read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md#2-basic-game-functions) tutorial.  
 Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see an example. The corresponding code can be found in PinMameExceptions.ino in the AmokPrivate branch on Github.
+
+### How to add a ball saver
+
+I have a System9 Comet which pi***d me off right from the start because the balls dropped to the outlane so often.  
+My first countermeasure was to remove the tilt pendulum. By this I could nudge the ball out of the left outlane back into play (this is due to the special left outlane of the Comet). But as I had an APC board installed I could do it in a more subtle way eventually. My [Comet video](https://youtu.be/03L84-IPicU) makes more clear what I mean.
+
+The code for this ball saver is quite simple. All I had to do is add the following code to the PinMameExceptions of the Comet:
+
+    case SwitchActCommand:                              // activated switches
+      if (BlindPinmame) {                               // hide switches from PinMame
+        if (Command == 45) {                            // outhole switch?
+          ActivateSolenoid(40, 1);                      // kick ball into plunger lane
+          RemoveBlinkLamp(60);                          // stop blinking the extra ball lamps
+          RemoveBlinkLamp(5);
+          if (BlindPinmame > 1) {                       // extra ball lamps were on before?
+            TurnOnLamp(60);
+            TurnOnLamp(5);}
+          BlindPinmame = 0;}                            // and don't fool PinMame any longer
+        return(1);}                                     // hide this switch from PinMame
+      else {                                            // normal mode
+        if ((Command == 44 && (game_settings[USB_Option1] & 2)) || (Command == 31 && (game_settings[USB_Option1] & 1))) { // Ball Saver for outlanes active?
+          if ((LastSwitch > 32) && (LastSwitch < 43)) { // ball dropped from the bumpers directly into the outlane?
+            if (QueryLamp(60)) {                        // extra ball lamp lit?
+              BlindPinmame = 2;}
+            else {                                      // extra ball lamp not lit
+              BlindPinmame = 1;}
+            AddBlinkLamp(60, 150);                      // blink extra ball lamps
+            AddBlinkLamp(5, 150);
+            return(1);}}                                // hide this switch from PinMame
+        else {                                          // switches are reported normally
+          LastSwitch = Command;}}
+      return(0);
+
+Normally the BlindPinmame variable is zero which means the ball saver is passive and all switches are reported to PinMame. All the exception does in this 'normal mode' is to store the number of each activated switch in the LastSwitch variable.  
+If switch 31 or 44 (outlanes) is triggered and the corresponding ball saver is activated in the settings, the LastSwitch variable is checked. If the last switch belongs to the bumper area (switches 32 - 43) the ball saver becomes active by changing the value of BlindPinmame to 1 or 2 depending on whether the extra ball lamp was on or off before. A return(1) means that the activation of the outlane switch is not reportet to PinMame.  
+This is also valid for any subsequent switches as long as BlindPinmame is different from zero.  
+If Switch 45 is triggered (outhole) then solenoid 1 is activated (shooter lane feeder), the state of the extra ball lamps is restored and BlindPinmame is cleared to deactivate the ball saver.
+
+That's all. The SW might wonder why the ball suddenly pops up in the shooter lane, but who cares as long as the gameplay resumes normally.

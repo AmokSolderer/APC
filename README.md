@@ -33,6 +33,7 @@ Typical examples for the use of PinMameExceptions are:
 
 * Pre System11 games usually use just one audio channel, so you could add a background music track. Wouldn't it be great if your Disco Fever would play old Disco music in the BG?
 * Add HW toys like a shaker motor or flashers and the necessary rules to drive them. If your game has no solennoid drivers left, then just add the [Solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) to get 8 more. You can also use the [LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) to control RGB-LED stripes or just connect your own individual HW.
+* Add a ball saver. I have a Comet which made me really angry when it drowned my balls in the outlanes before I even had a chance to touch them with a flipper. I was glad to have the APC installed, so I could fix the problem with just a few [lines of code](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#How-to-add-a-ball-saver).
 
 The picture below shows an APC prototype in my Pinbot.
 
@@ -48,7 +49,8 @@ The APC by itself cannot run the original Williams EPROM software, but you can u
 There's also a Lisy_Mini board available. The Raspberry Pi is then located on this board which can be conntected to the APC via USB. For more information about how to setup PinMame please have a look at my [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md).
 
 With PinMame running for your game you can use the [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) functionality of the APC to change the rules of your game even though it's running under PinMame control.  
-Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see an example. The corresponding code can be found in PinMameExceptions.ino in the AmokPrivate branch on Github.
+Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see an example. The corresponding code can be found in PinMameExceptions.ino in the AmokPrivate branch on Github.  
+Another example is the ball saver I [added to my Comet](https://youtu.be/03L84-IPicU).
 
 ### MPF
 
