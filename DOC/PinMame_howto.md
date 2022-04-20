@@ -278,7 +278,7 @@ Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see
 
 I have a Comet which made me really angry when it drowned my balls in the outlanes before I even had a chance to touch them with a flipper. My first countermeasure was to remove the tilt pendulum. By this I could nudge the ball out of the left outlane back into play (this is due to the special left outlane of the Comet). But as I had an APC board installed I could do it in a more subtle way eventually. My [Comet video](https://youtu.be/03L84-IPicU) makes more clear what I mean.
 
-The code for this ball saver is quite simple. All I had to do is add the following code to the PinMameExceptions of the Comet:
+The code for this ball saver is quite simple. All I had to do is add the following lines to the PinMameExceptions of the Comet:
 
     case SwitchActCommand:                              // activated switches
       if (BlindPinmame) {                               // hide switches from PinMame
@@ -306,7 +306,7 @@ The code for this ball saver is quite simple. All I had to do is add the followi
       return(0);
 
 Normally the BlindPinmame variable is zero which means the ball saver is passive and all switches are reported to PinMame. All the exception does in this 'normal mode' is to store the number of each activated switch in the LastSwitch variable.  
-If switch 31 or 44 (outlanes) is triggered and the corresponding ball saver is activated in the settings, the LastSwitch variable is checked. If the last switch belongs to the bumper area (switches 32 - 43) the ball saver becomes active by changing the value of BlindPinmame to 1 or 2 depending on whether the extra ball lamp was on or off before. A return(1) means that the activation of the outlane switch is not reportet to PinMame.  
+If switch 31 or 44 (outlanes) is triggered and the corresponding ball saver is activated in the settings, the LastSwitch variable is checked. If the last switch belongs to the bumper area (switches 32 - 43) the ball saver becomes active by blinking the extra ball lmaps and changing the value of BlindPinmame to 1 or 2 depending on whether the extra ball lamp was on or off before. A return(1) means that the activation of the outlane switch is not reported to PinMame.  
 This is also valid for any subsequent switches as long as BlindPinmame is different from zero.  
 If Switch 45 is triggered (outhole) then solenoid 1 is activated (shooter lane feeder), the state of the extra ball lamps is restored and BlindPinmame is cleared to deactivate the ball saver.  
 That's all. The old game SW might wonder why the ball suddenly pops up in the shooter lane, but who cares as long as the gameplay resumes normally.
