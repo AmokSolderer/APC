@@ -6,7 +6,7 @@ The purpose of this board is to control a WS2812 based RGB LED strip with the AP
 
 The hardware is quite simple and mainly consists of an Arduino Mini and a bit of logic to connect it to the HW extension interface of the APC.
 
-![Pic_Led_Exp](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/PICS/LED_ExpBoard.jpg)
+![Pic_Led_Exp](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/LED_ExpBoard.jpg)
 
 The schematic, Gerber (and drilling) as well as an SVG file are located in the [APC_LED_exp](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_LED_exp) folder.
 

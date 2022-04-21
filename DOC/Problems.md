@@ -21,7 +21,7 @@ Of course you can try another SD-card and hope that this one is faster, but you 
 
 If you're using Sloeber, the Arduino plugin for Eclipse you can simply take a look into your 'Project Explorer' and look for the file RingBuffer.h as shown below:
 
-![Ringbuffer](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/PICS/Ringbuffer.png)
+![Ringbuffer](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/Ringbuffer.png)
 
 For the Arduino IDE this is a bit more complicated.  
 In the preferences window of your Arduino IDE you should see a link to some preferences.txt file in the lower left corner. We don't care about the file, but the path is important. It should look somehow like this:

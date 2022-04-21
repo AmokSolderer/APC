@@ -15,7 +15,7 @@ The purpose of this is to enable state machines that are initially called from t
 
 * Support for 2x16 character displays with additional numerical displays has been added.
 
-* SW support for the [LED_expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) has been upgraded. Therefore the new system setting 'No of LEDs' has been added as [setting 8](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Settings.md#system-settings). This might require resetting the system settings to the defaults.
+* SW support for the [LED_expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) has been upgraded. Therefore the new system setting 'No of LEDs' has been added as [setting 8](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#system-settings). This might require resetting the system settings to the defaults.
 
 * Exception rules for System 11 F-14 Tomcat have been added. Sound files for F-14 are also available (Thanks to Snux)
 
@@ -29,9 +29,9 @@ The purpose of this is to enable state machines that are initially called from t
 
 ### Misc
 
-* The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
+* The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
 
-* My [APC Black Knight](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/BlackKnight.md) game code has been updated.
+* My [APC Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) game code has been updated.
 
 ## July 2021
 
