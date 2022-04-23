@@ -476,6 +476,7 @@ byte EX_BlackKnight(byte Type, byte Command){
 byte EX_Comet(byte Type, byte Command) {
   static byte LastSwitch;                             // stores the number of the last activated switch
   static byte BlindPinmame;                           // hide switches from PinMame while active
+  static byte Timer = 0;
   switch(Type) {
   case SoundCommandCh1:                               // sound commands for channel 1
     if (!Command || Command > 253) {                  // sound command 0x00 and 0xff -> stop sound
@@ -497,15 +498,20 @@ byte EX_Comet(byte Type, byte Command) {
     return(0);                                        // no exception rule found for this type so proceed as normal
   case SwitchActCommand:                              // activated switches
     if (BlindPinmame) {                               // hide switches from PinMame
+      if (Command == 31 || Command == 32 || Command == 44) {
+        return(1);}                                   // hide these switches from PinMame
       if (Command == 45) {                            // outhole switch?
+        if (Timer) {                                  // timer still running?
+          KillTimer(Timer);                           // stop it
+          Timer = 0;}
         ActivateSolenoid(40, 1);                      // kick ball into plunger lane
         RemoveBlinkLamp(60);                          // stop blinking the extra ball lamps
         RemoveBlinkLamp(5);
         if (BlindPinmame > 1) {                       // extra ball lamps were on before?
           TurnOnLamp(60);
           TurnOnLamp(5);}
-        BlindPinmame = 0;}                            // and don't fool PinMame any longer
-      return(1);}                                     // hide this switch from PinMame
+        BlindPinmame = 0;                             // and don't fool PinMame any longer
+        return(1);}}                                  // hide this switch from PinMame
     else {                                            // normal mode
       if ((Command == 44 && (game_settings[USB_Option1] & 2)) || (Command == 31 && (game_settings[USB_Option1] & 1))) { // Ball Saver for outlanes active?
         if ((LastSwitch > 32) && (LastSwitch < 43)) { // ball dropped from the bumpers directly into the outlane?
@@ -515,12 +521,27 @@ byte EX_Comet(byte Type, byte Command) {
             BlindPinmame = 1;}
           AddBlinkLamp(60, 150);                      // blink extra ball lamps
           AddBlinkLamp(5, 150);
+          Timer = ActivateTimer(5000, 1, EX_Comet2);  // wait 5s for the ball to reach the outhole
           return(1);}}                                // hide this switch from PinMame
       else {                                          // switches are reported normally
         LastSwitch = Command;}}
     return(0);
+  case 50:                                            // timer of ball saver has run out
+    Timer = 0;
+    if (BlindPinmame) {                               // ball saver still active?
+      RemoveBlinkLamp(60);                            // stop blinking the extra ball lamps
+      RemoveBlinkLamp(5);
+      if (BlindPinmame > 1) {                         // extra ball lamps were on before?
+        TurnOnLamp(60);
+        TurnOnLamp(5);}
+      BlindPinmame = 0;}                              // and don't fool PinMame any longer
+    return(0);
   default:
     return(0);}}                                      // switch will also be reported to PinMame.
+
+void EX_Comet2(byte Dummy) {                          // to be called by timer from EX_Comet
+  UNUSED(Dummy);
+  EX_Comet(50, 0);}
 
 byte EX_Pinbot(byte Type, byte Command){
   switch(Type){
