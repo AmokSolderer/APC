@@ -276,7 +276,7 @@ Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see
 
 ### How to add a ball saver
 
-I have a Comet which made me really angry when it drowned my balls in the outlanes before I even had a chance to touch them with a flipper. My first countermeasure was to remove the plumb bob tilt. By this I could nudge the ball out of the left outlane back into play (this is due to the special left outlane of the Comet). But as I had an APC board installed I could do it in a more subtle way eventually. My [Comet video](https://youtu.be/03L84-IPicU) makes more clear what I mean.
+I have a Comet which made me really angry when it drowned my balls in the outlanes before I even had a chance to touch them with a flipper. My first countermeasure was to remove the plumb bob tilt. By this I could nudge the ball out of the left outlane back into play (this is due to the special left outlane of the Comet). But as I had an APC board installed I could do it in a more subtle way eventually. My [Comet video](https://youtu.be/JbgMa_pn0Lo) makes more clear what I mean.
 
 The code for this ball saver is quite simple. All I had to do is add the following lines to the PinMameExceptions of the Comet:
 
