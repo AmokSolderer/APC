@@ -126,7 +126,7 @@ At the end of APC_LED_exp.ino there's a switch statement which handles all comma
     
 To add a new command, just look for an unused command number and create a case for it.
 
-I already added command 100 as an example. It consists of a simple player which repeatedly plays a predefined pattern on the first 12 LEDs.  
+I've already added command 100 as an example. It consists of a simple player which repeatedly plays a predefined pattern on the first 12 LEDs.  
 Let's see how it works:
 
     case 100:                                       // execute OwnCommand
@@ -160,18 +160,18 @@ As stated above the LEDs are updated once in every refresh cycle. Therefore it m
         if (OwnCommandStep > 59) {
           OwnCommandStep = 0;}}}
           
-The first line wait for the Sync counter being zero and OwnCommands being different from zero. That means if any of the bits in OwnCommands is set then the following code is executed after each Sync which is once per refresh cycle.  
+The first line waits for the Sync counter becoming zero and OwnCommands being different from zero. That means if any of the bits in OwnCommands is set then the following code is executed after each Sync which is once per refresh cycle.  
 At first the player checks the LSB of OwnCommands and proceeds if it's set. In order not to play the pattern too fast the player checks next if OwnCommandStep can be divided by 5 without rest and skips the other 4 cycles. The desired effect is some kind of green radar animation for an LED ring with 12 LEDs. Basically it's always the same pattern going round and round, a bright spot which fades in 6 steps.
 
     const byte OwnPattern[6][3] = {{0,0,0},{0,50,0},{0,100,0},{0,150,0},{0,200,0},{0,250,0}};
 
-That means for the player that it has to write always the same LED data, but the start LED changes from cycle to cycle. Therefore OwnCommandStep divided by 5 is also the internal counter of this command which determines the actual LED to start from. The pixels.set command writes the color values in the corresponding LEDs. This data is then sent to the LEDs with the next Sync.  
+That means for the player that it has to write always the same LED data, but the start LED changes from cycle to cycle. Therefore OwnCommandStep divided by 5 is also the internal counter of this command which determines the actual LED to start from. The pixels.set command writes the color values in the corresponding LEDs. This data is then sent to the LEDs on the next Sync.  
 At the end OwnCommandStep is increased by one and after 60 cycles it starts all over again.
 
 Now that we have added the command to the LED_ExpBoard SW, we still have to issue it from the program running on the APC board itself. This can be done with the LEDhandling command. For our single byte command this would be
 
-    LEDhandling(6, 100);
-    LEDhandling(7, 1);
+    LEDhandling(6, 100);                              // write 100 to the command buffer
+    LEDhandling(7, 1);                                // send 1 byte to the LED_ExpBoard
     
 The first line adds our command (number 100) to the command buffer and the second line sends 1 byte of this buffer. If your command has more than one byte they all need to be send with LEDhandling(6,byte) and executed with LEDhandling(7, number of bytes).  
 Let's use LEDsetColor as an example. This command has 4 bytes (command and 3 color values) which leads to
@@ -182,5 +182,4 @@ Let's use LEDsetColor as an example. This command has 4 bytes (command and 3 col
       LEDhandling(6, Green);
       LEDhandling(6, Blue);
       LEDhandling(7, 4);}
-  
   
