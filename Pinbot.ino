@@ -1722,7 +1722,7 @@ void PB_HandleDropTargets(byte Target) {
   static byte PB_DropTimer;
   static uint16_t Time;
   static bool SoundState;
-  if (Target) {
+  if (Target && Target != 100) {                      // target hit? Target = 100 is the stop command
     PB_DropWait = false;                              // stop ignoring drop target switches
     if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {  // all targets down
       if (PB_DropTimer) {                             // any targets down before?
@@ -1737,7 +1737,7 @@ void PB_HandleDropTargets(byte Target) {
     else {
       if (!PB_DropTimer) {                            // first target hit
         if (Target-8 == PB_DropBlinkLamp) {           // blinking target hit?
-          MusicVolume = 4;                              // reduce music volume
+          MusicVolume = 4;                            // reduce music volume
           PlaySound(50, "0_71.snd");
           ActivateTimer(1000, 0, PB_RaiseRamp);       // raise ramp in 1s
           PB_EnergyActive = true;                     // energy value on
@@ -1749,7 +1749,7 @@ void PB_HandleDropTargets(byte Target) {
   else {
     uint16_t Length = 550 - (430 * Time / (1000 * game_settings[PB_DropTime])); // time to the next blink
     Time = Time + Length;                             // total time
-    if (Time < 1000 * game_settings[PB_DropTime]) {   // total time < selected drop target time?
+    if (Time < 1000 * game_settings[PB_DropTime] && !Target) {   // total time < selected drop target time? Stop command?
       TurnOnLamp(17);
       if (!PB_EnergyActive) {
         if (SoundState) {
@@ -1761,6 +1761,8 @@ void PB_HandleDropTargets(byte Target) {
       ActivateTimer(Length/2, 17, PB_TurnOffLamp);
       PB_DropTimer = ActivateTimer(Length, 0, PB_HandleDropTargets);}
     else {                                            // drop target time has run out
+      if (Target) {                                   // stop command received?
+        KillTimer(PB_DropTimer);}
       TurnOffLamp(17);
       PB_DropBlinkLamp = 41;
       PB_DropTimer = 0;
@@ -1774,6 +1776,11 @@ void PB_RaiseRamp(byte Dummy) {
 
 void PB_AdvancePlanet(byte State) {
   switch (State) {
+  case 0:                                             // to be called by AfterSound
+    RemoveBlinkLamp(game_settings[PB_ReachPlanet]);
+    TurnOnLamp(game_settings[PB_ReachPlanet]);
+    AfterSound = 0;
+    break;
   case 1:                                             // initial call
     PB_Planet[Player]++;                              // player has reached next planet
     if (PB_Planet[Player] > 10) {                     // sun already reached before?
@@ -1785,8 +1792,10 @@ void PB_AdvancePlanet(byte State) {
             // TODO add sun fuzz
         }
         else {                                        // panet reached
+          //AddBlinkLamp(PB_Planet[Player], 200);
           PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
-          PlaySound(51, "1_ab.snd");}
+          AfterSound = PB_AdvancePlanet;              // jump to case 0 after sound has been played
+          PlaySound(52, "1_ab.snd");}
         TurnOnLamp(51);}                              // light special
       else {
         ActC_BankSol(8);                              // sun flasher
@@ -1902,6 +1911,10 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         BlockOuthole = false;}}                       // remove outhole block
     else {                                            // no multiball running
       LockedBalls[Player] = 0;
+      PB_HandleDropTargets(100);                      // turn off drop target blinking
+      PB_HandleEnergy(0);                             // turn off energy lamp and sounds
+      if (!QuerySwitch(44)) {                         // ramp in up state?
+        ActA_BankSol(6);}                             // drop ramp
       BlinkScore(0);                                  // stop score blinking
       PB_CycleDropLights(0);                          // stop the blinking drop target lights
       PB_ChestLightHandler(0);                        // stop chest animation
