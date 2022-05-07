@@ -8,6 +8,7 @@ bool PB_EnergyActive = false;                         // score energy active?
 bool PB_SkillShot = false;                            // is the skill shot active?
 bool PB_EjectIgnore = false;                          // ignore the hole switch while the ball is in the hole
 bool PB_IgnoreLock = false;                           // ignore the lock switches to cope with switch bouncing
+bool PB_SpecialLit = false;                           // is the special lit?
 byte PB_BallSave = 0;                                 // prevent immediate outlane drains 0=inactive 1=active 2=triggered
 byte PB_ChestMode = 0;                                // current status of the chest and visor
 uint16_t PB_SolarValue = 100;                         // current solar value / 1000
@@ -26,7 +27,7 @@ byte PB_EnergyValue[5];                               // energy value for curren
 byte PB_LampsToLight = 2;                             // number of lamps to light when chest is hit
 byte *PB_ChestPatterns;                               // pointer to the current chest lamp pattern
 
-const unsigned int PB_SolTimes[32] = {50,30,30,70,50,200,30,30,0,0,0,0,0,0,150,150,50,0,50,50,50,50,0,0,50,150,150,150,150,150,150,150}; // Activation times for solenoids (last 8 are C bank)
+const unsigned int PB_SolTimes[32] = {50,30,30,70,50,200,30,30,0,0,0,0,0,0,150,150,50,0,50,50,50,50,0,0,50,150,150,150,150,150,150,100}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[10] = {3,4,5,17,19,22,6,20,21,0}; // coils to fire when the ball watchdog timer runs out
 const byte PB_OpenVisorSeq[137] = {26,1,29,9,15,4,16,2, 32,9,15,1,31,9,26,1,27,9, 29,2,28,9,32,2,29,7, 26,5,15,6,16,2,31,5,15,7, 26,4,27,7,29,6,28,9, 29,5,26,7,15,5,16,5,32,5, 15,4,31,5,26,7,29,5,27,11, 28,1,29,12,26,4,32,9, 15,3,31,7,16,5,27,5,15,3, 28,7,26,2,29,7,32,10 ,29,2,31,10,26,3,27,2,31,5, 15,2,28,9,16,4,15,1, 32,10,26,3,31,9,29,4,27,12, 28,2,29,10,26,2,15,7, 32,4,16,5,31,4,15,7,26,5,0};
 const byte PB_MultiballSeq[69] = {16,5,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,7,0,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,5,15,10,8,0,0};
@@ -1033,9 +1034,12 @@ void PB_GameMain(byte Switch) {
     ActivateTimer(200, 0, PB_ClearOuthole);           // check again in 200ms
     break;
   case 19:                                            // advance planet
-    if (QueryLamp(51)) {                              // special lit?
-      TurnOffLamp(51);
-      PB_AddExBall();}
+    if (PB_SpecialLit) {                              // special lit?
+      PB_SpecialLit = false;
+      MusicVolume = 4;
+      PlaySound(52, "1_ab.snd");
+      PlayFlashSequence((byte*) PB_OpenVisorSeq);     // play flasher sequence
+      AfterSound = PB_AdvancePlanet;}
     else if (QueryLamp(18)) {                         // advance planet lit?
       TurnOffLamp(18);
       PB_AddBonus(1);
@@ -1774,29 +1778,51 @@ void PB_RaiseRamp(byte Dummy) {
     ActA_BankSol(5);                                  // raise ramp
     ActivateTimer(1000, 0, PB_RaiseRamp);}}           // recheck in 1s
 
+void PB_AdvancePlanet2(byte State) {                  // finale of the 'sun reached' animation
+  if (State < 10) {
+    SwitchDisplay(0);
+    if (State % 2) {
+      PlaySound(52, "0_91.snd");
+      WriteUpper2("SPECIAL LIT   ");}
+    else {
+      WriteUpper2("              ");}
+    ActivateTimer(180, State+1, PB_AdvancePlanet2);}
+  else {
+    for (byte i=0; i<9; i++) {                        // turn on planet lamps
+      TurnOnLamp(19 + i);}
+    RestoreMusicVolume(25);
+    SwitchDisplay(1);}}                               // switch display back to normal
+
 void PB_AdvancePlanet(byte State) {
   switch (State) {
   case 0:                                             // to be called by AfterSound
-    RemoveBlinkLamp(game_settings[PB_ReachPlanet]);
-    TurnOnLamp(game_settings[PB_ReachPlanet]);
+    RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);
+    RemoveBlinkLamp(51);                              // stop blinking of special lamp
+    TurnOnLamp(18+game_settings[PB_ReachPlanet]);
     AfterSound = 0;
+    PB_GiveExBall();
+    RestoreMusicVolume(25);
     break;
   case 1:                                             // initial call
     PB_Planet[Player]++;                              // player has reached next planet
     if (PB_Planet[Player] > 10) {                     // sun already reached before?
       PB_Planet[Player] = 10;}                        // set it back to the sun
     else {
-
       if  (PB_Planet[Player] == 10 || PB_Planet[Player] == game_settings[PB_ReachPlanet]) { //  10 = Sun
+        MusicVolume = 4;                              // reduce music volume
         if (PB_Planet[Player] == 10) {                // is it the sun?
-            // TODO add sun fuzz
-        }
-        else {                                        // panet reached
-          //AddBlinkLamp(PB_Planet[Player], 200);
+          PlaySound(52, "0_e1.snd");
+          ActC_BankSol(8);                            // sun flasher
+          for (byte i=0; i<9; i++) {                  // turn off planet lamps
+            TurnOffLamp(19 + i);}
+          ActivateTimer(150, 30, PB_AdvancePlanet);
+          PB_SpecialLit = true;
+          AddBlinkLamp(51, 100);}                     // blink 'special' lamp
+        else {                                        // planet reached
           PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
-          AfterSound = PB_AdvancePlanet;              // jump to case 0 after sound has been played
-          PlaySound(52, "1_ab.snd");}
-        TurnOnLamp(51);}                              // light special
+          ActC_BankSol(1);                            // TODO check knocker
+          PlaySound(52, "1_ab.snd");
+          AfterSound = PB_AdvancePlanet;}}            // jump to case 0 after sound has been played
       else {
         ActC_BankSol(8);                              // sun flasher
         char FileName[13] = "0_e1_000.snd";
@@ -1808,7 +1834,7 @@ void PB_AdvancePlanet(byte State) {
         ActivateTimer(4050, 21, PB_AdvancePlanet);    // reset AfterSound
         RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);}} // stop blinking
     break;
-  case 2:                                             // first step
+  case 2:                                             // first step of advance planet
     if (PB_Planet[Player] < 9) {
       TurnOnLamp(27);
       ActivateTimer(350, State+1, PB_AdvancePlanet);}
@@ -1826,14 +1852,55 @@ void PB_AdvancePlanet(byte State) {
   case 21:                                            // reset AfterSound
     AfterSound = 0;
     break;
+  case 30:                                            // first step off sun reached animation
+    TurnOnLamp(19);
+    ActivateTimer(150, 31, PB_AdvancePlanet);
+    break;
+  case 54:                                            // final step of sun reached animation
+    for (byte i=0; i<9; i++) {                        // turn off planet lamps
+      TurnOffLamp(19 + i);}
+    PlaySound(52, "0_b3.snd");                        // 'We control the universe'
+    AfterSound = PB_AdvancePlanet2;
+    break;
   default:                                            // all intermediate steps
-    TurnOffLamp(30 - State);
-    if (State < 11 - PB_Planet[Player]) {
-      TurnOnLamp(29 - State);
-      ActivateTimer(350, State+1, PB_AdvancePlanet);}
-    else {
-      AddBlinkLamp(18 + PB_Planet[Player], 100);
-      ActivateTimer(1000, 20, PB_AdvancePlanet);}}}
+    if (State < 30) {                                 // advance planet animation?
+      TurnOffLamp(30 - State);
+      if (State < 11 - PB_Planet[Player]) {           // not the final step?
+        TurnOnLamp(29 - State);
+        ActivateTimer(350, State+1, PB_AdvancePlanet);}
+      else {                                          // final step
+        AddBlinkLamp(18 + PB_Planet[Player], 100);
+        ActivateTimer(1000, 20, PB_AdvancePlanet);}}
+    else {                                            // sun reached animation
+      if (State < 38) {                               // planets being lit
+        TurnOnLamp(State - 11);
+        ActivateTimer(120, State+1, PB_AdvancePlanet);}
+      else {                                          // all planets lit
+        ActC_BankSol(3);
+        ActC_BankSol(4);
+        ActC_BankSol(8);                              // sun flasher
+        PlaySound(52, "0_99.snd");
+        if (State % 2) {                              // toggle planet lamps
+          TurnOffLamp(19);
+          TurnOffLamp(21);
+          TurnOffLamp(23);
+          TurnOffLamp(25);
+          TurnOffLamp(27);
+          TurnOnLamp(20);
+          TurnOnLamp(22);
+          TurnOnLamp(24);
+          TurnOnLamp(26);}
+        else {
+          TurnOnLamp(19);
+          TurnOnLamp(21);
+          TurnOnLamp(23);
+          TurnOnLamp(25);
+          TurnOnLamp(27);
+          TurnOffLamp(20);
+          TurnOffLamp(22);
+          TurnOffLamp(24);
+          TurnOffLamp(26);}
+        ActivateTimer(180, State+1, PB_AdvancePlanet);}}}}
 
 void PB_CycleDropLights(byte State) {                 // State = 0 -> Stop / State = 1 -> Start / State = 2 -> called by timer
   static byte Timer;
@@ -2207,7 +2274,7 @@ void PB_HandleVolumeSetting(bool change) {
 void PB_Testmode(byte Select) {
   Switch_Pressed = PB_Testmode;
   switch(AppByte) {                                   // which testmode?
-  case 0:                                                   // display test
+  case 0:                                             // display test
     switch(Select) {                                  // switch events
     case 0:                                           // init (not triggered by switch)
       *(DisplayLower) = 0;                            // clear credit display
@@ -2231,7 +2298,7 @@ void PB_Testmode(byte Select) {
         AppByte++;}
       PB_Testmode(0);}
     break;
-    case 1:                                                 // switch edges test
+    case 1:                                           // switch edges test
       switch(Select) {                                // switch events
       case 0:                                         // init (not triggered by switch)
         AppByte2 = 0;
@@ -2251,14 +2318,14 @@ void PB_Testmode(byte Select) {
           AppByte2 = 1;
           break;} // @suppress("No break at end of case")
       default:                                        // all other switches
-        for (byte i=1; i<24; i++) {                        // move all characters in the lower display row 4 chars to the left
+        for (byte i=1; i<24; i++) {                   // move all characters in the lower display row 4 chars to the left
           DisplayLower[i] = DisplayLower[i+8];}
         *(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
         *(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
         *(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
         *(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}
       break;
-      case 2:                                               // solenoid test
+      case 2:                                         // solenoid test
         switch(Select) {                              // switch events
         case 0:                                       // init (not triggered by switch)
           WriteUpper("  COIL  TEST  ");
@@ -2278,13 +2345,13 @@ void PB_Testmode(byte Select) {
             AppByte++;}
           PB_Testmode(0);}
         break;
-        case 3:                                           // single lamp test
+        case 3:                                       // single lamp test
           switch(Select) {                            // switch events
           case 0:                                     // init (not triggered by switch)
             WriteUpper(" SINGLE LAMP  ");
             WriteLower("              ");
             AppByte2 = 0;
-            for (byte i=0; i<(LampMax+1); i++){            // erase lamp matrix
+            for (byte i=0; i<(LampMax+1); i++){       // erase lamp matrix
               TurnOffLamp(i);}
             LampPattern = LampColumns;                // and show it
             break;
@@ -2301,7 +2368,7 @@ void PB_Testmode(byte Select) {
               AppByte++;}
             PB_Testmode(0);}
           break;
-          case 4:                                           // all lamps test
+          case 4:                                     // all lamps test
             switch(Select) {                          // switch events
             case 0:                                   // init (not triggered by switch)
               WriteUpper("  ALL   LAMPS ");
@@ -2321,7 +2388,7 @@ void PB_Testmode(byte Select) {
                 AppByte++;}
               PB_Testmode(0);}
             break;
-            case 5:                                         // all music test
+            case 5:                                   // all music test
               switch(Select) {                        // switch events
               case 0:                                 // init (not triggered by switch)
                 WriteUpper(" MUSIC  TEST  ");
@@ -2343,7 +2410,7 @@ void PB_Testmode(byte Select) {
                   AppByte++;}
                 PB_Testmode(0);}
               break;
-              case 6:                                       // visor test
+              case 6:                                 // visor test
                 switch(Select) {                      // switch events
                 case 0:                               // init (not triggered by switch)
                   WriteUpper(" VISOR  TEST  ");
@@ -2458,7 +2525,7 @@ void PB_DisplayCycle(byte CharNo) {                   // Display cycle test
         CharNo = 66;}
       else {
         CharNo = CharNo+2;}}                          // otherwise show next character
-    for (byte i=0; i<16; i++) {                            // use for all alpha digits
+    for (byte i=0; i<16; i++) {                       // use for all alpha digits
       if ((i==0) || (i==8)) {
         DisplayUpper[2*i] = LeftCredit[CharNo];
         DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
