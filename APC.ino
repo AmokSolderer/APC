@@ -1680,9 +1680,12 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
             else {
               EndTimeAdder = *(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1 - SolWaiting[ActSolSlot][1]*10;}} // remember discrepancy
           ActivateTimer(SolWaiting[ActSolSlot][1]*10, 1, ActSolenoid);} // call the timer
-        else {                                        // use standard solenoid hold time as the delay for the next step
-          EndTimeAdder = 0;
-          ActivateTimer(*(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1, 1, ActSolenoid);}
+        else {                                        // use standard solenoid hold time or EndTimeAdder as the delay for the next step
+          if (*(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1 > EndTimeAdder) {  // solenoid hold time > EndTimeAdder?
+            ActivateTimer(*(GameDefinition.SolTimes+SolWaiting[ActSolSlot][0]-1)+1, 1, ActSolenoid);}
+          else {
+            ActivateTimer(EndTimeAdder, 1, ActSolenoid);}
+          EndTimeAdder = 0;}
         SolWaiting[ActSolSlot][0] = 0;                // mark current slot as free
         ActSolSlot++;}                                // increase slot number
       State = 1;}                                     // set routine state to active
