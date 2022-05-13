@@ -1765,7 +1765,7 @@ void PB_HandleDropTargets(byte Target) {
       ActivateTimer(Length/2, 17, PB_TurnOffLamp);
       PB_DropTimer = ActivateTimer(Length, 0, PB_HandleDropTargets);}
     else {                                            // drop target time has run out
-      if (Target) {                                   // stop command received?
+      if (Target && PB_DropTimer) {                   // stop command received?
         KillTimer(PB_DropTimer);}
       TurnOffLamp(17);
       PB_DropBlinkLamp = 41;
