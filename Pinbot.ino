@@ -673,6 +673,7 @@ void PB_CheckShooterLaneSwitch(byte Switch) {
 
 void PB_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
   if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
+    PB_RampThunder(0);                                // stop thunder noise
     if (BallWatchdogTimer) {
       KillTimer(BallWatchdogTimer);}                  // stop watchdog
     if (PB_DropRamp&&(Switch != 45)&&(Switch != 49)&&(Switch != 50)&&(Switch != 51)) { // switch not close to the ramp?
@@ -843,6 +844,21 @@ void PB_MultiballThunder(byte State) {
     ActivateTimer(6000, 9, PB_MultiballThunder);}
   else {
     StopPlayingSound();}}
+
+void PB_RampThunder(byte State) {                     // State = 0 -> Stop
+  static byte Timer = 0;
+  switch (State) {
+  case 0:
+    if (Timer) {
+      KillTimer(Timer);}                              // @suppress("No break at end of case")
+  case 8:                                             // play thunder 7 times
+    RestoreMusicVolume(25);
+    Timer = 0;
+    break;
+  default:
+    PlaySound(50, "0_d7.snd");
+    Timer = ActivateTimer(1500, State+1, PB_RampThunder);
+    break;}}
 
 void PB_PlayEjectHoleSounds(byte Number) {
   PlaySound(50, "1_83.snd");
@@ -1138,8 +1154,8 @@ void PB_GameMain(byte Switch) {
     uint16_t Buffer;
     PB_AddBonus(1);
     RampSound = false;
+    MusicVolume = 3;                                  // reduce music volume
     if (PB_SolarValueTimer) {                         // solar ramp lit
-      MusicVolume = 3;                                // reduce music volume
       PB_MultiballThunder(0);                         // play sound effects
       KillTimer(PB_SolarValueTimer);
       PB_SolarValueTimer = 0;
@@ -1152,6 +1168,7 @@ void PB_GameMain(byte Switch) {
       PB_ClearOutLock(0);}
     else {                                            // solar ramp not lit
       PlaySound(50, "1_a9.snd");
+      ActivateTimer(1400, 1, PB_RampThunder);
       if (BonusMultiplier < 5) {                      // increase bonus multiplier
         TurnOnLamp(8+BonusMultiplier);                // turn on the corresponding lamp
         BonusMultiplier++;}
@@ -1560,7 +1577,7 @@ void PB_HandleLock(byte State) {
             AddBlinkLamp(35, 100);                    // start blinking of solar energy ramp
             PB_OpenVisorFlag = false;
             PB_EyeBlink(0);                           // turn off eye blinking
-            PlaySound(51, "0_ae.snd");                // 'shoot for solar value'
+            PlaySound(55, "0_ae.snd");                // 'shoot for solar value'
             RestoreMusicVolumeAfterSound(25);         // restore music volume after sound has been played
             ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
             ActivateSolenoid(0, 13);                  // start visor motor
@@ -1859,7 +1876,7 @@ void PB_AdvancePlanet(byte State) {
   case 54:                                            // final step of sun reached animation
     for (byte i=0; i<9; i++) {                        // turn off planet lamps
       TurnOffLamp(19 + i);}
-    PlaySound(52, "0_b3.snd");                        // 'We control the universe'
+    PlaySound(55, "0_b3.snd");                        // 'We control the universe'
     AfterSound = PB_AdvancePlanet2;
     break;
   default:                                            // all intermediate steps
