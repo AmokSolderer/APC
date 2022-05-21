@@ -850,7 +850,10 @@ void PB_RampThunder(byte State) {                     // State = 0 -> Stop
   switch (State) {
   case 0:
     if (Timer) {
+      RestoreMusicVolume(25);
+      Timer = 0;
       KillTimer(Timer);}                              // @suppress("No break at end of case")
+    break;
   case 8:                                             // play thunder 7 times
     RestoreMusicVolume(25);
     Timer = 0;
