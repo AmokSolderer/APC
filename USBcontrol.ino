@@ -46,12 +46,15 @@ const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"  
 const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
 const char TXTUSB_AmokOption[4][17] = {{"          OFF   "},{" RIGHT OUTLANE  "},{" LEFT  OUTLANE  "},{" BOTH  OUTLANE  "}};
 
-const struct SettingTopic USB_setList[9] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+const struct SettingTopic USB_setList[12] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
     {" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
     {"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
     {"PINMAME GAME    ",HandleNumSetting,0,0,72},
     {" LISY   DEBUG   ",HandleNumSetting,0,1,31},
 		{" BALL   SAVER   ",HandleTextSetting,&TXTUSB_AmokOption[0][0],0,3},
+    {" LED GI  RED    ",HandleColorSetting,0,0,255},
+    {" LED GI  GREEN  ",HandleColorSetting,0,0,255},
+    {" LED GI  BLUE   ",HandleColorSetting,0,0,255},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
@@ -1193,3 +1196,22 @@ byte USB_GenerateFilename(byte Channel, byte Sound, char* FileName) {
         *(DisplayLower+31) = DispPattern2[2 * (FileName[3] - 32) + 1];
         return(0);}}}                                 // indicate that file doesn't exist
   return(1);}                                         // indicate that file does exist
+
+void HandleColorSetting(bool change) {
+  if (change) {                                       // if the start button has been pressed
+    AppByte2 = 1;                                     // set the change indicator
+    if (QuerySwitch(73)) {                            // go forward or backward depending on UpDown switch
+      if (SettingsPointer[AppByte] != SettingsList[AppByte].UpperLimit) { // upper numeric limit reached?
+        SettingsPointer[AppByte]++;}}                 // if limit not reached just increase the numeric value
+    else {                                            // if the start button has not been pressed
+      if (SettingsPointer[AppByte] != SettingsList[AppByte].LowerLimit) { // lower numeric limit reached?
+        SettingsPointer[AppByte]--;}}}                // if limit not reached just decrease the numeric value
+  else {
+    if (APC_settings[LEDsetting]) {                   // LEDs selected?
+      LEDinit();
+      LEDsetColorMode(2);                             // to immediately apply the selected color to the GI
+      for (byte i=65; i<91; i++) {                    // initialize GI
+        TurnOnLamp(i);}}}
+  LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]);
+  WriteLower("                ");
+  DisplayScore(4,SettingsPointer[AppByte]);}          // show the current value

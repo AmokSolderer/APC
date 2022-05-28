@@ -12,6 +12,9 @@
 #define WriteToDisplay3 11
 #define WriteToDisplay4 12
 #define USB_Option1 5                                 // an option for own PinMame exceptions
+#define LED_red 6                                     // to change the color of the LED GI
+#define LED_green 7
+#define LED_blue 8
 
 byte USB_ChangedSwitches[64];                         // moved here from USBcontrol
 
@@ -877,6 +880,10 @@ void EX_Init(byte GameNumber) {
     PinMameException = EX_BlackKnight;                // use exception rules for Jungle Lord
     break;
   case 39:                                            // Comet
+    if (APC_settings[LEDsetting]) {                   // LEDs used?
+      LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]);
+      for (byte i=65; i<91; i++) {                    // initialize GI
+        TurnOnLamp(i);}}
     PinMameException = EX_Comet;                      // use exception rules for Comet
     break;
   case 43:                                            // Pinbot
