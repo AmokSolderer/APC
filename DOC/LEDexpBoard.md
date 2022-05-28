@@ -6,7 +6,7 @@ The purpose of this board is to control a WS2812 based RGB LED strip with the AP
 
 The hardware is quite simple and mainly consists of an Arduino Mini and a bit of logic to connect it to the HW extension interface of the APC.
 
-![Pic_Led_Exp](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/PICS/LED_ExpBoard.jpg)
+![Pic_Led_Exp](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/LED_ExpBoard.jpg)
 
 The schematic, Gerber (and drilling) as well as an SVG file are located in the [APC_LED_exp](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_LED_exp) folder.
 
@@ -118,4 +118,68 @@ A typical call for this command would look like this:
 
 ### Own LED commands
 
-For complex or repetitive animations it is also possible to add individual LED commands to the SW of the Exp_board and let the it handle them by itself.
+For complex or repetitive animations it is also possible to add individual LED commands to the SW of the Exp_board and let it handle them by itself.
+
+At the end of APC_LED_exp.ino there's a switch statement which handles all commands of the LED_ExpBoard.
+
+    switch (RecByte) {                              // treat it as a command
+    
+To add a new command, just look for an unused command number and create a case for it.
+
+I've already added command 100 as an example. It consists of a simple player which repeatedly plays a predefined pattern on the first 12 LEDs.  
+Let's see how it works:
+
+    case 100:                                       // execute OwnCommand
+      OwnCommands |= 1;                             // activate OwnCommand number 1
+      break;
+      
+When command 100 is received by the LED_ExpBoard, all it does is to set the LSB in the OwnCommands byte which is a switch for the player to work. It will work as long as command 101 is received.
+
+    case 101:
+      OwnCommands &= 254;                           // deactivate OwnCommand number 1
+      for (byte i=0;i<12;i++) {                     // for all affected LEDs
+        pixels.setPixelColor(i, pixels.Color(0,0,0)); // turn them off
+        LampStatus[i / 8] &= 255-(1<<(i % 8));}     // and change the status to off
+      break;
+      
+This command clears the LSB in OwnCommands to signal the player to stop. Furthermore it switches off all LEDs and also changes their status in LampStatus to zero.
+
+Until now we just have a bit in OwnCommands which determines whether our command is active or not. The next step is to add a player which reads this bit and plays some LED animation when it is set.  
+As stated above the LEDs are updated once in every refresh cycle. Therefore it makes sense to run our LED player also just once per refresh cycle. I have marked the right position in the code with a corresponding comment which can be found in the first line of my example player.
+
+    if (!Sync && OwnCommands) {                       // a good place to let an own command run once per refresh cycle
+      if (OwnCommands & 1) {                          // check which command is meant
+        if (!(OwnCommandStep % 5)) {                  // only be active every 5th refresh cycle
+          byte Step = OwnCommandStep / 5;             // calculate the current step
+          for (byte i=0;i<6;i++) {                    // pattern has 6 fading grades
+            if (Step+i < 12) {                        // it's for 12 LEDs
+              pixels.setPixelColor(Step+i,OwnPattern[i][0],OwnPattern[i][1],OwnPattern[i][2]);}
+            else {
+              pixels.setPixelColor(Step+i-12,OwnPattern[i][0],OwnPattern[i][1],OwnPattern[i][2]);}}}
+        OwnCommandStep++;
+        if (OwnCommandStep > 59) {
+          OwnCommandStep = 0;}}}
+          
+The first line waits for the Sync counter becoming zero and OwnCommands being different from zero. That means if any of the bits in OwnCommands is set then the following code is executed after each Sync which is once per refresh cycle.  
+At first the player checks the LSB of OwnCommands and proceeds if it's set. In order not to play the pattern too fast the player checks next if OwnCommandStep can be divided by 5 without rest and skips the other 4 cycles. The desired effect is some kind of green radar animation for an LED ring with 12 LEDs. Basically it's always the same pattern going round and round, a bright spot which fades in 6 steps.
+
+    const byte OwnPattern[6][3] = {{0,0,0},{0,50,0},{0,100,0},{0,150,0},{0,200,0},{0,250,0}};
+
+That means for the player that it has to write always the same LED data, but the start LED changes from cycle to cycle. Therefore OwnCommandStep divided by 5 is also the internal counter of this command which determines the actual LED to start from. The pixels.set command writes the color values in the corresponding LEDs. This data is then sent to the LEDs on the next Sync.  
+At the end OwnCommandStep is increased by one and after 60 cycles it starts all over again.
+
+Now that we have added the command to the LED_ExpBoard SW, we still have to issue it from the program running on the APC board itself. This can be done with the LEDhandling command. For our single byte command this would be
+
+    LEDhandling(6, 100);                              // write 100 to the command buffer
+    LEDhandling(7, 1);                                // send 1 byte to the LED_ExpBoard
+    
+The first line adds our command (number 100) to the command buffer and the second line sends 1 byte of this buffer. If your command has more than one byte they all need to be send with LEDhandling(6,byte) and executed with LEDhandling(7, number of bytes).  
+Let's use LEDsetColor as an example. This command has 4 bytes (command and 3 color values) which leads to
+
+    void LEDsetColor(byte Red, byte Green, byte Blue) {   // set a new color
+      LEDhandling(6, 192);
+      LEDhandling(6, Red);
+      LEDhandling(6, Green);
+      LEDhandling(6, Blue);
+      LEDhandling(7, 4);}
+  
