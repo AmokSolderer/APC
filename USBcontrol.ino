@@ -1210,8 +1210,7 @@ void HandleColorSetting(bool change) {
     if (APC_settings[LEDsetting]) {                   // LEDs selected?
       LEDinit();
       LEDsetColorMode(2);                             // to immediately apply the selected color to the GI
-      for (byte i=65; i<91; i++) {                    // initialize GI
-        TurnOnLamp(i);}}}
-  LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]);
+      LEDpattern = PME_GIon;}}                        // and turn on GI
+  LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
   WriteLower("                ");
   DisplayScore(4,SettingsPointer[AppByte]);}          // show the current value

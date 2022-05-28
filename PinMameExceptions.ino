@@ -17,7 +17,8 @@
 #define LED_blue 8
 
 byte USB_ChangedSwitches[64];                         // moved here from USBcontrol
-
+const byte PME_GIon[4] = {255, 255, 255, 255};        // all GI LEDs on
+const byte PME_GIoff[4] = {0, 0, 0, 0};               // all GI LEDs off
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
@@ -529,6 +530,14 @@ byte EX_Comet(byte Type, byte Command) {
       else {                                          // switches are reported normally
         LastSwitch = Command;}}
     return(0);
+  case SolenoidActCommand:
+    if (Command == 11) {                              // GI relais?
+      LEDpattern = PME_GIoff;}                        // turn on GI
+    return(0);
+  case SolenoidRelCommand:
+    if (Command == 11) {                              // GI relais?
+      LEDpattern = PME_GIon;}                         // turn off GI
+    return(0);
   case 50:                                            // timer of ball saver has run out
     Timer = 0;
     if (BlindPinmame) {                               // ball saver still active?
@@ -881,9 +890,8 @@ void EX_Init(byte GameNumber) {
     break;
   case 39:                                            // Comet
     if (APC_settings[LEDsetting]) {                   // LEDs used?
-      LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]);
-      for (byte i=65; i<91; i++) {                    // initialize GI
-        TurnOnLamp(i);}}
+      LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
+      LEDpattern = PME_GIon;}                         // and turn on GI
     PinMameException = EX_Comet;                      // use exception rules for Comet
     break;
   case 43:                                            // Pinbot
