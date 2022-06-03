@@ -873,7 +873,6 @@ void PB_PlayEjectHoleSounds(byte Number) {
 
 void PB_EnergyRestoreLamps(byte Dummy) {
   UNUSED(Dummy);
-  LampReturn = 0;
   AfterSound = 0;
   RestoreMusicVolume(10);
   LampPattern = LampColumns;}
@@ -1128,10 +1127,11 @@ void PB_GameMain(byte Switch) {
       PB_AddBonus(1);
       if (PB_EjectMode[Player] < 5) {                 // eject hole not lit
         PlaySound(50, "1_a3.snd");
-        PatPointer = PB_EjectHole;                    // set the pointer to the lamp pattern
-        FlowRepeat = 1;                               // set the repetitions
-        LampReturn = PB_EnergyRestoreLamps;           // call this when the lamp pattern has run out
-        ShowLampPatterns(1);                          // play the lamp pattern
+        if (LampPattern == LampColumns) {             // only if no other lamp effect is running
+          PatPointer = PB_EjectHole;                  // set the pointer to the lamp pattern
+          FlowRepeat = 1;                             // set the repetitions
+          ActivateTimer(1700, 0, PB_EnergyRestoreLamps) ;  // call this when the lamp pattern has run out
+          ShowLampPatterns(1);}                       // play the lamp pattern
         Points[Player] += 2000;
         ShowPoints(Player);
         ActivateTimer(1000, 3, PB_ClearEjectHole);}
@@ -1206,7 +1206,7 @@ void PB_GameMain(byte Switch) {
       PlayFlashSequence((byte*) PB_ScoreEnergySeq);
       PatPointer = PB_EnergyPat;                      // set the pointer to the lamp pattern
       FlowRepeat = 7;                                 // set the repetitions
-      LampReturn = PB_EnergyRestoreLamps;             // call this when the lamp pattern has run out
+      ActivateTimer(1700, 0, PB_EnergyRestoreLamps) ;  // call this when the lamp pattern has run out
       ShowLampPatterns(1);                            // play the lamp pattern
       ShowMessage(3);}
     PB_HandleEnergy(0);                               // turn off energy lamp and sounds
@@ -1614,7 +1614,6 @@ void PB_HandleLock(byte State) {
 
 void PB_Multiball_RestoreLamps(byte Dummy) {
   UNUSED(Dummy);
-  LampReturn = 0;
   PB_EyeBlink(1);
   StrobeLights(0);
   LampPattern = LampColumns;}
@@ -1628,7 +1627,7 @@ void PB_Multiball(byte State) {                       // state machine for sound
     PB_EyeFlash(0);
     PatPointer = PB_MultiballPat;                     // set the pointer to the lamp pattern
     FlowRepeat = 1;                                   // set the repetitions
-    LampReturn = PB_Multiball_RestoreLamps;           // call this when the lamp pattern has run out
+    ActivateTimer(6100, 0, PB_Multiball_RestoreLamps) ; // call this when the lamp pattern has run out
     ShowLampPatterns(1);                              // play the lamp pattern
     StrobeLights(3);                                  // and strobe the lights while doing so
     ReleaseSolenoid(9);
