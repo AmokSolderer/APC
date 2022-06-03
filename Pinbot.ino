@@ -465,6 +465,7 @@ void PB_AttractModeSW(byte Select) {
   switch(Select) {
   case 3:                                             // credit button
     RemoveBlinkLamp(1);                               // stop the blinking of the game over lamp
+    LampReturn = 0;
     ShowLampPatterns(0);                              // stop lamp animations
     PB_AttractDisplayCycle(0);                        // stop display animations
     if (APC_settings[Volume]) {                       // system set to digital volume control?
