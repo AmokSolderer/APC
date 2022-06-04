@@ -504,7 +504,7 @@ void PB_AttractModeSW(byte Select) {
     PB_ChestMode = 20;                                // just play a chest pattern
     PB_ChestPatterns = (byte*)PB_GameStartPat;        // set chest lamps pattern
     PB_ChestLightHandler(100);                        // start player
-    AfterSound = PB_GameStart;                        // release a new ball (2 expected balls in the trunk)
+    ActivateTimer(2400, 0, PB_GameStart) ;            // release a new ball (2 expected balls in the trunk)
     PlaySound(55, "0_ad.snd");                        // 'Pinbot circuits activated'
     ActivateSolenoid(0, 23);                          // enable flipper fingers
     ActivateSolenoid(0, 24);
@@ -545,7 +545,6 @@ void PB_AttractModeSW(byte Select) {
 
 void PB_GameStart(byte Dummy) {
   UNUSED(Dummy);
-  AfterSound = 0;
   PB_NewBall(2);
   ReleaseSolenoid(12);}                                // turn playfield GI back on
 
@@ -874,7 +873,6 @@ void PB_PlayEjectHoleSounds(byte Number) {
 
 void PB_EnergyRestoreLamps(byte Dummy) {
   UNUSED(Dummy);
-  AfterSound = 0;
   RestoreMusicVolume(10);
   LampPattern = LampColumns;}
 
@@ -1058,7 +1056,7 @@ void PB_GameMain(byte Switch) {
       MusicVolume = 4;
       PlaySound(52, "1_ab.snd");
       PlayFlashSequence((byte*) PB_OpenVisorSeq);     // play flasher sequence
-      AfterSound = PB_AdvancePlanet;}
+      ActivateTimer(4300, 0, PB_AdvancePlanet);}
     else if (QueryLamp(18)) {                         // advance planet lit?
       TurnOffLamp(18);
       PB_AddBonus(1);
@@ -1203,7 +1201,8 @@ void PB_GameMain(byte Switch) {
       WriteLower2("              ");
       ShowNumber(31, PB_EnergyValue[Player]*2000);
       PlaySound(55, "0_ca.snd");                      // 'Energy transferred'
-      QueueNextSound("0_46.snd");
+//      ActivateTimer(1950, Argument, EventPointer)
+//      QueueNextSound("0_46.snd");
       PlayFlashSequence((byte*) PB_ScoreEnergySeq);
       PatPointer = PB_EnergyPat;                      // set the pointer to the lamp pattern
       FlowRepeat = 7;                                 // set the repetitions
@@ -1356,7 +1355,7 @@ void PB_VisorOpen(byte Dummy) {                       // Play sound and music wh
   PB_ChestLightHandler(0);                            // stop chest animation
   PB_ChestPatterns = (byte*)PB_ExpandingSquares;
   PB_StartChestPattern(0);
-  RestoreMusicVolumeAfterSound(25);                   // restore music volume after sound has been played
+  ActivateTimer(2600, 25, RestoreMusicVolume);        // restore music volume after sound has been played
   PlaySound(55, "0_db.snd");}                         // 'I am in your control'
 
 void PB_BlinkGI(byte Number) {
@@ -1368,7 +1367,7 @@ void PB_BlinkGI(byte Number) {
 void PB_OpenVisorProc(byte Dummy) {                   // measures to open the visor
   UNUSED(Dummy);
   PlaySound(51, "0_f1.snd");                          // moving visor sound
-  AfterSound = PB_VisorOpen;
+  ActivateTimer(3900, 0, PB_VisorOpen) ;              // call after sound
   MusicVolume = 4;                                    // reduce music volume
   PlayMusic(50, "1_02.snd");                          // change music
   QueueNextMusic("1_02L.snd");                        // queue looping part as next music to be played
@@ -1532,7 +1531,7 @@ void PB_CountLitChestLamps() {                        // count the lit chest lam
   PB_LitChestLamps = 0;                               // reset counter
   for (byte x=0; x<5; x++) {                          // for all rows
     Buffer = PB_ChestLamp[Player-1][x];               // buffer the current row
-    for (byte i=0; i<5; i++) {                             // for all columns
+    for (byte i=0; i<5; i++) {                        // for all columns
       if (Buffer & 1) {                               // lamp lit?
         PB_LitChestLamps++;}                          // increase counter
       Buffer = Buffer>>1;}}}                          // shift buffer to the next lamp
@@ -1543,18 +1542,17 @@ void PB_ResetPlayersChestLamps(byte Player) {         // Reset the chest lamps f
 
 void PB_2ndLock(byte State) {
   switch(State) {
-  case 0:                                             // subsequent call as AfterSound
-    AfterSound = 0;
+  case 0:                                             // subsequent call from PB_HandleLock
     RestoreMusicVolume(25);                           // restore music volume after sound has been played
     ReleaseSolenoid(12);                              // turn on playfield GI
     PB_EyeBlink(1);                                   // restart eye blinking
     break;
   case 1:                                             // initial call
-    AfterSound = PB_2ndLock;
     MusicVolume = 3;                                  // reduce music volume
     PlayMusic(50, "1_94.snd");                        // play non looping part of music track
     QueueNextMusic("1_94L.snd");                      // queue looping part as next music to be played}
     PlaySound(55, "0_c9.snd");                        // 'partial link-up'
+    ActivateTimer(1450, 0, PB_2ndLock);               // call after sound
     break;}}
 
 void PB_HandleLock(byte State) {
@@ -1582,7 +1580,7 @@ void PB_HandleLock(byte State) {
             PB_OpenVisorFlag = false;
             PB_EyeBlink(0);                           // turn off eye blinking
             PlaySound(55, "0_ae.snd");                // 'shoot for solar value'
-            RestoreMusicVolumeAfterSound(25);         // restore music volume after sound has been played
+            ActivateTimer(2400, 25, RestoreMusicVolume);  // restore music volume after sound has been played
             ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
             ActivateSolenoid(0, 13);                  // start visor motor
             PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
@@ -1606,9 +1604,9 @@ void PB_HandleLock(byte State) {
             LampPattern = NoLamps;                    // Turn off all lamps
             PB_LampSweepActive = 2;
             PB_LampSweep(4);
-            AfterSound = PB_Multiball;
             PB_EyeFlash(1);
             PlaySound(55, "0_b0.snd");                // 'now I see you'
+            ActivateTimer(2300, 0, PB_Multiball);     // call after sound
             Multiballs = 2;}                          // start multiball
           else {
             PB_ClearOutLock(1);}}}}}}                 // eject 1 ball and close visor
@@ -1621,9 +1619,8 @@ void PB_Multiball_RestoreLamps(byte Dummy) {
 
 void PB_Multiball(byte State) {                       // state machine for sound effects during multiball start
   switch(State){
-  case 0:                                             // initial call from AfterSound
+  case 0:                                             // initial call from PB_HandleLock
     PlaySound(50, "1_80.snd");
-    AfterSound = 0;
     ActivateTimer(1200, 1, PB_Multiball);
     PB_EyeFlash(0);
     PatPointer = PB_MultiballPat;                     // set the pointer to the lamp pattern
@@ -1819,7 +1816,6 @@ void PB_AdvancePlanet(byte State) {
     RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);
     RemoveBlinkLamp(51);                              // stop blinking of special lamp
     TurnOnLamp(18+game_settings[PB_ReachPlanet]);
-    AfterSound = 0;
     PB_GiveExBall();
     RestoreMusicVolume(25);
     break;
@@ -1842,7 +1838,7 @@ void PB_AdvancePlanet(byte State) {
           PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
           ActC_BankSol(1);                            // TODO check knocker
           PlaySound(52, "1_ab.snd");
-          AfterSound = PB_AdvancePlanet;}}            // jump to case 0 after sound has been played
+          ActivateTimer(4300, 0, PB_AdvancePlanet);}} // jump to case 0 after sound has been played
       else {
         ActC_BankSol(8);                              // sun flasher
         char FileName[13] = "0_e1_000.snd";
@@ -1880,7 +1876,7 @@ void PB_AdvancePlanet(byte State) {
     for (byte i=0; i<9; i++) {                        // turn off planet lamps
       TurnOffLamp(19 + i);}
     PlaySound(55, "0_b3.snd");                        // 'We control the universe'
-    AfterSound = PB_AdvancePlanet2;
+    ActivateTimer(2700, 0, PB_AdvancePlanet2);
     break;
   default:                                            // all intermediate steps
     if (State < 30) {                                 // advance planet animation?
