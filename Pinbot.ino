@@ -589,7 +589,10 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
   BonusMultiplier = 1;                                // reset bonus multiplier
   for (byte i=0; i<4; i++) {                          // turn off the corresponding lamps
     TurnOffLamp(9+i);}
-  PB_SkillMultiplier = 0;                             // TODO reset skill shot multiplier
+  if (Balls < 10) {                                   // is it an extra ball?
+    PB_SkillMultiplier = 0;}                          // no extra ball -> reset skill shot multiplier
+  else {                                              // it's an extra ball
+    Balls -= 10;}                                     // restore balls value
   *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
   BlinkScore(1);                                      // turn on score blinking
   PB_ClearChest();                                    // turn off chest lamps
@@ -619,7 +622,7 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
     PB_LampsToLight = 1;}                             // TODO change according to difficulty setting
   else {
     PB_LampsToLight = 2;}
-  for (byte i=0; i<4; i++) {                               // restore extra ball lamps
+  for (byte i=0; i<4; i++) {                          // restore extra ball lamps
     if (i<PB_ExBallsLit[Player]){
       TurnOnLamp(PB_ExBallLamps[i]);}
     else {
@@ -2145,7 +2148,7 @@ void PB_BallEnd2() {
     AddBlinkLamp(33, 250);                            // Let the extra ball lamp blink
     ExBalls--;
     ActivateTimer(1100, 0, PB_AfterExBallRelease);
-    ActivateTimer(100, AppByte, PB_NewBall);}
+    ActivateTimer(100, AppByte+10, PB_NewBall);}
   else {                                              // Player has no extra balls
     TurnOffLamp(51);
     if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
