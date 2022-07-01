@@ -33,6 +33,7 @@ const byte PB_OpenVisorSeq[137] = {26,1,29,9,15,4,16,2, 32,9,15,1,31,9,26,1,27,9
 const byte PB_MultiballSeq[69] = {16,5,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,7,0,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,5,15,10,8,0,0};
 const byte PB_ScoreEnergySeq[7] = {31,10,31,10,31,10,0};
 const byte PB_Ball_Locked[5] = {26,30,26,30,0};
+const byte PB_SkillShotFail[25] = {26,10,15,40,26,10,15,40,26,10,15,40,26,10,15,40,26,10,15,40,26,10,15,40,0};
 const byte PB_MultiplierSeq[83] = {27,2,29,6,26,7,27,6,15,5,16,8,27,5,29,8,30,5,26,1,31,11,28,1,15,6,31,3,16,3,28,8,27,1,29,9,26,5,27,4,15,4,31,7,16,3,31,7,26,1,29,10,32,1,15,11,30,1,16,4,31,3,29,8,28,6,26,5,31,7,15,1,16,11,29,10,31,2,15,6,16,4,0};
 const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39,40},{44,45,46,47,48},{52,53,54,55,56},{60,61,62,63,64},
                                 {32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
@@ -463,6 +464,23 @@ void PB_RestoreLamps(byte Dummy) {                    // restore lamps after Sho
   UNUSED(Dummy);
   LampPattern = LampColumns;}
 
+void PB_ShowMessage(byte Seconds) {                   // switch to the second display buffer for Seconds
+  static byte Timer = 0;
+  static bool Blocked = 0;                            // if seconds = 254 all subsequent ShowMessage commands are blocked
+  if (Seconds) {                                      // time <> 0?
+    if (Timer) {                                      // timer already running?
+      KillTimer(Timer);}                              // kill it
+    if (Seconds == 254) {                             // block further commands
+      Blocked = true;}
+    else if (Seconds == 255) {                        // release the blocking
+      Blocked = false;}
+    else if (!Blocked) {
+      SwitchDisplay(0);                               // switch to DispUpper2 and DispLower2
+      Timer =  ActivateTimer(Seconds*1000, 0, ShowMessage);}} // and start timer to come back
+  else {                                              // no time specified means the routine called itself
+    Timer = 0;                                        // indicate that timer is not running any more
+    SwitchDisplay(1);}}                               // switch back to DispRow1
+
 void PB_AttractModeSW(byte Select) {
   switch(Select) {
   case 3:                                             // credit button
@@ -649,14 +667,15 @@ void PB_GiveBall(byte Balls) {
   if (PB_SkillMultiplier < 10) {
     PB_SkillMultiplier++;
     if (PB_SkillMultiplier == 10) {
-      //PlayFlashSequence((byte*) PB_MultiballSeq);     // super skill shot
+      PlaySound(55, "0_af.snd");                      // 'million activated'
+      //PlayFlashSequence((byte*) PB_MultiballSeq);   // TODO super skill shot
     }}
   else {
     PB_SkillMultiplier = 1;}
   WriteUpper2(" VORTEX   X   ");
   WriteLower2("              ");
   ShowNumber(15, PB_SkillMultiplier);                 // show multiplier
-  ShowMessage(3);
+  PB_ShowMessage(3);
   if (game_settings[PB_BallSaver]) {                  // activate ball saver if enabled
     PB_BallSave = 1;}
   PB_SkillShot = true;                                // the first shot is a skill shot
@@ -676,6 +695,62 @@ void PB_CheckShooterLaneSwitch(byte Switch) {
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
+void PB_DisplayHooray(byte State) {
+  const char Vortext[15] = {"VORTEX POWER  "};
+  const byte Pattern[24] = {25,0,137,0,161,0,97,0,69,0,21,0,25,0,137,0,161,0,97,0,69,0,21,0};
+  static byte MyUpperDisplay[32];
+  static byte MyLowerDisplay[32];
+  static byte Count = 0;
+  if ((State > 1) || ((State == 1) && !Count)) {
+    if (State == 1) {
+      for (byte i=0; i<14; i++){
+        MyUpperDisplay[i] = 32;
+        MyLowerDisplay[i] = 32;}
+      PB_ShowMessage(254);                            // lock display
+      SwitchDisplay(0);                               // switch to DispUpper2 and DispLower2
+      Count = 1;
+      *MyUpperDisplay = *DisplayUpper;                // copy credit display
+      *(MyUpperDisplay+1) = *(DisplayUpper+1);
+      *(MyUpperDisplay+16) = *(DisplayUpper+16);
+      *(MyUpperDisplay+17) = *(DisplayUpper+17);
+      *MyLowerDisplay = *DisplayLower;
+      *(MyLowerDisplay+1) = *(DisplayLower+1);
+      *(MyLowerDisplay+16) = *(DisplayLower+16);
+      *(MyLowerDisplay+17) = *(DisplayLower+17);
+      *(MyUpperDisplay+30) = DispPattern1[(int)((Vortext[0]-32)*2)];  // write 'V'
+      *(MyUpperDisplay+31) = DispPattern1[(int)((Vortext[0]-32)*2+1)];
+      DispRow1 = MyUpperDisplay;
+      DispRow2 = MyLowerDisplay;
+      ActivateTimer(50, 2, PB_DisplayHooray);}
+    else if (State < 14) {                            // scroll text
+      for (byte i=0; i<State; i++) {
+        *(MyUpperDisplay+32-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32*2))];
+        *(MyUpperDisplay+33-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32*2+1))];}
+      State++;
+      ActivateTimer(50, State, PB_DisplayHooray);}
+    else if (State < 19) {
+      for (byte i=0; i<State-14; i++) {
+        *(DisplayLower2+63-2*i) = Pattern[2*Count];
+        *(DisplayLower2+64-2*i) = Pattern[2*Count+1];}
+      Count++;
+      if (Count > 11) {
+        Count = 0;
+        State++;}
+      ActivateTimer(50, State, PB_DisplayHooray);}
+    if (State < 30) {
+      for (byte i=0; i<5; i++) {
+        *(DisplayLower2+63-2*i) = Pattern[2*Count];
+        *(DisplayLower2+64-2*i) = Pattern[2*Count+1];}
+      Count++;
+      if (Count > 11) {
+        Count = 0;
+        State++;}
+      ActivateTimer(50, State, PB_DisplayHooray);}
+    else {
+      Count = 0;
+      SoundPriority = 50;
+      RestoreMusicVolume(25);}}}
+
 void PB_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
   if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
     PB_RampThunder(0);                                // stop thunder noise
@@ -691,14 +766,21 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         switch (Switch) {                             // was a skill shot target hit
         case 22:
           c = 20;
+          PlayFlashSequence((byte*) PB_SkillShotFail);
           PlaySound(51, "1_91.snd");
           break;
-        case 23:
+        case 23:                                      // TODO count super skillshot
           c = 100;
+          MusicVolume = 4;
+          if (PB_SkillMultiplier == 10) {
+            PlaySound(55, "0_fb.snd");}               // Hooray
+          PlayFlashSequence((byte*) PB_MultiballSeq);
+          //ActivateTimer(10, 1, PB_DisplayHooray);
           PlaySound(51, "0_6e_1.snd");
           break;
         case 24:
           c = 5;
+          PlayFlashSequence((byte*) PB_SkillShotFail);
           PlaySound(51, "1_91.snd");
           break;}
         if (!PB_ChestMode) {                          // visor is open
@@ -711,11 +793,12 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         else {                                        // visor is not open
           PlayMusic(51, "1_01L.snd");                 // play main theme
           QueueNextMusic("1_01L.snd");}               // track is looping so queue it also
-        WriteUpper2(" VORTEX   X   ");
-        WriteLower2("              ");
-        ShowNumber(31, c * PB_SkillMultiplier * 1000);// show skill shot points
-        ShowNumber(15, PB_SkillMultiplier);           // and multiplier
-        ShowMessage(3);
+        if (PB_SkillMultiplier < 10) {
+          WriteUpper2(" VORTEX   X   ");
+          WriteLower2("              ");
+          ShowNumber(31, c * PB_SkillMultiplier * 1000);// show skill shot points
+          ShowNumber(15, PB_SkillMultiplier);           // and multiplier
+          PB_ShowMessage(3);}
         Points[Player] += c * 1000 * PB_SkillMultiplier;
         ShowPoints(Player);}}
     BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
@@ -1006,7 +1089,7 @@ void PB_GameMain(byte Switch) {
       PB_BallSave = 2;                                // trigger the ball saver
       AddBlinkLamp(33, 250);}
     else {
-      Points[Player] += 5000;
+      Points[Player] += 20000;
       ShowPoints(Player);
       PB_AddBonus(3);
       if (QueryLamp(49)) {
@@ -1047,7 +1130,7 @@ void PB_GameMain(byte Switch) {
       PB_BallSave = 2;                                // trigger the ball saver
       AddBlinkLamp(33, 250);}
     else {
-      Points[Player] += 5000;
+      Points[Player] += 20000;
       ShowPoints(Player);
       PB_AddBonus(3);
       if (QueryLamp(57)) {
@@ -1069,7 +1152,8 @@ void PB_GameMain(byte Switch) {
       TurnOffLamp(18);
       PB_AddBonus(1);
       PB_AdvancePlanet(1);}
-    else {
+    else {                                            // unlit
+      Points[Player] += 5000;
       PlaySound(51, "1_96.snd");}
     break;
   case 20:                                            // shooter lane
@@ -1079,9 +1163,10 @@ void PB_GameMain(byte Switch) {
         WriteUpper2(" VORTEX   X   ");
         WriteLower2("              ");
         ShowNumber(15, PB_SkillMultiplier);           // show multiplier
-        ShowMessage(3);
+        PB_ShowMessage(3);
         if (PB_SkillMultiplier == 10) {
-          // super skill shot
+          PlaySound(55, "0_af.snd");                  // TODO super skill shot
+
         }}
       PB_SkillShot = true;}                           // the first shot is a skill shot
     break;
@@ -1089,6 +1174,7 @@ void PB_GameMain(byte Switch) {
   case 26:                                            // right eye
     if (!PB_IgnoreLock) {
       PB_IgnoreLock = true;
+      Points[Player] += 10000;
       PB_AddBonus(1);
       ActivateTimer(1000, 0, PB_HandleLock);}         // handle locked balls after 1s
     break;
@@ -1139,7 +1225,7 @@ void PB_GameMain(byte Switch) {
           FlowRepeat = 1;                             // set the repetitions
           ActivateTimer(1700, 0, PB_EnergyRestoreLamps) ;  // call this when the lamp pattern has run out
           ShowLampPatterns(1);}                       // play the lamp pattern
-        Points[Player] += 2000;
+        Points[Player] += 10000;
         ShowPoints(Player);
         ActivateTimer(1000, 3, PB_ClearEjectHole);}
       else {
@@ -1178,6 +1264,7 @@ void PB_GameMain(byte Switch) {
       PB_ClearOutLock(0);}
     else {                                            // solar ramp not lit
       PlaySound(51, "1_a9.snd");
+      Points[Player] += 1000;
       ActivateTimer(1400, 1, PB_RampThunder);
       if (BonusMultiplier < 5) {                      // increase bonus multiplier
         TurnOnLamp(8+BonusMultiplier);                // turn on the corresponding lamp
@@ -1200,6 +1287,7 @@ void PB_GameMain(byte Switch) {
       PlaySound(51, "1_a9.snd");}
     else {
       RampSound = true;
+      Points[Player] += 10;
       PlaySound(51, "1_a8.snd");}
     break;
   case 45:                                            // score energy switch
@@ -1216,7 +1304,7 @@ void PB_GameMain(byte Switch) {
       FlowRepeat = 7;                                 // set the repetitions
       ActivateTimer(1700, 0, PB_EnergyRestoreLamps) ;  // call this when the lamp pattern has run out
       ShowLampPatterns(1);                            // play the lamp pattern
-      ShowMessage(3);}
+      PB_ShowMessage(3);}
     PB_HandleEnergy(0);                               // turn off energy lamp and sounds
     break;
   case 46:                                            // visor closed
@@ -1249,6 +1337,7 @@ void PB_GameMain(byte Switch) {
     Points[Player] += 10;
     break;
   case 65:                                            // lower jet bumper
+    Points[Player] += 1000;
     ActivateSolenoid(0, 17);
     ActC_BankSol(6);
     if (PB_EnergyValue[Player] < 250) {
@@ -1256,9 +1345,10 @@ void PB_GameMain(byte Switch) {
       WriteUpper2(" ENERGY VALUE ");
       WriteLower2("              ");
       ShowNumber(31, PB_EnergyValue[Player] * 2000);
-      ShowMessage(3);}
+      PB_ShowMessage(3);}
     break;
   case 67:                                            // left jet bumper
+    Points[Player] += 1000;
     ActivateSolenoid(0, 19);
     ActC_BankSol(6);
     if (PB_EnergyValue[Player] < 250) {
@@ -1266,7 +1356,7 @@ void PB_GameMain(byte Switch) {
       WriteUpper2(" ENERGY VALUE ");
       WriteLower2("              ");
       ShowNumber(31, PB_EnergyValue[Player] * 2000);
-      ShowMessage(3);}
+      PB_ShowMessage(3);}
     break;
   case 68:                                            // left slingshot
     PB_MoveExBallLamps(0);
@@ -1279,6 +1369,7 @@ void PB_GameMain(byte Switch) {
     ActC_BankSol(5);
     break;
   case 70:                                            // upper jet bumper
+    Points[Player] += 1000;
     ActivateSolenoid(0, 22);
     ActC_BankSol(6);
     if (PB_EnergyValue[Player] < 250) {
@@ -1286,7 +1377,7 @@ void PB_GameMain(byte Switch) {
       WriteUpper2(" ENERGY VALUE ");
       WriteLower2("              ");
       ShowNumber(31, PB_EnergyValue[Player] * 2000);
-      ShowMessage(3);}
+      PB_ShowMessage(3);}
     break;}}
 
 void PB_MoveExBallLamps(byte Direction) {
@@ -1347,7 +1438,7 @@ void PB_AddBonus(byte BonusToAdd) {
       WriteUpper2("BONUS =       ");
       ShowNumber(15, Bonus*1000);
       DispRow1 = DisplayUpper2;}
-    ShowMessage(2);}}
+    PB_ShowMessage(2);}}
 
 void PB_ClearEjectHole(byte Solenoid) {               // activate solenoid after delay time
   PB_EjectIgnore = false;
@@ -1510,6 +1601,7 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
     while (Pos && Buffer2) {                          // until all rows are processed or the required number of lamps has been lit
       if (!(Buffer & Pos)) {                          // if the lamp is not lit
         if (Buffer2 == 1) {                           // only once per target hit
+          Points[Player] += 2000;
           PB_AddBonus(1);}
         Buffer2--;                                    // reduce the number of lamps to be lit
         PB_LitChestLamps++;                           // increase the number of lit chest lamps
@@ -1526,6 +1618,7 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
     while ((Pos < 5) && Buffer2) {                    // until all columns are processed or the required number of lamps has been lit
       if (!(PB_ChestLamp[Player-1][Pos] & Buffer)) {  // if the lamp is not lit
         if (Buffer2 == 1) {                           // only once per taget hit
+          Points[Player] += 2000;
           PB_AddBonus(1);}
         Buffer2--;                                    // reduce the number of lamps to be lit
         PB_LitChestLamps++;                           // increase the number of lit chest lamps
@@ -1754,8 +1847,10 @@ void PB_HandleDropTargets(byte Target) {
   static uint16_t Time;
   static bool SoundState;
   if (Target && Target != 100) {                      // target hit? Target = 100 is the stop command
+    Points[Player] += 1000;
     PB_DropWait = false;                              // stop ignoring drop target switches
     if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {  // all targets down
+      Points[Player] += 25000;
       if (PB_DropTimer) {                             // any targets down before?
         KillTimer(PB_DropTimer);                      // turn off timer
         PB_DropTimer = 0;
@@ -1855,7 +1950,7 @@ void PB_AdvancePlanet(byte State) {
         FileName[7] = 48 + (PB_Planet[Player] % 10);
         FileName[6] = 48 + (PB_Planet[Player] / 10);
         PlaySound(51, (char*) FileName);
-        QueueNextSound("0_e1_000.snd");                     // TODO increase all prios
+        QueueNextSound("0_e1_000.snd");
         ActivateTimer(500, 2, PB_AdvancePlanet);
         ActivateTimer(4050, 21, PB_AdvancePlanet);    // reset AfterSound
         RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);}} // stop blinking

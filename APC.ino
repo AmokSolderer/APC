@@ -111,7 +111,6 @@ byte NextSolSlot = 0;                                 // next free slot in SolWa
 byte SettingsRepeatTimer = 0;                         // number of the timer of the key repeat function in the settings function
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte CheckReleaseTimer = 0;                           // number of the timer for the ball release check
-byte ShowMessageTimer = 0;                            // number of the timer to show a temporary message
 bool BlockPrioTimers = false;                         // blocks the prio timer interrupt while timer properties are being changed
 byte ActivePrioTimers = 0;                            // Number of active prio timers
 unsigned int PrioTimerValue[9];                       // Timer value
@@ -311,9 +310,9 @@ void setup() {
   TC2->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;             // IDR = interrupt disable register
   NVIC_EnableIRQ(TC7_IRQn);                           // enable interrupt
   delay(1000);
-  DispPattern1 = AlphaUpper;
+  DispPattern1 = AlphaUpper;                          // use character definitions for alphanumeric displays
   DispPattern2 = AlphaLower;
-  DispRow1 = DisplayUpper;
+  DispRow1 = DisplayUpper;                            // use the standard display buffer
   DispRow2 = DisplayLower;
   LampPattern = NoLamps;
   Switch_Pressed = DummyProcess;
@@ -1556,13 +1555,14 @@ void ScrollLower2(byte Step) {                        // call with Step = 0 and 
       Timer = 0;}}}
 
 void ShowMessage(byte Seconds) {                      // switch to the second display buffer for Seconds
+  static byte Timer = 0;
   if (Seconds) {                                      // time <> 0?
-    if (ShowMessageTimer) {                           // timer already running?
-      KillTimer(ShowMessageTimer);}                   // kill it
+    if (Timer) {                                      // timer already running?
+      KillTimer(Timer);}                              // kill it
     SwitchDisplay(0);                                 // switch to DispUpper2 and DispLower2
-    ShowMessageTimer =  ActivateTimer(Seconds*1000, 0, ShowMessage);} // and start timer to come back
+    Timer =  ActivateTimer(Seconds*1000, 0, ShowMessage);} // and start timer to come back
   else {                                              // no time specified means the routine called itself
-    ShowMessageTimer = 0;                             // indicate that timer is not running any more
+    Timer = 0;                                        // indicate that timer is not running any more
     SwitchDisplay(1);}}                               // switch back to DispRow1
 
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
