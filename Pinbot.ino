@@ -476,7 +476,7 @@ void PB_ShowMessage(byte Seconds) {                   // switch to the second di
       Blocked = false;}
     else if (!Blocked) {
       SwitchDisplay(0);                               // switch to DispUpper2 and DispLower2
-      Timer =  ActivateTimer(Seconds*1000, 0, ShowMessage);}} // and start timer to come back
+      Timer =  ActivateTimer(Seconds*1000, 0, PB_ShowMessage);}} // and start timer to come back
   else {                                              // no time specified means the routine called itself
     Timer = 0;                                        // indicate that timer is not running any more
     SwitchDisplay(1);}}                               // switch back to DispRow1
@@ -703,12 +703,10 @@ void PB_DisplayHooray(byte State) {
   static byte Count = 0;
   if ((State > 1) || ((State == 1) && !Count)) {
     if (State == 1) {
-      for (byte i=0; i<14; i++){
-        MyUpperDisplay[i] = 32;
-        MyLowerDisplay[i] = 32;}
+      for (byte i=0; i<32; i++){
+        MyUpperDisplay[i] = 0;
+        MyLowerDisplay[i] = 0;}
       PB_ShowMessage(254);                            // lock display
-      SwitchDisplay(0);                               // switch to DispUpper2 and DispLower2
-      Count = 1;
       *MyUpperDisplay = *DisplayUpper;                // copy credit display
       *(MyUpperDisplay+1) = *(DisplayUpper+1);
       *(MyUpperDisplay+16) = *(DisplayUpper+16);
@@ -724,23 +722,30 @@ void PB_DisplayHooray(byte State) {
       ActivateTimer(50, 2, PB_DisplayHooray);}
     else if (State < 14) {                            // scroll text
       for (byte i=0; i<State; i++) {
-        *(MyUpperDisplay+32-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32*2))];
-        *(MyUpperDisplay+33-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32*2+1))];}
+        if (i < 7) {
+          *(MyUpperDisplay+32-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32)*2)];
+          *(MyUpperDisplay+33-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32)*2+1)];}
+        else {                                        // skip the credit column
+          *(MyUpperDisplay+30-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32)*2)];
+          *(MyUpperDisplay+31-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32)*2+1)];}}
       State++;
       ActivateTimer(50, State, PB_DisplayHooray);}
     else if (State < 19) {
       for (byte i=0; i<State-14; i++) {
-        *(DisplayLower2+63-2*i) = Pattern[2*Count];
-        *(DisplayLower2+64-2*i) = Pattern[2*Count+1];}
+        *(MyLowerDisplay+30-2*i) = Pattern[2*Count];
+        *(MyLowerDisplay+31-2*i) = Pattern[2*Count+1];}
       Count++;
       if (Count > 11) {
         Count = 0;
+        if (State == 18) {
+          *(MyLowerDisplay+20) = DispPattern1[32+2*PB_SkillMultiplier];
+          *(MyLowerDisplay+21) = DispPattern1[33+2*PB_SkillMultiplier];}
         State++;}
       ActivateTimer(50, State, PB_DisplayHooray);}
-    if (State < 30) {
+    else if (State < 30) {
       for (byte i=0; i<5; i++) {
-        *(DisplayLower2+63-2*i) = Pattern[2*Count];
-        *(DisplayLower2+64-2*i) = Pattern[2*Count+1];}
+        *(MyLowerDisplay+30-2*i) = Pattern[2*Count];
+        *(MyLowerDisplay+31-2*i) = Pattern[2*Count+1];}
       Count++;
       if (Count > 11) {
         Count = 0;
@@ -749,6 +754,7 @@ void PB_DisplayHooray(byte State) {
     else {
       Count = 0;
       SoundPriority = 50;
+      SwitchDisplay(1);                               // back to normal display
       RestoreMusicVolume(25);}}}
 
 void PB_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
@@ -775,7 +781,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
           if (PB_SkillMultiplier == 10) {
             PlaySound(55, "0_fb.snd");}               // Hooray
           PlayFlashSequence((byte*) PB_MultiballSeq);
-          //ActivateTimer(10, 1, PB_DisplayHooray);
+          ActivateTimer(10, 1, PB_DisplayHooray);
           PlaySound(51, "0_6e_1.snd");
           break;
         case 24:
@@ -793,7 +799,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         else {                                        // visor is not open
           PlayMusic(51, "1_01L.snd");                 // play main theme
           QueueNextMusic("1_01L.snd");}               // track is looping so queue it also
-        if (PB_SkillMultiplier < 10) {
+        if (PB_SkillMultiplier < 10 && c!= 100) {     // no special display effect needed
           WriteUpper2(" VORTEX   X   ");
           WriteLower2("              ");
           ShowNumber(31, c * PB_SkillMultiplier * 1000);// show skill shot points
