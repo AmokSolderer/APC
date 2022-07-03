@@ -696,7 +696,7 @@ void PB_CheckShooterLaneSwitch(byte Switch) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
 void PB_DisplayHooray(byte State) {
-  const char Vortext[15] = {"VORTEX POWER  "};
+  const char Vortext[15] = {" VORTEX POWER "};
   const byte Pattern[24] = {25,0,137,0,161,0,97,0,69,0,21,0,25,0,137,0,161,0,97,0,69,0,21,0};
   static byte MyUpperDisplay[32];
   static byte MyLowerDisplay[32];
@@ -720,14 +720,14 @@ void PB_DisplayHooray(byte State) {
       DispRow1 = MyUpperDisplay;
       DispRow2 = MyLowerDisplay;
       ActivateTimer(50, 2, PB_DisplayHooray);}
-    else if (State < 14) {                            // scroll text
+    else if (State < 16) {                            // scroll text
       for (byte i=0; i<State; i++) {
         if (i < 7) {
-          *(MyUpperDisplay+32-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32)*2)];
-          *(MyUpperDisplay+33-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32)*2+1)];}
+          *(MyUpperDisplay+30-2*i) = DispPattern1[(int)((Vortext[State-2-i]-32)*2)];
+          *(MyUpperDisplay+31-2*i) = DispPattern1[(int)((Vortext[State-2-i]-32)*2+1)];}
         else {                                        // skip the credit column
-          *(MyUpperDisplay+30-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32)*2)];
-          *(MyUpperDisplay+31-2*State+2*i) = DispPattern1[(int)((Vortext[i]-32)*2+1)];}}
+          *(MyUpperDisplay+28-2*i) = DispPattern1[(int)((Vortext[State-2-i]-32)*2)];
+          *(MyUpperDisplay+29-2*i) = DispPattern1[(int)((Vortext[State-2-i]-32)*2+1)];}}
       State++;
       ActivateTimer(50, State, PB_DisplayHooray);}
     else if (State < 19) {
@@ -738,10 +738,10 @@ void PB_DisplayHooray(byte State) {
       if (Count > 11) {
         Count = 0;
         if (State == 18) {
-          *(MyLowerDisplay+20) = DispPattern1[32+2*PB_SkillMultiplier];
-          *(MyLowerDisplay+21) = DispPattern1[33+2*PB_SkillMultiplier];}
+          *(MyLowerDisplay+20) = DispPattern2[32+2*PB_SkillMultiplier];
+          *(MyLowerDisplay+21) = DispPattern2[33+2*PB_SkillMultiplier];}
         State++;}
-      ActivateTimer(50, State, PB_DisplayHooray);}
+      ActivateTimer(20, State, PB_DisplayHooray);}
     else if (State < 30) {
       for (byte i=0; i<5; i++) {
         *(MyLowerDisplay+30-2*i) = Pattern[2*Count];
@@ -750,10 +750,11 @@ void PB_DisplayHooray(byte State) {
       if (Count > 11) {
         Count = 0;
         State++;}
-      ActivateTimer(50, State, PB_DisplayHooray);}
+      ActivateTimer(20, State, PB_DisplayHooray);}
     else {
       Count = 0;
       SoundPriority = 50;
+      PB_ShowMessage(255);                            // unlock display
       SwitchDisplay(1);                               // back to normal display
       RestoreMusicVolume(25);}}}
 
@@ -777,10 +778,10 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
           break;
         case 23:                                      // TODO count super skillshot
           c = 100;
-          MusicVolume = 4;
+          MusicVolume = 3;
           if (PB_SkillMultiplier == 10) {
             PlaySound(55, "0_fb.snd");}               // Hooray
-          PlayFlashSequence((byte*) PB_MultiballSeq);
+          PlayFlashSequence((byte*) PB_OpenVisorSeq);
           ActivateTimer(10, 1, PB_DisplayHooray);
           PlaySound(51, "0_6e_1.snd");
           break;
