@@ -783,7 +783,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
             PlaySound(55, "0_fb.snd");}               // Hooray
           PlayFlashSequence((byte*) PB_OpenVisorSeq);
           ActivateTimer(10, 1, PB_DisplayHooray);
-          PlaySound(51, "0_6e_1.snd");
+          PlaySound(53, "0_6e_1.snd");
           break;
         case 24:
           c = 5;
@@ -1618,7 +1618,7 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
       Pos = Pos>>1;}                                  // next row
     PB_ChestLamp[Player-1][Switch] = Buffer;          // copy the buffer to the chest lamp array for this player
     if (Buffer2 == PB_LampsToLight) {                 // Column already full
-      PlaySound(51, "0_6f.snd");}}
+      PlaySound(50, "0_6f.snd");}}
   else {                                              // it is a row
     Buffer = 1<<(Switch-5);                           // calculate the mask from the row
     Pos = 0;                                          // start on the left of the chest
@@ -1634,7 +1634,7 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
         PB_ChestLamp[Player-1][Pos] = PB_ChestLamp[Player-1][Pos] | Buffer;} // set the bit for this lamp in the chest lamp array for this player
       Pos++;}
     if (Buffer2 == PB_LampsToLight) {                 // row already full
-      PlaySound(51, "0_6f.snd");}}}
+      PlaySound(50, "0_6f.snd");}}}
 
 void PB_CountLitChestLamps() {                        // count the lit chest lamps for the current player
   byte Buffer;
@@ -1695,12 +1695,13 @@ void PB_HandleLock(byte State) {
             ActivateSolenoid(0, 13);                  // start visor motor
             PB_SolarValueTimer = ActivateTimer(10000, 0,PB_ReopenVisor);} // 8s to score the solar value
           else {                                      // multiball not yet running
-            ActivateSolenoid(0, 12);                  // turn off playfield GI
-            PB_EyeBlink(0);                           // stop eye blinking
-            PlayFlashSequence((byte*) PB_Ball_Locked);
-            PlayMusic(50, "1_80.snd");
-            ActivateTimer(1000, 1, PB_2ndLock);
-            PB_GiveBall(1);}}                         // give second ball
+            if (QuerySwitch(17)) {                    // still on ball in the trunk?
+              ActivateSolenoid(0, 12);                // turn off playfield GI
+              PB_EyeBlink(0);                         // stop eye blinking
+              PlayFlashSequence((byte*) PB_Ball_Locked);
+              PlayMusic(52, "1_80.snd");
+              ActivateTimer(1000, 1, PB_2ndLock);
+              PB_GiveBall(1);}}}                      // give second ball
         else {                                        // both balls in lock
           if (Multiballs == 1) {                      // multiball not yet running?
             InLock = 0;
@@ -1716,7 +1717,7 @@ void PB_HandleLock(byte State) {
             PB_LampSweep(4);
             PB_EyeFlash(1);
             PlaySound(55, "0_b0.snd");                // 'now I see you'
-            ActivateTimer(2300, 0, PB_Multiball);     // call after sound
+            ActivateTimer(2400, 0, PB_Multiball);     // call after sound
             Multiballs = 2;}                          // start multiball
           else {
             PB_ClearOutLock(1);}}}}}}                 // eject 1 ball and close visor

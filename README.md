@@ -4,7 +4,7 @@ Before I explain what the APC is, let's first clarify what it is not.
  
 The APC is no commercial drop-in replacement board. It is intended for people with some basic knowledge of programming and electronics who want to expand the possibilities of their pinball machine. That means it's going to require some work to set up your game even if you don't want to change anything, but run the original rules with PinMame. Take a look at the [PinMame page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) to see what I mean.  
 As this is a private project with no commercial interest, you may use the APC at your own risk and I'm not liable for any damage that might occur to your machine while using it.  
-Some special machines might even not work with the APC or require additional HW. Jokerz! for example has a unique audio board which uses seperate audio channels for the cabinet and the backbox speakers. The APC HW is capable of generating two independent sound channels, but you need at least DC-blocks (capacitors) when connecting it to the speakers.
+Some special machines might even not work with the APC or require additional HW. Please check the [Known issues]https://github.com/AmokSolderer/APC/tree/V00.23#Known-issues section for details.
 
 ## Overview
 
@@ -93,7 +93,7 @@ The second board is a [driver for 8 additional solenoids](https://github.com/Amo
 
 I use [special alphanumerical displays](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) in my Black Knight which can also be found in the HW section as well as an LED replacement for the original System7 numerical displays.
 
-## Current Status (April 2022)
+## Current Status (July 2022)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md#cable-extensions)
 
@@ -114,6 +114,20 @@ The PinMame support is still under development and even if a generation is basic
 ## Changes / What's new?
 
 A history of the recent changes can be found in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md)
+
+## Known issues
+
+### Stereo audio
+
+Some games like Jokerz! or Data East games from the end of the 80s (e.g. The Simpsons) have stereo audio boards. These are currently not supported by the APC SW.  
+From the HW point of view, the APC is capable of generating two independent sound channels which could also be used for stereo. But up to now they're used to generate separate channels for sounds and music which are combined in the output amplifier.  
+In order to use these machines with the APC you'd have to build a cable adapter and the audio would only be mono.
+
+### Stepper motors
+
+Games like Jokerz! or Riverboat Gambler use stepper motors to drive a wheel in the backbox and the amount of steps being generated determine where the wheel stops.  
+Alas, there's a problem with Lisy/PinMame not sending all steps to the APC. This means it is not possible for the APC to determine at which position the wheel is supposed to stop.  
+Note that this is not a problem of the APC itself, but occurs only when Lisy/PinMame is used. If you program your game code in C there won't be any problems.
 
 ## Feedback
 
