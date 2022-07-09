@@ -477,6 +477,72 @@ byte EX_BlackKnight(byte Type, byte Command){
   default:
     return(0);}}
 
+void EX_AttractLEDeffects(byte State) {               // call with State = 1, stop with State = 0
+  static byte Timer = 0;
+  static byte Red = 0;
+  static byte Green = 0;
+  static byte Blue = 0;
+  switch (State) {
+  case 0:                                             // terminate
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    break;
+  case 1:                                             // initialize
+    LEDinit();
+    LEDsetColorMode(2);                               // to immediately apply the selected color to the GI
+    LEDpattern = PME_GIon;                            // and turn on GI
+    Timer = ActivateTimer(20, 2, EX_AttractLEDeffects);
+    break;
+  case 2:                                             // increase green
+    LEDsetColor(Green*10, Red*10, Blue*10);           // set GI color
+    if (Green < 25) {
+      Green++;
+      Timer = ActivateTimer(20, 2, EX_AttractLEDeffects);}
+    else {
+      Timer = ActivateTimer(20, 3, EX_AttractLEDeffects);}
+    break;
+  case 3:                                             // decrease red
+    LEDsetColor(Green*10, Red*10, Blue*10);           // set GI color
+    if (Red) {
+      Red--;
+      Timer = ActivateTimer(20, 3, EX_AttractLEDeffects);}
+    else {
+      Timer = ActivateTimer(20, 4, EX_AttractLEDeffects);}
+    break;
+  case 4:                                             // increase blue
+    LEDsetColor(Green*10, Red*10, Blue*10);           // set GI color
+    if (Blue < 25) {
+      Blue++;
+      Timer = ActivateTimer(20, 4, EX_AttractLEDeffects);}
+    else {
+      Timer = ActivateTimer(20, 5, EX_AttractLEDeffects);}
+    break;
+  case 5:                                             // decrease green
+    LEDsetColor(Green*10, Red*10, Blue*10);           // set GI color
+    if (Green) {
+      Green--;
+      Timer = ActivateTimer(20, 5, EX_AttractLEDeffects);}
+    else {
+      Timer = ActivateTimer(20, 6, EX_AttractLEDeffects);}
+    break;
+  case 6:                                             // increase red
+    LEDsetColor(Green*10, Red*10, Blue*10);           // set GI color
+    if (Red < 25) {
+      Red++;
+      Timer = ActivateTimer(20, 6, EX_AttractLEDeffects);}
+    else {
+      Timer = ActivateTimer(20, 7, EX_AttractLEDeffects);}
+    break;
+  case 7:                                             // decrease blue
+    LEDsetColor(Green*10, Red*10, Blue*10);           // set GI color
+    if (Blue) {
+      Blue--;
+      Timer = ActivateTimer(20, 7, EX_AttractLEDeffects);}
+    else {
+      Timer = ActivateTimer(20, 2, EX_AttractLEDeffects);}
+    break;}}
+
 byte EX_Comet(byte Type, byte Command) {
   static byte LastSwitch;                             // stores the number of the last activated switch
   static byte BlindPinmame;                           // hide switches from PinMame while active
