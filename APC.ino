@@ -2158,9 +2158,10 @@ void StrobeLights(byte Time) {                       // switch between no lamps 
 void PlayMusic(byte Priority, const char* Filename) {
   AfterMusicPending = 0;
   if (StartMusic) {                                   // already in startup phase?
-    MusicFile.close();                                // close the previous file
-    StartMusic = 0;                                   // cancel the startup
-    MBP = 0;}                                         // and neglect its data
+    if ((Priority > 99 && Priority > MusicPriority) || (Priority < 100 && Priority >= MusicPriority)) {
+      MusicFile.close();                              // close the previous file
+      StartMusic = 0;                                 // cancel the startup
+      MBP = 0;}}                                      // and neglect its data
   if (!PlayingMusic) {                                // no music in play at the moment?
     MusicFile = SD.open(Filename);                    // open file
     if (!MusicFile) {
@@ -2183,9 +2184,7 @@ void PlayMusic(byte Priority, const char* Filename) {
         if (!MusicFile) {
           ShowFileNotFound(Filename);}
         else {
-          StopMusic = 0;                              // cancel a previous stop command
-          if (!PlayingMusic) {                        // neglect old data if still in the startup phase
-            MBP = 0;}}}}
+          StopMusic = 0;}}}                           // cancel a previous stop command
     else {
       if (Priority >= MusicPriority) {
         MusicPriority = Priority;
@@ -2194,9 +2193,7 @@ void PlayMusic(byte Priority, const char* Filename) {
         if (!MusicFile) {
           ShowFileNotFound(Filename);}
         else {
-          StopMusic = 0;                              // cancel a previous stop command
-          if (!PlayingMusic) {                        // neglect old data if still in the startup phase
-            MBP = 0;}}}}}}
+          StopMusic = 0;}}}}}                         // cancel a previous stop command
 
 void StopPlayingMusic() {
   if (StartMusic || PlayingMusic) {
@@ -2258,9 +2255,10 @@ void FadeOutMusic(byte Param) {                       // call with Param = time 
 void PlaySound(byte Priority, const char* Filename) {
   AfterSoundPending = 0;
   if (StartSound) {
-    SoundFile.close();
-    StartSound = 0;
-    SBP = 0;}
+    if ((Priority > 99 && Priority > SoundPriority) || (Priority < 100 && Priority >= SoundPriority)) {
+      SoundFile.close();
+      StartSound = 0;
+      SBP = 0;}}
   if (!PlayingSound) {                                // no sound in play at the moment?
     SoundFile = SD.open(Filename);                    // open file
     if (!SoundFile) {
@@ -2283,9 +2281,7 @@ void PlaySound(byte Priority, const char* Filename) {
         if (!SoundFile) {
           ShowFileNotFound(Filename);}
         else {
-          StopSound = 0;                              // cancel a previous stop command
-          if (!PlayingSound) {                        // neglect old data if still in the startup phase
-            SBP = 0;}}}}
+          StopSound = 0;}}}                           // cancel a previous stop command
     else {
       if (Priority >= SoundPriority) {
         SoundPriority = Priority;
@@ -2294,9 +2290,7 @@ void PlaySound(byte Priority, const char* Filename) {
         if (!SoundFile) {
           ShowFileNotFound(Filename);}
         else {
-          StopSound = 0;                              // cancel a previous stop command
-          if (!PlayingSound) {                        // neglect old data if still in the startup phase
-            SBP = 0;}}}}}}
+          StopSound = 0;}}}}}                         // cancel a previous stop command
 
 void StopPlayingSound() {
   if (StartSound || PlayingSound) {
