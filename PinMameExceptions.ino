@@ -19,7 +19,7 @@
 byte USB_ChangedSwitches[64];                         // moved here from USBcontrol
 const byte PME_GIon[4] = {255, 255, 255, 255};        // all GI LEDs on
 const byte PME_GIoff[4] = {0, 0, 0, 0};               // all GI LEDs off
-const byte PME_GI[5][4] = {{146, 73, 36, 146},{36, 146, 73, 36},{73, 36, 146,73},{146, 73, 36, 146},{36, 146, 73, 36}};  // GI LEDs patterns
+const byte PME_GI[5][4] = {{146, 36, 73, 146},{36, 73, 146, 36},{73, 146, 36, 73},{146, 36, 73, 146},{36, 73, 146, 36}};  // GI LEDs patterns
 
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
