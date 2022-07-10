@@ -111,7 +111,6 @@ byte NextSolSlot = 0;                                 // next free slot in SolWa
 byte SettingsRepeatTimer = 0;                         // number of the timer of the key repeat function in the settings function
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte CheckReleaseTimer = 0;                           // number of the timer for the ball release check
-byte ShowMessageTimer = 0;                            // number of the timer to show a temporary message
 bool BlockPrioTimers = false;                         // blocks the prio timer interrupt while timer properties are being changed
 byte ActivePrioTimers = 0;                            // Number of active prio timers
 unsigned int PrioTimerValue[9];                       // Timer value
@@ -311,9 +310,9 @@ void setup() {
   TC2->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;             // IDR = interrupt disable register
   NVIC_EnableIRQ(TC7_IRQn);                           // enable interrupt
   delay(1000);
-  DispPattern1 = AlphaUpper;
+  DispPattern1 = AlphaUpper;                          // use character definitions for alphanumeric displays
   DispPattern2 = AlphaLower;
-  DispRow1 = DisplayUpper;
+  DispRow1 = DisplayUpper;                            // use the standard display buffer
   DispRow2 = DisplayLower;
   LampPattern = NoLamps;
   Switch_Pressed = DummyProcess;
@@ -1556,13 +1555,14 @@ void ScrollLower2(byte Step) {                        // call with Step = 0 and 
       Timer = 0;}}}
 
 void ShowMessage(byte Seconds) {                      // switch to the second display buffer for Seconds
+  static byte Timer = 0;
   if (Seconds) {                                      // time <> 0?
-    if (ShowMessageTimer) {                           // timer already running?
-      KillTimer(ShowMessageTimer);}                   // kill it
+    if (Timer) {                                      // timer already running?
+      KillTimer(Timer);}                              // kill it
     SwitchDisplay(0);                                 // switch to DispUpper2 and DispLower2
-    ShowMessageTimer =  ActivateTimer(Seconds*1000, 0, ShowMessage);} // and start timer to come back
+    Timer =  ActivateTimer(Seconds*1000, 0, ShowMessage);} // and start timer to come back
   else {                                              // no time specified means the routine called itself
-    ShowMessageTimer = 0;                             // indicate that timer is not running any more
+    Timer = 0;                                        // indicate that timer is not running any more
     SwitchDisplay(1);}}                               // switch back to DispRow1
 
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
@@ -2023,7 +2023,6 @@ void AddBlinkLamp(byte Lamp, unsigned int Period) {
           ErrorHandler(6,0,Lamp);}}                   // show error 6
       BlinkingLamps[x][0] = Lamp;                     // add the lamp
       BlinkingNo[x] = 1;                              // set the number of lamps for this timer to 1
-      //BlinkState[x] = true;                           // start with lamps on
       BlinkPeriod[x] = Period;
       BlinkTimers++;                                  // increase the number of blink timers
       BlinkTimer[x] = ActivateTimer(Period, x, BlinkLamps);}}} // start a timer and store it's number
@@ -2159,9 +2158,10 @@ void StrobeLights(byte Time) {                       // switch between no lamps 
 void PlayMusic(byte Priority, const char* Filename) {
   AfterMusicPending = 0;
   if (StartMusic) {                                   // already in startup phase?
-    MusicFile.close();                                // close the previous file
-    StartMusic = 0;                                   // cancel the startup
-    MBP = 0;}                                         // and neglect its data
+    if ((Priority > 99 && Priority > MusicPriority) || (Priority < 100 && Priority >= MusicPriority)) {
+      MusicFile.close();                              // close the previous file
+      StartMusic = 0;                                 // cancel the startup
+      MBP = 0;}}                                      // and neglect its data
   if (!PlayingMusic) {                                // no music in play at the moment?
     MusicFile = SD.open(Filename);                    // open file
     if (!MusicFile) {
@@ -2184,9 +2184,7 @@ void PlayMusic(byte Priority, const char* Filename) {
         if (!MusicFile) {
           ShowFileNotFound(Filename);}
         else {
-          StopMusic = 0;                              // cancel a previous stop command
-          if (!PlayingMusic) {                        // neglect old data if still in the startup phase
-            MBP = 0;}}}}
+          StopMusic = 0;}}}                           // cancel a previous stop command
     else {
       if (Priority >= MusicPriority) {
         MusicPriority = Priority;
@@ -2195,9 +2193,7 @@ void PlayMusic(byte Priority, const char* Filename) {
         if (!MusicFile) {
           ShowFileNotFound(Filename);}
         else {
-          StopMusic = 0;                              // cancel a previous stop command
-          if (!PlayingMusic) {                        // neglect old data if still in the startup phase
-            MBP = 0;}}}}}}
+          StopMusic = 0;}}}}}                         // cancel a previous stop command
 
 void StopPlayingMusic() {
   if (StartMusic || PlayingMusic) {
@@ -2259,9 +2255,10 @@ void FadeOutMusic(byte Param) {                       // call with Param = time 
 void PlaySound(byte Priority, const char* Filename) {
   AfterSoundPending = 0;
   if (StartSound) {
-    SoundFile.close();
-    StartSound = 0;
-    SBP = 0;}
+    if ((Priority > 99 && Priority > SoundPriority) || (Priority < 100 && Priority >= SoundPriority)) {
+      SoundFile.close();
+      StartSound = 0;
+      SBP = 0;}}
   if (!PlayingSound) {                                // no sound in play at the moment?
     SoundFile = SD.open(Filename);                    // open file
     if (!SoundFile) {
@@ -2284,9 +2281,7 @@ void PlaySound(byte Priority, const char* Filename) {
         if (!SoundFile) {
           ShowFileNotFound(Filename);}
         else {
-          StopSound = 0;                              // cancel a previous stop command
-          if (!PlayingSound) {                        // neglect old data if still in the startup phase
-            SBP = 0;}}}}
+          StopSound = 0;}}}                           // cancel a previous stop command
     else {
       if (Priority >= SoundPriority) {
         SoundPriority = Priority;
@@ -2295,9 +2290,7 @@ void PlaySound(byte Priority, const char* Filename) {
         if (!SoundFile) {
           ShowFileNotFound(Filename);}
         else {
-          StopSound = 0;                              // cancel a previous stop command
-          if (!PlayingSound) {                        // neglect old data if still in the startup phase
-            SBP = 0;}}}}}}
+          StopSound = 0;}}}}}                         // cancel a previous stop command
 
 void StopPlayingSound() {
   if (StartSound || PlayingSound) {
