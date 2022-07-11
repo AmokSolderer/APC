@@ -19,7 +19,6 @@
 byte USB_ChangedSwitches[64];                         // moved here from USBcontrol
 const byte PME_GIon[4] = {255, 255, 255, 255};        // all GI LEDs on
 const byte PME_GIoff[4] = {0, 0, 0, 0};               // all GI LEDs off
-const byte PME_GI[5][4] = {{146, 36, 73, 146},{36, 73, 146, 36},{73, 146, 36, 73},{146, 36, 73, 146},{36, 73, 146, 36}};  // GI LEDs patterns
 
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
@@ -546,53 +545,37 @@ void EX_AttractLEDeffects(byte State) {               // call with State = 1, st
     break;}}
 
 void EX_AttractLEDeffects2(byte State) {              // call with State = 1, stop with State = 0
-  static byte Timer = 0;
-  static byte Counter = 0;
+  const byte PME_GI[3][4] = {{146, 36, 73, 146},{36, 73, 146, 36},{73, 146, 36, 73}};  // GI LEDs patterns
   switch (State) {
-  case 0:                                             // terminate
-    if (Timer) {
-      KillTimer(Timer);
-      Timer = 0;}
-    break;
   case 1:                                             // initialize
     LEDinit();
-    LEDpattern = PME_GIoff;
-    /* no break */
-  case 2:
-    LEDsetColorMode(2);                               // to immediately apply the selected color to the GI
+    LEDsetColorMode(1);
     LEDsetColor(255, 0, 0);
-    LEDpattern = PME_GI[Counter];                     // apply pattern
-    Timer = ActivateTimer(20, 3, EX_AttractLEDeffects2);
+    ActivateTimer(20, 3, EX_AttractLEDeffects2);
     break;
-  case 3:
-    LEDsetColorMode(4);                               // freeze LED state
-    LEDpattern = PME_GIoff;
-    Timer = ActivateTimer(20, 4, EX_AttractLEDeffects2);
+  case 2:
+    LEDpattern = PME_GI[0];                           // apply pattern
+    ActivateTimer(20, 3, EX_AttractLEDeffects2);
+    break;
+  case 3:                                             // set color
+    LEDsetColor(255, 0, 0);
+    ActivateTimer(20, 4, EX_AttractLEDeffects2);
     break;
   case 4:
-    LEDsetColorMode(2);                               // to immediately apply the selected color to the GI
-    LEDsetColor(0, 255, 0);
-    LEDpattern = PME_GI[Counter+1];                     // apply pattern
-    Timer = ActivateTimer(20, 5, EX_AttractLEDeffects2);
+    LEDpattern = PME_GI[1];                           // apply pattern
+    ActivateTimer(20, 5, EX_AttractLEDeffects2);
     break;
-  case 5:
-    LEDsetColorMode(4);                               // freeze LED state
-    LEDpattern = PME_GIoff;
-    Timer = ActivateTimer(20, 6, EX_AttractLEDeffects2);
+  case 5:                                             // set color
+    LEDsetColor(255, 0, 0);
+    ActivateTimer(20, 4, EX_AttractLEDeffects2);
     break;
   case 6:
-    LEDsetColorMode(2);                               // to immediately apply the selected color to the GI
-    LEDsetColor(0, 0, 255);
-    LEDpattern = PME_GI[Counter+2];                   // apply pattern
-    Timer = ActivateTimer(20, 7, EX_AttractLEDeffects2);
+    LEDpattern = PME_GI[2];                           // apply pattern
+    ActivateTimer(20, 7, EX_AttractLEDeffects2);
     break;
   case 7:
-    LEDsetColorMode(4);                               // freeze LED state
-    LEDpattern = PME_GIoff;
-    Timer = ActivateTimer(500, 2, EX_AttractLEDeffects2);
-    Counter++;
-    if (Counter > 3) {
-      Counter = 0;}
+    LEDhandling(6, 102);                              // write 102 to the command buffer
+    LEDhandling(7, 1);                                // send 1 byte to the LED_ExpBoard
     break;}}
 
 byte EX_Comet(byte Type, byte Command) {
