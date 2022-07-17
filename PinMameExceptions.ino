@@ -557,7 +557,8 @@ void EX_AttractLEDeffects2(byte State) {              // call with State = 1, st
   case 0:                                             // after the colors have been set
     LEDreturn = 0;
     LEDsetColorMode(4);                               // freeze the LEDs
-    ActivateTimer(30, 2, EX_AttractLEDeffects2);      // and come back to start the shifting
+    LEDhandling(6, 102);                              // write 102 to the command buffer
+    LEDhandling(7, 1);
     break;
   case 1:
     LEDsetColorMode(2);
@@ -565,10 +566,6 @@ void EX_AttractLEDeffects2(byte State) {              // call with State = 1, st
     LEDpatDuration = GI_Duration;
     LEDreturn = EX_AttractLEDeffects2;                // come back after the colors are set
     ShowLEDpatterns(1);
-    break;
-  case 2:                                             // start shifting the LEDs
-    LEDhandling(6, 102);                              // write 102 to the command buffer
-    LEDhandling(7, 1);
     break;}}
 
 

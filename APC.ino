@@ -2088,38 +2088,24 @@ void ShowFileNotFound(String Filename) {              // show file not found mes
 
 void ShowLEDpatterns(byte Step) {                     // call with Step = 1 to start and Step = 0 to terminate
   static byte Timer = 0;
-  static byte Phase = 0;
   if ((Step > 1) || (Step ==1 && !Timer)) {           // no kill signal
     if (Step == 1) {
       Step++;}
+    unsigned int Buffer = *(LEDpatDuration+Step-2);
     byte NumOfBytes = APC_settings[NumOfLEDs] / 8 + 3;// calculate the length of each list entry
     if (APC_settings[NumOfLEDs] % 8) {
       NumOfBytes++;}
-    switch (Phase) {
-    case 0:                                           // select color
-      LEDsetColor(*(LEDpointer+NumOfBytes*(Step-2)), *(LEDpointer+NumOfBytes*(Step-2)+1), *(LEDpointer+NumOfBytes*(Step-2)+2)); // select the color
-      Phase = 1;
-      Timer = ActivateTimer(20, Step, ShowLEDpatterns);
-      break;
-    case 1:                                           // apply pattern
-      LEDpattern = LEDpointer+NumOfBytes*(Step-2)+3;
-      Phase = 2;
-      Timer = ActivateTimer(20, Step, ShowLEDpatterns);
-      break;
-    case 2:                                           // apply empty pattern
-      LEDpattern = NoLamps;                                     // TODO adapt
-      Step++;
-      Phase = 0;
-      if (!(*(LEDpatDuration+Step-2))) {                // stop if Duration is zero
-        Timer = 0;
-        if (LEDreturn) {
-          LEDreturn(0);}}
-      else {
-        Timer = ActivateTimer(*(LEDpatDuration+Step-3), Step, ShowLEDpatterns); // come back if it's not
-        break;}}}
+    LEDsetColor(*(LEDpointer+NumOfBytes*(Step-2)), *(LEDpointer+NumOfBytes*(Step-2)+1), *(LEDpointer+NumOfBytes*(Step-2)+2)); // select the color
+    LEDpattern = LEDpointer+NumOfBytes*(Step-2)+3;                 // TODO adapt
+    Step++;
+    if (!(*(LEDpatDuration+Step-2))) {                // stop if Duration is zero
+      Timer = 0;
+      if (LEDreturn) {
+        LEDreturn(0);}
+      return;}
+    Timer = ActivateTimer(Buffer, Step, ShowLEDpatterns);}  // come back if not
   else {
     if (!Step) {                                      // kill signal received
-      Phase = 0;
       if (Timer) {
         KillTimer(Timer);
         Timer = 0;}}}}
