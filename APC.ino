@@ -901,6 +901,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static bool PolarityFlag;                           // stores whether the select has to be triggered by the rising or falling edge
   static byte ChangeSequence = 0;                     // indicator needed for change operations
   static byte *LEDstatus;                             // points to the status memory of the LEDs
+  static const byte *LEDselected;                           // buffer to sync the change of an LEDpattern to the command execution
   static byte NumOfLEDbytes = 8;                      // stores the length of the LEDstatus memory
   static byte LengthOfSyncCycle = 3;                  // stores the length of the sync cycle in ms
   static byte SpcCommandLength[8];                    // length in bytes of commands to be send to the LED exp board
@@ -984,7 +985,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
           else {
             LampData = *(LampPattern+Arg);}}
         else {                                        // additional LEDs selected
-          LampData = *(LEDpattern+Arg);}}
+          LampData = *(LEDselected+Arg);}}
       if (PolarityFlag) {                             // data bus of LED_exp board works with toggling select
         PolarityFlag = false;
         WriteToHwExt(LampData, 1);}                   // write lamp pattern with Sel5 falling edge
@@ -992,14 +993,16 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         PolarityFlag = true;
         WriteToHwExt(LampData, 131);}}                // activate Sel5 rising edge
     else {                                            // the lamp matrix is already sent
-      if (Arg == NumOfLEDbytes && SpcCommandLength[0]) {  // command for Led_exp board pending?
-        if (ChangeSequence < 2) {                     // turn off command to be sent?
-        SpcReadCount = SpcCommandLength[0];           // get number of bytes to transmit
-        byte i = 0;
-        do {                                          // move buffer up by one entry
-          i++;
-          SpcCommandLength[i-1] = SpcCommandLength[i];}
-        while(SpcCommandLength[i]);}}
+      if (Arg == NumOfLEDbytes) {                     // LED pattern sent?
+        LEDselected = LEDpattern;
+        if (SpcCommandLength[0]) {                    // command for Led_exp board pending?
+          if (ChangeSequence < 2) {                   // turn off command to be sent?
+            SpcReadCount = SpcCommandLength[0];       // get number of bytes to transmit
+            byte i = 0;
+            do {                                      // move buffer up by one entry
+              i++;
+              SpcCommandLength[i-1] = SpcCommandLength[i];}
+            while(SpcCommandLength[i]);}}}
       if (SpcReadCount) {                             // still command bytes to transmit?
         if (PolarityFlag) {                           // data bus of LED_exp board works with toggling select
           PolarityFlag = false;
@@ -2089,8 +2092,11 @@ void ShowLEDpatterns(byte Step) {                     // call with Step = 1 to s
     if (Step == 1) {
       Step++;}
     unsigned int Buffer = *(LEDpatDuration+Step-2);
-    LEDsetColor(*(LEDpointer+11*(Step-2)), *(LEDpointer+11*(Step-2)+1), *(LEDpointer+11*(Step-2)+2)); // select the color
-    LEDpattern = LEDpointer+11*(Step-2)+3;                 // TODO adapt
+    byte NumOfBytes = APC_settings[NumOfLEDs] / 8 + 3;// calculate the length of each list entry
+    if (APC_settings[NumOfLEDs] % 8) {
+      NumOfBytes++;}
+    LEDsetColor(*(LEDpointer+NumOfBytes*(Step-2)), *(LEDpointer+NumOfBytes*(Step-2)+1), *(LEDpointer+NumOfBytes*(Step-2)+2)); // select the color
+    LEDpattern = LEDpointer+NumOfBytes*(Step-2)+3;                 // TODO adapt
     Step++;
     if (!(*(LEDpatDuration+Step-2))) {                // stop if Duration is zero
       Timer = 0;
