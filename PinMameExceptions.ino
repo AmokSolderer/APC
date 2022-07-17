@@ -25,6 +25,14 @@ char USB_RepeatSound[13];                             // name of the sound file 
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
 unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40}; // Activation times for solenoids
 
+                            //LED number..00000000....11111110....22222111....33322222...43333333...44444444...55555554...66666555
+                              // Color....12345678....65432109....43210987....21098765...09876543...87654321...65432109...43210987
+const byte GI_Pattern[21] = {255, 0, 0, 0b01001001, 0b10010010, 0b00100100, 0b01001001,
+                             0, 255, 0, 0b10010010, 0b00100100, 0b01001001, 0b10010010,
+                             0, 0, 255, 0b00100100, 0b01001001, 0b10010010, 0b00100100};  // GI LEDs patterns
+const uint16_t GI_Duration[4] = {30, 30, 30, 0};
+
+
 byte EX_DummyProcess(byte Type, byte Command) {       // plays just the standard sounds
   if (Type == SoundCommandCh1) {                      // sound commands for channel 1
     char FileName[9] = "0_00.snd";                    // handle standard sound
@@ -545,57 +553,16 @@ void EX_AttractLEDeffects(byte State) {               // call with State = 1, st
     break;}}
 
 void EX_AttractLEDeffects2(byte State) {              // call with State = 1, stop with State = 0
-                            //LED number..00000000....11111110....22222111....33322222...43333333...44444444...55555554...66666555
-                              // Color....12345678....65432109....43210987....21098765...09876543...87654321...65432109...43210987
-const byte GI_Pattern[21] = {255, 0, 0, 0b01001001, 0b10010010, 0b00100100, 0b01001001,
-                             0, 255, 0, 0b10010010, 0b00100100, 0b01001001, 0b10010010,
-                             0, 0, 255, 0b00100100, 0b01001001, 0b10010010, 0b00100100};  // GI LEDs patterns
-const uint16_t GI_Duration[4] = {30, 30, 30, 0};
-  LEDsetColorMode(0);
-  LEDpointer = GI_Pattern;
-  LEDpatDuration = GI_Duration;
-  LEDreturn = 0;
-  ShowLEDpatterns(1);
-
-//  switch (State) {
-//  case 1:                                             // initialize
-//    LEDinit();
-//    ActivateTimer(20, 2, EX_AttractLEDeffects2);
-//    LEDpattern = PME_GIoff;
-//    break;
-//  case 2:
-//    LEDsetColorMode(2);
-//    LEDsetColor(255, 0, 0);
-//    LEDpattern = PME_GI[0];                           // apply pattern
-//    ActivateTimer(40, 3, EX_AttractLEDeffects2);
-//    break;
-//  case 3:
-//    LEDpattern = PME_GIoff;                           // apply pattern
-//    ActivateTimer(20, 4, EX_AttractLEDeffects2);
-//    break;
-//  case 4:                                             // set color
-//    LEDsetColor(0, 255, 0);
-//    LEDpattern = PME_GI[1];                           // apply pattern
-//    ActivateTimer(40, 5, EX_AttractLEDeffects2);
-//    break;
-//  case 5:
-//    LEDpattern = PME_GIoff;                           // apply pattern
-//    ActivateTimer(20, 6, EX_AttractLEDeffects2);
-//    break;
-//  case 6:                                             // set color
-//    LEDsetColor(0, 0, 255);
-//    LEDpattern = PME_GI[2];                           // apply pattern
-//    ActivateTimer(40, 7, EX_AttractLEDeffects2);
-//    break;
-//  case 7:
-//    LEDpattern = PME_GIoff;                           // apply pattern
-//    ActivateTimer(20, 8, EX_AttractLEDeffects2);
-//    break;
-//  case 8:
-//    LEDhandling(6, 102);                              // write 102 to the command buffer
-//    LEDhandling(7, 1);                                // send 1 byte to the LED_ExpBoard
-//    break;}
-}
+  if (State) {
+    LEDsetColorMode(2);
+    LEDpointer = GI_Pattern;
+    LEDpatDuration = GI_Duration;
+    LEDreturn = EX_AttractLEDeffects2;                // come back after the colors are set
+    ShowLEDpatterns(1);}
+  else {
+    LEDreturn = 0;
+    LEDhandling(6, 102);                              // write 102 to the command buffer
+    LEDhandling(7, 1);}}                              // send 1 byte to the LED_ExpBoard
 
 byte EX_Comet(byte Type, byte Command) {
   static byte LastSwitch;                             // stores the number of the last activated switch

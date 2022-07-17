@@ -16,7 +16,7 @@ byte Command = 0;                                       // LED command currently
 byte CommandCount = 0;                                  // counts the bytes received by the color select command
 byte SystemFlags = 0;                                   // to indicate special system states
 byte OwnCommands = 0;                                   // indicate active own LED commands
-byte OwnCommandStep = 0;                                // needed for own LED commands
+uint16_t OwnCommandStep = 0;                                // needed for own LED commands
 byte NumOfLEDbytes = 8;                                 // stores the length of the transferred LED pattern
 byte TurnOn[6][24];                                      // the list of the lamps currently being turned on
 byte TurnOff[6][24];                                     // the list of the lamps currently being turned off
@@ -112,7 +112,22 @@ void loop() {
                 pixels.setPixelColor(Step+i-12,OwnPattern[i][0],OwnPattern[i][1],OwnPattern[i][2]);}}}
           OwnCommandStep++;
           if (OwnCommandStep > 59) {
-            OwnCommandStep = 0;}}}
+            OwnCommandStep = 0;}}
+        if (OwnCommands & 2) {                          // OwnCommand 2
+          if (!(OwnCommandStep % 50)) {                 // only be active every 5th refresh cycle
+            byte Red = LampMax[0][0];                   // store the first RGB values
+            byte Green = LampMax[0][1];
+            byte Blue = LampMax[0][2];
+            for (byte i=0; i<NumOfLEDbytes*8; i++) {    // shift all RGB values
+              LampMax[i][0] = LampMax[i+1][0];
+              LampMax[i][1] = LampMax[i+1][1];
+              LampMax[i][2] = LampMax[i+1][2];
+              pixels.setPixelColor(i, LampMax[i][0], LampMax[i][1], LampMax[i][2]);}  // apply the values
+            LampMax[NumOfLEDbytes*8][0] = Red;          // put the stored values to the last LED
+            LampMax[NumOfLEDbytes*8][1] = Green;
+            LampMax[NumOfLEDbytes*8][2] = Blue;
+            pixels.setPixelColor(NumOfLEDbytes*8, LampMax[NumOfLEDbytes*8][0], LampMax[NumOfLEDbytes*8][1], LampMax[NumOfLEDbytes*8][2]);}}
+      }                                                 // add OwnCommand here
       Sync++;}                                          // increase the counter
     else {                                              // LED patterns are done
       if (CommandCount) {                               // still bytes to read for this command
@@ -153,12 +168,21 @@ void loop() {
         case 68:                                        // Mode 4 -> LED state is frozen
           Mode = 4;
           break;
-        case 100:                                       // execute OwnCommand
+        case 100:                                       // OwnCommand 1 -> radar effect for rings with 12 LEDs
           OwnCommands |= 1;                             // activate OwnCommand number 1
           break;
         case 101:
           OwnCommands &= 254;                           // deactivate OwnCommand number 1
           for (byte i=0;i<12;i++) {                     // for all affected LEDs
+            pixels.setPixelColor(i, pixels.Color(0,0,0)); // turn them off
+            LampStatus[i / 8] &= 255-(1<<(i % 8));}     // and change the status to off
+          break;
+        case 102:                                       // OwnCommand 2 -> shift LEDs
+          OwnCommands |= 2;                             // activate OwnCommand number 2
+          break;
+        case 103:
+          OwnCommands &= 253;                           // deactivate OwnCommand number 2
+          for (byte i=0;i<NumOfLEDbytes*8;i++) {        // for all LEDs
             pixels.setPixelColor(i, pixels.Color(0,0,0)); // turn them off
             LampStatus[i / 8] &= 255-(1<<(i % 8));}     // and change the status to off
           break;
