@@ -553,16 +553,24 @@ void EX_AttractLEDeffects(byte State) {               // call with State = 1, st
     break;}}
 
 void EX_AttractLEDeffects2(byte State) {              // call with State = 1, stop with State = 0
-  if (State) {
+  switch(State) {
+  case 0:                                             // after the colors have been set
+    LEDreturn = 0;
+    LEDsetColorMode(4);                               // freeze the LEDs
+    ActivateTimer(30, 2, EX_AttractLEDeffects2);      // and come back to start the shifting
+    break;
+  case 1:
     LEDsetColorMode(2);
     LEDpointer = GI_Pattern;
     LEDpatDuration = GI_Duration;
     LEDreturn = EX_AttractLEDeffects2;                // come back after the colors are set
-    ShowLEDpatterns(1);}
-  else {
-    LEDreturn = 0;
+    ShowLEDpatterns(1);
+    break;
+  case 2:                                             // start shifting the LEDs
     LEDhandling(6, 102);                              // write 102 to the command buffer
-    LEDhandling(7, 1);}}                              // send 1 byte to the LED_ExpBoard
+    LEDhandling(7, 1);
+    break;}}
+
 
 byte EX_Comet(byte Type, byte Command) {
   static byte LastSwitch;                             // stores the number of the last activated switch

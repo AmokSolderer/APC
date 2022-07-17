@@ -114,19 +114,22 @@ void loop() {
           if (OwnCommandStep > 59) {
             OwnCommandStep = 0;}}
         if (OwnCommands & 2) {                          // OwnCommand 2
-          if (!(OwnCommandStep % 50)) {                 // only be active every 5th refresh cycle
+          if (!OwnCommandStep) {                        // only be active every 5th refresh cycle
             byte Red = LampMax[0][0];                   // store the first RGB values
             byte Green = LampMax[0][1];
             byte Blue = LampMax[0][2];
-            for (byte i=0; i<NumOfLEDbytes*8; i++) {    // shift all RGB values
+            for (byte i=0; i<NumOfLEDbytes*8-1; i++) {  // shift all RGB values
               LampMax[i][0] = LampMax[i+1][0];
               LampMax[i][1] = LampMax[i+1][1];
               LampMax[i][2] = LampMax[i+1][2];
               pixels.setPixelColor(i, LampMax[i][0], LampMax[i][1], LampMax[i][2]);}  // apply the values
-            LampMax[NumOfLEDbytes*8][0] = Red;          // put the stored values to the last LED
-            LampMax[NumOfLEDbytes*8][1] = Green;
-            LampMax[NumOfLEDbytes*8][2] = Blue;
-            pixels.setPixelColor(NumOfLEDbytes*8, LampMax[NumOfLEDbytes*8][0], LampMax[NumOfLEDbytes*8][1], LampMax[NumOfLEDbytes*8][2]);}}
+            LampMax[NumOfLEDbytes*8-1][0] = Red;          // put the stored values to the last LED
+            LampMax[NumOfLEDbytes*8-1][1] = Green;
+            LampMax[NumOfLEDbytes*8-1][2] = Blue;
+            pixels.setPixelColor(NumOfLEDbytes*8-1, Red, Green, Blue);}
+        OwnCommandStep++;
+        if (OwnCommandStep > 10) {
+          OwnCommandStep = 0;}}
       }                                                 // add OwnCommand here
       Sync++;}                                          // increase the counter
     else {                                              // LED patterns are done
