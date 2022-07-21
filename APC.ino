@@ -901,7 +901,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static bool PolarityFlag;                           // stores whether the select has to be triggered by the rising or falling edge
   static byte ChangeSequence = 0;                     // indicator needed for change operations
   static byte *LEDstatus;                             // points to the status memory of the LEDs
-  static const byte *LEDselected;                           // buffer to sync the change of an LEDpattern to the command execution
+  static const byte *LEDselected;                     // buffer to sync the change of an LEDpattern to the command execution
   static byte NumOfLEDbytes = 8;                      // stores the length of the LEDstatus memory
   static byte LengthOfSyncCycle = 3;                  // stores the length of the sync cycle in ms
   static byte SpcCommandLength[8];                    // length in bytes of commands to be send to the LED exp board

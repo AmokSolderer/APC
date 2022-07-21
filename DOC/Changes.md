@@ -1,6 +1,6 @@
 # APC News and Changelog
 
-## TBD
+## July 2022
 
 ### New SW Version V0.23
 
@@ -15,7 +15,7 @@ The purpose of this is to enable state machines that are initially called from t
 
 * Support for 2x16 character displays with additional numerical displays has been added.
 
-* SW support for the [LED_expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) has been upgraded. Therefore the new system setting 'No of LEDs' has been added as [setting 8](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#system-settings). This might require resetting the system settings to the defaults.
+* SW support for the [LED_expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) has been upgraded. One change is that you can now install additional LEDs. Therefore the new system setting 'No of LEDs' has been added as [setting 8](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#system-settings). This might require resetting the system settings to the defaults, but it adds a lot of fun as you can see in [my Comet video](https://youtu.be/kLWVUdhSwfo).
 
 * Exception rules for System 11 F-14 Tomcat have been added. Sound files for F-14 are also available (Thanks to Snux)
 
@@ -32,6 +32,8 @@ The purpose of this is to enable state machines that are initially called from t
 * The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
 
 * My [APC Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) game code has been updated.
+
+* A new [Known issues](https://github.com/AmokSolderer/APC/tree/master#known-issues) section has been added to point out problems and limits of the APC.
 
 ## July 2021
 
