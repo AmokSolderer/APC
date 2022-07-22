@@ -915,7 +915,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   case 0:                                             // stop LEDhandling
     if (Timer) {                                      // LEDhandling active?
       ChangeSequence = 2;                             // one more sync needed
-      free(LEDstatus);                                                              // TODO LEDhandling
+      free(LEDstatus);                                // free memory
       SpcBuffer[BufferWrite] = 196;                   // write stop command to ringbuffer
       BufferWrite++;                                  // increase write pointer
       if (BufferWrite > 19) {                         // end of ringbuffer reached?
@@ -2096,7 +2096,7 @@ void ShowLEDpatterns(byte Step) {                     // call with Step = 1 to s
     if (APC_settings[NumOfLEDs] % 8) {
       NumOfBytes++;}
     LEDsetColor(*(LEDpointer+NumOfBytes*(Step-2)), *(LEDpointer+NumOfBytes*(Step-2)+1), *(LEDpointer+NumOfBytes*(Step-2)+2)); // select the color
-    LEDpattern = LEDpointer+NumOfBytes*(Step-2)+3;                 // TODO adapt
+    LEDpattern = LEDpointer+NumOfBytes*(Step-2)+3;    // apply the new pattern
     Step++;
     if (!(*(LEDpatDuration+Step-2))) {                // stop if Duration is zero
       Timer = 0;
