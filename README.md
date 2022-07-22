@@ -129,6 +129,11 @@ Games like Jokerz! or Riverboat Gambler use stepper motors to drive a wheel in t
 Alas, there's a problem with Lisy/PinMame not sending all steps to the APC. This means it is not possible for the APC to determine at which position the wheel is supposed to stop.  
 Note that this is not a problem of the APC itself, but occurs only when Lisy/PinMame is used. If you program your game code in C there won't be any problems.
 
+### Rollergames music problems
+
+The Rollergames implementation in PinMame has a bug in the music control. For some reason a new music track is started every few seconds. Most of the time it's the same track that's already running. I have therefore implemented a workaround in the PinMameExceptions of the Rollergames which prevents that the running music track can be restarted. This improves the situation somehow, but more sophisticated PinMameExceptions are needed to really fix this.  
+Up to now only Rollergames seems to be affected, other machines using the same audio boards are working fine.
+
 ## Feedback
 
 Feedback is very important for me, because if there is none I must assume that nobody is interested in this project and that I can stop to bother with additional documentation. And albeit I have tried my best to help you to become familiar with this project, there will be questions and I am willing to do some support. Like I said, it's a hobby so don't expect 24/7 availability, but I'll do my best to help.
