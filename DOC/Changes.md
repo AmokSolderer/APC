@@ -29,6 +29,8 @@ The purpose of this is to enable state machines that are initially called from t
 
 ### Misc
 
+* Due to the recent problems with the availability of the 74HCT273 at JLCPCB, I have split up the fabrication files section into two parts, one with the 74HCT273 in an [SOIC package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SOIC) and one with a [SSOP package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SSOP). Both folders contain all the required data to build a board, just the package of the 74HCT273 is different.
+
 * The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
 
 * My [APC Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) game code has been updated.

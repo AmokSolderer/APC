@@ -4,7 +4,7 @@ Before I explain what the APC is, let's first clarify what it is not.
  
 The APC is no commercial drop-in replacement board. It is intended for people with some basic knowledge of programming and electronics who want to expand the possibilities of their pinball machine. That means it's going to require some work to set up your game even if you don't want to change anything, but run the original rules with PinMame. Take a look at the [PinMame page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) to see what I mean.  
 As this is a private project with no commercial interest, you may use the APC at your own risk and I'm not liable for any damage that might occur to your machine while using it.  
-Some special machines might even not work with the APC or require additional HW. Please check the [Known issues](https://github.com/AmokSolderer/APC/tree/V00.23#Known-issues) section for details.
+Some special machines might even not work with the APC or require additional HW. Please check the [Known issues](https://github.com/AmokSolderer/APC/tree/master#Known-issues) section for details.
 
 ## Overview
 
@@ -83,7 +83,7 @@ The first board is an LED expansion board to control WS2812 based LED-Strips wit
 
 The following picture shows the APC in a Comet with the LED Expansion board connected to the hardware extensions interface.
 
-![APC Comet LED](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/PICS/CometLED.jpg)
+![APC Comet LED](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/CometLED.jpg)
 
 A short video with this setup can be found here : 
 
