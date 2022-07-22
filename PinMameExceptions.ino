@@ -12,8 +12,6 @@
 #define WriteToDisplay3 11
 #define WriteToDisplay4 12
 
-byte (*PinMameException)(byte, byte);
-
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
@@ -45,6 +43,32 @@ void EX_BallRelease(byte State) {                     // repeat ball eject in ca
   case 2:                                             // timer has run out
     ActivateSolenoid(40, EX_EjectSolenoid);           // activate the shooter lane feeder again
     Timer = ActivateTimer(3000, 2, EX_BallRelease);}} // and restart the timer
+
+void EX_StepperMotor(byte State) {                    // control stepper motor
+  static byte MainTimer = 0;                          // number of the main timer
+  static unsigned int RefTime;                        // stores the start value of the main timer
+  static unsigned int PWMtime;                        // stores the PWM time for the active cycle
+  switch(State) {                                     // state machine
+  case 0:                                             // procedure is called from solenoid exception
+    if (!MainTimer) {                                 // initial call, stepper motor not yet running
+      RefTime = 60;                                   // set timeout to 60ms
+      MainTimer = ActivateTimer(RefTime, 1, EX_StepperMotor);}  // start main timer
+    else {                                            // not the first solenoid call from PinMame as main timer is already running
+      PWMtime = RefTime - TimerValue[MainTimer];      // calculate time difference between PinMame's solenoid pulses
+      KillTimer(MainTimer);                           // cancel timeout
+      RefTime = PWMtime + 10;                         // set new timeout value based on last PWM cycle time
+      MainTimer = ActivateTimer(RefTime, 1, EX_StepperMotor); // restart main timer
+      ActivateSolenoid(PWMtime/2, 14);                // generate PWM pulse on first solenoid
+      ActivateTimer(PWMtime/4, 2, EX_StepperMotor);}  // come back to generate pulse on second solenoid
+    break;
+  case 1:                                             // timeout has occurred as no pulses from PinMame have been detected recently
+    MainTimer = 0;                                    // indicate that main timer is not active
+    ActivateSolenoid(PWMtime/2, 14);                  // generate last step on the solenoids anyway
+    ActivateTimer(PWMtime/4, 2, EX_StepperMotor);
+    break;
+  case 2:                                             // generate pulse on second solenoid
+    ActivateSolenoid(PWMtime/2, 15);
+    break;}}
 
 byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for sending me this code
   static byte SoundSeries[5] = {0, 0, 0, 0, 0};       // buffer to handle pre system11 sound series
@@ -191,7 +215,7 @@ byte EX_JungleLord(byte Type, byte Command){
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_Pharaoh(byte Type, byte Command){
+byte EX_Pharaoh(byte Type, byte Command){             // thanks to Grangeomatic for sending me this code
   static byte SoundSeries;                            // buffer to handle pre system11 sound series
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
@@ -325,6 +349,26 @@ byte EX_BlackKnight(byte Type, byte Command){
   default:
     return(0);}}
 
+byte EX_Comet(byte Type, byte Command) {
+  if (Type == SoundCommandCh1) {                      // sound commands for channel 1
+    if (!Command || Command > 253) {                  // sound command 0x00 and 0xff -> stop sound
+      AfterMusic = 0;
+      StopPlayingMusic();
+      StopPlayingSound();}
+    else if (Command == 11) { }                       // ignore sound command 0x0b
+    else if (Command == 47) {                         // play BG music
+      PlayMusic(50, "0_2f.snd");
+      QueueNextMusic("0_2f.snd");}                    // track is looping so queue it also
+    else {                                            // handle standard sound
+      if (Command == 9) {
+        MusicVolume = 4;}                             // reduce music volume
+      if (Command == 241) {
+        RestoreMusicVolumeAfterSound(25);}            // and restore it
+      char FileName[9] = "0_00.snd";
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}}
+  return(0);}                                         // no exception rule found for this type so proceed as normal
+
 byte EX_Pinbot(byte Type, byte Command){
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
@@ -401,96 +445,184 @@ byte EX_Pinbot(byte Type, byte Command){
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_Rollergames(byte Type, byte Command){
-  static byte LastMusic;
+byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tomcat, thanks to Snux for sending me this code
   switch(Type){
-  case SoundCommandCh2:                               // sound commands for channel 1
+  case SwitchActCommand:                              // Check for switches
+    if (Command > 64 && Command < 72) {               // If special solenoid switch
+      if (QuerySolenoid(24))                          // Check if the flippers are active
+        return(0);                                    // If they are active then permit the switch
+      else
+        return(1);}                                   // otherwise block it, standard Sys11 behaviour
+    else
+      return (0);
+  case SoundCommandCh1:                               // sound commands for channel 1
     if (!Command){                                    // sound command 0x00 - stop sound
       AfterSound = 0;
-      StopPlayingSound();
+      StopPlayingSound();}
+    else if (Command == 85) { }                       // ignore sound command 0x55
+    else if (Command == 23) { }                       // ignore
+    else if (Command == 170) { }                      // ignore
+    else if (Command == 255) { }                      // ignore sound command 0xff
+    else if (Command == 206) {                        // ball waiting in shooter lane
+      PlaySound(50, "0_CE.snd");                      // start sound
+      QueueNextSound("0_CF.snd");}                    // loop that high pitch noise
+    else {                                            // proceed with standard sound handling
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        AfterSound = 0;                               // needed this to shut the looping sound up.
+        StopPlayingSound();
+        if (Command < 128) {                          // play speech with a higher priority
+          PlaySound(50, (char*) FileName);}
+        else {
+          PlaySound(51, (char*) FileName);}}}
+    return(0);                                        // return number not relevant for sounds
+  case SoundCommandCh2:                               // sound commands for channel 2
+    if (!Command) {                                   // sound command 0x00 - stop music
       AfterMusic = 0;
-      StopPlayingMusic();}
-    else if (Command > 95 && Command < 100) {         // music volume command 0x6X
-      MusicVolume = Command - 96;}
+      StopPlayingMusic();
+      MusicVolume=0; }                                // reset music volume in case it was made quieter earlier
+    else if (Command == 127) {                        // sound command 0x7f - stop sound
+      AfterSound = 0;
+      StopPlayingSound();}
+    else if (Command > 7 && Command < 80){ }          // ignore unknown sound commands 0x1d to 0x30
+    else if (Command > 84 && Command < 96) { }        // ignore unknown sound commands 0x4f to 0x59
+    else if (Command == 170) { }                      // ignore unknown sound command 0xaa
+    else if (Command == 123) { }                      // ignore unknown 0x7b during multiball start
+    else if (Command == 255) { }                      // ignore unknown sound command 0xff
+    else if (Command > 95 && Command < 112) {         // music volume command 0x6X
+      MusicVolume = (Command - 96) / 4;}
     else if (Command == 1) {                          // music track 1
-      if (LastMusic != 1) {
-        LastMusic = 1;
-        PlayMusic(50, "1_01.snd");                      // play non looping part of music track 1
-        QueueNextMusic("1_01L.snd");}}                    // queue looping part as next music to be played
-    else if (Command == 3 || Command == 65) {         // music track 3 identical to 0x41
-      if (LastMusic != 3) {
-        LastMusic = 3;
-        PlayMusic(50, "1_03.snd");                      // play non looping part of music track
-        QueueNextMusic("1_03L.snd");}}                    // queue looping part as next music to be played
-    else if (Command == 4) {                          // music track 0x04
-      if (LastMusic != 4) {
-        LastMusic = 4;
-        PlayMusic(50, "1_04.snd");                      // play music track
-        QueueNextMusic("1_04.snd");}}                   // track is looping so queue it also
-    else if (Command == 6) {                          // music track 6 Multiball start
-      if (LastMusic != 6) {
-        LastMusic = 6;
-        PlayMusic(50, "1_06.snd");                      // play non looping part of music track
-        QueueNextMusic("1_06L.snd");}}                    // queue looping part as next music to be played
-    else if (Command == 7) {                          // music track 0x07
-      if (LastMusic != 7) {
-        LastMusic = 7;
-        PlayMusic(50, "1_07.snd");                      // play music track
-        QueueNextMusic("1_07.snd");}}                   // track is looping so queue it also
-    else if (Command == 8) {                          // music track 8 Multiball lock
-      if (LastMusic != 8) {
-        LastMusic = 8;
-        PlayMusic(50, "1_08.snd");                      // play non looping part of music track
-        QueueNextMusic("1_08L.snd");} }                 // queue looping part as next music to be played
-    else if (Command == 9 || Command == 66) {         // music track 9 identical to 0x42
-      if (LastMusic != 9) {
-        LastMusic = 9;
-        PlayMusic(50, "1_09.snd");                      // play non looping part of music track
-        QueueNextMusic("1_09L.snd");}}                    // queue looping part as next music to be played
-    else if (Command == 11) {                         // music track 0x0b
-      if (LastMusic != 11) {
-        LastMusic = 11;
-        PlayMusic(50, "1_0bL.snd");                     // play music track
-        QueueNextMusic("1_0bL.snd");}}                    // track is looping so queue it also
-    else if (Command == 12) {                         // music track 0x0c
-      if (LastMusic != 12) {
-        LastMusic = 12;
-        PlayMusic(50, "1_0c.snd");                      // play non looping part of music track
-        QueueNextMusic("1_0cL.snd");}}                    // queue looping part as next music to be played
-    else if (Command == 13) {                         // music track 0x0d
-      if (LastMusic != 13) {
-        LastMusic = 13;
-        PlayMusic(50, "1_0d.snd");                      // play non looping part of music track
-        QueueNextMusic("1_0dL.snd");}}                    // queue looping part as next music to be played
-    else if (Command == 14) {                         // music track 0x0e
-      if (LastMusic != 14) {
-        LastMusic = 14;
-        PlayMusic(50, "1_0e.snd");                      // play non looping part of music track
-        QueueNextMusic("1_0eL.snd");}}                    // queue looping part as next music to be played
-    else if (Command == 15) {                         // music track 0x0f
-      if (LastMusic != 15) {
-        LastMusic = 15;
-        PlayMusic(50, "1_0f.snd");                      // play music track
-        QueueNextMusic("1_0bL.snd");}}                    // queue looping part as next music to be played
-    else if (Command == 67) {                         // music track 0x43
-      if (LastMusic != 67) {
-        LastMusic = 67;
-        PlayMusic(50, "1_43.snd");                      // play non looping part of music track
-        QueueNextMusic("1_43L.snd");}}                    // queue looping part as next music to be played
-    else if (Command == 68) {                         // music track 0x44
-      if (LastMusic != 68) {
-        LastMusic = 68;
-        PlayMusic(50, "1_44.snd");                      // play non looping part of music track
-        QueueNextMusic("1_43L.snd");}}                    // queue looping part as next music to be played
-    else {                                            // standard sound
-      if (Command == 78) {                            // 0x4e ends music track
-        StopPlayingMusic();}
+      PlayMusic(50, "1_01.snd");                      // play music track
+      QueueNextMusic("1_01.snd");}                    // track is looping so queue it also
+    else if (Command == 2) {                          // music track 2
+      PlayMusic(50, "1_02.snd");                      // play non looping part of music track
+      QueueNextMusic("1_02.snd");}                    // queue looping part as next music to be played
+    else if (Command == 6) {                          // music track 6
+      PlayMusic(50, "1_06.snd");                      // play non looping part of music track
+      QueueNextMusic("1_06L.snd");}                   // queue looping part as next music to be played
+    else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
-        PlaySound(51, (char*) FileName);}}
-    return(0);
+        if (Command < 8  || Command == 128) {         // play only music on the music channel except 128 which is multiball alert
+          AfterMusic = 0;                             // stop looping music
+          PlayMusic(50, (char*) FileName);}           // play on the music channel
+        else {
+          PlaySound(50, (char*) FileName);}}}         // play on the sound channel
+    return(0);                                        // return number not relevant for sounds
   default:                                            // use default treatment for undefined types
-    return(0);}}
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
+
+byte EX_Rollergames(byte Type, byte Command){
+	static byte LastMusic;
+	switch(Type){
+	case SoundCommandCh2:                               // sound commands for channel 1
+		if (!Command){                                    // sound command 0x00 - stop sound
+			AfterSound = 0;
+			StopPlayingSound();
+			AfterMusic = 0;
+			StopPlayingMusic();}
+		else if (Command == 32 || Command == 64) { }			// unknown commands
+		else if (Command > 95 && Command < 100) {         // music volume command 0x6X
+			MusicVolume = Command - 96;}
+		else if (Command == 1) {                          // music track 1
+			if (LastMusic != 1) {
+				LastMusic = 1;
+				PlayMusic(50, "1_01.snd");                    // play non looping part of music track 1
+				QueueNextMusic("1_01L.snd");}}                // queue looping part as next music to be played
+		else if (Command == 3 || Command == 65) {         // music track 3 identical to 0x41
+			if (LastMusic != 3) {
+				LastMusic = 3;
+				PlayMusic(50, "1_03.snd");                    // play non looping part of music track
+				QueueNextMusic("1_03L.snd");}}                // queue looping part as next music to be played
+		else if (Command == 4) {                          // music track 0x04
+			if (LastMusic != 4) {
+				LastMusic = 4;
+				PlayMusic(50, "1_04.snd");                    // play music track
+				QueueNextMusic("1_04.snd");}}                 // track is looping so queue it also
+		else if (Command == 6) {                          // music track 6 Multiball start
+			if (LastMusic != 6) {
+				LastMusic = 6;
+				PlayMusic(50, "1_06.snd");                    // play non looping part of music track
+				QueueNextMusic("1_06L.snd");}}                // queue looping part as next music to be played
+		else if (Command == 7) {                          // music track 0x07
+			if (LastMusic != 7) {
+				LastMusic = 7;
+				PlayMusic(50, "1_07.snd");                    // play music track
+				QueueNextMusic("1_07.snd");}}                 // track is looping so queue it also
+		else if (Command == 8) {                          // music track 8 Multiball lock
+			if (LastMusic != 8) {
+				LastMusic = 8;
+				PlayMusic(50, "1_08.snd");                    // play non looping part of music track
+				QueueNextMusic("1_08L.snd");} }               // queue looping part as next music to be played
+		else if (Command == 9 || Command == 66) {         // music track 9 identical to 0x42
+			if (LastMusic != 9) {
+				LastMusic = 9;
+				PlayMusic(50, "1_09.snd");                    // play non looping part of music track
+				QueueNextMusic("1_09L.snd");}}                // queue looping part as next music to be played
+		else if (Command == 11) {                         // music track 0x0b
+			if (LastMusic != 11) {
+				LastMusic = 11;
+				PlayMusic(50, "1_0bL.snd");                   // play music track
+				QueueNextMusic("1_0bL.snd");}}                // track is looping so queue it also
+		else if (Command == 12) {                         // music track 0x0c
+			if (LastMusic != 12) {
+				LastMusic = 12;
+				PlayMusic(50, "1_0c.snd");                    // play non looping part of music track
+				QueueNextMusic("1_0cL.snd");}}                // queue looping part as next music to be played
+		else if (Command == 13) {                         // music track 0x0d
+			if (LastMusic != 13) {
+				LastMusic = 13;
+				PlayMusic(50, "1_0d.snd");                    // play non looping part of music track
+				QueueNextMusic("1_0dL.snd");}}                // queue looping part as next music to be played
+		else if (Command == 14) {                         // music track 0x0e
+			if (LastMusic != 14) {
+				LastMusic = 14;
+				PlayMusic(50, "1_0e.snd");                    // play non looping part of music track
+				QueueNextMusic("1_0eL.snd");}}                // queue looping part as next music to be played
+		else if (Command == 15) {                         // music track 0x0f
+			if (LastMusic != 15) {
+				LastMusic = 15;
+				PlayMusic(50, "1_0f.snd");                    // play music track
+				QueueNextMusic("1_0bL.snd");}}                // queue looping part as next music to be played
+		else if (Command == 67) {                         // music track 0x43
+			if (LastMusic != 67) {
+				LastMusic = 67;
+				PlayMusic(50, "1_43.snd");                    // play non looping part of music track
+				QueueNextMusic("1_43L.snd");}}                // queue looping part as next music to be played
+		else if (Command == 68) {                         // music track 0x44
+			if (LastMusic != 68) {
+				LastMusic = 68;
+				PlayMusic(50, "1_44.snd");                    // play non looping part of music track
+				QueueNextMusic("1_43L.snd");}}                // queue looping part as next music to be played
+		else if (Command == 69) {                         // music track 0x45
+			if (LastMusic != 69) {
+				LastMusic = 69;
+				PlayMusic(50, "1_45.snd");                    // play non looping part of music track
+				QueueNextMusic("1_09L.snd");}}                // queue looping part as next music to be played
+		else if (Command == 75) {                         // music track 0x4b
+			if (LastMusic != 75) {
+				LastMusic = 75;
+				PlayMusic(50, "1_4b.snd");                    // play non looping part of music track
+				QueueNextMusic("1_08L.snd");}}                // queue looping part as next music to be played
+		else if (Command == 76) {                         // music track 0x4c
+			if (LastMusic != 76) {
+				LastMusic = 76;
+				PlayMusic(50, "1_0dL.snd");                   // play non looping part of music track
+				QueueNextMusic("1_0dL.snd");}}                // queue looping part as next music to be played
+		else {                                            // standard sound
+			if (Command == 78) {                            // 0x4e ends music track
+				StopPlayingMusic();}
+			char FileName[9] = "1_00.snd";                  // handle standard sound
+			if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+				PlaySound(51, (char*) FileName);}}
+		return(0);
+	default:                                            // use default treatment for undefined types
+		return(0);}}
+
+byte EX_BlockAll(byte Type, byte Command) {
+  UNUSED(Type);
+  UNUSED(Command);
+  return(1);}
 
 byte EX_Blank(byte Type, byte Command){
   switch(Type){
@@ -557,7 +689,7 @@ void EX_Init(byte GameNumber) {
     break;
   case 20:                                            // Jungle Lord
     EX_EjectSolenoid = 2;                             // specify eject coil for improved ball release
-    USB_SolTimes[20] = 0;                             // allow permanent on state for magna save relais
+    USB_SolTimes[20] = 0;                             // allow permanent on state for magna save relay
     USB_SolTimes[21] = 0;
     PinMameException = EX_JungleLord;                 // use exception rules for Jungle Lord
     break;
@@ -566,12 +698,18 @@ void EX_Init(byte GameNumber) {
     break;
   case 34:                                            // Black Knight
     EX_EjectSolenoid = 6;                             // specify eject coil for improved ball release
-    USB_SolTimes[8] = 0;                              // allow permanent on state for magna save relais
+    USB_SolTimes[8] = 0;                              // allow permanent on state for magna save relay
     USB_SolTimes[9] = 0;
     PinMameException = EX_BlackKnight;                // use exception rules for Jungle Lord
     break;
+  case 39:                                            // Comet
+    PinMameException = EX_Comet;                      // use exception rules for Comet
+    break;
   case 43:                                            // Pinbot
     PinMameException = EX_Pinbot;                     // use exception rules for Pinbot
+    break;
+  case 44:                                            // F-14 Tomcat
+    PinMameException = EX_F14Tomcat;                  // use exception rules for Tomcat
     break;
   case 67:                                            // Rollergames
     PinMameException = EX_Rollergames;                // use exception rules for Rollergames

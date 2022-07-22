@@ -11,6 +11,36 @@ If this doesn't work then try a different SD card. I had several SD cards of the
 However, some sound sequences might just be too challenging for your SD cards.  
 The solution is to record the whole sequence into one single sound file and to play this with a high priority. This requires only one file to be opened for the whole sequence and the high priority blocks all subsequent sound commands from PinMame as long as the file is being played.
 
+## Unknown Command error message
+
+If you're using the APC with Lisy/PinMame and the 'Unknown Command' error message followed by a number pops up on your lower displays then you have a problem with your serial communication.
+
+This usually happens when Lisy/PinMame is playing sound files from the SD card. The reason is that an SD-card needs several ms to open a file. During this time the APC SW cannot process any commands coming in on the serial interface which means they have to be stored in the receive buffer.  
+The standard size of the DUE's serial buffer is 128 bytes which was sufficient for the SD-cards I did my tests with. Even though these were cheap and ordinary cards it still might be that your card is even slower.  
+Of course you can try another SD-card and hope that this one is faster, but you can also increase the size of the serial buffer. The problem is that this setting is part of the Arduino libraries which makes it a bit cumbersome to find at least with the Arduino IDE.
+
+If you're using Sloeber, the Arduino plugin for Eclipse you can simply take a look into your 'Project Explorer' and look for the file RingBuffer.h as shown below:
+
+![Ringbuffer](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/Ringbuffer.png)
+
+For the Arduino IDE this is a bit more complicated.  
+In the preferences window of your Arduino IDE you should see a link to some preferences.txt file in the lower left corner. We don't care about the file, but the path is important. It should look somehow like this:
+
+    C:\Users\user\AppData\Local\Arduino15 
+
+Follow the path and then proceed to 
+
+    C:\Users\user\AppData\Local\Arduino15\packages\arduino\hardware\sam\1.6.12\cores\arduino
+    
+where you should find the RingBuffer.h file.
+
+In the file there's the line
+
+    #define SERIAL_BUFFER_SIZE 128
+    
+which sets the buffer size to 128 bytes.  
+Set the size to 256 bytes and your 'Unknown Command' errors should be gone.
+
 ## Damaged Arduino clone
 
 If you're using a chinese clone of the Arduino DUE which just stopped working and draws a huge current instead, then it's most probably a blown buck converter IC.  
