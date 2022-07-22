@@ -16,7 +16,7 @@ byte Command = 0;                                       // LED command currently
 byte CommandCount = 0;                                  // counts the bytes received by the color select command
 byte SystemFlags = 0;                                   // to indicate special system states
 byte OwnCommands = 0;                                   // indicate active own LED commands
-uint16_t OwnCommandStep = 0;                                // needed for own LED commands
+byte OwnCommandStep = 0;                                // needed for own LED commands
 byte NumOfLEDbytes = 8;                                 // stores the length of the transferred LED pattern
 byte TurnOn[6][24];                                      // the list of the lamps currently being turned on
 byte TurnOff[6][24];                                     // the list of the lamps currently being turned off

@@ -19,7 +19,6 @@
 byte USB_ChangedSwitches[64];                         // moved here from USBcontrol
 const byte PME_GIon[4] = {255, 255, 255, 255};        // all GI LEDs on
 const byte PME_GIoff[4] = {0, 0, 0, 0};               // all GI LEDs off
-
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
@@ -567,7 +566,6 @@ void EX_AttractLEDeffects2(byte State) {              // call with State = 1, st
     LEDreturn = EX_AttractLEDeffects2;                // come back after the colors are set
     ShowLEDpatterns(1);
     break;}}
-
 
 byte EX_Comet(byte Type, byte Command) {
   static byte LastSwitch;                             // stores the number of the last activated switch

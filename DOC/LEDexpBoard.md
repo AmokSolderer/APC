@@ -14,6 +14,16 @@ The schematic, Gerber (and drilling) as well as an SVG file are located in the [
 
 The SW is located in the same folder as the HW.
 
+## Examples
+
+### GI LEDs
+
+One relatively simple change which has a huge effect is to replace the light bulbs of the GI with LEDs. The following video shows how this looks in [my Comet](https://youtu.be/kLWVUdhSwfo).
+
+![APC Comet LED](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/CometLED.jpg)
+
+The corresponding code can be found in the AmokPrivate branch of this repository.
+
 ## Usage
 
 Depending on the 'LED lamps' setting the LED strip is used as a replacement for the controlled lamps (1-64) or the LEDs are added to the normal lamps which means the first LED corresponds to lamp number 65. Hence, if you choose 'playfield' in the 'LED lamps' setting in the 'System Settings' menu of the APC, the normal controlled lamps will be switched off and the LED strip will be used instead. The first LED of the strip will then work as lamp 1 and so on. If you choose 'additional' the normal lamp matrix will stay active and the LEDs will get the numbers 64+X.  
@@ -62,34 +72,19 @@ In all of these patterns every LED is represented by one bit and the LED Color M
 For the color modes 0 and 1 every bit in the pattern determines which LED is lit and which is not. Normally the internal LEDstatus array is used for this. This is why LEDpattern is pointing to LEDstatus after the LED handling is initialized by LEDinit() and it's also the reason for TurnOnLamp/TurnOffLamp to set/clear the corresponding bits in this pattern.  
 The color modes 2 and 3 are different, as a set bit means that the color of the corresponding LED is changed to the LEDsetColor while a zero means that the LED is not affected at all. Hence, you can not turn off an LED in one of these modes.  
 Mode 2 will additionally turn on the selected LEDs while mode 3 will just change their color.  
-Mode 4 freezes the status of the LEDs. This is useful for the time needed to change the pattern (refresh cycle) to avoid that LEDs from the wrong pattern are affected accidentally.
+Mode 4 freezes the status of the LEDs.
 
-If you just want to change the color of all lit LEDs then you can simply change the color mode to 2 or 3 and back, but if additional LEDs are lit that must not be affected then it get's a bit more tricky.  
-The following code shows a handler that uses color mode 3 to change the color according to LEDcolorPattern. In this case the pattern selects the LEDs 1-8 (65-72 for 'additional' LEDs) in a system with 64 LEDs to the color previously determined by LEDsetColor:
+LED patterns are only changed at the end of the refresh cycle when the LED commands are being to the LED_Exp board as well. That means they're synchronized and you can change the LEDsetColor and the pattern at the same time without the risk of the new color affecting the LEDs selected in the previous pattern.  
+Let's assume you have 32 LEDs in your system and you want to change every third LED to a new color. A quick way to do this is to switch to LEDsetColorMode 2 or 3 and then do 
 
-    byte LEDcolorPattern[8] = {0b11111111,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000};
-
-    void TT_SelectBulkLEDcolor(byte State) {              // Change the color of several LEDs without turning them on
-      switch (State) {
-      case 1:                                             // step 1
-        LEDsetColorMode(4);                               // freeze LED states
-        ActivateTimer(20, 2, TT_SelectBulkLEDcolor);      // wait 20ms for the refresh cycle to end
-        break;
-      case 2:                                             // step 2
-        LEDsetColorMode(3);                               // LEDs will change their color without being turned on
-        LEDpattern = LEDcolorPattern;                     // apply pattern to specify which LEDs are affected
-        ActivateTimer(20, 3, TT_SelectBulkLEDcolor);      // wait 20ms for the refresh cycle to end
-        break;
-      case 3:                                             // step 3
-        LEDsetColorMode(4);                               // freeze LED states
-        ActivateTimer(20, 4, TT_SelectBulkLEDcolor);      // wait 20ms for the refresh cycle to end
-        break;
-      case 4:
-        LEDsetColorMode(1);                               // LEDs keep their color
-        LEDinit();                                        // switch back to normal lamp pattern
-        break;}}
-
-To be sure that both of your patterns don't interfere with each other you have to switch to color mode 4 and wait for one refresh cycle before changing the pattern. After LEDcolorPattern is selected you also need to wait for one cycle for the whole pattern to be transferred to the LED_Exp board. Then you also need to freeze the LEDs for one cycle before you can switch the pattern back to default.
+                   //LED number..00000000....11111110....22222111....33322222
+                     // Color....12345678....65432109....43210987....21098765
+    const byte ColorPattern = {0b01001001, 0b10010010, 0b00100100, 0b01001001};
+    
+    LEDpattern = ColorPattern;
+    LEDsetColor(Red, Green, Blue);
+    
+Note that the TurnOnLamp and TurnOffLamp commands have no effect as long as LEDpattern does not point to LEDstatus.
 
 The ShowLEDpatterns command is another example of how color effects can be done. It's similar to the ShowLampPatterns command and changes the color of LEDs according to two arrays. Here's a simple example for 64 LEDs:
 

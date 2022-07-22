@@ -148,10 +148,9 @@ void USB_SwitchHandler(byte Switch) {
   if (!PinMameException(SwitchActCommand, Switch)){   // check for machine specific exceptions
     switch (Switch) {
     case 8:                                           // high score reset
-      //digitalWrite(Blanking, LOW);                    // invoke the blanking
-      EX_AttractLEDeffects2(1);
-      //StopPlayingMusic();
-      //StopPlayingSound();
+      digitalWrite(Blanking, LOW);                    // invoke the blanking
+      StopPlayingMusic();
+      StopPlayingSound();
       break;
     case 72:                                          // advance button
       while (USB_ChangedSwitches[i] && (i<63)) {

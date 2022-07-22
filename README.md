@@ -4,7 +4,7 @@ Before I explain what the APC is, let's first clarify what it is not.
  
 The APC is no commercial drop-in replacement board. It is intended for people with some basic knowledge of programming and electronics who want to expand the possibilities of their pinball machine. That means it's going to require some work to set up your game even if you don't want to change anything, but run the original rules with PinMame. Take a look at the [PinMame page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) to see what I mean.  
 As this is a private project with no commercial interest, you may use the APC at your own risk and I'm not liable for any damage that might occur to your machine while using it.  
-Some special machines might even not work with the APC or require additional HW. Please check the [Known issues](https://github.com/AmokSolderer/APC/tree/V00.23#Known-issues) section for details.
+Some special machines might even not work with the APC or require additional HW. Please check the [Known issues](https://github.com/AmokSolderer/APC/tree/master/README.md#known-issues) section for details.
 
 ## Overview
 
@@ -27,19 +27,19 @@ See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impr
 
 * Hardware extensions interface. The pinout is compatible to the Sound Overlay Solenoid Board used in games like Whirlwind, but it is upgraded a bit to support all kind of self made hardware
 * A socket for a Raspberry Pi which can be used to run PinMame on the APC board
-* [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) are game specific code blocks that act like a man-in-the-middle between the game HW and PinMame. That means even if your game is running in PinMame you can still introduce some changes. Take a look at my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) to see how a few lines of code can change a game dramatically.
+* [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) are game specific code blocks that act like a man-in-the-middle between the game HW and PinMame. That means even if your game is running in PinMame you can still introduce some changes. Take a look at my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) or my [Comet ball saver](https://youtu.be/JbgMa_pn0Lo) to see how a few lines of code can change a game dramatically.
 
 Typical examples for the use of PinMameExceptions are:
 
 * Pre System11 games usually use just one audio channel, so you could add a background music track. Wouldn't it be great if your Disco Fever would play old Disco music in the BG?
-* Add HW toys like a shaker motor or flashers and the necessary rules to drive them. If your game has no solennoid drivers left, then just add the [Solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) to get 8 more. You can also use the [LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) to control RGB-LED stripes or just connect your own individual HW.
+* Add HW toys like a shaker motor or flashers and the necessary rules to drive them. If your game has no free solenoid drivers left, then just add the [Solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) to get 8 more. You can also use the [LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) to control RGB-LED stripes or just connect your own individual HW.
 * Add a ball saver. Ball savers are quite easy to realize. All you have to do is not to tell PinMame that the ball has reached the outhole, but to kick it into the plunger lane instead. Watch my [Comet video](https://youtu.be/JbgMa_pn0Lo) to see how it can be done with just a few [lines of code](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#How-to-add-a-ball-saver).
 
 The picture below shows an APC prototype in my Pinbot.
 
 ![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
 
-To see the APC in action take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
+To see the APC in an early stage you might want take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
 
 ## Software
 
@@ -81,13 +81,13 @@ The APC features an HW extensions interface which is an 8 bit bus with several e
 
 The first board is an LED expansion board to control WS2812 based LED-Strips with the APC. For more information about this board please refer to the [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) section.
 
-The following picture shows the APC 2.0 in a Black Knight with the LED Expansion board connected to the hardware extensions interface.
+The following picture shows the APC in a Comet with the LED Expansion board connected to the hardware extensions interface.
 
-![Arduino Pinball Controller](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/BKopen.JPG)
+![APC Comet LED](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/CometLED.jpg)
 
 A short video with this setup can be found here : 
 
-[Hardware extensions interface video](https://youtu.be/8BnVTpKq-2Y)
+[GI LEDs](https://youtu.be/kLWVUdhSwfo)
 
 The second board is a [driver for 8 additional solenoids](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md). The current version is mainly suited for use with an own power supply (e.g. for 24V shaker motors).
 
@@ -178,3 +178,15 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 
 7 APC games - Complete games running natively on the APC (no PinMame)  
 7.1 [Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) - Complete game code with some additional features
+
+8 Videos - For the generation Youtube  
+8.1 [What's new in APC3](https://youtu.be/4EgOTJyxMXo) - Gives an overview about what the APC is and what version 3 can do  
+8.2 [Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw) - Shows the use of PinMame in an early stage  
+8.3 [PinMameExceptions](https://youtu.be/bbfhH_-gMfE) - What is a PinMameException and how does it work?  
+8.4 [Adding a ball saver with PinMameExceptions](https://youtu.be/JbgMa_pn0Lo) - Another example of how to use PinMameExceptions  
+8.5 [APC MPF](https://youtu.be/w4Po8OE5Zkw) - A simple demonstration of the APC being controlled by MPF  
+8.6 [GI LEDs](https://youtu.be/kLWVUdhSwfo) - Shows the LED_exp board in action  
+8.7 [Arduino Pinball Controller hardware extensions interface](https://youtu.be/8BnVTpKq-2Y) - Also shows the use of the LED_exp board, but in an early SW stage  
+8.8 [APC Black Knight demo](https://youtu.be/N5ipyHBKzgs) - My first APC video. Not really up to date any more, but it shows the basics  
+8.9 [How to use numerical displays](https://youtu.be/2A5Tt9FQ2as) - How to navigate the menus when you can't read any text  
+8.10 [How to adjust the display setting to a 2x16 alphanumerical display](https://youtu.be/XqPWbm-HWM8) - How to find the right setting to make these displays work
