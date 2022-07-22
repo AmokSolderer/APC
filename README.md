@@ -178,3 +178,15 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 
 7 APC games - Complete games running natively on the APC (no PinMame)  
 7.1 [Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) - Complete game code with some additional features
+
+8 Videos - For the generation Youtube  
+8.1 [What's new in APC3](https://youtu.be/4EgOTJyxMXo) - Gives an overview about what the APC is and what version 3 can do  
+8.2 [Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw) - Shows the use of PinMame in an early stage  
+8.3 [PinMameExceptions](https://youtu.be/bbfhH_-gMfE) - What is a PinMameException and how does it work?  
+8.4 [Adding a ball saver with PinMameExceptions](https://youtu.be/JbgMa_pn0Lo) - Another example of how to use PinMameExceptions  
+8.5 [APC MPF](https://youtu.be/w4Po8OE5Zkw) - A simple demonstration of the APC being controlled by MPF  
+8.6 [GI LEDs](https://youtu.be/kLWVUdhSwfo) - Shows the LED_exp board in action  
+8.7 [Arduino Pinball Controller hardware extensions interface](https://youtu.be/8BnVTpKq-2Y) - Also shows the use of the LED_exp board, but in an early SW state  
+8.8 [APC Black Knight demo](https://youtu.be/N5ipyHBKzgs) - My first APC video. Not really up to date any more, but it shows the basics
+8.9 [How to use numerical displays](https://youtu.be/2A5Tt9FQ2as) - How to navigate the menus when you can't read any text
+8.10 [How to adjust the display setting to a 2x16 alphanumerical display](https://youtu.be/XqPWbm-HWM8) - How to find the right setting to make these displays work
