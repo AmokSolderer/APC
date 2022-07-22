@@ -27,19 +27,19 @@ See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impr
 
 * Hardware extensions interface. The pinout is compatible to the Sound Overlay Solenoid Board used in games like Whirlwind, but it is upgraded a bit to support all kind of self made hardware
 * A socket for a Raspberry Pi which can be used to run PinMame on the APC board
-* [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) are game specific code blocks that act like a man-in-the-middle between the game HW and PinMame. That means even if your game is running in PinMame you can still introduce some changes. Take a look at my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) to see how a few lines of code can change a game dramatically.
+* [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) are game specific code blocks that act like a man-in-the-middle between the game HW and PinMame. That means even if your game is running in PinMame you can still introduce some changes. Take a look at my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) or my [Comet ball saver](https://youtu.be/JbgMa_pn0Lo) to see how a few lines of code can change a game dramatically.
 
 Typical examples for the use of PinMameExceptions are:
 
 * Pre System11 games usually use just one audio channel, so you could add a background music track. Wouldn't it be great if your Disco Fever would play old Disco music in the BG?
-* Add HW toys like a shaker motor or flashers and the necessary rules to drive them. If your game has no solennoid drivers left, then just add the [Solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) to get 8 more. You can also use the [LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) to control RGB-LED stripes or just connect your own individual HW.
+* Add HW toys like a shaker motor or flashers and the necessary rules to drive them. If your game has no free solenoid drivers left, then just add the [Solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) to get 8 more. You can also use the [LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) to control RGB-LED stripes or just connect your own individual HW.
 * Add a ball saver. Ball savers are quite easy to realize. All you have to do is not to tell PinMame that the ball has reached the outhole, but to kick it into the plunger lane instead. Watch my [Comet video](https://youtu.be/JbgMa_pn0Lo) to see how it can be done with just a few [lines of code](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#How-to-add-a-ball-saver).
 
 The picture below shows an APC prototype in my Pinbot.
 
 ![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
 
-To see the APC in action take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
+To see the APC in an early stage you might want take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
 
 ## Software
 
@@ -186,7 +186,7 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 8.4 [Adding a ball saver with PinMameExceptions](https://youtu.be/JbgMa_pn0Lo) - Another example of how to use PinMameExceptions  
 8.5 [APC MPF](https://youtu.be/w4Po8OE5Zkw) - A simple demonstration of the APC being controlled by MPF  
 8.6 [GI LEDs](https://youtu.be/kLWVUdhSwfo) - Shows the LED_exp board in action  
-8.7 [Arduino Pinball Controller hardware extensions interface](https://youtu.be/8BnVTpKq-2Y) - Also shows the use of the LED_exp board, but in an early SW state  
+8.7 [Arduino Pinball Controller hardware extensions interface](https://youtu.be/8BnVTpKq-2Y) - Also shows the use of the LED_exp board, but in an early SW stage  
 8.8 [APC Black Knight demo](https://youtu.be/N5ipyHBKzgs) - My first APC video. Not really up to date any more, but it shows the basics  
 8.9 [How to use numerical displays](https://youtu.be/2A5Tt9FQ2as) - How to navigate the menus when you can't read any text  
 8.10 [How to adjust the display setting to a 2x16 alphanumerical display](https://youtu.be/XqPWbm-HWM8) - How to find the right setting to make these displays work

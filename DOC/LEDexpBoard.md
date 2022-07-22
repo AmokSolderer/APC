@@ -14,6 +14,14 @@ The schematic, Gerber (and drilling) as well as an SVG file are located in the [
 
 The SW is located in the same folder as the HW.
 
+## Examples
+
+### GI LEDs
+
+One relatively simple change which has a huge effect is to replace the light bulbs of the GI with LEDs. The following video shows how this looks in [my Comet](https://youtu.be/kLWVUdhSwfo).
+
+The corresponding code can be found in the AmokPrivate branch of this repository.
+
 ## Usage
 
 Depending on the 'LED lamps' setting the LED strip is used as a replacement for the controlled lamps (1-64) or the LEDs are added to the normal lamps which means the first LED corresponds to lamp number 65. Hence, if you choose 'playfield' in the 'LED lamps' setting in the 'System Settings' menu of the APC, the normal controlled lamps will be switched off and the LED strip will be used instead. The first LED of the strip will then work as lamp 1 and so on. If you choose 'additional' the normal lamp matrix will stay active and the LEDs will get the numbers 64+X.  
@@ -168,8 +176,3 @@ Let's use LEDsetColor as an example. This command has 4 bytes (command and 3 col
       LEDhandling(6, Blue);
       LEDhandling(7, 4);}
   
-### GI LEDs
-
-One relatively simple change which has a huge effect is to replace the light bulbs of the GI with LEDs. The following video shows how this looks in [my Comet](https://youtu.be/kLWVUdhSwfo).
-
-The corresponding code can be found in the AmokPrivate branch of this repository.

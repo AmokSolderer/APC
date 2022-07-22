@@ -35,6 +35,8 @@ The purpose of this is to enable state machines that are initially called from t
 
 * My [APC Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) game code has been updated.
 
+* My Pinbot code has also improved a lot, but I don't have an own section for it yet.
+
 * A new [Known issues](https://github.com/AmokSolderer/APC/tree/master#known-issues) section has been added to point out problems and limits of the APC.
 
 ## July 2021
