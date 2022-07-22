@@ -131,7 +131,7 @@ Note that this is not a problem of the APC itself, but occurs only when Lisy/Pin
 
 ### Rollergames music problems
 
-The Rollergames implementation in PinMame has a bug in the music control. For some reason a new music track is tarted every few seconds. Most of the time it's the same track that's already running. I have therefore implemented a workaround in the PinMameExceptions of the Rollergames which prevents that the running music track can be restarted. This improves the situation somehow, but more sophisticated PinMameExceptions are needed to really fix this.  
+The Rollergames implementation in PinMame has a bug in the music control. For some reason a new music track is started every few seconds. Most of the time it's the same track that's already running. I have therefore implemented a workaround in the PinMameExceptions of the Rollergames which prevents that the running music track can be restarted. This improves the situation somehow, but more sophisticated PinMameExceptions are needed to really fix this.  
 Up to now only Rollergames seems to be affected, other machines using the same audio boards are working fine.
 
 ## Feedback
