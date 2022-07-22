@@ -81,13 +81,13 @@ The APC features an HW extensions interface which is an 8 bit bus with several e
 
 The first board is an LED expansion board to control WS2812 based LED-Strips with the APC. For more information about this board please refer to the [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) section.
 
-The following picture shows the APC 2.0 in a Black Knight with the LED Expansion board connected to the hardware extensions interface.
+The following picture shows the APC in a Comet with the LED Expansion board connected to the hardware extensions interface.
 
-![Arduino Pinball Controller](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/BKopen.JPG)
+![APC Comet LED](https://github.com/AmokSolderer/APC/blob/V00.23/DOC/PICS/CometLED.jpg)
 
 A short video with this setup can be found here : 
 
-[Hardware extensions interface video](https://youtu.be/8BnVTpKq-2Y)
+[GI LEDs](https://youtu.be/kLWVUdhSwfo)
 
 The second board is a [driver for 8 additional solenoids](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md). The current version is mainly suited for use with an own power supply (e.g. for 24V shaker motors).
 
@@ -187,6 +187,6 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 8.5 [APC MPF](https://youtu.be/w4Po8OE5Zkw) - A simple demonstration of the APC being controlled by MPF  
 8.6 [GI LEDs](https://youtu.be/kLWVUdhSwfo) - Shows the LED_exp board in action  
 8.7 [Arduino Pinball Controller hardware extensions interface](https://youtu.be/8BnVTpKq-2Y) - Also shows the use of the LED_exp board, but in an early SW state  
-8.8 [APC Black Knight demo](https://youtu.be/N5ipyHBKzgs) - My first APC video. Not really up to date any more, but it shows the basics
-8.9 [How to use numerical displays](https://youtu.be/2A5Tt9FQ2as) - How to navigate the menus when you can't read any text
+8.8 [APC Black Knight demo](https://youtu.be/N5ipyHBKzgs) - My first APC video. Not really up to date any more, but it shows the basics  
+8.9 [How to use numerical displays](https://youtu.be/2A5Tt9FQ2as) - How to navigate the menus when you can't read any text  
 8.10 [How to adjust the display setting to a 2x16 alphanumerical display](https://youtu.be/XqPWbm-HWM8) - How to find the right setting to make these displays work
