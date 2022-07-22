@@ -20,6 +20,8 @@ The SW is located in the same folder as the HW.
 
 One relatively simple change which has a huge effect is to replace the light bulbs of the GI with LEDs. The following video shows how this looks in [my Comet](https://youtu.be/kLWVUdhSwfo).
 
+![APC Comet LED](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/CometLED.jpg)
+
 The corresponding code can be found in the AmokPrivate branch of this repository.
 
 ## Usage
