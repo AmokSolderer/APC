@@ -4,7 +4,7 @@ Before I explain what the APC is, let's first clarify what it is not.
  
 The APC is no commercial drop-in replacement board. It is intended for people with some basic knowledge of programming and electronics who want to expand the possibilities of their pinball machine. That means it's going to require some work to set up your game even if you don't want to change anything, but run the original rules with PinMame. Take a look at the [PinMame page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) to see what I mean.  
 As this is a private project with no commercial interest, you may use the APC at your own risk and I'm not liable for any damage that might occur to your machine while using it.  
-Some special machines might even not work with the APC or require additional HW. Please check the [Known issues](https://github.com/AmokSolderer/APC/tree/master/README.md#known-issues) section for details.
+Some special machines might even not work with the APC or require additional HW. Please check the [Known issues](https://github.com/AmokSolderer/APC#known-issues) section for details.
 
 ## Overview
 
@@ -111,7 +111,7 @@ The PinMame support is still under development and even if a generation is basic
 |11b| Not yet | Not yet | Yes |  |
 |11c| Yes | Yes | Yes | The wires of three connectors must be extended |
 
-The following Data East MPUs are almost identical to their counterparts from Williams but DE used 2.1 audio boards. Check the [known issues](https://github.com/AmokSolderer/APC/README.md#stereo-audio) for details
+The following Data East MPUs are almost identical to their counterparts from Williams but DE used 2.1 audio boards. Check the [known issues](https://github.com/AmokSolderer/APC#known-issues) for details
 
 | Data East Version | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|

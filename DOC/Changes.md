@@ -37,7 +37,7 @@ The purpose of this is to enable state machines that are initially called from t
 
 * My Pinbot code has also improved a lot, but I don't have an own section for it yet.
 
-* A new [Known issues](https://github.com/AmokSolderer/APC/tree/master/README.md#known-issues) section has been added to point out problems and limits of the APC.
+* A new [Known issues](https://github.com/AmokSolderer/APC#known-issues) section has been added to point out problems and limits of the APC.
 
 ## July 2021
 
