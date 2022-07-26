@@ -17,7 +17,7 @@ SdFat SD;
 #define AllData 510
 #define HwExtStackPosMax 20                           // size of the HwExtBuffer
 
-const char APC_Version[6] = "00.23";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "00.30";                  // Current APC version - includes the other INO files also
 
 void HandleBoolSetting(bool change);
 void HandleTextSetting(bool change);
@@ -1617,7 +1617,7 @@ bool QuerySolenoid(byte Solenoid) {                   // determine the current s
   Solenoid--;
   return SolBuffer[Solenoid / 8] & (1<<(Solenoid % 8));}
 
-void ActA_BankSol(byte Solenoid) {
+void ActA_BankSol(byte Solenoid) {                    // activate an A bank solenoid with the default solenoid time
   if (!SolWaiting[NextSolSlot][0]) {
     SolWaiting[NextSolSlot][0] = Solenoid;
     SolWaiting[NextSolSlot][1] = 0;
@@ -1626,7 +1626,7 @@ void ActA_BankSol(byte Solenoid) {
   else {
     ErrorHandler(28,0,Solenoid);}}
 
-void ActC_BankSol(byte Solenoid) {
+void ActC_BankSol(byte Solenoid) {                    // activate a C bank solenoid with the default solenoid time
   if (!SolWaiting[NextSolSlot][0]) {
     SolWaiting[NextSolSlot][0] = Solenoid+24;
     SolWaiting[NextSolSlot][1] = 0;
