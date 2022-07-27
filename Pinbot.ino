@@ -614,7 +614,6 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
   *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
   BlinkScore(1);                                      // turn on score blinking
   PB_ClearChest();                                    // turn off chest lamps
-  PB_CountLitChestLamps();                            // check how many chest lamps are lit
   if ((PB_Chest_Status[Player] > 100)) {              // > 100 means visor has to be open
     PB_Chest_Status[Player] = PB_Chest_Status[Player] - 100; // use it as a counter for opened visors
     PB_LampsToLight = 1;
@@ -1639,16 +1638,6 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
       Pos++;}
     if (Buffer2 == PB_LampsToLight) {                 // row already full
       PlaySound(50, "0_6f.snd");}}}
-
-void PB_CountLitChestLamps() {                        // count the lit chest lamps for the current player
-  byte Buffer;
-  PB_LitChestLamps[Player-1] = 0;                     // reset counter
-  for (byte x=0; x<5; x++) {                          // for all rows
-    Buffer = PB_ChestLamp[Player-1][x];               // buffer the current row
-    for (byte i=0; i<5; i++) {                        // for all columns
-      if (Buffer & 1) {                               // lamp lit?
-        PB_LitChestLamps[Player-1]++;}                // increase counter
-      Buffer = Buffer>>1;}}}                          // shift buffer to the next lamp
 
 void PB_ResetPlayersChestLamps(byte Player) {         // Reset the chest lamps for this player
   for (byte c=0; c<5; c++) {
