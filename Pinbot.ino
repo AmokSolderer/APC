@@ -469,7 +469,8 @@ void PB_ShowMessage(byte Seconds) {                   // switch to the second di
   static bool Blocked = 0;                            // if seconds = 254 all subsequent ShowMessage commands are blocked
   if (Seconds) {                                      // time <> 0?
     if (Timer) {                                      // timer already running?
-      KillTimer(Timer);}                              // kill it
+      KillTimer(Timer);                               // kill it
+      Timer = 0;}
     if (Seconds == 254) {                             // block further commands
       Blocked = true;}
     else if (Seconds == 255) {                        // release the blocking
