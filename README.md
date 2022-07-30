@@ -4,7 +4,7 @@ Before I explain what the APC is, let's first clarify what it is not.
  
 The APC is no commercial drop-in replacement board. It is intended for people with some basic knowledge of programming and electronics who want to expand the possibilities of their pinball machine. That means it's going to require some work to set up your game even if you don't want to change anything, but run the original rules with PinMame. Take a look at the [PinMame page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) to see what I mean.  
 As this is a private project with no commercial interest, you may use the APC at your own risk and I'm not liable for any damage that might occur to your machine while using it.  
-Some special machines might even not work with the APC or require additional HW. Please check the [Known issues](https://github.com/AmokSolderer/APC/tree/master/README.md#known-issues) section for details.
+Some special machines might even not work with the APC or require additional HW. Please check the [Known issues](https://github.com/AmokSolderer/APC#known-issues) section for details.
 
 ## Overview
 
@@ -99,7 +99,7 @@ The following table gives an overview about the various system generations the A
 
 The PinMame support is still under development and even if a generation is basically supported you still need the audio files for your particular game. A list of available audio files and a description how to extract your own files can be found on the [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md).
 
-| System | Tested  | PinMame support | MPF support | Comment |
+| Williams System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
 |3| Not yet | Not yet | Yes|  |
 |4| Yes | Not yet | Yes|  |
@@ -111,6 +111,14 @@ The PinMame support is still under development and even if a generation is basic
 |11b| Not yet | Not yet | Yes |  |
 |11c| Yes | Yes | Yes | The wires of three connectors must be extended |
 
+The following Data East MPUs are almost identical to their counterparts from Williams but DE used 2.1 audio boards. Check the [known issues](https://github.com/AmokSolderer/APC#known-issues) for details
+
+| Data East Version | Tested  | PinMame support | MPF support | Comment |
+|--|--|--|--|--|
+|1| Not yet | Yes | Yes | audio needs a cable adapter and is only mono |
+|2| Not yet | Yes | Yes | audio needs a cable adapter and is only mono |
+|3| Yes | Yes | Yes | Only non DMD machines / audio needs a cable adapter and is only mono / probably some [cable extensions](https://pinside.com/pinball/forum/topic/arduino-pinball-controller/page/18#post-6846714) are needed |
+
 ## Changes / What's new?
 
 A history of the recent changes can be found in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md)
@@ -119,7 +127,7 @@ A history of the recent changes can be found in the [Changelog](https://github.c
 
 ### Stereo audio
 
-Some games like Jokerz! or Data East games from the end of the 80s (e.g. The Simpsons) have stereo audio boards. These are currently not supported by the APC SW.  
+Some games like Jokerz! or Data East games starting from MPU version 1 have stereo or even 2.1 audio boards. These are currently not supported by the APC SW.  
 From the HW point of view, the APC is capable of generating two independent sound channels which could also be used for stereo. But up to now they're used to generate separate channels for sounds and music which are combined in the output amplifier.  
 In order to use these machines with the APC you'd have to build a cable adapter and the audio would only be mono.
 
