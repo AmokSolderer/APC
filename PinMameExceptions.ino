@@ -15,6 +15,7 @@
 #define LED_red 6                                     // to change the color of the LED GI
 #define LED_green 7
 #define LED_blue 8
+#define USB_BGmusic 9                                 // to select an own BG music
 
 byte USB_ChangedSwitches[64];                         // moved here from USBcontrol
 const byte PME_GIallOn[4] = {255, 255, 255, 255};     // all GI LEDs on
@@ -585,8 +586,12 @@ byte EX_Comet(byte Type, byte Command) {
       StopPlayingSound();}
     else if (Command == 11) { }                       // ignore sound command 0x0b
     else if (Command == 47) {                         // play BG music
-      PlayMusic(50, "0_2f.snd");
-      QueueNextMusic("0_2f.snd");}                    // track is looping so queue it also
+      if (game_settings[USB_BGmusic]) {
+        PlayMusic(50, "MUSIC.BIN");                   // play special music
+        QueueNextMusic("MUSIC.BIN");}
+      else {
+        PlayMusic(50, "0_2f.snd");                    // play default music
+        QueueNextMusic("0_2f.snd");}}                 // track is looping so queue it also
     else {                                            // handle standard sound
       if (Command == 9) {
         MusicVolume = 4;}                             // reduce music volume
