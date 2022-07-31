@@ -62,15 +62,16 @@ struct GameDef USB_GameDefinition = {
     USB_SolTimes};                                    // Default activation times of solenoids
 
 void USB_init() {
+  Switch_Pressed = DummyProcess;
+  GameDefinition = USB_GameDefinition;                // read the game specific settings and highscores
   if (APC_settings[ConnType]) {
     if (APC_settings[ConnType] == 1) {
       OnBoardCom = false;}
     else {
-      Serial.begin(115200);}}                         // needed for USB and serial communication
-  else  if (APC_settings[DebugMode]) {                // activate serial interface in debug mode
-    Serial.begin(115200);}
-  Switch_Pressed = DummyProcess;
-  GameDefinition = USB_GameDefinition;}               // read the game specific settings and highscores
+      Serial.begin(115200);                           // needed for USB and serial communication
+      return;}}
+  if (APC_settings[DebugMode]) {                      // activate serial interface in debug mode
+    Serial.begin(115200);}}
 
 void USB_AttractMode() {                              // Attract Mode
   DispRow1 = DisplayUpper;
