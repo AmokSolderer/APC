@@ -21,6 +21,11 @@ byte USB_ChangedSwitches[64];                         // moved here from USBcont
 const byte PME_GIallOn[4] = {255, 255, 255, 255};     // all GI LEDs on
 const byte PME_GIon[4] = {255, 255, 255, 251};        // all GI LEDs on except of one
 const byte PME_GIoff[4] = {0, 0, 0, 0};               // all GI LEDs off
+const byte PME_GI1[4] = {255, 0, 0, 0};               // patterns for GI flashers
+const byte PME_GI2[4] = {0, 255, 0, 0};
+const byte PME_GI3[4] = {0, 0, 255, 0};
+const byte PME_GI4[4] = {0, 0, 0, 255};
+
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
@@ -641,10 +646,26 @@ byte EX_Comet(byte Type, byte Command) {
   case SolenoidActCommand:
     if (Command == 11) {                              // GI relais?
       LEDsetColorMode(0);
+      LEDsetColor(255, 255, 255);
       LEDpattern = PME_GIoff;}                        // turn off GI
+    else if (QuerySolenoid(11)) {                     // use GI flash effects
+      switch(Command) {
+      case 7:
+        LEDpattern = PME_GI1;
+        break;
+      case 8:
+        LEDpattern = PME_GI2;
+        break;
+      case 9:
+        LEDpattern = PME_GI3;
+        break;
+      case 10:
+        LEDpattern = PME_GI4;
+        break;}}
     return(0);
   case SolenoidRelCommand:
     if (Command == 11) {                              // GI relais?
+      LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
       LEDpattern = PME_GIon;}                         // turn on GI
     return(0);
   case LampOnCommand:
