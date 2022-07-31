@@ -1,5 +1,11 @@
 # APC News and Changelog
 
+## TBD
+
+### New SW Version V0.30
+
+* Bugfix in USBcontrol. Serial debug (USB) interface can now be used when the 'Connection type' is set to 'OnBoard' and the debug mode in the 'System Settings' is set to on.
+
 ## July 2022
 
 ### New SW Version V0.23
