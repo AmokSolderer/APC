@@ -587,10 +587,10 @@ byte EX_Comet(byte Type, byte Command) {
     else if (Command == 11) { }                       // ignore sound command 0x0b
     else if (Command == 47) {                         // play BG music
       if (game_settings[USB_BGmusic]) {
-        PlayMusic(50, "MUSIC.BIN");                   // play special music
+        PlayMusic(150, "MUSIC.BIN");                  // play special music
         QueueNextMusic("MUSIC.BIN");}
       else {
-        PlayMusic(50, "0_2f.snd");                    // play default music
+        PlayMusic(150, "0_2f.snd");                   // play default music
         QueueNextMusic("0_2f.snd");}}                 // track is looping so queue it also
     else {                                            // handle standard sound
       if (Command == 9) {
@@ -640,6 +640,7 @@ byte EX_Comet(byte Type, byte Command) {
     return(0);
   case SolenoidActCommand:
     if (Command == 11) {                              // GI relais?
+      LEDsetColorMode(0);
       LEDpattern = PME_GIoff;}                        // turn off GI
     return(0);
   case SolenoidRelCommand:
