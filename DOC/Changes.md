@@ -1,8 +1,10 @@
 # APC News and Changelog
 
-## TBD
+## August 2022
 
 ### New SW Version V0.30
+
+* Fixed a serious bug in USBcontrol. Depending on your settings this could lead to an Error 11 (or worse) ant the end of a PinMame game.
 
 * Bugfix in USBcontrol. Serial debug (USB) interface can now be used when the 'Connection type' is set to 'OnBoard' and the debug mode in the 'System Settings' is set to on.
 
