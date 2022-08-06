@@ -17,7 +17,7 @@ byte PB_ChestLightsTimer = 0;                         // number of the timer con
 byte PB_LampSweepActive = 0;                          // determines whether the backbox lamp sweep is active
 byte PB_SkillMultiplier = 0;                          // Multiplier for the skill shot value
 byte PB_DropBlinkLamp = 0;                            // number of the lamp currently blinking
-byte PB_LitChestLamps = 0;                            // amount of lit chest lamps
+byte PB_LitChestLamps[4];                             // amount of lit chest lamps for each player
 byte PB_ChestLamp[4][5];                              // status of the chest lamps for each player / one column per byte
 byte PB_Chest_Status[5];                              // number of visor openings for this player / > 100 means visor is actually open
 byte PB_Planet[5];                                    // reached planets for all players
@@ -469,7 +469,8 @@ void PB_ShowMessage(byte Seconds) {                   // switch to the second di
   static bool Blocked = 0;                            // if seconds = 254 all subsequent ShowMessage commands are blocked
   if (Seconds) {                                      // time <> 0?
     if (Timer) {                                      // timer already running?
-      KillTimer(Timer);}                              // kill it
+      KillTimer(Timer);                               // kill it
+      Timer = 0;}
     if (Seconds == 254) {                             // block further commands
       Blocked = true;}
     else if (Seconds == 255) {                        // release the blocking
@@ -508,8 +509,8 @@ void PB_AttractModeSW(byte Select) {
       PB_EnergyValue[i] = 25;                         // reset the energy value to 50K
       PB_ExBallsLit[i] = 0;                           // reset the lit extra balls
       PB_EjectMode[i] = 0;                            // reset the mode of the eject hole
+      PB_LitChestLamps[Player-1] = 0;                 // reset the number of lit chest lamps
       PB_Planet[i] = 0;}                              // reset reached planets
-    PB_LitChestLamps = 0;
     InLock = 0;
     Player = 1;
     ExBalls = 0;
@@ -614,7 +615,6 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
   *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
   BlinkScore(1);                                      // turn on score blinking
   PB_ClearChest();                                    // turn off chest lamps
-  PB_CountLitChestLamps();                            // check how many chest lamps are lit
   if ((PB_Chest_Status[Player] > 100)) {              // > 100 means visor has to be open
     PB_Chest_Status[Player] = PB_Chest_Status[Player] - 100; // use it as a counter for opened visors
     PB_LampsToLight = 1;
@@ -630,9 +630,13 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
       PlaySound(52, "0_f1.snd");
       PB_CloseVisorFlag = true;
       ActivateSolenoid(0, 13);}                       // close visor
-    if (PB_LitChestLamps) {                           // chest lamps lit?
-      PB_ChestMode = 12;                              // indicate that the visor can not be opened with one hit
-      PB_ChestPatterns = (byte*)PB_RandomChestPat;}   // set chest lamps pattern
+    if (PB_LitChestLamps[Player-1]) {                 // chest lamps lit?
+      if (PB_LitChestLamps[Player-1] > 100) {         // chest lamps have been lit but visor was closed
+        PB_ChestMode = 1;                             // visor can still be opened with one hit
+        PB_LitChestLamps[Player-1] -= 100;}           // restore correct value
+      else {
+        PB_ChestMode = 12;                            // indicate that the visor can not be opened with one hit
+        PB_ChestPatterns = (byte*)PB_RandomChestPat;}}   // set chest lamps pattern
     else {
       PB_ChestMode = 1;}                              // indicate that the visor can be opened with one hit
     PB_ChestLightHandler(100);}                       // start chest animation
@@ -776,7 +780,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
           PlayFlashSequence((byte*) PB_SkillShotFail);
           PlaySound(51, "1_91.snd");
           break;
-        case 23:                                      // TODO count super skillshot
+        case 23:                                      // 100K hole hit
           c = 100;
           MusicVolume = 3;
           if (PB_SkillMultiplier == 10) {
@@ -1213,7 +1217,7 @@ void PB_GameMain(byte Switch) {
       else {                                          // the cumbersome way to open the visor
         PB_ChestMode = Switch-17;                     // Store row / column hit
         PB_SetChestLamps(Switch-28);                  // add the lamps for the hit row / column in PB_ChestLamp
-        if (PB_LitChestLamps == 25) {                 // complete chest lit?
+        if (PB_LitChestLamps[Player-1] == 25) {       // complete chest lit?
           PB_OpenVisorProc(0);}                       // open visor
         else {
           PB_ClearChest();                            // turn off chest lamps
@@ -1481,7 +1485,7 @@ void PB_OpenVisorProc(byte Dummy) {                   // measures to open the vi
   PB_Chest_Status[Player]++;                          // increase the number of visor openings
   if (PB_Chest_Status[Player] == 2) {                 // visor opened two times?
     PB_AddExBall();}
-  PB_LitChestLamps = 0;                               // reset the counter
+  PB_LitChestLamps[Player-1] = 0;                     // reset the counter
   PB_ResetPlayersChestLamps(Player);                  // reset the stored lamps
   PB_ClearChest();                                    // turn off chest lamps
   PB_ChestPatterns = (byte*)PB_OpenVisorPat;          // request chest animation
@@ -1611,8 +1615,8 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
           Points[Player] += 2000;
           PB_AddBonus(1);}
         Buffer2--;                                    // reduce the number of lamps to be lit
-        PB_LitChestLamps++;                           // increase the number of lit chest lamps
-        if (PB_LitChestLamps != 25) {                 // complete chest lit?
+        PB_LitChestLamps[Player-1]++;                 // increase the number of lit chest lamps
+        if (PB_LitChestLamps[Player-1] != 25) {       // complete chest lit?
           PlaySound(51, "1_85.snd");}
         Buffer = Buffer | Pos;}                       // set the corresponding bit in the buffer
       Pos = Pos>>1;}                                  // next row
@@ -1628,23 +1632,13 @@ void PB_SetChestLamps(byte Switch) {                  // add the lamps for the h
           Points[Player] += 2000;
           PB_AddBonus(1);}
         Buffer2--;                                    // reduce the number of lamps to be lit
-        PB_LitChestLamps++;                           // increase the number of lit chest lamps
-        if (PB_LitChestLamps != 25) {                 // complete chest lit?
+        PB_LitChestLamps[Player-1]++;                 // increase the number of lit chest lamps
+        if (PB_LitChestLamps[Player-1] != 25) {       // complete chest lit?
           PlaySound(51, "1_85.snd");}
         PB_ChestLamp[Player-1][Pos] = PB_ChestLamp[Player-1][Pos] | Buffer;} // set the bit for this lamp in the chest lamp array for this player
       Pos++;}
     if (Buffer2 == PB_LampsToLight) {                 // row already full
       PlaySound(50, "0_6f.snd");}}}
-
-void PB_CountLitChestLamps() {                        // count the lit chest lamps for the current player
-  byte Buffer;
-  PB_LitChestLamps = 0;                               // reset counter
-  for (byte x=0; x<5; x++) {                          // for all rows
-    Buffer = PB_ChestLamp[Player-1][x];               // buffer the current row
-    for (byte i=0; i<5; i++) {                        // for all columns
-      if (Buffer & 1) {                               // lamp lit?
-        PB_LitChestLamps++;}                          // increase counter
-      Buffer = Buffer>>1;}}}                          // shift buffer to the next lamp
 
 void PB_ResetPlayersChestLamps(byte Player) {         // Reset the chest lamps for this player
   for (byte c=0; c<5; c++) {
@@ -2116,6 +2110,9 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
       PB_ClearChest();                                // turn off chest lamps
       if (!PB_ChestMode) {
         PB_Chest_Status[Player] = PB_Chest_Status[Player] + 100;} // indicate that the visor has been open
+      else {                                          // visor is closed
+        if (PB_ChestMode < 11 && PB_LitChestLamps[Player-1]) {  // player already has lit chest lamps
+          PB_LitChestLamps[Player-1] += 100;}}        // indicate that the chest lamps have been lit, but the visor is still closed
       RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);
       if (BallWatchdogTimer) {
         KillTimer(BallWatchdogTimer);
