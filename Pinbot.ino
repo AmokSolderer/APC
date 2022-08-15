@@ -345,6 +345,8 @@ struct GameDef PB_GameDefinition = {
 void PB_init() {
   if (APC_settings[DebugMode]) {                      // activate serial interface in debug mode
     Serial.begin(115200);}
+  SolRecycleTime[20-1] = 200;                         // set recycle time for both slingshots
+  SolRecycleTime[21-1] = 200;
   ACselectRelay = PB_ACselectRelay;                   // assign the number of the A/C select relay
   GameDefinition = PB_GameDefinition;}                // read the game specific settings and highscores
 

@@ -15,7 +15,6 @@
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
-unsigned int USB_SolTimes[32] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 0, 0, 40, 40, 40, 40, 40, 40, 40, 40}; // Activation times for solenoids
 
 byte EX_DummyProcess(byte Type, byte Command) {       // plays just the standard sounds
   if (Type == SoundCommandCh1) {                      // sound commands for channel 1
@@ -689,8 +688,6 @@ void EX_Init(byte GameNumber) {
     break;
   case 20:                                            // Jungle Lord
     EX_EjectSolenoid = 2;                             // specify eject coil for improved ball release
-    USB_SolTimes[20] = 0;                             // allow permanent on state for magna save relay
-    USB_SolTimes[21] = 0;
     PinMameException = EX_JungleLord;                 // use exception rules for Jungle Lord
     break;
   case 21:                                            // Pharaoh
@@ -698,8 +695,6 @@ void EX_Init(byte GameNumber) {
     break;
   case 34:                                            // Black Knight
     EX_EjectSolenoid = 6;                             // specify eject coil for improved ball release
-    USB_SolTimes[8] = 0;                              // allow permanent on state for magna save relay
-    USB_SolTimes[9] = 0;
     PinMameException = EX_BlackKnight;                // use exception rules for Jungle Lord
     break;
   case 39:                                            // Comet
