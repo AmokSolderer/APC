@@ -5,6 +5,14 @@ Some features like the High Score table are only available when my [4 Alpha+Cred
 
 ![APC Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/BK.jpg)
 
+This is a view inside the backbox.
+
+![APC open BK](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/BKopen.JPG)
+
+I'm using an APC 2 prototype board for this. As I'm running the code natively on the Arduino I don't need Lisy/PinMame and therefore no Raspberry Pi.
+
+The LED_exp board which is connected here is also not needed.
+
 ## Features
 
 * Timed Magna Saves -> When activated the Magna Saves behave like in games like Jungle Lord, for the magnets are active as long as the corresponding button is being held and you still have Magna Save Time left. Clearing a drop target bank adds one second to the Magna Save Time. The Black Knight is lacking the playfield lamps to indicate the remaining Magna Save Time, so this is done by letting the Magna Save lamps blink. The slower the blinking frequency the more Magna Save Time is left until the lamps stay on permanently when the Magna Save Time has reached 5 seconds.

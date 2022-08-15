@@ -35,13 +35,12 @@ const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,       // game default settings
 //byte USB_ChangedSwitches[64];                       // moved to PinMameExceptions
 byte USB_HWrule_ActSw[16][3];                         // hardware rules for activated switches
 byte USB_HWrule_RelSw[16][3];                         // hardware rules for released switches
-byte USB_SolRecycleTime[22];                          // recycle time for each solenoid
-byte USB_SolTimers[22];                               // stores the sol timer numbers and indicates which solenoids are blocked due to active recycling time
 byte USB_DisplayProtocol[5];                          // stores the selected display protocol
 char USB_RepeatMusic[13];                             // name of the music file to be repeated
 byte USB_WaitingSoundFiles[2][14];                    // names of the waiting sound files first byte is for channel and commands
 byte USB_WaitSoundTimer;                              // number of the timer for the sound sequencing
 byte USB_Enter_TestmodeTimer;                         // number of the timer to determine whether the Advance button has been held down
+unsigned int USB_SolTimes[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Activation times for solenoids
 
 const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
 const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
@@ -167,9 +166,9 @@ void USB_SwitchHandler(byte Switch) {
       while (USB_HWrule_ActSw[i][0]) {                // check for HW rules for this switch
         if (USB_HWrule_ActSw[i][0] == Switch) {
           if (USB_HWrule_ActSw[i][2]) {               // duration != 0 ?
-            USB_FireSolenoid( USB_HWrule_ActSw[i][2], USB_HWrule_ActSw[i][1]);}
+            ActivateSolenoid((byte) USB_HWrule_ActSw[i][2], USB_HWrule_ActSw[i][1]);}
           else {
-            USB_KillSolenoid(USB_HWrule_ActSw[i][1]);}
+            ReleaseSolenoid(USB_HWrule_ActSw[i][1]);}
           break;}
         i++;}
       i = 0;                                          // add switch number to list of changed switches
@@ -191,9 +190,9 @@ void USB_ReleasedSwitches(byte Switch) {
       while (USB_HWrule_RelSw[i][0]) {                // check for HW rules for this switch
         if (USB_HWrule_RelSw[i][0] == Switch) {
           if (USB_HWrule_RelSw[i][2]) {               // duration != 0 ?
-            USB_FireSolenoid( USB_HWrule_RelSw[i][2], USB_HWrule_RelSw[i][1]);}
+            ActivateSolenoid((byte) USB_HWrule_RelSw[i][2], USB_HWrule_RelSw[i][1]);}
           else {
-            USB_KillSolenoid(USB_HWrule_RelSw[i][1]);}
+            ReleaseSolenoid(USB_HWrule_RelSw[i][1]);}
           break;}
         i++;}
       i = 0;                                          // add switch number to list of changed switches
@@ -392,7 +391,7 @@ void USB_SerialCommand() {
   case 21:                                            // set solenoid # to on
     if (!PinMameException(SolenoidActCommand, USB_SerialBuffer[0])){  // check for machine specific exceptions
       if (USB_SerialBuffer[0] < 23) {                 // max 24 solenoids
-        if (!USB_SolTimers[USB_SerialBuffer[0]-1]) {  // recycling time over for this coil?
+        if (!SolRecycleTimers[USB_SerialBuffer[0]-1]) {  // recycling time over for this coil?
           SolChange = false;                          // block IRQ solenoid handling
           if (USB_SerialBuffer[0] > 8) {              // does the solenoid not belong to the first latch?
             if (USB_SerialBuffer[0] < 17) {           // does it belong to the second latch?
@@ -418,12 +417,8 @@ void USB_SerialCommand() {
     break;
   case 22:                                            // set solenoid # to off
     if (!PinMameException(SolenoidRelCommand, USB_SerialBuffer[0])){  // check for machine specific exceptions
-      if (USB_SerialBuffer[0] < 23) {                 // max 24 solenoids
-        USB_KillSolenoid(USB_SerialBuffer[0]);}
-      else if (USB_SerialBuffer[0] == 23) {           // right flipper
-        ReleaseSolenoid(23);}
-      else if (USB_SerialBuffer[0] == 24) {           // left flipper
-        ReleaseSolenoid(24);}
+      if (USB_SerialBuffer[0] < 25) {                 // max 24 solenoids
+        ReleaseSolenoid(USB_SerialBuffer[0]);}
       else if (USB_SerialBuffer[0] == 25) {           // 25 is a shortcut for both flipper fingers
         ReleaseSolenoid(23);                          // disable both flipper fingers
         ReleaseSolenoid(24);}
@@ -432,15 +427,15 @@ void USB_SerialCommand() {
         WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 4);}}
     break;
   case 23:                                            // pulse solenoid
-    if (USB_SerialBuffer[0] < 25) {                   // max 24 solenoids
-      USB_FireSolenoid(USB_SolTimes[USB_SerialBuffer[0]-1], USB_SerialBuffer[0]);}
+    if (USB_SolTimes[USB_SerialBuffer[0]-1]) {        // pulse length set?
+      ActivateSolenoid((byte) USB_SolTimes[USB_SerialBuffer[0]-1], USB_SerialBuffer[0]);}
     break;
   case 24:                                            // set solenoid pulse time
     if (USB_SerialBuffer[0] < 25) {                   // max 24 solenoids
       USB_SolTimes[USB_SerialBuffer[0]-1] = USB_SerialBuffer[1];}
     break;
   case 25:                                            // set solenoid recycle time
-    USB_SolRecycleTime[USB_SerialBuffer[0]-1] = USB_SerialBuffer[1];
+    SolRecycleTime[USB_SerialBuffer[0]-1] = USB_SerialBuffer[1];
     break;
   case 30:                                            // set display 0 to (credit display)
     if (!PinMameException(WriteToDisplay0, 0)){       // check for machine specific exceptions
@@ -1125,37 +1120,6 @@ void USB_ResetWaitSoundTimers(byte Dummy) {           // reset the timer and pla
     USB_WaitSoundTimer = ActivateTimer(15, 0, USB_ResetWaitSoundTimers);} // start a new timer
   else {
     USB_WaitSoundTimer = 0;}}
-
-void USB_FireSolenoid(byte Duration, byte Solenoid) { // consider solenoid recycling time when activating solenoids
-  if (!USB_SolTimers[Solenoid-1]) {                   // recycling time over for this coil?
-    SolChange = false;                                // block IRQ solenoid handling
-    if (Solenoid > 8) {                               // does the solenoid not belong to the first latch?
-      if (Solenoid < 17) {                            // does it belong to the second latch?
-        SolBuffer[1] |= 1<<(Solenoid-9);              // latch counts from 0
-        SolLatch |= 2;}                               // select second latch
-      else {
-        SolBuffer[2] |= 1<<(Solenoid-17);
-        SolLatch |= 4;}}                              // select third latch
-    else {
-      SolBuffer[0] |= 1<<(Solenoid-1);
-      SolLatch |= 1;}                                 // select first latch
-    USB_SolTimers[Solenoid-1] = ActivateTimer((unsigned int) Duration, Solenoid, USB_ReleaseSolenoid);
-    SolChange = true;}}
-
-void USB_KillSolenoid(byte Coil) {                    // stop solenoid immediately
-  if (QuerySolenoid(Coil)) {                          // solenoid active?
-    if (USB_SolTimers[Coil-1]) {                      // solenoid duration timer active?
-      KillTimer(USB_SolTimers[Coil-1]);}              // kill it
-    USB_ReleaseSolenoid(Coil);}}                      // release solenoid
-
-void USB_ReleaseSolenoid(byte Coil) {                 // solenoid timer has run out
-  ReleaseSolenoid(Coil);
-  USB_SolTimers[Coil-1] = 0;                          // mark running timer as void
-  if (USB_SolRecycleTime[Coil-1]) {                   // is a recycling time specified?
-    USB_SolTimers[Coil-1] = ActivateTimer((unsigned int) USB_SolRecycleTime[Coil-1], Coil, USB_ReleaseSolBlock);}} // start the release timer
-
-void USB_ReleaseSolBlock(byte Coil) {                 // release the coil block when the recycling time is over
-  USB_SolTimers[Coil-1] = 0;}
 
 byte USB_GenerateFilename(byte Channel, byte Sound, char* FileName) {
   if ((Sound >> 4) < 10) {
