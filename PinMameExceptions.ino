@@ -584,7 +584,7 @@ byte EX_Comet(byte Type, byte Command) {
   switch(Type) {
   case SoundCommandCh1:                               // sound commands for channel 1
     IntBuffer = 0;
-    if (!Command || Command > 253) {                  // sound command 0x00 and 0xff -> stop sound
+    if (!Command || Command > 254) {                  // sound command 0x00 and 0xff -> stop sound
       AfterMusic = 0;
       StopPlayingMusic();
       StopPlayingSound();}
