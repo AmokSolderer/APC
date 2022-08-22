@@ -354,7 +354,7 @@ byte EX_Comet(byte Type, byte Command) {
       AfterMusic = 0;
       StopPlayingMusic();
       StopPlayingSound();}
-    else if (Command == 11) { }                       // ignore sound command 0x0b
+    else if (Command == 11 || Command == 254) { }     // ignore sound commands 0x0b and 0xfe
     else if (Command == 47) {                         // play BG music
       PlayMusic(50, "0_2f.snd");
       QueueNextMusic("0_2f.snd");}                    // track is looping so queue it also
