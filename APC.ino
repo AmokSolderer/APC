@@ -103,7 +103,7 @@ byte BlinkingLamps[65][65];                           // [BlinkTimer] used by th
 byte SolMax = 24;                                     // maximum number of solenoids
 bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
 byte SolLatch = 0;                                    // Indicates which solenoid latches must be updated
-byte SolRecycleTime[22];                          // recycle time for each solenoid
+byte SolRecycleTime[22];                              // recycle time for each solenoid
 byte SolRecycleTimers[22];                            // stores the numbers of the recycle timers for each solenoid
 bool C_BankActive = false;                            // A/C relay currently doing C bank?
 byte SolWaiting[256][2];                              // list of waiting A/C solenoid requests
