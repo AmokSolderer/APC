@@ -350,11 +350,11 @@ byte EX_BlackKnight(byte Type, byte Command){
 
 byte EX_Comet(byte Type, byte Command) {
   if (Type == SoundCommandCh1) {                      // sound commands for channel 1
-    if (!Command || Command > 253) {                  // sound command 0x00 and 0xff -> stop sound
+    if (!Command || Command > 254) {                  // sound command 0x00 and 0xff -> stop sound
       AfterMusic = 0;
       StopPlayingMusic();
       StopPlayingSound();}
-    else if (Command == 11) { }                       // ignore sound command 0x0b
+    else if (Command == 11 || Command == 254) { }     // ignore sound commands 0x0b and 0xfe
     else if (Command == 47) {                         // play BG music
       PlayMusic(50, "0_2f.snd");
       QueueNextMusic("0_2f.snd");}                    // track is looping so queue it also
