@@ -300,6 +300,9 @@ byte EX_JungleLord(byte Type, byte Command){
       ReleaseSolenoid(21);}                           // turn off left magnet
     return(0);                                        // all switches are reported to PinMame
   case SolenoidActCommand:                            // activated solenoids
+    if (Command == 7) {                               // lower eject hole
+      ActivateSolenoid(10, 7);                        // activate with less strength
+      return(1);}                                     // ignore PinMame's on command
     if (Command == EX_EjectSolenoid){                 // ball eject coil
       if (QueryLamp(2)) {                             // ball in play lamp lit?
         EX_BallRelease(1);}}                          // start ball release timer
