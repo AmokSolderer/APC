@@ -303,7 +303,7 @@ void BK_AttractNumCycle(byte Step) {
     if (Timer0) {
       KillTimer(Timer0);
       Timer0 = 0;}
-    break;
+    return;
   case 1:                                             // start command
     AddBlinkLamp(4, 150);                             // blink game over lamp
     Step = 2;
@@ -314,10 +314,15 @@ void BK_AttractNumCycle(byte Step) {
     DisplayScore(2, HallOfFame.Scores[0]);
     DisplayScore(3, HallOfFame.Scores[0]);
     DisplayScore(4, HallOfFame.Scores[0]);
-    Step = 2;
+    Step = 3;
     break;
   case 3:                                             // show scores of previous game
     RemoveBlinkLamp(6);                               // stop blinking of high score lamp
+    for (byte i=0; i<16; i++) {                       // clear displays
+      *(DisplayUpper+2*i) = 255;
+      *(DisplayUpper+2*i+1) = 0;
+      *(DisplayLower+2*i) = 255;
+      *(DisplayLower+2*i+1) = 0;}
     DisplayScore(1, Points[1]);
     if (Points[2]) {
       DisplayScore(2, Points[2]);
@@ -443,7 +448,10 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
     RemoveBlinkLamp(6);                               // stop blinking of Highest Score lamp
     StrobeLights(0);
     ShowLampPatterns(0);                              // stop lamp animations
-    BK_AttractDisplayCycle(0);                        // stop display animations
+    if (APC_settings[0]) {                          // check display setting
+      BK_AttractNumCycle(0);}                       // stop Sys7 standard animation
+    else {                                          // it's the 4Alpha + Credit display
+      BK_AttractDisplayCycle(0);}                   // stop animation
     BK_TestMode_Enter();
     break;
   case 3:                                             // start game
@@ -469,8 +477,15 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
       LampPattern = LampColumns;
       TurnOnLamp(2);                                  // turn on Ball in Play lamp
       NoPlayers = 0;
-      WriteUpper("              ");
-      WriteLower("              ");
+      if (APC_settings[DisplayType]) {                // check display setting
+        for (byte i=0; i<16; i++) {                   // clear displays
+          *(DisplayUpper+2*i) = 255;
+          *(DisplayUpper+2*i+1) = 0;
+          *(DisplayLower+2*i) = 255;
+          *(DisplayLower+2*i+1) = 0;}}
+      else {                                          // alphanumeric displays
+        WriteUpper("              ");
+        WriteLower("              ");}
       Ball = 1;
       BK_ResetAllDTargets(0);
       BK_AddPlayer();
