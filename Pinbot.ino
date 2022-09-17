@@ -39,6 +39,7 @@ const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39
                                 {32,40,48,56,64},{31,39,47,55,63},{30,38,46,54,62},{29,37,45,53,61},{28,36,44,52,60}};
 const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
 const byte PB_ACselectRelay = 14;                     // solenoid number of the A/C select relay
+const char PB_TestSounds[10][15] = {{"1_01L.snd"},{"1_02.snd"},{"1_02L.snd"},{"1_03L.snd"},{"1_04.snd"},{"1_04L.snd"},{"1_05.snd"},{"1_06.snd"},{"1_06L.snd"},0};
 
 const struct SettingTopic PB_setList[8] = {{"DROP TG TIME  ",HandleNumSetting,0,3,30},
     {" REACH PLANET ",HandleNumSetting,0,1,9},
@@ -2546,13 +2547,25 @@ void PB_Testmode(byte Select) {
                 AppByte2 = 0;
                 break;
               case 3:
-                WriteUpper("PLAYING MUSIC ");
-                AfterMusic = PB_NextTestSound;
-                AppByte2 = 1;
-                PlayMusic(50, (char*) TestSounds[0]);
+                if (!AppByte2) {                      // first sound?
+                  WriteUpper("PLAYING MUSIC ");
+                  if (APC_settings[Volume]) {         // system set to digital volume control?
+                    analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+                  else {
+                    digitalWrite(VolumePin,HIGH);}    // turn off the digital volume control
+                  *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte2+1) % 10)]; // show the actual sound number
+                  *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte2+1) % 10)];
+                  *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+                  *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+                  AfterMusic = PB_NextTestSound;
+                  PlayMusic(50, (char*) PB_TestSounds[AppByte2]);
+                  AppByte2++;}                        // prepare for next sound
+                else {                                // not the first sound
+                  PB_NextTestSound(0);}
                 break;
               case 72:
                 AfterMusic = 0;
+                digitalWrite(VolumePin,HIGH);         // turn off the digital volume control
                 StopPlayingMusic();
                 if (AppByte2) {
                   AppByte2 = 0;}
@@ -2690,12 +2703,12 @@ void PB_DisplayCycle(byte CharNo) {                   // Display cycle test
 
 void PB_NextTestSound(byte Dummy) {
   UNUSED(Dummy);
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    AppByte++;}
-  if (!TestSounds[AppByte][0]) {
-    AppByte = 0;}
-  *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte+1) % 10)]; // show the actual solenoid number
-  *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte+1) % 10)];
-  *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  PlayMusic(50, (char*) TestSounds[AppByte]);}
+  *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte2+1) % 10)]; // show the actual sound number
+  *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte2+1) % 10)];
+  *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+  *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+  PlayMusic(50, (char*) PB_TestSounds[AppByte2]);
+  if (QuerySwitch(73)) {                              // Up/Down switch not pressed?
+    AppByte2++;}                                      // proceed to next sound
+  if (!PB_TestSounds[AppByte2][0]) {
+    AppByte2 = 0;}}

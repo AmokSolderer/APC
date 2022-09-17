@@ -246,7 +246,10 @@ void BK_AttractMode() {                               // Attract Mode
   LampReturn = BK_AttractLampCycle;
   AddBlinkLamp(4, 150);                               // blink Game Over lamp
   ActivateTimer(1000, 0, BK_AttractLampCycle);
-  BK_AttractDisplayCycle(1);}
+  if (APC_settings[DisplayType]) {                    // check display setting
+    BK_AttractNumCycle(1);}                           // use Sys7 standard animation
+  else {                                              // it's the 4Alpha + Credit display
+    BK_AttractDisplayCycle(1);}}                      // use alphanumeric animation
 
 void BK_CheckForLockedBalls(byte Event) {             // check if balls are locked and release them
   UNUSED(Event);
@@ -291,6 +294,41 @@ void BK_AddScrollUpper(byte Step) {                   // shifts Step times and a
     ActivateTimer(50, Step, BK_AddScrollUpper);}
   else {
     Position = 0;}}
+
+void BK_AttractNumCycle(byte Step) {
+  static byte Timer0 = 0;
+  switch (Step) {
+  case 0:                                             // stop command
+    RemoveBlinkLamp(4);                               // stop blinking of game over lamp
+    if (Timer0) {
+      KillTimer(Timer0);
+      Timer0 = 0;}
+    break;
+  case 1:                                             // start command
+    AddBlinkLamp(4, 150);                             // blink game over lamp
+    Step = 2;
+    break;
+  case 2:                                             // show high score
+    AddBlinkLamp(6, 150);                             // blink highest Score lamp
+    DisplayScore(1, HallOfFame.Scores[0]);
+    DisplayScore(2, HallOfFame.Scores[0]);
+    DisplayScore(3, HallOfFame.Scores[0]);
+    DisplayScore(4, HallOfFame.Scores[0]);
+    Step = 2;
+    break;
+  case 3:                                             // show scores of previous game
+    RemoveBlinkLamp(6);                               // stop blinking of high score lamp
+    DisplayScore(1, Points[1]);
+    if (Points[2]) {
+      DisplayScore(2, Points[2]);
+      if (Points[3]) {
+        DisplayScore(3, Points[3]);
+        if (Points[4]) {
+          DisplayScore(4, Points[4]);}}}
+    Step = 1;
+    break;}
+  BK_CheckForLockedBalls(0);                          // check for a ball in the outhole
+  Timer0 = ActivateTimer(3000, Step, BK_AttractNumCycle);}  // come back for the next 'page'
 
 void BK_AttractDisplayCycle(byte Step) {
   static byte Timer0 = 0;
@@ -418,7 +456,10 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
       RemoveBlinkLamp(4);
       RemoveBlinkLamp(6);
       Switch_Pressed = DummyProcess;                  // Switches do nothing
-      BK_AttractDisplayCycle(0);                      // stop display animations
+      if (APC_settings[0]) {                          // check display setting
+        BK_AttractNumCycle(0);}                       // stop Sys7 standard animation
+      else {                                          // it's the 4Alpha + Credit display
+        BK_AttractDisplayCycle(0);}                   // stop animation
       if (APC_settings[Volume]) {                     // system set to digital volume control?
         analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
       else {
