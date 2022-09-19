@@ -527,8 +527,10 @@ void BK_NewBall(byte Balls) {                         // release ball (Balls = e
   BK_ShowBonus();
   if (!((Player == 1) && (Ball == 1) && !InLock)) {   // skip for the first ball of the game to wait for speech sequence
     BK_StartBgMusic(0);}
-  *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
-  //*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
+  if (APC_settings[DisplayType]) {
+    *(DisplayLower+16) = ConvertNumUpper(Ball,(byte) *(DisplayLower+16));}
+  else {
+    *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];}  // show current ball in left credit
   BK_LockChaseLight(1);
   BlinkScore(1);                                      // start score blinking
   TurnOnLamp(36);                                     // bumper light on
