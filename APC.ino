@@ -1719,47 +1719,89 @@ void BlinkScore(byte State) {                         // State = 0 -> stop blink
   static byte Timer = 0;
   byte Position = 0;
   if (State) {
-    switch (Player) {
-    case 1:                                           // for the players 1 and 3
-    case 3:
-      Position = 0;                                   // start in column 1
-      break;
-    case 2:                                           // for the players 2 and 4
-    case 4:
-      Position = 16;                                  // start in column 9
-      break;}
-    if (State == 1) {                                 // (re-) start command
-      if (Timer) {
-        KillTimer(Timer);}
-      Timer = ActivateTimer(2000, 2, BlinkScore);}
-    else {                                            // animation ongoing
-      if (State < 5) {                                // first 3 digits only require to delete them one by one
-        if (Player < 3) {
-          *(DisplayUpper+Position+2*(State-1)) = 0;
-          *(DisplayUpper+Position+2*(State-1)+1) = 0;}
-        else {
-          *(DisplayLower+Position+2*(State-1)) = 0;
-          *(DisplayLower+Position+2*(State-1)+1) = 0;}}
-      else {                                          // later digits require to rewrite the points
-        DisplayScore(Player, Points[Player]);         // rewrite player's points
-        if (State < 9) {                              // middle digits need to delete 3 of them
+    if (APC_settings[DisplayType] < 3) {              // early Sys11 display
+      switch (Player) {
+      case 1:                                         // for the players 1 and 3
+      case 3:
+        Position = 0;                                 // start in column 1
+        break;
+      case 2:                                         // for the players 2 and 4
+      case 4:
+        Position = 16;                                // start in column 9
+        break;}
+      if (State == 1) {                               // (re-) start command
+        if (Timer) {
+          KillTimer(Timer);}
+        Timer = ActivateTimer(2000, 2, BlinkScore);
+        return;}
+      else {                                          // animation ongoing
+        if (State < 5) {                              // first 3 digits only require to delete them one by one
           if (Player < 3) {
-            for (byte i=1;i<7;i++) {
-              *(DisplayUpper+Position+2*State-i) = 0;}}
+            *(DisplayUpper+Position+2*(State-1)) = 0;
+            *(DisplayUpper+Position+2*(State-1)+1) = 0;}
           else {
-            for (byte i=1;i<7;i++) {
-              *(DisplayLower+Position+2*State-i) = 0;}}}
-        else if (State < 11) {                        // last digits have to delete only the rest
+            *(DisplayLower+Position+2*(State-1)) = 0;
+            *(DisplayLower+Position+2*(State-1)+1) = 0;}}
+        else {                                        // later digits require to rewrite the points
+          DisplayScore(Player, Points[Player]);       // rewrite player's points
+          if (State < 9) {                            // middle digits need to delete 3 of them
+            if (Player < 3) {
+              for (byte i=1;i<7;i++) {
+                *(DisplayUpper+Position+2*State-i) = 0;}}
+            else {
+              for (byte i=1;i<7;i++) {
+                *(DisplayLower+Position+2*State-i) = 0;}}}
+          else if (State < 11) {                      // last digits have to delete only the rest
+            if (Player < 3) {
+              for (byte i=2*(State-3);i<16;i++) {
+                *(DisplayUpper+Position+i) = 0;}}
+            else {
+              for (byte i=2*(State-3);i<16;i++) {
+                *(DisplayLower+Position+i) = 0;}}}
+          else {                                      // amination over
+            Timer = ActivateTimer(2000, 2, BlinkScore); // redo in 2 seconds
+            return;}}}}
+    else if (APC_settings[DisplayType] > 6) {         // Sys7 - 9 display
+      switch (Player) {
+      case 1:                                         // for the players 1 and 3
+      case 3:
+        Position = 0;                                 // start in column 1
+        break;
+      case 2:                                         // for the players 2 and 4
+      case 4:
+        Position = 16;                                // start in column 9
+        break;}
+      if (State == 1) {                               // (re-) start command
+        if (Timer) {
+          KillTimer(Timer);}
+        Timer = ActivateTimer(2000, 2, BlinkScore);
+        return;}
+      else {
+        if (State < 5) {                              // first 3 digits only require to delete them one by one
           if (Player < 3) {
-            for (byte i=2*(State-3);i<16;i++) {
-              *(DisplayUpper+Position+i) = 0;}}
+            *(DisplayLower+Position+2*(State-1)) = ConvertNumUpper(255, (byte) *(DisplayLower+Position+2*(State-1)));}
           else {
-            for (byte i=2*(State-3);i<16;i++) {
-              *(DisplayLower+Position+i) = 0;}}}
-        else {                                        // amination over
-          Timer = ActivateTimer(2000, 2, BlinkScore); // redo in 2 seconds
-          return;}}
-      Timer = ActivateTimer(50, State+1, BlinkScore);}}
+            *(DisplayLower+Position+2*(State-1)) = ConvertNumLower(255, (byte) *(DisplayLower+Position+2*(State-1)));}}
+        else {                                        // later digits require to rewrite the points
+          DisplayScore(Player, Points[Player]);       // rewrite player's points
+          if (State < 9) {                            // middle digits need to delete 3 of them
+            if (Player < 3) {
+              for (byte i=2;i<7;i=i+2) {
+                *(DisplayLower+Position+2*State-i) = ConvertNumUpper(255, (byte) *(DisplayLower+Position+2*State-i));}}
+            else {
+              for (byte i=2;i<7;i=i+2) {
+                *(DisplayLower+Position+2*State-i) = ConvertNumLower(255, (byte) *(DisplayLower+Position+2*State-i));}}}
+          else if (State < 11) {                      // last digits have to delete only the rest
+            if (Player < 3) {
+              for (byte i=2*(State-3);i<16;i=i+2) {
+                *(DisplayLower+Position+i) = ConvertNumUpper(255, (byte) *(DisplayLower+Position+i));}}
+            else {
+              for (byte i=2*(State-3);i<16;i=i+2) {
+                *(DisplayLower+Position+i) = ConvertNumLower(255, (byte) *(DisplayLower+Position+i));}}}
+          else {                                      // amination over
+            Timer = ActivateTimer(2000, 2, BlinkScore); // redo in 2 seconds
+            return;}}}}
+    Timer = ActivateTimer(50, State+1, BlinkScore);}
   else {                                              // disable command
     if (Timer) {
       KillTimer(Timer);
@@ -1900,7 +1942,7 @@ void DisplayScore (byte Position, unsigned int Score) {
       break;
     case 7:                                           // Sys3 - 6 type display
       switch (Position) {
-      case 1:                                        // for the players 1 and 3
+      case 1:                                         // for the players 1 and 3
       case 3:
         Buffer1 = 0;                                  // start in column 1
         break;
