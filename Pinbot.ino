@@ -2293,10 +2293,10 @@ void PB_Congrats(byte Dummy) {                        // show congratulations
   UNUSED(Dummy);
   LampPattern = NoLamps;
   ActC_BankSol(1);
-  AfterMusic = PB_EnterInitials2;
+  AfterMusic = PB_EnterInitials2;                     // TODO fix congrats
   if (APC_settings[Volume]) {
     analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[PB_MultiballVolume]);} // increase volume
-  PlayMusic(50, "1_06");
+  PlayMusic(50, "1_06.snd");
   QueueNextMusic("1_06L.snd");                        // queue looping part as next music to be played}
   ActivateSolenoid(0, 11);
   ActivateSolenoid(0, 12);
