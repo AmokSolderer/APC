@@ -1353,7 +1353,10 @@ void PB_GameMain(byte Switch) {
   case 65:                                            // lower jet bumper
     Points[Player] += 1000;
     ActivateSolenoid(0, 17);
-    ActC_BankSol(6);
+    if (C_BankActive) {
+      ActivateSolenoid(0, 6);}
+    else {                                            // TODO add priority to ActA and ActC_bank commands
+      ActC_BankSol(6);}
     if (PB_EnergyValue[Player] < 250) {
       PB_EnergyValue[Player]++;
       WriteUpper2(" ENERGY VALUE ");
@@ -1364,7 +1367,10 @@ void PB_GameMain(byte Switch) {
   case 67:                                            // left jet bumper
     Points[Player] += 1000;
     ActivateSolenoid(0, 19);
-    ActC_BankSol(6);
+    if (C_BankActive) {
+      ActivateSolenoid(0, 6);}
+    else {                                            // TODO add priority to ActA and ActC_bank commands
+      ActC_BankSol(6);}
     if (PB_EnergyValue[Player] < 250) {
       PB_EnergyValue[Player]++;
       WriteUpper2(" ENERGY VALUE ");
@@ -1385,7 +1391,10 @@ void PB_GameMain(byte Switch) {
   case 70:                                            // upper jet bumper
     Points[Player] += 1000;
     ActivateSolenoid(0, 22);
-    ActC_BankSol(6);
+    if (C_BankActive) {
+      ActivateSolenoid(0, 6);}
+    else {                                            // TODO add priority to ActA and ActC_bank commands
+      ActC_BankSol(6);}
     if (PB_EnergyValue[Player] < 250) {
       PB_EnergyValue[Player]++;
       WriteUpper2(" ENERGY VALUE ");

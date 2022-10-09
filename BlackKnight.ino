@@ -532,7 +532,7 @@ void BK_NewBall(byte Balls) {                         // release ball (Balls = e
   else {
     *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];}  // show current ball in left credit
   BK_LockChaseLight(1);
-  BlinkScore(1);                                      // start score blinking
+  //BlinkScore(1);                                      // start score blinking
   TurnOnLamp(36);                                     // bumper light on
   for (byte i=0; i<4; i++) {                          // restore the drop target lamps of the current player
     for (byte c=0; c < 3; c++) {                      // for all drop target banks
@@ -666,7 +666,7 @@ void BK_CheckReleasedBall(byte Balls) {               // ball release watchdog
     WriteUpper("              ");
     WriteLower("              ");
     ShowAllPoints(0);
-    BlinkScore(1);
+    //BlinkScore(1);
     ActivateSolenoid(game_settings[BK_BallEjectStrength], 6);}
   byte c = BK_CountBallsInTrunk();
   if (c == Balls) {                                   // expected number of balls in trunk
@@ -682,7 +682,7 @@ void BK_CheckReleasedBall(byte Balls) {               // ball release watchdog
         WriteUpper("              ");
         WriteLower("              ");
         ShowAllPoints(0);
-        BlinkScore(1);
+        //BlinkScore(1);
         ActivateSolenoid(game_settings[BK_BallEjectStrength], 6);}}}  // release again
   CheckReleaseTimer = ActivateTimer(5000, Balls, BK_CheckReleasedBall);}
 

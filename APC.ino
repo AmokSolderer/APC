@@ -1728,159 +1728,43 @@ void BlinkScore(byte State) {                         // State = 0 -> stop blink
     case 4:
       Position = 16;                                  // start in column 9
       break;}
-    if (State == 1) {                                 // initial call
+    if (State == 1) {                                 // (re-) start command
       if (Timer) {
         KillTimer(Timer);}
       Timer = ActivateTimer(2000, 2, BlinkScore);}
-    else {
-      if (State < 5) {
+    else {                                            // animation ongoing
+      if (State < 5) {                                // first 3 digits only require to delete them one by one
         if (Player < 3) {
           *(DisplayUpper+Position+2*(State-1)) = 0;
           *(DisplayUpper+Position+2*(State-1)+1) = 0;}
         else {
           *(DisplayLower+Position+2*(State-1)) = 0;
           *(DisplayLower+Position+2*(State-1)+1) = 0;}}
-      else {
-        DisplayScore(Player, Points[Player]);
-        if (State < 9) {
+      else {                                          // later digits require to rewrite the points
+        DisplayScore(Player, Points[Player]);         // rewrite player's points
+        if (State < 9) {                              // middle digits need to delete 3 of them
           if (Player < 3) {
             for (byte i=1;i<7;i++) {
               *(DisplayUpper+Position+2*State-i) = 0;}}
           else {
             for (byte i=1;i<7;i++) {
               *(DisplayLower+Position+2*State-i) = 0;}}}
-        else {
+        else if (State < 11) {                        // last digits have to delete only the rest
           if (Player < 3) {
             for (byte i=2*(State-3);i<16;i++) {
               *(DisplayUpper+Position+i) = 0;}}
           else {
             for (byte i=2*(State-3);i<16;i++) {
-              *(DisplayLower+Position+i) = 0;}}}}
+              *(DisplayLower+Position+i) = 0;}}}
+        else {                                        // amination over
+          Timer = ActivateTimer(2000, 2, BlinkScore); // redo in 2 seconds
+          return;}}
       Timer = ActivateTimer(50, State+1, BlinkScore);}}
-  else {
-    if (!State) {
-      if (Timer) {
-        KillTimer(Timer);
-        Timer = 0;}
-      ShowPoints(Player);}}}
-//    case 2:                                           // start of animation
-//      if (Player < 3) {
-//        Buffer1 = *(DisplayUpper+Position);
-//        Buffer2 = *(DisplayUpper+Position+1);
-//        *(DisplayUpper+Position) = 0;
-//        *(DisplayUpper+Position+1) = 0;}
-//      else {
-//        Buffer1 = *(DisplayLower+Position);
-//        Buffer2 = *(DisplayLower+Position+1);
-//        *(DisplayLower+Position) = 0;
-//        *(DisplayLower+Position+1) = 0;}
-//      break;
-//    case 3:                                           // animation proceeding
-//      if (Player < 3) {
-//        *(DisplayUpper+Position) = Buffer1;
-//        *(DisplayUpper+Position+1) = Buffer2;
-//        Buffer1 = *(DisplayUpper+Position+2);
-//        Buffer2 = *(DisplayUpper+Position+3);
-//        *(DisplayUpper+Position+2) = 0;
-//        *(DisplayUpper+Position+3) = 0;}
-//      else {
-//        *(DisplayLower+Position) = Buffer1;
-//        *(DisplayLower+Position+1) = Buffer2;
-//        Buffer1 = *(DisplayLower+Position+2);
-//        Buffer2 = *(DisplayLower+Position+3);
-//        *(DisplayLower+Position+2) = 0;
-//        *(DisplayLower+Position+3) = 0;}
-//      break;
-//    case 4:                                           // animation proceeding
-//      if (Player < 3) {
-//        *(DisplayUpper+Position+2) = Buffer1;
-//        *(DisplayUpper+Position+3) = Buffer2;
-//        Buffer1 = *(DisplayUpper+Position+4);
-//        Buffer2 = *(DisplayUpper+Position+5);
-//        *(DisplayUpper+Position+4) = 0;
-//        *(DisplayUpper+Position+5) = 0;}
-//      else {
-//        *(DisplayLower+Position+2) = Buffer1;
-//        *(DisplayLower+Position+3) = Buffer2;
-//        Buffer1 = *(DisplayLower+Position+4);
-//        Buffer2 = *(DisplayLower+Position+5);
-//        *(DisplayLower+Position+4) = 0;
-//        *(DisplayLower+Position+5) = 0;}
-//      break;
-//    case 5:                                           // animation proceeding
-//      if (Player < 3) {
-//        *(DisplayUpper+Position+4) = Buffer1;
-//        *(DisplayUpper+Position+5) = Buffer2;
-//        Buffer1 = *(DisplayUpper+Position+6);
-//        Buffer2 = *(DisplayUpper+Position+7);
-//        *(DisplayUpper+Position+6) = 0;
-//        *(DisplayUpper+Position+7) = 0;}
-//      else {
-//        *(DisplayLower+Position+4) = Buffer1;
-//        *(DisplayLower+Position+5) = Buffer2;
-//        Buffer1 = *(DisplayLower+Position+6);
-//        Buffer2 = *(DisplayLower+Position+7);
-//        *(DisplayLower+Position+6) = 0;
-//        *(DisplayLower+Position+7) = 0;}
-//      break;
-//    case 6:                                           // animation proceeding
-//      if (Player < 3) {
-//        *(DisplayUpper+Position+6) = Buffer1;
-//        *(DisplayUpper+Position+7) = Buffer2;
-//        Buffer1 = *(DisplayUpper+Position+8);
-//        Buffer2 = *(DisplayUpper+Position+9);
-//        *(DisplayUpper+Position+8) = 0;
-//        *(DisplayUpper+Position+9) = 0;}
-//      else {
-//        *(DisplayLower+Position+6) = Buffer1;
-//        *(DisplayLower+Position+7) = Buffer2;
-//        Buffer1 = *(DisplayLower+Position+8);
-//        Buffer2 = *(DisplayLower+Position+9);
-//        *(DisplayLower+Position+8) = 0;
-//        *(DisplayLower+Position+9) = 0;}
-//      break;
-//    case 7:                                           // animation proceeding
-//      if (Player < 3) {
-//        *(DisplayUpper+Position+8) = Buffer1;
-//        *(DisplayUpper+Position+9) = Buffer2;
-//        Buffer1 = *(DisplayUpper+Position+10);
-//        Buffer2 = *(DisplayUpper+Position+11);
-//        *(DisplayUpper+Position+10) = 0;
-//        *(DisplayUpper+Position+11) = 0;}
-//      else {
-//        *(DisplayLower+Position+8) = Buffer1;
-//        *(DisplayLower+Position+9) = Buffer2;
-//        Buffer1 = *(DisplayLower+Position+10);
-//        Buffer2 = *(DisplayLower+Position+11);
-//        *(DisplayLower+Position+10) = 0;
-//        *(DisplayLower+Position+11) = 0;}
-//      break;
-//    case 8:                                           // animation proceeding
-//      if (Player < 3) {
-//        *(DisplayUpper+Position+10) = Buffer1;
-//        *(DisplayUpper+Position+11) = Buffer2;
-//        Buffer1 = *(DisplayUpper+Position+12);
-//        Buffer2 = *(DisplayUpper+Position+13);
-//        *(DisplayUpper+Position+12) = 0;
-//        *(DisplayUpper+Position+13) = 0;}
-//      else {
-//        *(DisplayLower+Position+10) = Buffer1;
-//        *(DisplayLower+Position+11) = Buffer2;
-//        Buffer1 = *(DisplayLower+Position+12);
-//        Buffer2 = *(DisplayLower+Position+13);
-//        *(DisplayLower+Position+12) = 0;
-//        *(DisplayLower+Position+13) = 0;}
-//      break;
-//    case 9:                                           // animation proceeding
-//      if (Player < 3) {
-//        *(DisplayUpper+Position+12) = Buffer1;
-//        *(DisplayUpper+Position+13) = Buffer2;}
-//      else {
-//        *(DisplayLower+Position+12) = Buffer1;
-//        *(DisplayLower+Position+13) = Buffer2;}
-//      Timer = ActivateTimer(2000, 2, BlinkScore);
-//      return;}
-//    Timer = ActivateTimer(50, State+1, BlinkScore);}
+  else {                                              // disable command
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    ShowPoints(Player);}}
 
 void DisplayBCD (byte Position, byte* BCDnumber) {    // displays BCD values on numerical displays
   if (APC_settings[DisplayType] == 7) {               // Sys6 display
