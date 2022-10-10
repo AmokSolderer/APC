@@ -2293,7 +2293,7 @@ void PB_Congrats(byte Dummy) {                        // show congratulations
   UNUSED(Dummy);
   LampPattern = NoLamps;
   ActC_BankSol(1);
-  AfterMusic = PB_EnterInitials2;                     // TODO fix congrats
+  //AfterMusic = PB_EnterInitials2;                     // TODO fix congrats
   if (APC_settings[Volume]) {
     analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[PB_MultiballVolume]);} // increase volume
   PlayMusic(50, "1_06.snd");
@@ -2353,7 +2353,8 @@ void PB_EnterInitials(byte Switch) {
     if (ByteBuffer > 2) {
       if (APC_settings[Volume]) {
         ByteBuffer3 = APC_settings[Volume];
-        FadeOutMusic(100);}
+        FadeOutMusic(100);
+        ActivateTimer(1000, 0, PB_EnterInitials2);}
       else {
         StopPlayingMusic();}}
     else {
