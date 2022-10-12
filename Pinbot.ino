@@ -1182,6 +1182,8 @@ void PB_GameMain(byte Switch) {
           PlaySound(55, "0_af.snd");                  // TODO super skill shot
 
         }}
+      else {
+        PB_SkillMultiplier = 1;}
       PB_SkillShot = true;}                           // the first shot is a skill shot
     break;
   case 25:                                            // left eye
@@ -1725,7 +1727,9 @@ void PB_HandleLock(byte State) {
             PlaySound(55, "0_b0.snd");                // 'now I see you'
             ActivateTimer(2400, 0, PB_Multiball);     // call after sound
             Multiballs = 2;}                          // start multiball
-          else {
+          else {                                      // second ball is not supposed to be there
+            if (!PB_SolarValueTimer) {                // 'shoot for solar value' phase not running?
+              ActivateTimer(200, 1, PB_HandleLock);}  // come back to recheck after ball eject
             PB_ClearOutLock(1);}}}}}}                 // eject 1 ball and close visor
 
 void PB_Multiball_RestoreLamps(byte Dummy) {
@@ -1763,6 +1767,10 @@ void PB_Multiball(byte State) {                       // state machine for sound
     break;
   case 3:
     PlaySound(52, "1_80.snd");
+    break;
+  case 10:                                            // back to main theme
+    PlayMusic(50, "1_01.snd");
+    QueueNextMusic("1_01L.snd");                      // queue looping part as next music to be played
     break;}}
 
 void PB_LampSweep(byte Step) {
@@ -2097,16 +2105,17 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
       ReleaseSolenoid(11);                            // turn backbox GI back on
       if (APC_settings[Volume]) {
         analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
-      PlayMusic(50, "1_01L.snd");                     // play main theme
-      QueueNextMusic("1_01L.snd");                    // track is looping so queue it also
+      PlayMusic(50, "1_0a.snd");                      // play multiball end theme
+      QueueNextMusic("1_02L.snd");                    // track is looping so queue it also
       if (AppByte == 2) {                             // 2 balls detected in the trunk
         ActivateTimer(1000, 0, PB_BallEnd);}          // come back and check again
       else {
-        PB_ClearOutLock(1);
+        PB_ClearOutLock(1);                           // clear out lock and close visor
         PB_ChestLightHandler(0);                      // stop chest animation
         PB_ChestMode = 1;
         PB_ClearChest();                              // turn off chest lamps
         PB_ChestLightHandler(100);                    // restart chest animation
+        ActivateTimer(3000, 10, PB_Multiball);        // return to main music theme
         BlockOuthole = false;}}                       // remove outhole block
     else {                                            // no multiball running
       LockedBalls[Player] = 0;
