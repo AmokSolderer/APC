@@ -745,12 +745,21 @@ void PB_DisplayHooray(byte State) {
       if (Count > 11) {
         Count = 0;
         if (State == 18) {
-          *(MyLowerDisplay+20) = DispPattern2[32+2*PB_SkillMultiplier];
-          *(MyLowerDisplay+21) = DispPattern2[33+2*PB_SkillMultiplier];}
+          if (PB_SkillMultiplier < 10) {
+            *(MyLowerDisplay+20) = DispPattern2[32+2*PB_SkillMultiplier];
+            *(MyLowerDisplay+21) = DispPattern2[33+2*PB_SkillMultiplier];}
+          else {                                      // show 1M
+            *(MyLowerDisplay+20) = DispPattern2[34];
+            *(MyLowerDisplay+21) = DispPattern2[35];
+            *(MyLowerDisplay+20) = DispPattern2[32];
+            *(MyLowerDisplay+21) = DispPattern2[33];}}
         State++;}
       ActivateTimer(20, State, PB_DisplayHooray);}
-    else if (State < 30) {
-      for (byte i=0; i<5; i++) {
+    else if (State < 30) {                            // show animation of the zeros
+      byte z = 5;
+      if (PB_SkillMultiplier == 10) {
+        z = 6;}
+      for (byte i=0; i<z; i++) {
         *(MyLowerDisplay+30-2*i) = Pattern[2*Count];
         *(MyLowerDisplay+31-2*i) = Pattern[2*Count+1];}
       Count++;
