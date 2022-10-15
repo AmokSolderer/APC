@@ -674,7 +674,7 @@ void PB_GiveBall(byte Balls) {
   if (PB_SkillMultiplier < 10) {
     PB_SkillMultiplier++;
     if (PB_SkillMultiplier == 10) {
-      PlaySound(55, "0_af.snd");                      // 'million activated'
+      PlaySound(58, "0_af.snd");                      // 'million activated'
       //PlayFlashSequence((byte*) PB_MultiballSeq);   // TODO super skill shot
     }}
   else {
@@ -749,8 +749,8 @@ void PB_DisplayHooray(byte State) {
             *(MyLowerDisplay+20) = DispPattern2[32+2*PB_SkillMultiplier];
             *(MyLowerDisplay+21) = DispPattern2[33+2*PB_SkillMultiplier];}
           else {                                      // show 1M
-            *(MyLowerDisplay+20) = DispPattern2[34];
-            *(MyLowerDisplay+21) = DispPattern2[35];
+            *(MyLowerDisplay+18) = DispPattern2[34];
+            *(MyLowerDisplay+19) = DispPattern2[35];
             *(MyLowerDisplay+20) = DispPattern2[32];
             *(MyLowerDisplay+21) = DispPattern2[33];}}
         State++;}
@@ -1778,7 +1778,7 @@ void PB_Multiball(byte State) {                       // state machine for sound
     PlaySound(52, "1_80.snd");
     break;
   case 10:                                            // back to main theme
-    PlayMusic(50, "1_01.snd");
+    PlayMusic(50, "1_01L.snd");
     QueueNextMusic("1_01L.snd");                      // queue looping part as next music to be played
     break;}}
 
