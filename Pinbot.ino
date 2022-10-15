@@ -1280,7 +1280,7 @@ void PB_GameMain(byte Switch) {
       PB_MultiballThunder(0);                         // play sound effects
       KillTimer(PB_SolarValueTimer);
       PB_SolarValueTimer = 0;
-      RemoveBlinkLamp(35);
+      RemoveBlinkLamp(35);                            // solar energy lamp
       Points[Player] += PB_SolarValue * 1000;
       ShowPoints(Player);
       ActivateTimer(2000,1,PB_EyeBlink);
@@ -2091,7 +2091,7 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
   if ((AppByte == 5)||(AppByte < 3-Multiballs-InLock)) {  // something's wrong in the trunk
     InLock = 0;
     if (Multiballs == 1) {
-      for (byte i=0; i<2; i++) {                      // check how many balls are on the ball ramp
+      for (byte i=0; i<2; i++) {                      // check how many balls are in the eyes
         if (QuerySwitch(25+i)) {
           InLock++;}}}
     WriteLower(" BALL   ERROR ");
@@ -2109,6 +2109,10 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
   else {                                              // amount of balls in trunk as expected
     PB_EyeBlink(0);
     if (Multiballs == 2) {                            // multiball running?
+      if (PB_SolarValueTimer) {                       // solar value jackpot active?
+        KillTimer(PB_SolarValueTimer);
+        PB_SolarValueTimer = 0;
+        RemoveBlinkLamp(35);}                         // solar energy lamp
       Multiballs = 1;                                 // turn it off
       PB_LampSweepActive = 0;                         // turn off backbox lamp sweep
       ReleaseSolenoid(11);                            // turn backbox GI back on
@@ -2120,6 +2124,7 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         ActivateTimer(1000, 0, PB_BallEnd);}          // come back and check again
       else {
         PB_ClearOutLock(1);                           // clear out lock and close visor
+        InLock = 0;
         PB_ChestLightHandler(0);                      // stop chest animation
         PB_ChestMode = 1;
         PB_ClearChest();                              // turn off chest lamps
