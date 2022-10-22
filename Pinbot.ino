@@ -32,6 +32,9 @@ const byte PB_BallSearchCoils[10] = {3,4,5,17,19,22,6,20,21,0}; // coils to fire
 const byte PB_OpenVisorSeq[137] = {26,1,29,9,15,4,16,2, 32,9,15,1,31,9,26,1,27,9, 29,2,28,9,32,2,29,7, 26,5,15,6,16,2,31,5,15,7, 26,4,27,7,29,6,28,9, 29,5,26,7,15,5,16,5,32,5, 15,4,31,5,26,7,29,5,27,11, 28,1,29,12,26,4,32,9, 15,3,31,7,16,5,27,5,15,3, 28,7,26,2,29,7,32,10 ,29,2,31,10,26,3,27,2,31,5, 15,2,28,9,16,4,15,1, 32,10,26,3,31,9,29,4,27,12, 28,2,29,10,26,2,15,7, 32,4,16,5,31,4,15,7,26,5,0};
 const byte PB_MultiballSeq[69] = {16,5,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,7,0,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5,29,10,26,5,15,5,16,5,15,10,8,0,0};
 const byte PB_ScoreEnergySeq[7] = {31,10,31,10,31,10,0};
+const byte PB_LeftBBinserts[5] = {28, 20, 28, 20, 0};
+const byte PB_RightBBinserts[5] = {27, 20, 27, 20, 0};
+const byte PB_BB_FlasherCycle[17] = {32, 6, 30, 2, 31, 8, 29, 8, 26, 8, 15, 8, 16, 3, 9, 1, 0};
 const byte PB_Ball_Locked[5] = {26,30,26,30,0};
 const byte PB_SkillShotFail[25] = {26,10,15,40,26,10,15,40,26,10,15,40,26,10,15,40,26,10,15,40,26,10,15,40,0};
 const byte PB_MultiplierSeq[83] = {27,2,29,6,26,7,27,6,15,5,16,8,27,5,29,8,30,5,26,1,31,11,28,1,15,6,31,3,16,3,28,8,27,1,29,9,26,5,27,4,15,4,31,7,16,3,31,7,26,1,29,10,32,1,15,11,30,1,16,4,31,3,29,8,28,6,26,5,31,7,15,1,16,11,29,10,31,2,15,6,16,4,0};
@@ -348,6 +351,7 @@ void PB_init() {
     Serial.begin(115200);}
   SolRecycleTime[20-1] = 200;                         // set recycle time for both slingshots
   SolRecycleTime[21-1] = 200;
+  digitalWrite(VolumePin,HIGH);                       // set volume to zero
   ACselectRelay = PB_ACselectRelay;                   // assign the number of the A/C select relay
   GameDefinition = PB_GameDefinition;}                // read the game specific settings and highscores
 
@@ -355,7 +359,6 @@ void PB_AttractMode() {
   AfterMusic = 0;
   DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
-  digitalWrite(VolumePin,HIGH);
   Switch_Pressed = PB_AttractModeSW;
   Switch_Released = DummyProcess;
   AddBlinkLamp(1, 150);                               // blink Game Over lamp
@@ -489,6 +492,7 @@ void PB_AttractModeSW(byte Select) {
   switch(Select) {
   case 3:                                             // credit button
     RemoveBlinkLamp(1);                               // stop the blinking of the game over lamp
+    PB_PlayAfterGameSequence(0);                      // stop end of game animation
     LampReturn = PB_RestoreLamps;
     ShowLampPatterns(0);                              // stop lamp animations
     PB_AttractDisplayCycle(0);                        // stop display animations
@@ -2086,6 +2090,88 @@ void PB_PlayMultiplierSequence(byte State) {
       KillTimer(Timer);
       Timer = 0;}}}
 
+void PB_PlayAfterGameSequence(byte State) {
+  static byte Timer = 0;
+  if ((State > 1) || ((State == 1) && !Timer)) {
+    if (State == 1) {
+      PlaySound(53, "0_b1.snd");
+      ActivateSolenoid(0, 9);
+      ActivateSolenoid(0, 11);
+      ActivateSolenoid(0, 12);
+      Timer = ActivateTimer(1205, 2, PB_PlayAfterGameSequence);}
+    else if (State == 2) {
+      PlayMusic(50, "1_86.snd");
+      ReleaseSolenoid(9);
+      Timer = ActivateTimer(300, 4, PB_PlayAfterGameSequence);}
+    else if (State < 64) {
+      if (!(State & 3)) {
+        ReleaseSolenoid(11);}
+      else if ((State & 3) == 1) {
+        ActivateSolenoid(0, 11);}
+      else if ((State & 3) == 2) {
+        ReleaseSolenoid(12);}
+      else if ((State & 3) == 3) {
+        ActivateSolenoid(0, 12);}
+      Timer = ActivateTimer(40, State+1, PB_PlayAfterGameSequence);}
+    else if (State == 64) {
+      ActivateSolenoid(0, 9);
+      MusicVolume = 3;
+      Timer = ActivateTimer(250, State+1, PB_PlayAfterGameSequence);}
+    else if (State == 65) {
+      ReleaseSolenoid(9);
+      PlaySound(53, "0_d7.snd");
+      PlayFlashSequence((byte*) PB_LeftBBinserts);
+      Timer = ActivateTimer(500, State+1, PB_PlayAfterGameSequence);}
+    else if (State == 66) {
+      ActivateSolenoid(0, 9);
+      MusicVolume = 3;
+      Timer = ActivateTimer(500, State+1, PB_PlayAfterGameSequence);}
+    else if (State == 67) {
+      ReleaseSolenoid(9);
+      PlayFlashSequence((byte*) PB_RightBBinserts);
+      PlayMusic(50, "1_03L.snd");
+      QueueNextMusic("1_03L.snd");
+      PlaySound(53, "0_d7.snd");
+      Timer = ActivateTimer(500, State+1, PB_PlayAfterGameSequence);}
+    else if (State == 68) {
+      ActivateSolenoid(0, 9);
+      Timer = ActivateTimer(500, State+1, PB_PlayAfterGameSequence);}
+    else if (State == 69) {
+      ReleaseSolenoid(9);
+      PlayFlashSequence((byte*) PB_BB_FlasherCycle);
+      RestoreMusicVolume(25);
+      Timer = ActivateTimer(1500, State+1, PB_PlayAfterGameSequence);}
+    else if (State < 77) {
+      ReleaseSolenoid(9);
+      PlayFlashSequence((byte*) PB_BB_FlasherCycle);
+      Timer = ActivateTimer(1500, State+1, PB_PlayAfterGameSequence);}
+    else if (State == 78) {
+      ReleaseSolenoid(9);
+      Timer = ActivateTimer(20, State+1, PB_PlayAfterGameSequence);}
+    else if (State < 118) {
+      if (State & 1) {
+        ReleaseSolenoid(11);
+        ActivateSolenoid(0, 12);}
+      else {
+        ReleaseSolenoid(12);
+        ActivateSolenoid(0, 11);}
+      Timer = ActivateTimer(10*(118-State), State+1, PB_PlayAfterGameSequence);}
+    else if (State == 118) {
+      ReleaseSolenoid(12);
+      AfterMusic = 0;
+      PlayMusic(50, "1_80.snd");
+      Timer = ActivateTimer(6000, State+1, PB_PlayAfterGameSequence);}
+    else {
+      Timer = 0;
+      digitalWrite(VolumePin,HIGH);}}                 // set volume to zero
+  else {
+    if (!State) {
+      if (Timer) {
+        KillTimer(Timer);
+        Timer = 0;}
+      StopPlayingMusic();
+      ReleaseAllSolenoids();}}}
+
 void PB_BallEnd(byte Event) {                         // ball has been kicked into trunk
   AppByte = PB_CountBallsInTrunk();
   if ((AppByte == 5)||(AppByte < 3-Multiballs-InLock)) {  // something's wrong in the trunk
@@ -2310,6 +2396,7 @@ void PB_BallEnd3(byte Dummy) {
       ReleaseSolenoid(24);
       LampPattern = NoLamps;                          // Turn off all lamps
       TurnOffLamp(3);                                 // turn off Ball in Play lamp
+      PB_PlayAfterGameSequence(1);                    // start end of game animation
       GameDefinition.AttractMode();}}}
 
 void PB_Congrats(byte Dummy) {                        // show congratulations
