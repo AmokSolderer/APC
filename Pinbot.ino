@@ -702,7 +702,7 @@ void PB_GiveBall(byte Balls) {
 void PB_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 20) {                                 // shooter lane switch released?
     Switch_Released = DummyProcess;
-    PlaySound(51, "1_95.snd");
+    PlaySound(53, "1_95.snd");
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
@@ -794,7 +794,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         case 22:
           c = 20;
           PlayFlashSequence((byte*) PB_SkillShotFail);
-          PlaySound(51, "1_91.snd");
+          PlaySound(53, "1_91.snd");
           break;
         case 23:                                      // 100K hole hit
           c = 100;
@@ -875,7 +875,7 @@ void PB_CheckReleasedBall(byte Balls) {               // ball release watchdog
 
 byte PB_CountBallsInTrunk() {
   byte Balls = 0;
-  for (byte i=0; i<2; i++) {                               // check how many balls are on the ball ramp
+  for (byte i=0; i<2; i++) {                          // check how many balls are on the ball ramp
     if (QuerySwitch(17+i)) {
       if (Balls < i) {
         return 5;}                                    // send warning
@@ -884,13 +884,11 @@ byte PB_CountBallsInTrunk() {
 
 void PB_SearchBall(byte Counter) {                    // ball watchdog timer has run out
   BallWatchdogTimer = 0;
-  if (QuerySwitch(16)) {                              // ball in outhole?
-    BlockOuthole = false;
-    ActivateTimer(1000, 0, PB_ClearOuthole);}
-  else {
-    if (QuerySwitch(20)) {                            // if ball is waiting to be launched
-      BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}  // restart watchdog
-    else {                                            // if ball is really missing
+  if (!QuerySwitch(10) && !QuerySwitch(11) && !QuerySwitch(20)) { // if ball is waiting to be launched or any flipper finger up
+    if (QuerySwitch(16)) {                              // ball in outhole?
+      BlockOuthole = false;
+      ActivateTimer(1000, 0, PB_ClearOuthole);}
+    else {
       byte c = PB_CountBallsInTrunk();                // recount all balls
       if (c == 5) {                                   // balls have not settled yet
         WriteUpper("  BALL  STUCK ");
@@ -903,7 +901,7 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
             ActivateTimer(1000, 2, PB_NewBall);}}     // otherwise try it with a new ball
         else {
           byte c2 = 0;
-          for (byte i=0; i<2; i++) {                       // count balls in lock
+          for (byte i=0; i<2; i++) {                  // count balls in lock
             if (QuerySwitch(25+i)) {
               c2++;}}
           if (c2 > InLock) {                          // more locked balls found than expected?
@@ -922,7 +920,9 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
             if (QuerySwitch(46) && !QuerySolenoid(13)) {  // visor closed and motor not active?
               ActivateSolenoid(0, 13);                // open it enough to deactivate switch 46
               ActivateTimer(2000, 0, PB_CloseVisor);} // and prepare to close it again
-            BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}}}}}} // come again in 1s if no switch is activated
+            BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}}}}} // come again in 1s if no switch is activated
+  else {
+    BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}
 
 void PB_OpenVisor(byte Dummy) {
   UNUSED(Dummy);
@@ -2102,7 +2102,7 @@ void PB_PlayAfterGameSequence(byte State) {
     else if (State == 2) {
       PlayMusic(50, "1_86.snd");
       ReleaseSolenoid(9);
-      Timer = ActivateTimer(300, 4, PB_PlayAfterGameSequence);}
+      Timer = ActivateTimer(10, 4, PB_PlayAfterGameSequence);}
     else if (State < 64) {
       if (!(State & 3)) {
         ReleaseSolenoid(11);}
@@ -2112,11 +2112,11 @@ void PB_PlayAfterGameSequence(byte State) {
         ReleaseSolenoid(12);}
       else if ((State & 3) == 3) {
         ActivateSolenoid(0, 12);}
-      Timer = ActivateTimer(40, State+1, PB_PlayAfterGameSequence);}
+      Timer = ActivateTimer(35, State+1, PB_PlayAfterGameSequence);}
     else if (State == 64) {
       ActivateSolenoid(0, 9);
       MusicVolume = 3;
-      Timer = ActivateTimer(250, State+1, PB_PlayAfterGameSequence);}
+      Timer = ActivateTimer(50, State+1, PB_PlayAfterGameSequence);}
     else if (State == 65) {
       ReleaseSolenoid(9);
       PlaySound(53, "0_d7.snd");
@@ -2281,6 +2281,7 @@ void PB_BlinkPlanet(byte State) {
 void PB_CountBonus(byte State) {
   static uint32_t TotalBonus;
   const byte Pattern[11] = {5,3,13,14,4,2,12,15,6,10,11};
+  const char PlanetTxt[9][15] = {{"       PLUTO  "},{"       NEPTUNE"},{"       URANUS "},{"       SATURN "},{"       JUPITER"},{"       MARS   "},{"       EARTH  "},{"       VENUS  "},{"       MERCURY"}};
   if (State < 11) {                                   // show bonus
     *(DisplayUpper+2*Pattern[State]) = *(DisplayUpper2+2*Pattern[State]);
     *(DisplayUpper+2*Pattern[State]+1) = *(DisplayUpper2+2*Pattern[State]+1);
@@ -2354,6 +2355,7 @@ void PB_CountBonus(byte State) {
     PlaySound(53, "0_65.snd");
     PB_BlinkPlanet(State-11);
     Points[Player] += 20000;                          // add points for each planet
+    WriteUpper((char*)PlanetTxt[State - 30]);         // show planet names
     ShowPoints(Player);
     if (PB_Planet[Player] > State - 29) {
       ActivateTimer(500, State+1, PB_CountBonus);}
