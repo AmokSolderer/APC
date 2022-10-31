@@ -22,6 +22,7 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 #define USB_LisyDebug 4                               // selected debug mode
 //#define USB_Option1 -> this option is defined in PinMameExceptions.ino
 //#define USB_BGmusic 9  to select an own BG music -> this option is defined in PinMameExceptions.ino
+//#define USB_CustomText 10  to select a custom text to be shown during attract mode -> this option is defined in PinMameExceptions.ino
 
 const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,       // game default settings
                               0,0,0,0,0,0,0,0,
@@ -47,7 +48,7 @@ const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   
 const char TXTUSB_AmokOption[4][17] = {{"          OFF   "},{" RIGHT OUTLANE  "},{" LEFT  OUTLANE  "},{" BOTH  OUTLANE  "}};
 const char TxtUSB_Music[2][17] = {{"PINMAMEDEFAULT  "},{"  MUSICBIN      "}};
 
-const struct SettingTopic USB_setList[13] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+const struct SettingTopic USB_setList[14] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
     {" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
     {"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
     {"PINMAME GAME    ",HandleNumSetting,0,0,72},
@@ -57,6 +58,7 @@ const struct SettingTopic USB_setList[13] = {{"USB WATCHDOG  ",HandleBoolSetting
     {" LED GI  GREEN  ",HandleColorSetting,0,0,255},
     {" LED GI  BLUE   ",HandleColorSetting,0,0,255},
     {"   BG   MUSIC   ",HandleTextSetting,&TxtUSB_Music[0][0],0,1},
+    {" CUSTOM TEXT  ",HandleBoolSetting,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};

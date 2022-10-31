@@ -16,6 +16,7 @@
 #define LED_green 7
 #define LED_blue 8
 #define USB_BGmusic 9                                 // to select an own BG music
+#define USB_CustomText 10                             // to select a custom text to be shown during attract mode
 
 byte USB_ChangedSwitches[64];                         // moved here from USBcontrol
 const byte PME_GIallOn[4] = {255, 255, 255, 255};     // all GI LEDs on
@@ -29,6 +30,7 @@ const byte PME_GI4[4] = {0, 0, 0, 255};
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
+byte EX_CustomText[28];                               // stores the custom text read from SD card
 
                             //LED number..00000000....11111110....22222111....33322222...43333333...44444444...55555554...66666555
                               // Color....12345678....65432109....43210987....21098765...09876543...87654321...65432109...43210987
@@ -583,6 +585,7 @@ void EX_AttractLEDeffects2(byte State) {              // call with State = 1
 byte EX_Comet(byte Type, byte Command) {
   static byte LastSwitch;                             // stores the number of the last activated switch
   static byte BlindPinmame;                           // hide switches from PinMame while active
+  static bool BlockDisplay;                           // to block PinMame's messages while the custom text is shown
   static byte Timer = 0;
   switch(Type) {
   case SoundCommandCh1:                               // sound commands for channel 1
@@ -611,6 +614,7 @@ byte EX_Comet(byte Type, byte Command) {
   case SwitchActCommand:                              // activated switches
     if (Command == 3) {                               // credit switch
       EX_AttractLEDeffects(0);                        // and stop GI animations
+      BlockDisplay = false;                           // don't show the custom text
       LEDhandling(6, 103);                            // write 103 to stop the GI animation
       LEDhandling(7, 1);
       LEDsetColorMode(0);                             // turn off unwanted LEDs
@@ -676,9 +680,14 @@ byte EX_Comet(byte Type, byte Command) {
       switch(IntBuffer) {
       case 500:                                       // play a GI effect
         EX_AttractLEDeffects(1);
+        if (game_settings[USB_CustomText]) {
+          BlockDisplay = true;                        // take control of the displays
+          WriteUpper((char*) EX_CustomText);
+          WriteLower((char*) EX_CustomText + 14);}
         break;
       case 700:
         EX_AttractLEDeffects(0);                      // and stop it
+        BlockDisplay = false;                         // give display control back to PinMame
         LEDhandling(6, 103);                          // write 103 to stop the GI animation
         LEDhandling(7, 1);
         LEDsetColorMode(0);                           // turn off unwanted LEDs
@@ -687,13 +696,26 @@ byte EX_Comet(byte Type, byte Command) {
         break;
       case 1100:
         EX_AttractLEDeffects2(1);                     // play another GI effect
+        if (game_settings[USB_CustomText]) {
+          BlockDisplay = true;                        // take control of the displays
+          WriteUpper((char*) EX_CustomText);
+          WriteLower((char*) EX_CustomText + 14);}
         break;
       case 1300:                                      // and stop it
         LEDhandling(6, 103);                          // write 103 to stop the GI animation
         LEDhandling(7, 1);
         LEDsetColorMode(0);                           // turn off unwanted LEDs
         LEDpattern = PME_GIon;                        // apply GI pattern
+        BlockDisplay = false;                         // give display control back to PinMame
         ActivateTimer(40, 2, EX_AttractLEDeffects2);}}  // wait a cycle to apply GI color
+    return(0);
+  case WriteToDisplay0:
+  case WriteToDisplay1:
+  case WriteToDisplay2:
+  case WriteToDisplay3:
+  case WriteToDisplay4:
+    if (BlockDisplay) {                               // displays are blocked while the custom text is shown
+      return(1);}
     return(0);
   case 50:                                            // timer of ball saver has run out
     Timer = 0;
@@ -1045,6 +1067,11 @@ void EX_Init(byte GameNumber) {
     if (APC_settings[LEDsetting]) {                   // LEDs used?
       LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
       LEDpattern = PME_GIon;}                         // and turn on GI
+    if (SDfound) {                                    // SD card found?
+      File CustomTxt = SD.open("Custom.txt");
+      if (CustomTxt) {                                // custom text found?
+        CustomTxt.read(&EX_CustomText, 28);}          // read text
+      CustomTxt.close();}
     PinMameException = EX_Comet;                      // use exception rules for Comet
     break;
   case 43:                                            // Pinbot
