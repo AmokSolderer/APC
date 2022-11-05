@@ -1945,9 +1945,10 @@ void PB_AdvancePlanet2(byte State) {                  // finale of the 'sun reac
       WriteUpper2("              ");}
     ActivateTimer(180, State+1, PB_AdvancePlanet2);}
   else {
-    for (byte i=0; i<9; i++) {                        // turn on planet lamps
-      TurnOnLamp(19 + i);}
+    for (byte i=0; i<9; i++) {                        // turn off planet lamps
+      TurnOffLamp(19 + i);}
     RestoreMusicVolume(25);
+    PB_Planet[Player] = 0;
     SwitchDisplay(1);}}                               // switch display back to normal
 
 void PB_AdvancePlanet(byte State) {
@@ -2258,7 +2259,7 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         PlaySound(53, "0_2c.snd");
         ActivateTimer(200, 0, PB_CountBonus);}}}}
 
-void PB_BlinkPlanet(byte State) {
+void PB_BlinkPlanet(byte State) {                     // blink planets during bonus count
   static byte Counter = 0;
   switch (Counter) {
   case 0:
