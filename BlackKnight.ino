@@ -1198,9 +1198,11 @@ void BK_BallEnd2(byte Balls) {
       if (APC_settings[DisplayType]) {                // not a 4 Alpha + Credit display?
         if (Points[Player] > HallOfFame.Scores[0]) {  // only top score counts
           PlaySound(55, "0_24.snd");
-          HallOfFame.Scores[0] = Points[Player];}
-        else {
-          BK_BallEnd3(Balls);}}
+          EnterIni[0] = ' ';                          // use dummy initials
+          EnterIni[1] = ' ';
+          EnterIni[2] = ' ';
+          HandleHighScores(Points[Player]);}
+        BK_BallEnd3(Balls);}
       else {                                          // it's a 4 Alpha + Credit display
         if (APC_settings[Volume]) {
           analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[BK_HighScoreVolume]);} // increase volume
