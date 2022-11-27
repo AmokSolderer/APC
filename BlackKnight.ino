@@ -13,13 +13,13 @@ byte BK_TimedRightMagnaTimer = 0;                     // number of the timer for
 byte BK_TimedLeftMagnaTimer = 0;                      // number of the timer for the left timed magna save
 byte BK_BonusToAdd = 0;                               // bonus points to be added by AddBonus()
 byte BK_BonusCountTime = 0;                           // counter to reduce the waiting time between the bonus counts
-const byte BK_BonusLamp = 48;                            // first lamp of the bonus ladder
-bool BK_LowerExBall[5];                                  // extra ball in turnaround pending?
-bool BK_UpperExBall[5];                                  // extra ball in left ramp pending?
-bool BK_PlayersExBalls[5];                               // did the player already get an extra ball?
-byte BK_DropTimer[4];                                    // timer for all drop target banks
-byte BK_DropHits[16];                                    // counts how often the target banks have been cleared
-bool BK_DropWait[5];                                     // indicates that a waiting time for this drop target bank is active before it it being processed
+const byte BK_BonusLamp = 48;                         // first lamp of the bonus ladder
+bool BK_LowerExBall[5];                               // extra ball in turnaround pending?
+bool BK_UpperExBall[5];                               // extra ball in left ramp pending?
+bool BK_PlayersExBalls[5];                            // did the player already get an extra ball?
+byte BK_DropTimer[4];                                 // timer for all drop target banks
+byte BK_DropHits[16];                                 // counts how often the target banks have been cleared
+bool BK_DropWait[5];                                  // indicates that a waiting time for this drop target bank is active before it it being processed
 const byte BK_BallSearchCoils[12] = {1,8,10,9,2,3,4,5,7,19,15,0}; // coils to fire when the ball watchdog timer runs out
 const unsigned int BK_SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,0,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
 const char BK_TestSounds[16][15] = {{"0_2f.snd"},{"0_30.snd"},{"0_31.snd"},{"0_32.snd"},{"0_33.snd"},{"0_15.snd"},{"0_36.snd"},{"0_37.snd"},
@@ -189,23 +189,24 @@ const struct LampPat BK_AttractPat4[52] = {{30,0,0b00000000,0b00000000,0b0000000
                                         {30,0,0b00000000,0b00000000,0b00000000,0b00000000,0b11000000,0b00000000,0b00000000},
                                         {30,0,0b00000000,0b00000000,0b00000000,0b00000000,0b01000000,0b00000000,0b00000000},
                                         {0,0,0,0,0,0,0,0,0}};
-
-const struct LampPat BK_AttractPat5[17] = {{50,0,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000100,0b11000000},
-                                        {50,0,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00001000,0b11000000},
-                                        {50,0,0b00001001,0b00000000,0b10000000,0b00000000,0b00000000,0b00010000,0b00000000},
-                                        {50,0,0b00001001,0b00000000,0b10000000,0b00000000,0b00000000,0b00100000,0b00000000},
-                                        {50,0,0b00100000,0b10000000,0b00010000,0b10000000,0b00000000,0b01000000,0b00000000},
-                                        {50,0,0b00100000,0b10000000,0b00010000,0b10000000,0b00000000,0b10000000,0b00000000},
-                                        {50,0,0b00000000,0b00011000,0b00000000,0b01110000,0b00000000,0b00000000,0b00000001},
-                                        {50,0,0b00000000,0b00011000,0b00000000,0b01110000,0b00000000,0b00000000,0b00000010},
-                                        {50,0,0b00000000,0b00000100,0b00000000,0b00000110,0b00000010,0b00000000,0b00000100},
-                                        {50,0,0b00000000,0b00000100,0b00000000,0b00000110,0b00000010,0b00000000,0b00001000},
-                                        {50,0,0b00010000,0b01100000,0b01100000,0b00000001,0b00000001,0b00000000,0b00000000},
-                                        {50,0,0b00010000,0b01100000,0b01000000,0b00001000,0b00000001,0b00000000,0b00000000},
-                                        {50,0,0b00000000,0b00000001,0b00000111,0b00000000,0b01000000,0b00000000,0b00000000},
-                                        {50,0,0b00000000,0b00000001,0b00000111,0b00000000,0b10000000,0b00000000,0b00000000},
-                                        {50,0,0b10000110,0b00000000,0b00001000,0b00000000,0b00000000,0b00000001,0b00110000},
-                                        {50,0,0b10000110,0b00000000,0b00001000,0b00000000,0b00000000,0b00000010,0b00110000},
+                                  //  Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
+                                  //  Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
+const struct LampPat BK_AttractPat5[17] = {{50,0,0b11000110,0b00000000,0b00001000,0b00000000,0b00000000,0b00000111,0b11110000},
+                                        {50,0,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00001100,0b11000000},
+                                        {50,0,0b01001001,0b00000000,0b10000000,0b00000000,0b00000000,0b00011000,0b11000000},
+                                        {50,0,0b00001001,0b00000000,0b10000000,0b00000000,0b00000000,0b00110000,0b00000000},
+                                        {50,0,0b00101001,0b10000000,0b10010000,0b10000000,0b00000000,0b01100000,0b00000000},
+                                        {50,0,0b00100000,0b10000000,0b00010000,0b10000000,0b00000000,0b11000000,0b00000000},
+                                        {50,0,0b00100000,0b10011000,0b00010000,0b11110000,0b00000000,0b10000000,0b00000001},
+                                        {50,0,0b00000000,0b00011000,0b00000000,0b01110000,0b00000000,0b00000000,0b00000011},
+                                        {50,0,0b00000000,0b00011100,0b00000000,0b01110110,0b00000010,0b00000000,0b00000110},
+                                        {50,0,0b00000000,0b00000100,0b00000000,0b00000110,0b00000010,0b00000000,0b00001100},
+                                        {50,0,0b00010000,0b01100110,0b00100000,0b00000111,0b00000011,0b00000000,0b00001000},
+                                        {50,0,0b00010000,0b01100010,0b01100000,0b00001001,0b00000001,0b00000000,0b00000000},
+                                        {50,0,0b00010000,0b01100011,0b01000111,0b00001000,0b01000001,0b00000000,0b00000000},
+                                        {50,0,0b00000000,0b00000001,0b00000111,0b00000000,0b11000000,0b00000000,0b00000000},
+                                        {50,0,0b10000110,0b00000001,0b00001111,0b00000000,0b10000000,0b00000001,0b00110000},
+                                        {50,0,0b10000110,0b00000000,0b00001000,0b00000000,0b00000000,0b00000011,0b00110000},
                                         {0,0,0,0,0,0,0,0,0}};
 
 const struct LampFlow BK_AttractFlow[6] = {{3,BK_AttractPat1},{10,BK_AttractPat2},{3,BK_AttractPat4},{10,BK_AttractPat3},{10,BK_AttractPat5},{0,0}};
@@ -217,7 +218,6 @@ const byte BK_FirstMultLamp = 61;
 const byte BK_DropTargets[4] = {25, 29, 33, 37};
 const byte BK_DropSolenoid = 2;
 const byte BK_DropLamp = 17;
-const byte BK_ACselectRelay = 0;                      // no A/C select relay
 
 struct GameDef BK_GameDefinition = {
   BK_setList,                                         // GameSettingsList
@@ -233,7 +233,7 @@ void BK_init() {
     Serial.begin(115200);}
   SolRecycleTime[17-1] = 200;                         // set recycle time for both slingshots
   SolRecycleTime[18-1] = 200;
-  ACselectRelay = BK_ACselectRelay;                   // assign the number of the A/C select relay
+  ACselectRelay = 0;                                  // no A/C select relay
   GameDefinition = BK_GameDefinition;}                // read the game specific settings and highscores
 
 void BK_AttractMode() {                               // Attract Mode
@@ -1953,223 +1953,7 @@ void BK_TestMode_Enter() {
   else {
     WriteUpper("  TEST  MODE  ");                     // Show Test Mode
     WriteLower("              ");
-    LampPattern = NoLamps;                            // Turn off all lamps
-    ActivateTimer(1000, 0, BK_DisplayTest_Enter);}}   // Wait 1 second and proceed to Display Test
-
-void BK_DisplayTest_Enter(byte Event) {
-  UNUSED(Event);
-  Switch_Pressed = BK_DisplayTest_EnterSw;            // Switch functions
-  WriteUpper("DISPLAY TEST  ");}                      // Show 'Display Test'
-
-void BK_DisplayTest_EnterSw(byte Event) {             // Display Test Enter switch handler
-  switch (Event) {
-  case 72:                                            // Next test
-    WriteUpper(" SWITCHEDGES  ");                     // Show 'Switch Edges'
-    Switch_Pressed = BK_SwitchEdges_Enter;            // Next mode
-    break;
-  case 3:
-    WriteUpper("0000000000000000");
-    WriteLower("0000000000000000");
-    Switch_Pressed = BK_DisplayTestSw;
-    AppByte = ActivateTimer(1000, 32, BK_DisplayCycle);}} // Activate timer for display pattern change}
-
-void BK_DisplayTestSw(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);
-    Switch_Pressed = BK_DisplayTest_EnterSw;
-    *(DisplayLower) = 0;
-    *(DisplayLower+16) = 0;
-    *(DisplayUpper) = 0;
-    *(DisplayUpper+16) = 0;
-    WriteUpper("DISPLAY TEST  ");
-    WriteLower("              ");}}
-
-void BK_DisplayCycle(byte Event) {                    // Display cycle test
-  if (QuerySwitch(73)) {                              // cycle only if Up/Down switch is not pressed
-    if (Event == 116) {                               // if the last character is reached
-      AppByte2 = 32;}                                 // start from the beginning
-    else {
-      if (Event == 50) {                              // reached the gap between numbers and characters?
-        AppByte2 = 66;}
-      else {
-        AppByte2 = Event+2;}}                         // otherwise show next character
-    for (i=0; i<16; i++) {                            // use for all alpha digits
-      if ((i==0) || (i==8)) {
-        DisplayUpper[2*i] = LeftCredit[AppByte2];
-        DisplayUpper[2*i+1] = LeftCredit[AppByte2+1];
-        DisplayLower[2*i] = RightCredit[AppByte2];
-        DisplayLower[2*i+1] = RightCredit[AppByte2+1];}
-      else {
-        DisplayUpper[2*i] = DispPattern1[AppByte2];
-        DisplayUpper[2*i+1] = DispPattern1[AppByte2+1];
-        DisplayLower[2*i] = DispPattern2[AppByte2];
-        DisplayLower[2*i+1] = DispPattern2[AppByte2+1];}}}
-  AppByte = ActivateTimer(500, AppByte2, BK_DisplayCycle);}   // restart timer
-
-void BK_SwitchEdges_Enter(byte Event) {
-  switch (Event) {
-  case 72:
-    WriteUpper("  COIL  TEST  ");                     // go to Solenoid Test Enter
-    WriteLower("              ");
-    Switch_Pressed = BK_Solenoids_Enter;
-    break;
-  case 3:
-    WriteUpper(" LATESTEDGES  ");                     // show 'Latest Edges'
-    WriteLower("              ");
-    Switch_Pressed = BK_SwitchEdges;}}
-
-void BK_SwitchEdges(byte Event) {
-  if (Event == 72) {
-    Switch_Pressed = BK_SwitchEdges_Enter;            // back to Switch edges enter
-    WriteUpper(" SWITCHEDGES  ");
-    WriteLower("              ");}
-  else {
-    for (i=1; i<24; i++) {                            // move all characters in the lower display row 4 chars to the left
-      DisplayLower[i] = DisplayLower[i+8];}
-    *(DisplayLower+30) = DispPattern2[32 + 2 * (Event % 10)]; // and insert the switch number to the right of the row
-    *(DisplayLower+31) = DispPattern2[33 + 2 * (Event % 10)];
-    *(DisplayLower+28) = DispPattern2[32 + 2 * (Event - (Event % 10)) / 10];
-    *(DisplayLower+29) = DispPattern2[33 + 2 * (Event - (Event % 10)) / 10];}}
-
-void BK_Solenoids_Enter(byte Event) {
-  switch (Event) {
-  case 72:
-    WriteUpper(" SINGLE LAMP  ");                     // go to next test
-    Switch_Pressed = BK_SingleLamp_Enter;
-    break;
-  case 3:
-    WriteUpper(" FIRINGCOIL NO");
-    WriteLower("              ");
-    Switch_Pressed = BK_SolenoidsTest;
-    AppByte2 = 1;                                     // start with solenoid 1
-    AppByte = ActivateTimer(1000, 0, BK_FireSolenoids);}} // start after 1 second
-
-void BK_SolenoidsTest(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);                               // kill running timer for next solenoid
-    WriteUpper("  COIL  TEST  ");                     // back to Solenoid Test Enter
-    WriteLower("              ");
-    Switch_Pressed = BK_Solenoids_Enter;}}
-
-void BK_FireSolenoids(byte Event) {                   // cycle all solenoids
-  UNUSED(Event);
-  *(DisplayLower+30) = DispPattern2[32 + 2 * (AppByte2 % 10)]; // and show the actual solenoid number
-  *(DisplayLower+31) = DispPattern2[33 + 2 * (AppByte2 % 10)];
-  *(DisplayLower+28) = DispPattern2[32 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
-  *(DisplayLower+29) = DispPattern2[33 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
-  ActivateSolenoid(0, AppByte2);                      // activate the solenoid for 50ms
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    AppByte2++;                                       // increase the solenoid counter
-    if (AppByte2 == 20) {                             // maximum reached?
-      AppByte2 = 1;}}                                 // then start again
-  AppByte = ActivateTimer(1000, 0, BK_FireSolenoids);}   // come back in one second
-
-void BK_SingleLamp_Enter(byte Event) {
-  switch (Event) {
-  case 72:
-    WriteUpper("  ALL   LAMPS ");                     // go to next test
-    Switch_Pressed = BK_AllLamps_Enter;
-    break;
-  case 3:
-    WriteUpper(" ACTUAL LAMP  ");
-    WriteLower("              ");
-    for (i=0; i<8; i++){                              // erase lamp matrix
-      LampColumns[i] = 0;}
-    LampPattern = LampColumns;                        // and show it
-    Switch_Pressed = BK_SingleLamp;
-    AppByte2 = 1;                                     // start with lamp 1
-    AppByte = ActivateTimer(1000, 0, BK_ShowLamp);}}  // start after 1 second
-
-void BK_SingleLamp(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);                               // kill running timer for next solenoid
-    LampPattern = NoLamps;                            // Turn off all lamps
-    WriteUpper(" SINGLE LAMP  ");
-    WriteLower("              ");
-    Switch_Pressed = BK_SingleLamp_Enter;}}
-
-void BK_ShowLamp(byte Event) {                        // cycle all lamps
-  UNUSED(Event);
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    *(DisplayLower+30) = DispPattern2[32 + 2 * (AppByte2 % 10)]; // and show the actual solenoid number
-    *(DisplayLower+31) = DispPattern2[33 + 2 * (AppByte2 % 10)];
-    *(DisplayLower+28) = DispPattern2[32 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
-    *(DisplayLower+29) = DispPattern2[33 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
-    TurnOnLamp(AppByte2);                             // turn on lamp
-    if (AppByte2 > 1) {                               // and turn off the previous one
-      TurnOffLamp(AppByte2-1);}
-    else {
-      TurnOffLamp(LampMax);}
-    AppByte2++;                                       // increase the lamp counter
-    if (AppByte2 == LampMax+1) {                      // maximum reached?
-      AppByte2 = 1;}}                                 // then start again
-  AppByte = ActivateTimer(1000, 0, BK_ShowLamp);}     // come back in one second
-
-void BK_AllLamps_Enter(byte Event) {
-  switch (Event) {
-  case 72:
-    WriteUpper(" SOUND  TEST  ");                     // go to next test
-    Switch_Pressed = BK_SoundTest_Enter;
     AppByte = 0;
-    break;
-  case 3:
-    WriteUpper("FLASHNG LAMPS ");
-    Switch_Pressed = BK_ModeAllLamps;
-    AppByte2 = 0;
-    AppByte = ActivateTimer(500, 0, BK_ShowAllLamps);}}  // start after 500ms
-
-void BK_ModeAllLamps(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);                               // kill running timer for next solenoid
     LampPattern = NoLamps;                            // Turn off all lamps
-    WriteUpper("  ALL   LAMPS ");
-    Switch_Pressed = BK_AllLamps_Enter;}}
+    ActivateTimer(1000, 0, BC_Testmode);}}            // Wait 1 second and proceed to Display Test
 
-void BK_ShowAllLamps(byte Event) {                    // Flash all lamps
-  UNUSED(Event);
-  if (AppByte2) {                                     // if all lamps are on
-    LampPattern = NoLamps;                            // turn them off
-    AppByte2 = 0;}
-  else {                                              // or the other way around
-    LampPattern = AllLamps;
-    AppByte2 = 1;}
-  AppByte = ActivateTimer(500, 0, BK_ShowAllLamps);}  // come back in 500ms
-
-void BK_SoundTest_Enter(byte Switch) {
-  switch (Switch) {
-  case 72:
-    analogWrite(VolumePin,255);                       // set volume to zero
-    StopPlayingSound();
-    ReleaseSolenoid(23);                              // disable flipper fingers
-    ReleaseSolenoid(24);
-    GameDefinition.AttractMode();
-    break;
-  case 3:
-    WriteUpper("PLAYING SOUND ");
-    WriteLower("            01");
-    analogWrite(VolumePin,255-APC_settings[Volume]);  // set volume
-    Switch_Pressed = BK_SoundTest;
-    AfterSound = BK_NextTestSound;
-    PlaySound(50, (char*) BK_TestSounds[AppByte]);}}
-
-void BK_NextTestSound(byte Dummy) {
-  UNUSED(Dummy);
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    AppByte++;}
-  if (!BK_TestSounds[AppByte][0]) {
-    AppByte = 0;}
-  *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte+1) % 10)]; // and show the next sound number
-  *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte+1) % 10)];
-  *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  PlaySound(50, (char*) BK_TestSounds[AppByte]);}
-
-void BK_SoundTest(byte Switch) {
-  if (Switch == 3) {
-    BK_NextTestSound(0);}
-  if (Switch == 72) {
-    AfterSound = 0;
-    StopPlayingMusic();
-    WriteUpper(" SOUND  TEST  ");
-    Switch_Pressed = BK_SoundTest_Enter;
-    AppByte = 0;}}

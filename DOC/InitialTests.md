@@ -15,6 +15,7 @@ Put your board into your pinball machine, but only plug the connectors for Logic
 | Switch Drivers | 2J2 | 1J8 |
 | Switch Inputs | 2J3 | 1J10 |
 | Diag_sw | 1J4 | 1J14 |
+| Special Switches | 2J13 | 1J18 (if present) |
 | Display Strobes 1 | 1J7 | 1J1 |
 | Display Strobes 2 | 1J6 | 1J2 |
 | Display Segments 1 | 1J5 | 1J3 |

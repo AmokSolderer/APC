@@ -191,6 +191,8 @@ I'm sorry, but I'm not going to sell them. You can order boards from [JLCPCB](ht
 
 7 APC games - Complete games running natively on the APC (no PinMame)  
 7.1 [Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) - Complete game code with some additional features
+7.2 [Pin Bot](https://github.com/AmokSolderer/APC/blob/master/DOC/Pinbot.md) - Complete game code with some additional features
+7.3 [Comet](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Comet.md) - Some extensions to the original game code running in PinMame
 
 8 Videos - For the generation Youtube  
 8.1 [What's new in APC3](https://youtu.be/4EgOTJyxMXo) - Gives an overview about what the APC is and what version 3 can do  
