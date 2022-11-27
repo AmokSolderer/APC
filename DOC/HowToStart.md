@@ -2,7 +2,8 @@
 
 First you should know what you're dealing with, so take a look at the [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf). I have tried to design the hardware simple and straightforward, that means with a bit of hardware knowledge it shouldn't be a problem for you to understand how it works.
 
-In the schematics the names of the connectors are given for System7 and System11, but the System7 names are also valid for System3 - 6 and the System11 names match to System9. The following picture should help you to determine where the various connectors belong. The solenoid GND connector of Sys11 games (1J13) has only 4 pins, in the picture it is marked as a black rectangle. The X symbols indicate which pins have to be removed.
+In the schematics the names of the connectors are given for System7 and System11, but the System7 names are also valid for System3 - 6 and the System11 names match to System9. The following picture should help you to determine where the various connectors belong. The direction of the Molex connectors is printed on the boards and also visible in the picture below: the friction lock belongs to the side where the additional thin line is drawn.  
+The solenoid GND connector of Sys11 games (1J13) has only 4 pins, in the picture it is marked as a black rectangle. The X symbols indicate which pins have to be removed.
 
 ![APC connectors](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Connectors.png)
 
@@ -29,6 +30,12 @@ I got a notification from Mouser that the TDA7496 audio amplifier IC won't be pr
 
 At the moment I don't have the time to select a new amplifier IC, change the board design and do the necessary tests. I might do it in the future if the IC is not available any more.  
 That means you should try to get these ICs before you order any boards.
+
+## The assembly
+
+As the boards have the component names printed at the corresponding locations, you can just use the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/Assembly/APC_BOMnonSMD.pdf) to identify the  right component to put there.  
+Pay attention to the polarity of the electrolytic capacitors C2, C9 and C11. The rectangular pad does always belong to the plus pin of the cap.  
+The resistor networks RR1, RR7 and RR8 have to be populated in the correct orientation also. There's a marking for pin 1 printed on the APC boards. On the resistor networks pin 1 is usually marked with a dot.
 
 ## Preparation
 
@@ -80,22 +87,16 @@ The same is valid for my Black Knight game SW which also uses the PinMame sound 
 The APC features a digital volume control which allows you to adjust the volume in the system settings. But before you set your volume to a value different from zero, you should be sure that the volume pot is not connected (10J4 for Sys3-7 and 1J16 for Sys9-11) otherwise the volume levels will add up and you might damage your speakers.  
 I'd recommend not to use 10J4 at all, but only the digital volume control.
 
-## Settings
-
-A list of the settings and a brief description of how to use them can be found on the [settings page](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md).
-
-## The assembly
-
-As the boards have the component names printed at the corresponding locations, you can just use the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/Assembly/APC_BOMnonSMD.pdf) to identify the  right component to put there.  
-Pay attention to the polarity of the electrolytic capacitors C2, C9 and C11. The rectangular pad does always belong to the plus pin of the cap.  
-The resistor networks RR1, RR7 and RR8 have to be populated in the correct orientation also. There's a marking for pin 1 printed on the APC boards. On the resistor networks pin 1 is usually marked with a dot.
-
 ## Getting your board started
 
 Plug the Arduino DUE on your APC board, but don't populate the Pi yet. I recommend to do the basic tests before assembling the Pi.
 The next step is to install the Arduino SW. I'd do this before you put the APC board into your pinball machine, because if this works you know, that your 5V supply has no short and is working properly.
 
 Now you're ready for the [initial tests](https://github.com/AmokSolderer/APC/blob/master/DOC/InitialTests.md).
+
+## Settings
+
+A list of the settings and a brief description of how to use them can be found on the [settings page](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md).
 
 ## Own software
 

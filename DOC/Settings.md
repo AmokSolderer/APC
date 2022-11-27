@@ -14,6 +14,8 @@ I did two videos to show what I've described above:
 
 [Adjusting the display settings for 2x16 segment System11 displays](https://www.youtube.com/watch?v=XqPWbm-HWM8)
 
+Note that the menus have changed since these videos have been made. So use them only to see how it works in general, but use the tables below as a reference for the settings.
+
 ## Using the settings menu
 
 To enter the APC settings you have to press the Advance button at the coin door. If you're in Remote Control mode you have to keep it pressed for more than 1s.
