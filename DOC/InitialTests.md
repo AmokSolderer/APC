@@ -58,6 +58,9 @@ Now it's time for the lamps and the audio part.
 
 Turn on your machine. As you have an SD card plugged into the APC, the previous setting should have been stored and the Base Code should come up automatically. The attract mode of the base code has the lamps cycling from 1 to 64 which should be visible now.
 
+Some words about audio:  
+The APC offers a digital volume setting which let's you adjust the volume in the System Settings (Setting 6 'Speaker Volume'). This has the advantage of not having to use the old volume pots which are often bad after 40 years. However, the default volume setting is zero which means if you don't connect the volume connector 10J4 (1J16 for System11) you have to adjust the volume setting in order to have any sound.
+
 ## Using the Test Mode
 
 Press the Advance button with Up/Down being in the down position to enter the test mode of the Base Code.  
