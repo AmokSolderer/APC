@@ -686,6 +686,7 @@ void BC_Testmode(byte Select) {
           break;
         case 72:
           if (AppByte2) {
+            ReleaseAllSolenoids();
             KillTimer(AppByte2);
             AppByte2 = 0;}
           else {
