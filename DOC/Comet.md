@@ -44,13 +44,13 @@ The same needs to be done for the High Score table feature. In this case the nam
 | 5 |  | 2 | Left Outlane | - | Ball saver only active for the left outlane |
 | 5 |  | 3 | Both Outlane | - | Ball saver active for both outlanes |
 | 6 | LED GI red | - | - | 255 | Numerical setting (0-255) -> GI color setting red |
-| 6 | LED GI green | - | - | 255 | Numerical setting (0-255) -> GI color setting green |
-| 6 | LED GI blue | - | - | 255 | Numerical setting (0-255) -> GI color setting blue |
-| 7 | BG Music | 0 | PinMame default | X | Normal Comet BG music |
-| 7 |  | 1 | Music bin | - | Uses the MUSIC.bin file as BG music |
-| 8 | Custom Text | - | - | No | Bool setting - Shows the custom text sometimes during attract mode |
-| 9 | Restore Default | - | - | - | No setting - restores the default settings |
-| 10 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 7 | LED GI green | - | - | 255 | Numerical setting (0-255) -> GI color setting green |
+| 8 | LED GI blue | - | - | 255 | Numerical setting (0-255) -> GI color setting blue |
+| 9 | BG Music | 0 | PinMame default | X | Normal Comet BG music |
+| 9 |  | 1 | Music bin | - | Uses the MUSIC.bin file as BG music |
+| 10 | Custom Text | - | - | No | Bool setting - Shows the custom text sometimes during attract mode |
+| 11 | Restore Default | - | - | - | No setting - restores the default settings |
+| 12 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## Things to do
 

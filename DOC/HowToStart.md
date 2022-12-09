@@ -1,5 +1,16 @@
 # How to start
 
+The following steps are necessary for the APC to control your Williams System 3 - System11 pinball machine.
+
+1. The APC board - How to get one and how to use it
+2. Install the SW
+3. Prepare your machine
+4. Set up the Base Code
+5. Do the tests
+6. Run your game
+
+## The APC board
+
 First you should know what you're dealing with, so take a look at the [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf). I have tried to design the hardware simple and straightforward, that means with a bit of hardware knowledge it shouldn't be a problem for you to understand how it works.
 
 In the schematics the names of the connectors are given for System7 and System11, but the System7 names are also valid for System3 - 6 and the System11 names match to System9. The following picture should help you to determine where the various connectors belong. The direction of the Molex connectors is printed on the boards and also visible in the picture below: the friction lock belongs to the side where the additional thin line is drawn.  
@@ -7,9 +18,9 @@ The solenoid GND connector of Sys11 games (1J13) has only 4 pins, in the picture
 
 ![APC connectors](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Connectors.png)
 
-However, the APC is only suited for you if you have some basic knowledge of electronics, because you can easily damage your precious pinball machine when you don't do things right. You should at least own a logic probe to do some basic tests if things don't work.
+However, the APC is only suited for you if you have some basic knowledge of electronics, because you can easily damage your precious pinball machine when you don't do things right.
 
-## The board
+## Order a board
 
 It has become increasingly difficult to get all the required parts. Especially the 74HCT273 seem to be a problem and it sometimes happens that they're only available in a certain package. I have therefore split up the fabrication files section into two parts, one with the 74HCT273 in an [SOIC package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SOIC) and one with a [SSOP package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SSOP). Both folders contain all the required data to build a board, just the package of the 74HCT273 is different.
 

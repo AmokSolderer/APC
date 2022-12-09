@@ -21,7 +21,7 @@ byte BK_DropTimer[4];                                 // timer for all drop targ
 byte BK_DropHits[16];                                 // counts how often the target banks have been cleared
 bool BK_DropWait[5];                                  // indicates that a waiting time for this drop target bank is active before it it being processed
 const byte BK_BallSearchCoils[12] = {1,8,10,9,2,3,4,5,7,19,15,0}; // coils to fire when the ball watchdog timer runs out
-const unsigned int BK_SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,0,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
+const unsigned int BK_SolTimes[24] = {30,50,50,50,50,40,50,50,1999,1999,0,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
 const char BK_TestSounds[16][15] = {{"0_2f.snd"},{"0_30.snd"},{"0_31.snd"},{"0_32.snd"},{"0_33.snd"},{"0_15.snd"},{"0_36.snd"},{"0_37.snd"},
     {"0_38.snd"},{"0_39.snd"},{"0_3a.snd"},{"0_3b.snd"},{"0_3c.snd"},{"BK_E14.snd"},{"0_3e.snd"},0};
 

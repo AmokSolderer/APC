@@ -3,7 +3,7 @@
 ## Preparation
 
 For these tests you need to have all components except of the Raspberry Pi populated and the APC SW installed.  
-For the audio test take your sound file of choice, convert it with the [Audio Converter](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md), rename it to MUSIC.BIN and copy it to an SD card which needs to be connected to P8 of the APC board.
+For the audio test take your sound file of choice, convert it with the [Audio Converter](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md), rename it to MUSIC.BIN and copy it to an SD card which needs to be connected to P8 of the APC board. Of course you can skip this if you don't want to the APC to generate the sound.
 
 ## Switches and Displays
 
