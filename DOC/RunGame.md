@@ -4,7 +4,7 @@ So you've done the tests and you have the Base Code running. If you've also [adj
 
 After you've had enough fun with the Base Code you have the following options:
 
-* Use Lisy/PinMame to run the original game code in a Raspberry Pi
+* Use Lisy/PinMame to run the original game code on a Raspberry Pi
 * Create your game in MPF and let it control the APC
 * Do your own game code in C and use the APC SW framework
 
@@ -15,7 +15,7 @@ Here's what to do:
 
 1 Enter the [System Settings](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Settings.md#system-settings)  
 1.1 Select 'Remote Control' as the Active Game  
-1.2 Check that 'On Board' is selected in the 'Connect Type' setting
+1.2 Check that 'On Board' is selected in the 'Connect Type' setting  
 2 Enter the [Game Settings of the Remote Control Mode](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Settings.md#game-settings-in-remote-control-mode)  
 2.1 Select the corresponding [PinMame game number](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/lisyminigames.csv) in the Game Settings  
 2.2 If you want to let the APC generate the audio then Game Setting 'PinMame Sound' has to be APC, 'Board' means that an old audio board is used which is possible for System 3 - 7 machines. System 7 machines need an additional cable for this to work  
@@ -23,17 +23,17 @@ Here's what to do:
 3.1 Install the image file on an SD card and put it in your Raspberry Pi  
 3.2 Install the Pi on your APC board  
 4 Turn on your pinball machine  
-4.1 The 'Booting Lisy' message should appear in your displays
-4.2 After a while the yellow on board LED will be lit and the name of the selected game will appear in the displays as well as a countdown
+4.1 The 'Booting Lisy' message should appear in your displays  
+4.2 After a while the yellow on board LED will be lit and the name of the selected game will appear in the displays as well as a countdown  
 4.3 The green LED will be lit and the game should start
 
-Most Williams go into 'Factory Settings' mode when started for the first time. That means if the game doesn't start, use the Advance and Up/Down Buttons to navigate and quit the Williams Settings. Note that as you're now in the original Williams you can navigate them as usual with one exception:  
+Most Williams games go into 'Factory Settings' mode when started for the first time. That means if the game doesn't start, use the Advance and Up/Down Buttons to navigate and quit the Williams settings. Note that as you're now in the original Williams settings you can navigate them as usual with one exception:  
 You must not keep Advance pressed for more than 1 second with Up/Down in up posittion as this will trigger the APC settings. If you want to browse the Williams Settings quickly, just do it backwards with Up/Down in down position.
 
 ### PinMame sound
 
 When you're not using an old audio board but wanting the APC do the audio instead, then you need to have the necessary sound files. Check the table on the [PinMame Sound](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame.md) page to see whether your game is already supported and the audio files are available.  
-If your game is not yet supported or you want to change the sounds (or even rules) then read the [PinMame Sound howto](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md).
+If your game is not yet supported or you want to change the sounds (or even rules) then read the [PinMame howto](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md).
 
 ## MPF
 

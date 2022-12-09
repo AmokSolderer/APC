@@ -10,11 +10,11 @@ This adapter must then be plugged into the SD card connector P8 of the APC. The 
 
 # Machine specific preparation
 
-This page is divided in different sections, depending on which generation your pinball machine is. 
+This page is divided in different sections, depending on which generation your pinball machine is from. 
 
 ## System 3 - 6
 
-If you want to use Lisy/PinMame you can decide whether to let the APC generate the audio or use the old audio board. In the latter case you don't need to prepare any sound files, of course all connectors at the old audio board must be connected then. You should still install an SD card in order not to loose your settings every time you switch off your machine.
+If you want to use Lisy/PinMame you can decide whether to let the APC generate the audio or use the old audio board. In the latter case you don't need to prepare any sound files, but of course all connectors at the old audio board must be connected then. You should still install an SD card in order not to loose your settings every time you switch off your machine.
 
 ## System 7
 
@@ -51,4 +51,4 @@ For later games featuring auxiliary power and interconnect boards there is no wa
 
 # Set up the Base Code
 
-The next step is to [Set up the Base Code](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/SetUpBC.md) in order to prepare for the basic tests.
+The next step is to [Do the tests](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/InitialTests.md).

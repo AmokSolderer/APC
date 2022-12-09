@@ -162,9 +162,9 @@ You have a Williams System 3 - 11 pinball machine and you want it to be controll
 1.2 [Upload the SW](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Upload_SW.md) - How to program the Arduino DUE  
 1.3 [Basic Preparation](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Prepare.md)  
 1.4 [Do the tests](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/InitialTests.md)  
-1.5 [Run a game](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/InitialTests.md)  - All the ways to get a game running  
+1.5 [Run a game](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/RunGame.md)  - All the ways to get a game running  
 
-2 Reference  
+2 References  
 2.2 [Useful software tools](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/UsefulSWtools.md) - Simple tools for audio data conversion and so on  
 2.3 [APC settings](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Settings.md) - a table of the settings and how to use them  
 2.4 [APC schematics](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
