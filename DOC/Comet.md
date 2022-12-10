@@ -21,7 +21,7 @@ Watch [this video](https://youtu.be/JbgMa_pn0Lo) to see how the ball saver works
 * LED GI -> I'm using the [LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) with some RGB-LED chain instead of the old GI lightbulbs. You can choose your GI color in the Game Settings.
 * GI gameplay animations -> During normal gameplay the GI LEDs behave like the normal GI, but in some occasions when the game shows some fireworks animation with the backbox flashers the GI does the same on the playfield, which makes this effect much stronger.
 * GI attract animations -> I also use the GI LEDs to play some colorful animations every now and then during attract mode. There's a video showing my [GI LEDs](https://youtu.be/kLWVUdhSwfo) in action
-* Custom Text Message -> As my game has alphanumeric displays I'm showing a custom text message when the GI LEDs are having their animations during attract mode. The text is retrieved from the file Custom.txt which has to be present on the SD card.
+* Custom Text Message -> As my game has alphanumeric displays I'm showing a custom text message when the GI LEDs are showing their animations during attract mode. The text is retrieved from the file Custom.txt which has to be present on the SD card.
 
 ## How to set up this game
 
@@ -56,6 +56,6 @@ Watch [this video](https://youtu.be/JbgMa_pn0Lo) to see how the ball saver works
 
 ## GI LEDs
 
-Therese are the GI LEDs I've used. They match exactly into the holes for the normal lightbulbs.
+These are the GI LEDs I've used. They match exactly into the holes for the normal lightbulbs.
 
 ![GI_LEDs](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/GI_LEDs.jpg)

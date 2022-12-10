@@ -193,7 +193,7 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 7.1 [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7_Display) - an LED replacement display for System 7, purely numerical  
 7.2 [System 11a LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys11a_Display) - an LED replacement display for System 11a
 
-8 APC games - Complete games running natively on the APC (no PinMame)  
+8 APC games - Complete games running natively on the APC or games that run in PinMame but have been changed  
 8.1 [Black Knight](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/BlackKnight.md) - Complete game code with some additional features  
 8.2 [Pin Bot](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Pinbot.md) - Complete game code with some additional features  
 8.3 [Comet](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Comet.md) - Some extensions to the original game code running in PinMame
