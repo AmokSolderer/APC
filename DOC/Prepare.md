@@ -49,6 +49,6 @@ For later games featuring auxiliary power and interconnect boards there is no wa
 
 ![APC_Rollergames](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/APC_Rollergames.JPG)
 
-# Set up the Base Code
+# Ready for testing
 
-The next step is to [Do the tests](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/InitialTests.md).
+The next step is to [do the tests](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/InitialTests.md).

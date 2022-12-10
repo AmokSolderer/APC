@@ -18,14 +18,16 @@ You can see the [LED expansion board](https://github.com/AmokSolderer/APC/blob/m
 
 * Ball saver -> Comet's outlanes are special. Alas, this leads to lots of balls falling from the bumper area into the left outlane without any way for the player to prevent this. Therefore I added an optional ball saver to my PinMameExtensions which gives back any ball which is lost through an outlane when the last active switch before was in the bumper area.  
 Watch [this video](https://youtu.be/JbgMa_pn0Lo) to see how the ball saver works.
-
+* LED GI -> I'm using the [LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) with some RGB-LED chain instead of the old GI lightbulbs. You can choose your GI color in the Game Settings.
+* GI gameplay animations -> During normal gameplay the GI LEDs behave like the normal GI, but in some occasions when the game shows some fireworks animation with the backbox flashers the GI does the same on the playfield, which makes this effect much stronger.
+* GI attract animations -> I also use the GI LEDs to play some colorful animations every now and then during attract mode. There's a video showing my [GI LEDs](https://youtu.be/kLWVUdhSwfo) in action
+* Custom Text Message -> As my game has alphanumeric displays I'm showing a custom text message when the GI LEDs are having their animations during attract mode
 
 ## How to set up this game
 
-You need to have the audio files for this game. [Contact me](https://github.com/AmokSolderer/APC/tree/master#feedback) to get the corresponding sound file package.  
-
-If you want to use the Multiball Jackpot feature you need to pick a music track to be played during Multi Ball. Take a track of your choice, convert it to the APC sound format and rename it to BK_M01.snd.  
-The same needs to be done for the High Score table feature. In this case the name of the music track has to be BK_M02.snd.
+* You need to have the audio files for this game. [Contact me](https://github.com/AmokSolderer/APC/tree/master#feedback) to get the corresponding sound file package.
+* Use the 'AmokPrivate' branch of GitHub to get the additional features. The normal 'master' branch just supports Comet without any special features.
+* For the GI LED animations you need to install the necessary HW of course, but the other features work without it. The same applies for the alphanumeric displays.
 
 ## Comet Game Settings
 
@@ -51,9 +53,3 @@ The same needs to be done for the High Score table feature. In this case the nam
 | 10 | Custom Text | - | - | No | Bool setting - Shows the custom text sometimes during attract mode |
 | 11 | Restore Default | - | - | - | No setting - restores the default settings |
 | 12 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
-
-## Things to do
-
-* The Jackpot still needs some sound effects.
-* The attract mode and display effects of this game are still taylored to the '4 Alpha+Credit' display, but as long as no one is using it with a standard display I see no need to change this, wouldn't be a big deal though. However, the basics like score display and so on are already working.
-
