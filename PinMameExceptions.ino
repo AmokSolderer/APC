@@ -271,15 +271,15 @@ byte EX_BlackKnight(byte Type, byte Command){
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
-//    else if (Command == 48) {                         // sound command 0x30
-//      if (QuerySolenoid(11)) {                        // GI off?
-//        PlaySound(152, "0_30_001.snd");}}             // play multiball ball release sequence
-//    else if (Command == 56) {                         // sound command 0x38
-//      if (QuerySolenoid(11)) {                        // GI off?
-//        if (LastCh1Sound != 56) {                     // ignore all subsequent 0x38 commands
-//          AfterSound = 0;
-//          LastCh1Sound = Command;                     // buffer sound number
-//          PlaySound(51, "0_38_001.snd");}}}           // play multiball start sequence
+    else if (Command == 48) {                         // sound command 0x30
+      if (QuerySolenoid(11)) {                        // GI off?
+        PlaySound(152, "0_30_001.snd");}}             // play multiball ball release sequence
+    else if (Command == 56) {                         // sound command 0x38
+      if (QuerySolenoid(11)) {                        // GI off?
+        if (LastCh1Sound != 56) {                     // ignore all subsequent 0x38 commands
+          AfterSound = 0;
+          LastCh1Sound = Command;                     // buffer sound number
+          PlaySound(51, "0_38_001.snd");}}}           // play multiball start sequence
     else if (Command == 43) {                         // sound command 0x2b - start game
       char FileName[13] = "0_2b_000.snd";             // generate base filename
       FileName[7] = 48 + random(5) + 1;               // change the counter according to random number
@@ -322,8 +322,8 @@ byte EX_BlackKnight(byte Type, byte Command){
         LastCh1Sound = Command;                       // buffer sound number
         SoundSeries[2] = 0;                           // Reset BG sound
         PlaySound(51, "0_34_001.snd");}}
-//    else if (Command == 58) {                         // sound command 0x3a
-//      PlaySound(152, "0_3a.snd");}                    // play multiball ball release sequence
+    else if (Command == 58) {                         // sound command 0x3a
+      PlaySound(152, "0_3a.snd");}                    // play multiball ball release sequence
     else {                                            // standard sound
       LastCh1Sound = Command;                         // buffer sound number
       char FileName[9] = "0_00.snd";                  // handle standard sound

@@ -30,6 +30,11 @@ Here's what to do:
 Most Williams games go into 'Factory Settings' mode when started for the first time. That means if the game doesn't start, use the Advance and Up/Down Buttons to navigate and quit the Williams settings. Note that as you're now in the original Williams settings you can navigate them as usual with one exception:  
 You must not keep Advance pressed for more than 1 second with Up/Down in up posittion as this will trigger the APC settings. If you want to browse the Williams Settings quickly, just do it backwards with Up/Down in down position.
 
+If you feel that your game is not running at the correct speed, you can change PinMame's emulation speed. To do this you have to remove the SD card from your Raspberry Pi and access the file  
+boot/lisy/lisy_m/cfg/lisyminigames.csv  
+There's a throttle value specified for each game. Changing this value to a lower value will make the game run faster and vice versa.
+
+
 ### PinMame sound
 
 When you're not using an old audio board but you want the APC to do the audio instead, then you need to have the necessary sound files. Check the table on the [PinMame Sound](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame.md) page to see whether your game is already supported and the audio files are available. If your game is listet here, you can simply request the files and put them on the SD card on the APC board (not the one of the Pi). That's it, have fun.  

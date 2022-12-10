@@ -48,7 +48,7 @@ To see the APC in an early stage you might want take a look at my [Black Knight 
 
 ### PinMame
 
-You can use [Lisy](https://lisy.dev/apc.html) to run PinMame on an APC board. This spares you the effort to do any game Software.  
+You can use [Lisy](https://lisy.dev/apc.html) to run PinMame on an APC board. This spares you the effort to do any game Software as you can run the old EPROM code.  
 For System 3 - 7 machines the APC can be used with the old original soundboards. That means in this case it's a plug & play solution.
 If you want the APC to generate the audio, either because you don't have an audio board, you want to do your own sounds or you have a System 9/11 game then it's going to require some work to set up your game with PinMame. Take a look at the [PinMame Sound page](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame.md) to see what I mean.
 
@@ -149,8 +149,8 @@ Feedback is very important for me, because if there is none I must assume that n
 
 ## How to get startet?
 
-I'm sorry, but I'm not going to sell any boards. Check whether anyone in the above mentioned forums has a spare board for sale.  
-Hence, if you have a Williams System 3 - 11 pinball machine and you want it to be controlled by the APC, then be sure to follow the instructions given in the first part of the documentation listet below. It will guide you through the process of getting and setting up an APC board.
+I'm sorry, but I'm not going to sell any boards. Check whether anyone in the above mentioned forums has a spare board for sale. If this fails you can still order populated board in China.  
+If you're interested in using an APC, then be sure to follow the instructions given in the first part of the documentation listet below. They will guide you through the process of getting and setting up an APC board.
 
 ## Documentation contents
 
