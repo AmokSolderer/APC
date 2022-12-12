@@ -21,6 +21,8 @@ Put your board into your pinball machine, but only plug the connectors for Logic
 | Display Segments 1 | 1J5 | 1J3 |
 | Display Segments 2 | - | 1J22 |
 
+The [additional display cables](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Prepare.md#system-7) of System 3 - 7 games must also be installed at this point.
+
 Now power up your pinball machine. After some status messages your display should show 'USB CONTROL'. If you just see two brightly illuminated digits then turn off your machine immediately, because in this case your display strobing doesn't work.  
 If you have a pre System11 machine with numerical displays or a System11 2x16 digit one you have to adjust the display setting to make it work correctly. A description how to do it is in the [settings section](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md).
 
@@ -65,7 +67,7 @@ The APC offers a digital volume setting which let's you adjust the volume in the
 ## Using the Test Mode
 
 Press the Advance button with Up/Down being in the down position to enter the test mode of the Base Code.  
-The name of the current test is shown in the Display. For numerical displays the number of the test is shown in the Player 1 display. You can enter the test by pressing the game start button or proceed to the next test by pressing Advance again. The display, coil and single lamp tests are cycling automatically. This cycling can be stopped by the Up/Down button being in Down position.  
+The name of the current test is shown in the Display. For numerical displays the number of the test is shown in the Player 1 display. You can enter the test by pressing the game start button or proceed to the next test by pressing Advance again. The display, coil and single lamp tests are cycling automatically, the corresponding number is shown in the Player 4 display. This cycling can be stopped by the Up/Down button being in Down position.  
 The following table shows the avaiable tests and their number which is shown for numerical displays.
 
 | Test number | Test name |

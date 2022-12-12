@@ -22,6 +22,7 @@ Watch [this video](https://youtu.be/JbgMa_pn0Lo) to see how the ball saver works
 * GI gameplay animations -> During normal gameplay the GI LEDs behave like the normal GI, but in some occasions when the game shows some fireworks animation with the backbox flashers the GI does the same on the playfield, which makes this effect much stronger.
 * GI attract animations -> I also use the GI LEDs to play some colorful animations every now and then during attract mode. There's a video showing my [GI LEDs](https://youtu.be/kLWVUdhSwfo) in action
 * Custom Text Message -> As my game has alphanumeric displays I'm showing a custom text message when the GI LEDs are showing their animations during attract mode. The text is retrieved from the file Custom.txt which has to be present on the SD card.
+* Custom game music -> Comet's original music is ... basic. So to hear a song of your choice during gameplay, name it MUSIC.BIN, store it on the SD card and select 'Music bin' in the game settings.
 
 ## How to set up this game
 
