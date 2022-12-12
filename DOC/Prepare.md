@@ -27,10 +27,6 @@ Sys3 - 7 games need a single wire for the display blanking. On the APC you can e
 The picture above does also show the two additional connections that have to be done for the commas of Sys7 displays to work. The APC has them on pin 10 (comma 1+2) and 11 (comma 3+4) of 1J5 and on pin 3 (comma 1+2) and pin 4 (comma 3+4) of 1J8. Either one of those have to be connected to pin 2 (comma 1+2) and pin 1 (comma 3+4) of the old 1P8.  
 In the picture 1J8 of the APC has been used to provide the signals.
 
-### System 3 - 6 audio cables
-
-If you want to use Lisy/PinMame you can decide whether to let the APC generate the audio or use the old audio board. In the latter case no special cable is required, but of course all connectors at the old audio board must be connected.
-
 ### System 7 audio cable
 
 You can use a simple 5 wire cable to use System7 audio boards with the APC 3.0 (older APCs need additional HW). This cable needs to connect the pins 3 - 7 of the HW extensions interface (P11) of the APC 3.0 to the audio board. One easy way to do this is to connect them to the pins 12 to 8 of 1P8 (the plug belonging to 1J8 of your Sys7 CPU board).  
