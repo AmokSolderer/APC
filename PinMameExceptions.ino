@@ -16,17 +16,6 @@ byte USB_SerialBuffer[128];                           // received command argume
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
 
-byte EX_DummyProcess(byte Type, byte Command) {       // plays just the standard sounds
-  if (Type == SoundCommandCh1) {                      // sound commands for channel 1
-    char FileName[9] = "0_00.snd";                    // handle standard sound
-    if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-      PlaySound(51, (char*) FileName);}}
-  else if (Type == SoundCommandCh2) {                 // sound commands for channel 2
-    char FileName[9] = "1_00.snd";                    // handle standard music
-    if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
-      PlayMusic(51, (char*) FileName);}}
-  return(0);}                                         // no exception rule found for this type so proceed as normal
-
 void EX_BallRelease(byte State) {                     // repeat ball eject in case the ball got stuck
   static byte Timer;                                  // stores the timer number
   switch (State) {                                    // determines what to do
@@ -68,6 +57,57 @@ void EX_StepperMotor(byte State) {                    // control stepper motor
   case 2:                                             // generate pulse on second solenoid
     ActivateSolenoid(PWMtime/2, 15);
     break;}}
+
+void EX_FakeSwitchSequence(byte State) {              // sends a sequence of fake switches to PinMame
+  switch (State) {
+  case 1:
+    USB_SwitchHandler(3);                             // report switch 3 activated
+    ActivateTimer(100, 2, EX_FakeSwitchSequence);     // wait 100ms and come back
+    break;
+  case 2:
+    USB_ReleasedSwitches(3);                          // report switch 3 released
+    ActivateTimer(1000, 3, EX_FakeSwitchSequence);
+    break;
+  case 3:
+    break;}}
+
+byte EX_FakeSwitches(byte Type, byte Command){        // use this to start sending fake switches to PinMame
+  switch (Type) {
+//  case SoundCommandCh1:                               // sound commands for channel 1
+//    char FileName[9] = "0_00.snd";                    // handle standard sound
+//    if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+//      PlaySound(51, (char*) FileName);}
+//    return(0);                                        // return number not relevant for sounds
+//  case SoundCommandCh2:                               // sound commands for channel 2
+//    char FileName[9] = "1_00.snd";                    // handle standard music
+//    if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+//      PlayMusic(51, (char*) FileName);}
+//    return(0);                                        // return number not relevant for sounds
+  case SwitchActCommand:                              // activated switches
+    if (Command == 65) {                              // start sequence with special solenoid switch 1
+      EX_FakeSwitchSequence(1);                       // start fake sequence
+      return(1);}                                     // but don't tell PinMame
+    return(0);                                        // all other switches are reported
+  case SolenoidActCommand:                            // activate solenoids
+    if (Command != 14 && Command != 15){              // for all solenoids except for 14 and 15
+      Serial.print("Sol ");                           // report their activation
+      Serial.println(Command);    }                   // works only when debug mode is enabled
+    return(0);                                        // solenoid will be activated
+  default:
+    return(0);}}
+
+                                // game specific exceptions
+
+byte EX_DummyProcess(byte Type, byte Command) {       // plays just the standard sounds
+  if (Type == SoundCommandCh1) {                      // sound commands for channel 1
+    char FileName[9] = "0_00.snd";                    // handle standard sound
+    if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+      PlaySound(51, (char*) FileName);}}
+  else if (Type == SoundCommandCh2) {                 // sound commands for channel 2
+    char FileName[9] = "1_00.snd";                    // handle standard music
+    if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+      PlayMusic(51, (char*) FileName);}}
+  return(0);}                                         // no exception rule found for this type so proceed as normal
 
 byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for sending me this code
   static byte SoundSeries[5] = {0, 0, 0, 0, 0};       // buffer to handle pre system11 sound series
@@ -623,8 +663,8 @@ byte EX_BlockAll(byte Type, byte Command) {
   UNUSED(Command);
   return(1);}
 
-byte EX_Blank(byte Type, byte Command){
-  switch(Type){
+byte EX_Blank(byte Type, byte Command){               // use this as a template and an example of how to add your own exceptions
+  switch(Type){                                       // usually just a few exception cases are needed, just delete the rest
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 38){                               // sound command 0x26
       // enter your special sound command 0x26 here
