@@ -84,6 +84,8 @@ byte EX_FakeSwitches(byte Type, byte Command){        // use this to start sendi
 //      PlayMusic(51, (char*) FileName);}
 //    return(0);                                        // return number not relevant for sounds
   case SwitchActCommand:                              // activated switches
+    Serial.print("Sw ");                              // report their activation
+    Serial.println(Command);
     if (Command == 65) {                              // start sequence with special solenoid switch 1
       EX_FakeSwitchSequence(1);                       // start fake sequence
       return(1);}                                     // but don't tell PinMame
@@ -748,6 +750,9 @@ void EX_Init(byte GameNumber) {
     break;
   case 67:                                            // Rollergames
     PinMameException = EX_Rollergames;                // use exception rules for Rollergames
+    break;
+  case 71:                                            // Riverboat Gambler
+    PinMameException = EX_FakeSwitches;               // use exception rules for Rollergames
     break;
   default:
     PinMameException = EX_DummyProcess;}}
