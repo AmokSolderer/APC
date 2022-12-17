@@ -8,9 +8,9 @@ For using SD cards with the APC an adapter is needed. It can be build very easil
 
 This adapter must then be plugged into the SD card connector P8 of the APC. The orientation must be to make the adapter point away from the Arduino. Look at the photos of the APC inside of my machines if you're unsure about the orientation.
 
-If you want to let the APC generate the sound then you should format your SD Card befort using it, preferable with the tool provided from the SD Association (sdcard.org). This can improve the file access of the card which is crucial for the sound system to work properly.
+If you want to let the APC generate the sound then you should format your SD Card befort using it, preferably with the tool provided from the SD Association (sdcard.org). This can improve the file access time of the card which is crucial for the sound system to work properly.
 
-Even if you don't want the APC to generate the sound, you should still install an SD card, as it is also used to store the settings. Reformatting it is not necessary in this case.
+Even if you don't want the APC to generate the sound, you should still install an SD card, as it is also used to store the settings. Reformatting is not necessary in this case.
 
 # Machine specific preparation
 
