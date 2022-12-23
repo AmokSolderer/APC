@@ -1519,6 +1519,77 @@ void BK_ResetDropWait(byte Event) {                   // ensure waiting time to 
   else {
     BK_DropWait[Event] = false;}}                     // reset flag to ignore switch bouncing during drop target reset
 
+void BK_DisplayMultiball(byte State) {
+  const byte Position[21] = {2,17,8,5,21,11,7,19,12,1,18,14,6,16,9,4,15,10,3,20,13};
+  if (State < 2) {
+    WriteUpper("              ");
+    WriteLower("              ");
+    ShowPoints(Player);}
+  else if (State < 23) {                              // first effect - add numbers
+    byte Pos = Position[State-2];
+    if (Player == 1 || (Player == 2 && Pos > 7) || (Player == 3 && Pos > 14)) { // if display is supposed to show the player's points
+      Pos = Pos + 7;}                                 // then shift everything up
+    if (Pos < 8) {                                    // player 1 display?
+      if (APC_settings[DisplayType] < 8) {            // alphanumeric upper display
+        *(DisplayUpper+Pos*2) = DispPattern1[32+Multiballs*2];
+        *(DisplayUpper+Pos*2+1) = DispPattern1[33+Multiballs*2];}
+      else {                                          // BCD upper display
+        *(DisplayUpper+Pos*2) = ConvertNumUpper(Multiballs, *(DisplayUpper+Pos*2));}}
+    else if (Pos < 15) {                              // player 2 display?
+      if (APC_settings[DisplayType] < 8) {            // alphanumeric upper display
+        *(DisplayUpper+Pos*2+2) = DispPattern1[32+Multiballs*2];
+        *(DisplayUpper+Pos*2+3) = DispPattern1[33+Multiballs*2];}
+      else {                                          // BCD upper display
+        *(DisplayUpper+Pos*2+2) = ConvertNumUpper(Multiballs, *(DisplayUpper+Pos*2+2));}}
+    else {                                            // lower row
+      Pos = Pos - 14;                                 // subtract upper row
+      if (Pos < 8) {                                  // player 3 display?
+        if (APC_settings[DisplayType] < 8) {          // pattern capable lower display
+          *(DisplayLower+Pos*2+2) = DispPattern2[32+Multiballs*2];
+          *(DisplayLower+Pos*2+3) = DispPattern2[33+Multiballs*2];}
+        else {                                        // BCD lower display
+          *(DisplayUpper+Pos*2+2) = ConvertNumLower(Multiballs, *(DisplayUpper+Pos*2+2));}}
+      else {                                          // player 4 display
+        if (APC_settings[DisplayType] < 8) {          // pattern capable lower display
+          *(DisplayLower+Pos*2+2) = DispPattern2[32+Multiballs*2];
+          *(DisplayLower+Pos*2+3) = DispPattern2[33+Multiballs*2];}
+        else {                                        // BCD lower display
+          *(DisplayUpper+Pos*2+2) = ConvertNumLower(Multiballs, *(DisplayUpper+Pos*2+2));}}}
+    ActivateTimer(50, State+1, BK_DisplayMultiball);} // come back for next step
+  else if (State < 44) {                              // second effect - remove numbers
+    byte Pos = Position[State-23];
+    if (Player == 1 || (Player == 2 && Pos > 7) || (Player == 3 && Pos > 14)) { // if display is supposed to show the player's points
+      Pos = Pos + 7;}                                 // then shift everything up
+    if (Pos < 8) {                                    // player 1 display?
+      if (APC_settings[DisplayType] < 8) {            // alphanumeric upper display
+        *(DisplayUpper+Pos*2) = 0;
+        *(DisplayUpper+Pos*2+1) = 0;}
+      else {                                          // BCD upper display
+        *(DisplayUpper+Pos*2) = ConvertNumUpper(15, *(DisplayUpper+Pos*2));}}
+    else if (Pos < 15) {                              // player 2 display?
+      if (APC_settings[DisplayType] < 8) {            // alphanumeric upper display
+        *(DisplayUpper+Pos*2+2) = 0;
+        *(DisplayUpper+Pos*2+3) = 0;}
+      else {                                          // BCD upper display
+        *(DisplayUpper+Pos*2+2) = ConvertNumUpper(15, *(DisplayUpper+Pos*2+2));}}
+    else {                                            // lower row
+      Pos = Pos - 14;                                 // subtract upper row
+      if (Pos < 8) {                                  // player 3 display?
+        if (APC_settings[DisplayType] < 8) {          // pattern capable lower display
+          *(DisplayLower+Pos*2+2) = 0;
+          *(DisplayLower+Pos*2+3) = 0;}
+        else {                                        // BCD lower display
+          *(DisplayUpper+Pos*2+2) = ConvertNumLower(15, *(DisplayUpper+Pos*2+2));}}
+      else {                                          // player 4 display
+        if (APC_settings[DisplayType] < 8) {          // pattern capable lower display
+          *(DisplayLower+Pos*2+2) = 0;
+          *(DisplayLower+Pos*2+3) = 0;}
+        else {                                        // BCD lower display
+          *(DisplayUpper+Pos*2+2) = ConvertNumLower(15, *(DisplayUpper+Pos*2+2));}}}
+    ActivateTimer(50, State+1, BK_DisplayMultiball);} // come back for next step
+  //char Display[7] = "       ";
+}
+
 void BK_StartMultiball() {
   if (LockedBalls[Player] == 3) {                     // 2 or 3 ball multiball?
     Multiballs = 3;}
@@ -1532,8 +1603,8 @@ void BK_StartMultiball() {
   TurnOffLamp(42);
   LampPattern = NoLamps;
   for (byte i=0; i<4; i++) {                          // check for running drop target timers
-    if (BK_DropTimer[i]) {                               // found one?
-      KillTimer(BK_DropTimer[i]);                        // kill it
+    if (BK_DropTimer[i]) {                            // found one?
+      KillTimer(BK_DropTimer[i]);                     // kill it
       BK_DropTimer[i] = 0;
       RemoveBlinkLamp(BK_DropLamp+i);}}
   PlayFlashSequence((byte*) BK_ResetAllDropTargets);  // reset all drop targets
@@ -1547,6 +1618,7 @@ void BK_Multiball2(byte Step) {
     PlaySound(55, "0_38_001.snd");
     Counter = 0;
     Step++;
+    BK_DisplayMultiball(1);                           // show display effects
     LampPattern = (BK_AttractPat1->Pattern)-1;}
   else {
     if (Step < 26) {                                  // 26 steps to fill the lamps to the top
@@ -1588,8 +1660,6 @@ void BK_Multiball2(byte Step) {
   if (Step < 52) {
     ActivateTimer(30, Step, BK_Multiball2);}
   else {
-    WriteUpper2(" MULTI  BALL  ");                    // switch display to alternate buffer
-    DispRow1 = DisplayUpper2;
     if (BK_LastChance) {                              // last chance active?
       BK_LastChance = false;                          // deactivate it
       TurnOffLamp(11);
@@ -1600,7 +1670,6 @@ void BK_Multiball2(byte Step) {
     else {
       AddBlinkLamp(28, 500);}                         // let double points lamp blink
     LockedBalls[Player] = 0;
-    ActivateTimer(3000, 1, SwitchDisplay);            // switch display back to main buffer in 3 seconds
     BK_CycleSwordLights(1);                           // start sword lamp animation
     BK_DropWait[4] = false;                           // clear ignore flag
     if (game_settings[BK_MultiballJackpot]) {

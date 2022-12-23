@@ -154,58 +154,58 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 
 ## Documentation contents
 
-1 Building and setting up an APC  
-1.1 [The APC board](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/APC_board.md) - How to get one and how to set it up  
-1.2 [Upload the SW](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Upload_SW.md) - How to program the Arduino DUE  
-1.3 [Basic Preparation](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Prepare.md) - Required cables and stuff  
-1.4 [Do the tests](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/InitialTests.md) - Test your board  
-1.5 [Run a game](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/RunGame.md)  - All the ways to get a game running  
+1. Building and setting up an APC  
+1.1. [The APC board](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/APC_board.md) - How to get one and how to set it up  
+1.2. [Upload the SW](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Upload_SW.md) - How to program the Arduino DUE  
+1.3. [Basic Preparation](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Prepare.md) - Required cables and stuff  
+1.4. [Do the tests](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/InitialTests.md) - Test your board  
+1.5. [Run a game](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/RunGame.md)  - All the ways to get a game running  
 
-2 References  
-2.2 [Useful software tools](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/UsefulSWtools.md) - Simple tools for audio data conversion and so on  
-2.3 [APC settings](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Settings.md) - a table of the settings and how to use them  
-2.4 [APC schematics](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
-2.5 [If things don't work](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Problems.md) - If you have a problem, check here first
+2. References  
+2.2. [Useful software tools](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/UsefulSWtools.md) - Simple tools for audio data conversion and so on  
+2.3. [APC settings](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Settings.md) - a table of the settings and how to use them  
+2.4. [APC schematics](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
+2.5. [If things don't work](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Problems.md) - If you have a problem, check here first
 
-3 Writing my own game code - You want to program your own game in C? Then read this.  
-3.1 [Game code tutorial](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/GameCodeTutorial.md)  
-3.2 [APC software reference](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Software/APC_SW_reference.pdf) - All commands of the API in a nutshell  
+3. Writing my own game code - You want to program your own game in C? Then read this.  
+3.1. [Game code tutorial](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/GameCodeTutorial.md)  
+3.2. [APC software reference](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Software/APC_SW_reference.pdf) - All commands of the API in a nutshell  
 
-4 Running PinMame  
-4.1 [Lisy Homepage](https://lisy.dev/apc.html) - Location of the Lisy SW download and more  
-4.2 [PinMame Sound](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame  
-4.3 [PinMame Sound howto](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that  
-4.4 [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/lisyminigames.csv) - list of the PinMame game numbers  
-4.5 [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/LisyDebug.md) - updating Lisy and using the debug mode  
-4.6 [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
+4. Running PinMame  
+4.1. [Lisy Homepage](https://lisy.dev/apc.html) - Location of the Lisy SW download and more  
+4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame  
+4.3. [PinMame Sound howto](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that  
+4.4. [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/lisyminigames.csv) - list of the PinMame game numbers  
+4.5. [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/LisyDebug.md) - updating Lisy and using the debug mode  
+4.6. [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
 
-5 Using MPF  
-5.1 [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw) - see my first humble MPF steps in this video  
-5.2 [MPF setup](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/MPF) - my MPF test config files
-5.3 Lisy runs MPF
+5. Using MPF  
+5.1. [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw) - see my first humble MPF steps in this video  
+5.2. [MPF setup](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/MPF) - my MPF test config files
+5.3. Lisy runs MPF
 
-6 Additional APC hardware - boards that might come in handy with the APC  
-6.1 [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  
-6.2 [APC solenoid expansion board](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/SolExpBoard.md) - to control additional features  
-6.3 [System 7 alphanumeric display](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Sys7Alpha.md) - to have alphanumerical displays in a pre System 11 machine  
+6. Additional APC hardware - boards that might come in handy with the APC  
+6.1. [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  
+6.2. [APC solenoid expansion board](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/SolExpBoard.md) - to control additional features  
+6.3. [System 7 alphanumeric display](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Sys7Alpha.md) - to have alphanumerical displays in a pre System 11 machine  
 
-7 Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
-7.1 [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7_Display) - an LED replacement display for System 7, purely numerical  
-7.2 [System 11a LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys11a_Display) - an LED replacement display for System 11a
+7. Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
+7.1. [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7_Display) - an LED replacement display for System 7, purely numerical  
+7.2. [System 11a LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys11a_Display) - an LED replacement display for System 11a
 
-8 APC games - Complete games running natively on the APC or games that run in PinMame but have been changed  
-8.1 [Black Knight](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/BlackKnight.md) - Complete game code with some additional features  
-8.2 [Pin Bot](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Pinbot.md) - Complete game code with some additional features  
-8.3 [Comet](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Comet.md) - Some extensions to the original game code running in PinMame
+8. APC games - Complete games running natively on the APC or games that run in PinMame but have been changed  
+8.1. [Black Knight](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/BlackKnight.md) - Complete game code with some additional features  
+8.2. [Pin Bot](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Pinbot.md) - Complete game code with some additional features  
+8.3. [Comet](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Comet.md) - Some extensions to the original game code running in PinMame
 
-9 Videos - For the generation Youtube  
-9.1 [What's new in APC3](https://youtu.be/4EgOTJyxMXo) - Gives an overview about what the APC is and what version 3 can do  
-9.2 [Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw) - Shows the use of PinMame in an early stage  
-9.3 [PinMameExceptions](https://youtu.be/bbfhH_-gMfE) - What is a PinMameException and how does it work?  
-9.4 [Adding a ball saver with PinMameExceptions](https://youtu.be/JbgMa_pn0Lo) - Another example of how to use PinMameExceptions  
-9.5 [APC MPF](https://youtu.be/w4Po8OE5Zkw) - A simple demonstration of the APC being controlled by MPF  
-9.6 [GI LEDs](https://youtu.be/kLWVUdhSwfo) - Shows the LED_exp board in action  
-9.7 [Arduino Pinball Controller hardware extensions interface](https://youtu.be/8BnVTpKq-2Y) - Also shows the use of the LED_exp board, but in an early SW stage  
-9.8 [APC Black Knight demo](https://youtu.be/N5ipyHBKzgs) - My first APC video. Not really up to date any more, but it shows the basics  
-9.9 [How to use numerical displays](https://youtu.be/2A5Tt9FQ2as) - How to navigate the menus when you can't read any text  
-9.10 [How to adjust the display setting to a 2x16 alphanumerical display](https://youtu.be/XqPWbm-HWM8) - How to find the right setting to make these displays work
+9. Videos - For the generation Youtube  
+9.1. [What's new in APC3](https://youtu.be/4EgOTJyxMXo) - Gives an overview about what the APC is and what version 3 can do  
+9.2. [Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw) - Shows the use of PinMame in an early stage  
+9.3. [PinMameExceptions](https://youtu.be/bbfhH_-gMfE) - What is a PinMameException and how does it work?  
+9.4. [Adding a ball saver with PinMameExceptions](https://youtu.be/JbgMa_pn0Lo) - Another example of how to use PinMameExceptions  
+9.5. [APC MPF](https://youtu.be/w4Po8OE5Zkw) - A simple demonstration of the APC being controlled by MPF  
+9.6. [GI LEDs](https://youtu.be/kLWVUdhSwfo) - Shows the LED_exp board in action  
+9.7. [Arduino Pinball Controller hardware extensions interface](https://youtu.be/8BnVTpKq-2Y) - Also shows the use of the LED_exp board, but in an early SW stage  
+9.8. [APC Black Knight demo](https://youtu.be/N5ipyHBKzgs) - My first APC video. Not really up to date any more, but it shows the basics  
+9.9. [How to use numerical displays](https://youtu.be/2A5Tt9FQ2as) - How to navigate the menus when you can't read any text  
+9.10. [How to adjust the display setting to a 2x16 alphanumerical display](https://youtu.be/XqPWbm-HWM8) - How to find the right setting to make these displays work

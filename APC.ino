@@ -195,7 +195,7 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 #define NumOfLEDs 8                                   // The length of the LED stripe. Setting is only effective when 'Additional' is selected as 'LED lamps' setting
 #define SolenoidExp 9                                 // Solenoid expander present?
 #define DebugMode  10                                 // debug mode enabled?
-#define BackboxLamps 11																// Column of backbox lamps
+#define BackboxLamps 11                               // Column of backbox lamps
 
 const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{"   TUTORIAL     "}};
 const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
@@ -215,7 +215,7 @@ const struct SettingTopic APC_setList[15] = {
     {" NO OF   LEDS   ",HandleNumSetting,0,1,192},
     {"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
-		{"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,2},
+    {"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,2},
     {"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS  ",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
