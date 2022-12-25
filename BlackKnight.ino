@@ -670,12 +670,14 @@ void BK_CheckReleasedBall(byte Balls) {               // ball release watchdog
     ActivateSolenoid(game_settings[BK_BallEjectStrength], 6);}
   byte c = BK_CountBallsInTrunk();
   if (c == Balls) {                                   // expected number of balls in trunk
-    WriteUpper("  BALL MISSING");
+    if (APC_settings[DebugMode]) {
+      WriteUpper("  BALL MISSING");}
     if (QuerySwitch(20)) {                            // outhole switch still active?
       ActivateSolenoid(0, 1);}}                       // shove the ball into the trunk
   else {
     if (c == 5) {                                     // balls not settled
-      WriteLower(" TRUNK  ERROR ");
+      if (APC_settings[DebugMode]) {
+        WriteLower(" TRUNK  ERROR ");}
       Balls = 10;}
     else {
       if ((c > Balls) || !c) {                        // more balls in trunk than expected or none at all
@@ -1068,7 +1070,8 @@ void BK_BallEnd(byte Event) {
       for (i=0; i<3; i++) {                           // check how many balls are on the ball ramp
         if (QuerySwitch(41+i)) {
           InLock++;}}}
-    WriteLower(" BALL   ERROR ");
+    if (APC_settings[DebugMode]) {
+      WriteLower(" BALL   ERROR ");}
     if (QuerySwitch(20)) {                            // ball still in outhole?
       ActivateSolenoid(0, 1);                         // make the coil a bit stronger
       ActivateTimer(2000, Event, BK_BallEnd);}        // and come back in 2s
@@ -1096,6 +1099,7 @@ void BK_BallEnd(byte Event) {
       if (Bonus < 49 || BonusMultiplier < 5) {
         BK_CycleSwordLights(0);}                      // stop sword lamp animation
       BK_DisplayMultiball(0);                         // stop display animation
+      ShowAllPoints(0);
       RemoveBlinkLamp(28);                            // stop blinking of double scoring lamp
       BK_ShowBonus();                                 // restore bonus lamps
       BK_LockChaseLight(1);                           // restart Lock lights
@@ -1112,7 +1116,8 @@ void BK_BallEnd(byte Event) {
       break;
     case 1:                                           // end of ball
       if (BallsInTrunk + InLock != 3) {
-        WriteUpper(" COUNT  ERROR ");
+        if (APC_settings[DebugMode]) {
+          WriteUpper(" COUNT  ERROR ");}
         InLock = 0;
         for (i=0; i<3; i++) {                         // check how many balls are on the ball ramp
           if (QuerySwitch(41+i)) {
@@ -1595,33 +1600,27 @@ void BK_DisplayMultiball(byte State) {
     byte Pos = Position[State-1];
     if (Player == 1 || (Player == 2 && Pos > 7) || (Player == 3 && Pos > 14)) { // if display is supposed to show the player's points
       Pos = Pos + 7;}                                 // then shift everything up
-    BK_SetDigit(Pos, Multiballs);
+    BK_SetDigit(Pos, Multiballs);                     // write number of balls
     Timer = ActivateTimer(51, State+1, BK_DisplayMultiball);} // come back for next step
   else if (State < 43) {                              // second effect - remove numbers
     byte Pos = Position[State-22];
     if (Player == 1 || (Player == 2 && Pos > 7) || (Player == 3 && Pos > 14)) { // if display is supposed to show the player's points
       Pos = Pos + 7;}                                 // then shift everything up
-    if (APC_settings[DisplayType] < 8) {              // pattern capable lower display
-      BK_SetDigit(Pos, 0);}
-    else {
-      BK_SetDigit(Pos, 15);}
+    BK_SetDigit(Pos, 15);                             // write blank
     Timer = ActivateTimer(51, State+1, BK_DisplayMultiball);} // come back for next step
-  else {                                              // permanent effect
-    for (byte y=0;y<3;y++) {
-      byte Buffer = EffectPat[State-43][y];
-      for (byte x=1;x<8;x++) {
-        if (Buffer & 128) {
-          byte Pos = x+y*7;
+  else {                                              // permanent multiball effect
+    for (byte y=0;y<3;y++) {                          // for 3 displays
+      byte Buffer = EffectPat[State-43][y];           // get previous pattern
+      for (byte x=1;x<8;x++) {                        // for all digits
+        if (Buffer & 128) {                           // pattern bit set?
+          byte Pos = x+y*7;                           // calculate display position
           if (Player == 1 || (Player == 2 && Pos > 7) || (Player == 3 && Pos > 14)) { // if display is supposed to show the player's points
             Pos = Pos + 7;}                           // then shift everything up
-          if (APC_settings[DisplayType] < 8) {        // pattern capable lower display
-            BK_SetDigit(Pos, 0);}
-          else {
-            BK_SetDigit(Pos, 15);}}
+          BK_SetDigit(Pos, 15);}                      // write blank
         Buffer = Buffer<<1;}}
-    State++;
-    if (State > 56) {
-      State = 43;}
+    State++;                                          // proceed to next pattern
+    if (State > 56) {                                 // last pattern reached?
+      State = 43;}                                    // start over
     for (byte y=0;y<3;y++) {
       byte Buffer = EffectPat[State-43][y];
       for (byte x=1;x<8;x++) {
@@ -1662,7 +1661,7 @@ void BK_Multiball2(byte Step) {
     Counter = 0;
     Step++;
     BK_DisplayMultiball(1);                           // show display effects
-    LampPattern = (BK_AttractPat1->Pattern)-1;}
+    LampPattern = (BK_AttractPat1->Pattern);}
   else {
     if (Step < 26) {                                  // 26 steps to fill the lamps to the top
       switch (Counter) {
@@ -1675,7 +1674,7 @@ void BK_Multiball2(byte Step) {
         Counter++;
         break;
       case 2:
-        LampPattern = ((BK_AttractPat1+Step)->Pattern)-1;  // turn on the lamps from the bottom to the top
+        LampPattern = ((BK_AttractPat1+Step)->Pattern);  // turn on the lamps from the bottom to the top
         Counter = 0;
         Step++;}}
     else {
@@ -1697,7 +1696,7 @@ void BK_Multiball2(byte Step) {
           Counter++;
           break;
         case 2:
-          LampPattern = ((BK_AttractPat1+51-Step)->Pattern)-1; // turn off the lamps from the top to the bottom
+          LampPattern = ((BK_AttractPat1+51-Step)->Pattern); // turn off the lamps from the top to the bottom
           Counter = 0;
           Step++;}}}}
   if (Step < 52) {
