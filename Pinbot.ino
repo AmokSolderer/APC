@@ -953,12 +953,12 @@ void PB_MultiballThunder2(byte Dummy) {
 
 void PB_MultiballThunder(byte State) {
   if (State < 8) {
-    PlaySound(51, "0_d7.snd");
+    PlaySound(54, "0_d7.snd");
     State++;
     ActivateTimer(500, State, PB_MultiballThunder);}
   else if (State < 9) {
     MusicVolume = 0;
-    PlaySound(51, "0_fb.snd");
+    PlaySound(54, "0_fb.snd");
     ActivateTimer(3300, 0, PB_MultiballThunder2);
     ActivateTimer(6000, 9, PB_MultiballThunder);}
   else {
