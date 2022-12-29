@@ -322,6 +322,9 @@ const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
                                    15,0b10000,0b01000,0b01000,0b00100,0b00100,
                                    15,0b10000,0b10000,0b10000,0b10000,0b10000,0};
 
+const byte PB_2MballDispUpper[78] = {17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during multiball
+const byte PB_2MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,96,0,98,0,106,0,122,0,90,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
                                                       // offsets of settings in the settings array
 #define PB_DropTime 0                                 // drop target down time setting
 #define PB_ReachPlanet 1                              // target planet setting
@@ -1751,12 +1754,38 @@ void PB_Multiball_RestoreLamps(byte Dummy) {
   StrobeLights(0);
   LampPattern = LampColumns;}
 
+void PB_MballDisplay(byte Step) {
+  static byte Timer = 0;
+  if (!Step) {
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}}
+  else {
+    Step--;
+    if (Player != 1) {
+      for (byte y=0;y<15;y++) {
+        *(DisplayUpper+y+2) = PB_2MballDispUpper[2*Step+y];}}
+    if (Player != 2) {
+      for (byte y=0;y<15;y++) {
+        *(DisplayUpper+y+18) = PB_2MballDispUpper[2*Step+y+18];}}
+    if (Player != 3) {
+      for (byte y=0;y<15;y++) {
+        *(DisplayLower+y+2) = PB_2MballDispLower[2*Step+y];}}
+    if (Player != 4) {
+      for (byte y=0;y<15;y++) {
+        *(DisplayLower+y+18) = PB_2MballDispLower[2*Step+y+18];}}
+    if (!Step) {
+      Step = 24;}
+    Timer = ActivateTimer(50, Step, BK_DisplayMultiball);}}
+
 void PB_Multiball(byte State) {                       // state machine for sound effects during multiball start
   switch(State){
   case 0:                                             // initial call from PB_HandleLock
     PlaySound(51, "1_80.snd");
     ActivateTimer(1200, 1, PB_Multiball);
     PB_EyeFlash(0);
+    PB_ShowMessage(254);                              // block display messages
+    PB_MballDisplay(24);                              // show display animation
     PatPointer = PB_MultiballPat;                     // set the pointer to the lamp pattern
     FlowRepeat = 1;                                   // set the repetitions
     ActivateTimer(6100, 0, PB_Multiball_RestoreLamps) ; // call this when the lamp pattern has run out
@@ -2201,6 +2230,8 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         PB_SolarValueTimer = 0;
         RemoveBlinkLamp(35);}                         // solar energy lamp
       Multiballs = 1;                                 // turn it off
+      PB_MballDisplay(0);                             // stop display animation
+      ShowMessage(255);                               // release message block
       PB_LampSweepActive = 0;                         // turn off backbox lamp sweep
       ReleaseSolenoid(11);                            // turn backbox GI back on
       if (APC_settings[Volume]) {
