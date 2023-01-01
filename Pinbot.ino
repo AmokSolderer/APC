@@ -956,12 +956,12 @@ void PB_MultiballThunder2(byte Dummy) {
 
 void PB_MultiballThunder(byte State) {
   if (State < 8) {
-    PlaySound(51, "0_d7.snd");
+    PlaySound(54, "0_d7.snd");
     State++;
     ActivateTimer(500, State, PB_MultiballThunder);}
   else if (State < 9) {
     MusicVolume = 0;
-    PlaySound(51, "0_fb.snd");
+    PlaySound(54, "0_fb.snd");
     ActivateTimer(3300, 0, PB_MultiballThunder2);
     ActivateTimer(6000, 9, PB_MultiballThunder);}
   else {
@@ -1479,7 +1479,7 @@ void PB_AddBonus(byte BonusToAdd) {
       WriteUpper2("BONUS =       ");
       ShowNumber(15, Bonus*1000);
       DispRow1 = DisplayUpper2;}
-    PB_ShowMessage(2);}}
+    ShowMessage(2);}}
 
 void PB_ClearEjectHole(byte Solenoid) {               // activate solenoid after delay time
   PB_EjectIgnore = false;
@@ -1763,20 +1763,20 @@ void PB_MballDisplay(byte Step) {
   else {
     Step--;
     if (Player != 1) {
-      for (byte y=0;y<15;y++) {
+      for (byte y=0;y<14;y++) {
         *(DisplayUpper+y+2) = PB_2MballDispUpper[2*Step+y];}}
     if (Player != 2) {
-      for (byte y=0;y<15;y++) {
+      for (byte y=0;y<14;y++) {
         *(DisplayUpper+y+18) = PB_2MballDispUpper[2*Step+y+18];}}
     if (Player != 3) {
-      for (byte y=0;y<15;y++) {
+      for (byte y=0;y<14;y++) {
         *(DisplayLower+y+2) = PB_2MballDispLower[2*Step+y];}}
     if (Player != 4) {
-      for (byte y=0;y<15;y++) {
+      for (byte y=0;y<14;y++) {
         *(DisplayLower+y+18) = PB_2MballDispLower[2*Step+y+18];}}
     if (!Step) {
       Step = 24;}
-    Timer = ActivateTimer(50, Step, BK_DisplayMultiball);}}
+    Timer = ActivateTimer(50, Step, PB_MballDisplay);}}
 
 void PB_Multiball(byte State) {                       // state machine for sound effects during multiball start
   switch(State){
@@ -2231,7 +2231,10 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         RemoveBlinkLamp(35);}                         // solar energy lamp
       Multiballs = 1;                                 // turn it off
       PB_MballDisplay(0);                             // stop display animation
-      ShowMessage(255);                               // release message block
+      PB_ShowMessage(255);                            // release message block
+      WriteUpper("              ");
+      WriteLower("              ");
+      ShowPoints(Player);
       PB_LampSweepActive = 0;                         // turn off backbox lamp sweep
       ReleaseSolenoid(11);                            // turn backbox GI back on
       if (APC_settings[Volume]) {
