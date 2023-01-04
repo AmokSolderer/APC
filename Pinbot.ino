@@ -682,8 +682,7 @@ void PB_GiveBall(byte Balls) {
     PB_SkillMultiplier++;
     if (PB_SkillMultiplier == 10) {
       PlaySound(58, "0_af.snd");                      // 'million activated'
-      //PlayFlashSequence((byte*) PB_MultiballSeq);   // TODO super skill shot
-    }}
+      PlayFlashSequence((byte*) PB_OpenVisorSeq);}}
   else {
     PB_SkillMultiplier = 1;}
   WriteUpper2(" VORTEX   X   ");
@@ -1195,9 +1194,8 @@ void PB_GameMain(byte Switch) {
         ShowNumber(15, PB_SkillMultiplier);           // show multiplier
         PB_ShowMessage(3);
         if (PB_SkillMultiplier == 10) {
-          PlaySound(55, "0_af.snd");                  // TODO super skill shot
-
-        }}
+          PlaySound(55, "0_af.snd");                  // "Million activated"
+          PlayFlashSequence((byte*) PB_OpenVisorSeq);}}
       else {
         PB_SkillMultiplier = 1;}
       PB_SkillShot = true;}                           // the first shot is a skill shot
@@ -1293,6 +1291,7 @@ void PB_GameMain(byte Switch) {
       ActivateTimer(2000,1,PB_EyeBlink);
       Buffer = PB_SolarValue;
       PB_SolarValue = 100;
+      PlayFlashSequence((byte*) PB_OpenVisorSeq);
       PB_ClearOutLock(0);}
     else {                                            // solar ramp not lit
       PlaySound(51, "1_a9.snd");
@@ -1892,14 +1891,14 @@ void PB_HandleEnergy(byte State) {
       ActivateTimer(Length/2, 34, PB_TurnOffLamp);
       Timer = ActivateTimer(Length, 2, PB_HandleEnergy);}
     else {                                            // energy time has run out
-      RestoreMusicVolume(10);
+      //RestoreMusicVolume(10);
       TurnOffLamp(34);
       Timer = 0;
       PB_EnergyReset(5);}}
   else {
     if (!State) {
       TurnOffLamp(34);
-      RestoreMusicVolume(10);
+      //RestoreMusicVolume(10);
       if (Timer) {
         KillTimer(Timer);}
       Timer = 0;
@@ -1927,7 +1926,7 @@ void PB_HandleDropTargets(byte Target) {
     else {
       if (!PB_DropTimer) {                            // first target hit
         if (Target-8 == PB_DropBlinkLamp) {           // blinking target hit?
-          MusicVolume = 4;                            // reduce music volume
+          //MusicVolume = 4;                            // reduce music volume
           PlaySound(51, "0_71.snd");
           ActivateTimer(1000, 0, PB_RaiseRamp);       // raise ramp in 1s
           PB_EnergyActive = true;                     // energy value on
