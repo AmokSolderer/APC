@@ -43,15 +43,35 @@ const byte PB_ChestRows[11][5] = {{28,36,44,52,60},{28,29,30,31,32},{36,37,38,39
 const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
 const byte PB_ACselectRelay = 14;                     // solenoid number of the A/C select relay
 const char PB_TestSounds[10][15] = {{"1_01L.snd"},{"1_02.snd"},{"1_02L.snd"},{"1_03L.snd"},{"1_04.snd"},{"1_04L.snd"},{"1_05.snd"},{"1_06.snd"},{"1_06L.snd"},0};
+const char PB_TxTMballs[2][17] = {{"        2 BALL  "},{"        3 BALL  "}};
 
-const struct SettingTopic PB_setList[8] = {{"DROP TG TIME  ",HandleNumSetting,0,3,30},
+const struct SettingTopic PB_setList[10] = {{"DROP TG TIME  ",HandleNumSetting,0,3,30},
     {" REACH PLANET ",HandleNumSetting,0,1,9},
     {" ENERGY TIMER ",HandleNumSetting,0,1,90},
     {"  BALL  SAVER ",HandleBoolSetting,0,0,0},
+    {"  MULTIBALL   ",HandleTextSetting,&PB_TxTMballs[0][0],0,1},
+    {" EJECT STRNGTH",HandleNumSetting,0,10,50},
     {" RESET  HIGH  ",PB_ResetHighScores,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
+
+                                                      // offsets of settings in the settings array
+#define PB_DropTime 0                                 // drop target down time setting
+#define PB_ReachPlanet 1                              // target planet setting
+#define PB_EnergyTime 2                               // energy timer setting
+#define PB_BallSaver 3                                // ball saver for the outlanes
+#define PB_Multiballs 4                               // to switch between 2 and 3 ball Multiball
+#define PB_BallEjectStrength 5                        // activation time of the ball ramp thrower (solenoid 1A) in ms
+
+const byte PB_defaults[64] = {15,6,15,0,0,30,0,0,     // game default settings
+                               0,0,0,0,0,0,0,0,
+                               0,0,0,0,0,0,0,0,
+                               0,0,0,0,0,0,0,0,
+                               0,0,0,0,0,0,0,0,
+                               0,0,0,0,0,0,0,0,
+                               0,0,0,0,0,0,0,0,
+                               0,0,0,0,0,0,0,0};
 
                                      // Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
                                      // Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
@@ -322,25 +342,6 @@ const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
                                    15,0b10000,0b01000,0b01000,0b00100,0b00100,
                                    15,0b10000,0b10000,0b10000,0b10000,0b10000,0};
 
-const byte PB_2MballDispUpper[78] = {17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during multiball
-const byte PB_2MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,96,0,98,0,106,0,122,0,90,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-                                                      // offsets of settings in the settings array
-#define PB_DropTime 0                                 // drop target down time setting
-#define PB_ReachPlanet 1                              // target planet setting
-#define PB_EnergyTime 2                               // energy timer setting
-#define PB_MultiballVolume 3                          // volume increase for the multiball
-#define PB_BallSaver 4                                // ball saver for the outlanes
-
-const byte PB_defaults[64] = {15,6,15,0,0,0,0,0,      // game default settings
-                              0,0,0,0,0,0,0,0,
-                              0,0,0,0,0,0,0,0,
-                              0,0,0,0,0,0,0,0,
-                              0,0,0,0,0,0,0,0,
-                              0,0,0,0,0,0,0,0,
-                              0,0,0,0,0,0,0,0,
-                              0,0,0,0,0,0,0,0};
-
 struct GameDef PB_GameDefinition = {
     PB_setList,                                       // GameSettingsList
     (byte*)PB_defaults,                               // GameDefaultsPointer
@@ -610,7 +611,7 @@ void PB_AddPlayer() {
     Points[NoPlayers] = 0;                            // delete the points of the new player
     ShowPoints(NoPlayers);}}                          // and show them
 
-void PB_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
+void PB_NewBall(byte Balls) {                         // release ball (Balls = expected balls on ramp)
   ShowAllPoints(0);
   PlayMusic(50, "1_94.snd");                          // play non looping part of music track
   QueueNextMusic("1_94L.snd");                        // queue looping part as next music to be played}
@@ -670,25 +671,33 @@ void PB_NewBall(byte Balls) {                         // release ball (Event = e
   PB_CycleDropLights(1);                              // start the blinking drop target lights
   if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {  // target planet not reached yet?
     AddBlinkLamp(18+game_settings[PB_ReachPlanet],100);}    // let target planet blink
-  for (byte i=0; i<9; i++) {                               // update planets
+  for (byte i=0; i<9; i++) {                          // update planets
     if (PB_Planet[Player] > i) {
       TurnOnLamp(19+i);}
     else {
       TurnOffLamp(19+i);}}
   PB_GiveBall(Balls);}
 
-void PB_GiveBall(byte Balls) {
-  if (PB_SkillMultiplier < 10) {
-    PB_SkillMultiplier++;
-    if (PB_SkillMultiplier == 10) {
-      PlaySound(58, "0_af.snd");                      // 'million activated'
-      PlayFlashSequence((byte*) PB_OpenVisorSeq);}}
+void PB_PutBallInTrunk(byte Dummy) {
+  UNUSED(Dummy);
+  if (!C_BankActive) {
+    ActivateSolenoid(game_settings[PB_BallEjectStrength], 1);}
   else {
-    PB_SkillMultiplier = 1;}
-  WriteUpper2(" VORTEX   X   ");
-  WriteLower2("              ");
-  ShowNumber(15, PB_SkillMultiplier);                 // show multiplier
-  PB_ShowMessage(3);
+    ActivateTimer(100, 0, PB_PutBallInTrunk);}}
+
+void PB_GiveBall(byte Balls) {
+  if (!game_settings[PB_Multiballs]) {                // only for 2 ball Multiball option
+    if (PB_SkillMultiplier < 10) {
+      PB_SkillMultiplier++;
+      if (PB_SkillMultiplier == 10) {
+        PlaySound(58, "0_af.snd");                    // 'million activated'
+        PlayFlashSequence((byte*) PB_OpenVisorSeq);}}
+    else {
+      PB_SkillMultiplier = 1;}
+    WriteUpper2(" VORTEX   X   ");
+    WriteLower2("              ");
+    ShowNumber(15, PB_SkillMultiplier);               // show multiplier
+    PB_ShowMessage(3);}
   if (game_settings[PB_BallSaver]) {                  // activate ball saver if enabled
     PB_BallSave = 1;}
   PB_SkillShot = true;                                // the first shot is a skill shot
@@ -696,7 +705,7 @@ void PB_GiveBall(byte Balls) {
     Switch_Released = DummyProcess;
     ActA_BankSol(2);                                  // release ball
     Switch_Pressed = PB_BallReleaseCheck;             // set switch check to enter game
-    CheckReleaseTimer = ActivateTimer(5000, Balls-1, PB_CheckReleasedBall);} // start release watchdog
+    CheckReleaseTimer = ActivateTimer(3000, Balls-1, PB_CheckReleasedBall);} // start release watchdog
   else {                                              // ball already in shooter lane
     Switch_Released = PB_CheckShooterLaneSwitch;      //  wait for switch 20 to be released
     Switch_Pressed = PB_ResetBallWatchdog;}}
@@ -1754,6 +1763,8 @@ void PB_Multiball_RestoreLamps(byte Dummy) {
   LampPattern = LampColumns;}
 
 void PB_MballDisplay(byte Step) {
+  const byte PB_2MballDispUpper[78] = {17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during multiball
+  const byte PB_2MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,96,0,98,0,106,0,122,0,90,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   static byte Timer = 0;
   if (!Step) {
     if (Timer) {
@@ -2440,8 +2451,6 @@ void PB_Congrats(byte Dummy) {                        // show congratulations
   LampPattern = NoLamps;
   ActC_BankSol(1);
   //AfterMusic = PB_EnterInitials2;                     // TODO fix congrats
-  if (APC_settings[Volume]) {
-    analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[PB_MultiballVolume]);} // increase volume
   PlayMusic(50, "1_06.snd");
   QueueNextMusic("1_06L.snd");                        // queue looping part as next music to be played}
   ActivateSolenoid(0, 11);
