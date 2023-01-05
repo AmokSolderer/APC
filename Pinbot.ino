@@ -952,15 +952,59 @@ void PB_CloseVisor(byte State) {
   else {
     PB_CloseVisorFlag = true;}}                       // set flag to stop visor motor when closed
 
-void PB_ClearOuthole(byte Event) {
-  UNUSED(Event);
-  if (QuerySwitch(16)) {                              // outhole switch still active?
-    if (!BlockOuthole && !C_BankActive) {             // outhole blocked?
-      BlockOuthole = true;                            // block outhole until this ball has been processed
-      ActivateSolenoid(30, 1);                        // put ball in trunk
-      ActivateTimer(2000, 0, PB_BallEnd);}
+void PB_ClearOuthole(byte State) {
+  static byte Trunk;
+  switch (State) {
+  case 0:                                             // inital call
+    if (QuerySwitch(16)) {
+      if (!BlockOuthole) {                            // outhole switch still active?
+        BlockOuthole = true;                          // block outhole until this ball has been processed
+        Trunk = PB_CountBallsInTrunk();
+        if ((Trunk == 5)||(Trunk != 2-Multiballs-InLock)) {  // something's wrong in the trunk
+          InLock = 0;
+          if (Multiballs == 1) {
+            for (byte i=0; i<2; i++) {                // check how many balls are in the eyes
+              if (QuerySwitch(25+i)) {
+                InLock++;}}}
+          WriteLower(" BALL   ERROR ");
+          ActivateTimer(1000, 1, PB_BallEnd);}        // if not try again in 1s
+        else {                                        // ball count OK
+          if (!C_BankActive) {
+            ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
+            ActivateTimer(1000, 10, PB_ClearOuthole);}
+          else {                                      // C bank active
+            ActivateTimer(1000, 5, PB_ClearOuthole);}}}
+      else {                                          // outhole still blocked
+        ActivateTimer(2000, 0, PB_ClearOuthole);}}    // try again
+    else {                                            // outhole free
+      BlockOuthole = false;}
+    break;
+  case 1:                                             // trunk count doesn't match
+    Trunk = PB_CountBallsInTrunk();
+    InLock = 0;
+    if ((Trunk == 5)||(Trunk != 2-Multiballs-InLock)) {  // something's still wrong in the trunk
+      //if (Trunk == 2-Multiballs-InLock)
+      if (Multiballs == 1) {
+        for (byte i=0; i<2; i++) {                    // check how many balls are in the eyes
+          if (QuerySwitch(25+i)) {
+            InLock++;}}}
+      WriteLower(" BALL   ERROR2");}
+    /* no break */
+  case 5:
+    if (!C_BankActive) {
+      ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
+      ActivateTimer(1000, 10, PB_ClearOuthole);}
     else {
-      ActivateTimer(2000, 0, PB_ClearOuthole);}}}     // come back in 2s if outhole is blocked
+      ActivateTimer(1000, 5, PB_ClearOuthole);}       // try again
+    break;
+  case 10:                                            // ball was kicked in outhole
+    if (QuerySwitch(16)) {                            // ball still in outhole?
+      if (Trunk == 0) {                               // assume that 2 balls have been in the outhole
+        Trunk++;}
+      ActA_BankSol(1);                                // make the coil a bit stronger
+      ActivateTimer(2000, 10, PB_BallEnd);}           // and come back in 2s
+    else {
+      PB_BallEnd(Trunk+1);}}}
 
 void PB_MultiballThunder2(byte Dummy) {
   UNUSED(Dummy);
@@ -2228,27 +2272,7 @@ void PB_PlayAfterGameSequence(byte State) {
       StopPlayingMusic();
       ReleaseAllSolenoids();}}}
 
-void PB_BallEnd(byte Event) {                         // ball has been kicked into trunk
-  AppByte = PB_CountBallsInTrunk();
-  if ((AppByte == 5)||(AppByte < 3-Multiballs-InLock)) {  // something's wrong in the trunk
-    InLock = 0;
-    if (Multiballs == 1) {
-      for (byte i=0; i<2; i++) {                      // check how many balls are in the eyes
-        if (QuerySwitch(25+i)) {
-          InLock++;}}}
-    WriteLower(" BALL   ERROR ");
-    if (QuerySwitch(16)) {                            // ball still in outhole?
-      ActA_BankSol(1);                                // make the coil a bit stronger
-      ActivateTimer(2000, Event, PB_BallEnd);}        // and come back in 2s
-    else {
-      if (Event < 11) {                               // have I been here already?
-        Event++;
-        ActivateTimer(1000, Event, PB_BallEnd);}      // if not try again in 1s
-      else {                                          // ball may be still in outhole
-        BlockOuthole = false;
-        Event = 0;
-        PB_ClearOuthole(0);}}}
-  else {                                              // amount of balls in trunk as expected
+void PB_BallEnd(byte Balls) {                         // ball has been kicked into trunk
     PB_EyeBlink(0);
     if (Multiballs == 2) {                            // multiball running?
       if (PB_SolarValueTimer) {                       // solar value jackpot active?
@@ -2267,7 +2291,7 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
       PlayMusic(50, "1_0a.snd");                      // play multiball end theme
       QueueNextMusic("1_02L.snd");                    // track is looping so queue it also
-      if (AppByte == 2) {                             // 2 balls detected in the trunk
+      if (Balls == 2) {                               // 2 balls detected in the trunk
         ActivateTimer(1000, 0, PB_BallEnd);}          // come back and check again
       else {
         PB_ClearOutLock(1);                           // clear out lock and close visor
@@ -2309,7 +2333,7 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
       if (PB_BallSave == 2) {                         // ball saver has been triggered
         BlockOuthole = false;                         // remove outhole block
         ActivateTimer(2000, 0, PB_AfterExBallRelease);
-        ActivateTimer(1000, AppByte, PB_NewBall);}
+        ActivateTimer(1000, Balls, PB_NewBall);}
       else {                                          // no ball saver
         WriteUpper("              ");
         WriteLower("              ");
@@ -2317,7 +2341,8 @@ void PB_BallEnd(byte Event) {                         // ball has been kicked in
         ShowNumber(15, Bonus*1000);
         StopPlayingMusic();
         PlaySound(53, "0_2c.snd");
-        ActivateTimer(200, 0, PB_CountBonus);}}}}
+        AppByte = Balls;
+        ActivateTimer(200, 0, PB_CountBonus);}}}
 
 void PB_BlinkPlanet(byte State) {                     // blink planets during bonus count
   static byte Counter = 0;
@@ -2446,19 +2471,18 @@ void PB_BallEnd2() {
     else {
       if ((PB_EjectMode[Player] == 4) || (PB_EjectMode[Player] == 9)) { // eject hole mode maxed out?
         PB_EjectMode[Player] = 0;}                    // reset it for the next ball
-      PB_BallEnd3(0);}}}
+      PB_BallEnd3(AppByte);}}}
 
-void PB_BallEnd3(byte Dummy) {
-  UNUSED(Dummy);
+void PB_BallEnd3(byte Balls) {
   LampPattern = LampColumns;
   if (Player < NoPlayers) {                           // last player?
     Player++;
-    ActivateTimer(100, AppByte, PB_NewBall);}
+    ActivateTimer(100, Balls, PB_NewBall);}
   else {
     if (Ball < APC_settings[NofBalls]) {              // last ball?
       Player = 1;                                     // not yet
       Ball++;
-      ActivateTimer(100, AppByte, PB_NewBall);}
+      ActivateTimer(100, Balls, PB_NewBall);}
     else {                                            // game end
       ReleaseSolenoid(23);                            // disable flipper fingers
       ReleaseSolenoid(24);
