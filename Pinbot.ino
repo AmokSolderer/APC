@@ -419,8 +419,8 @@ void PB_AttractDisplayCycle(byte Step) {
     for (i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
-      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
+      *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
+      *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
     ShowNumber(23, HallOfFame.Scores[0]);
     ShowNumber(31, HallOfFame.Scores[1]);
     Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
@@ -433,8 +433,8 @@ void PB_AttractDisplayCycle(byte Step) {
     for (i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
-      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
+      *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
+      *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
     ShowNumber(23, HallOfFame.Scores[2]);
     ShowNumber(31, HallOfFame.Scores[3]);
     Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
@@ -1190,6 +1190,7 @@ void PB_GameMain(byte Switch) {
       MusicVolume = 4;
       PlaySound(53, "1_ab.snd");
       PlayFlashSequence((byte*) PB_OpenVisorSeq);     // play flasher sequence
+      ActC_BankSol(1);                                // use knocker
       ActivateTimer(4300, 0, PB_AdvancePlanet);}
     else if (QueryLamp(18)) {                         // advance planet lit?
       TurnOffLamp(18);
@@ -2014,7 +2015,7 @@ void PB_AdvancePlanet(byte State) {
     if (PB_Planet[Player] == game_settings[PB_ReachPlanet]) { //  blinking planet reached?
       MusicVolume = 4;                                // reduce music volume
       PlayFlashSequence((byte*) PB_OpenVisorSeq);     // play flasher sequence
-      ActC_BankSol(1);                                // TODO check knocker
+      ActC_BankSol(1);                                // use knocker
       PlaySound(53, "1_ab.snd");
       ActivateTimer(4300, 0, PB_AdvancePlanet);}      // jump to case 0 after sound has been played
     else if  (PB_Planet[Player] == 10 || PB_Planet[Player] == 20) { // is it the sun?
