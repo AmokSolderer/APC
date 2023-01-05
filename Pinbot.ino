@@ -960,14 +960,13 @@ void PB_ClearOuthole(byte State) {
       if (!BlockOuthole) {                            // outhole switch still active?
         BlockOuthole = true;                          // block outhole until this ball has been processed
         Trunk = PB_CountBallsInTrunk();
-        if ((Trunk == 5)||(Trunk != 2-Multiballs-InLock)) {  // something's wrong in the trunk
+        if ((Trunk == 5)||(Trunk != 2-Multiballs)) {  // something's wrong in the trunk
           InLock = 0;
           if (Multiballs == 1) {
             for (byte i=0; i<2; i++) {                // check how many balls are in the eyes
               if (QuerySwitch(25+i)) {
                 InLock++;}}}
-          WriteLower(" BALL   ERROR ");
-          ActivateTimer(1000, 1, PB_BallEnd);}        // if not try again in 1s
+          ActivateTimer(1000, 1, PB_ClearOuthole);}        // if not try again in 1s
         else {                                        // ball count OK
           if (!C_BankActive) {
             ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
@@ -982,14 +981,14 @@ void PB_ClearOuthole(byte State) {
   case 1:                                             // trunk count doesn't match
     Trunk = PB_CountBallsInTrunk();
     InLock = 0;
-    if ((Trunk == 5)||(Trunk != 2-Multiballs-InLock)) {  // something's still wrong in the trunk
+    if ((Trunk == 5)||(Trunk != 2-Multiballs)) {      // something's still wrong in the trunk
       //if (Trunk == 2-Multiballs-InLock)
       if (Multiballs == 1) {
         for (byte i=0; i<2; i++) {                    // check how many balls are in the eyes
           if (QuerySwitch(25+i)) {
-            InLock++;}}}
-      WriteLower(" BALL   ERROR2");}
-    /* no break */
+            InLock++;}}}}
+    ActivateTimer(2000, 5, PB_ClearOuthole);
+    break;
   case 5:
     if (!C_BankActive) {
       ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
@@ -1002,7 +1001,7 @@ void PB_ClearOuthole(byte State) {
       if (Trunk == 0) {                               // assume that 2 balls have been in the outhole
         Trunk++;}
       ActA_BankSol(1);                                // make the coil a bit stronger
-      ActivateTimer(2000, 10, PB_BallEnd);}           // and come back in 2s
+      ActivateTimer(2000, 10, PB_ClearOuthole);}           // and come back in 2s
     else {
       PB_BallEnd(Trunk+1);}}}
 
@@ -2292,7 +2291,8 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       PlayMusic(50, "1_0a.snd");                      // play multiball end theme
       QueueNextMusic("1_02L.snd");                    // track is looping so queue it also
       if (Balls == 2) {                               // 2 balls detected in the trunk
-        ActivateTimer(1000, 0, PB_BallEnd);}          // come back and check again
+        Balls = PB_CountBallsInTrunk();               // count again
+        ActivateTimer(1000, Balls, PB_BallEnd);}      // come back and check again
       else {
         PB_ClearOutLock(1);                           // clear out lock and close visor
         InLock = 0;
