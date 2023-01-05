@@ -671,8 +671,13 @@ void PB_NewBall(byte Balls) {                         // release ball (Balls = e
   PB_CycleDropLights(1);                              // start the blinking drop target lights
   if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {  // target planet not reached yet?
     AddBlinkLamp(18+game_settings[PB_ReachPlanet],100);}    // let target planet blink
+  byte Planets = PB_Planet[Player];
+  if (Planets > 10) {                                 // sun already reached?
+    Planets = Planets - 10;}
+  if (Planets == 10) {                                // sun reached for the 2nd time?
+    Planets = 0;}
   for (byte i=0; i<9; i++) {                          // update planets
-    if (PB_Planet[Player] > i) {
+    if (Planets > i) {
       TurnOnLamp(19+i);}
     else {
       TurnOffLamp(19+i);}}
@@ -1987,51 +1992,57 @@ void PB_AdvancePlanet2(byte State) {                  // finale of the 'sun reac
     for (byte i=0; i<9; i++) {                        // turn off planet lamps
       TurnOffLamp(19 + i);}
     RestoreMusicVolume(25);
-    PB_Planet[Player] = 0;
+    //PB_Planet[Player] = 0;
     SwitchDisplay(1);}}                               // switch display back to normal
 
 void PB_AdvancePlanet(byte State) {
+  byte Planets = PB_Planet[Player];
   switch (State) {
   case 0:                                             // to be called by AfterSound
     RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);
     RemoveBlinkLamp(51);                              // stop blinking of special lamp
-    TurnOnLamp(18+game_settings[PB_ReachPlanet]);
+    if (PB_Planet[Player] && PB_Planet[Player] != 10 && PB_Planet[Player] != 20) { // planets lit?
+      TurnOnLamp(18+game_settings[PB_ReachPlanet]);}
     PB_GiveExBall();
     RestoreMusicVolume(25);
     break;
   case 1:                                             // initial call
     PB_Planet[Player]++;                              // player has reached next planet
-    if (PB_Planet[Player] > 10) {                     // sun already reached before?
-      PB_Planet[Player] = 10;}                        // set it back to the sun
+    if (PB_Planet[Player] > 20) {                     // sun already reached for the 2nd time?
+      PB_Planet[Player] = 11;}                        // set it back to the sun
+    Planets = PB_Planet[Player];
+    if (PB_Planet[Player] == game_settings[PB_ReachPlanet]) { //  blinking planet reached?
+      MusicVolume = 4;                                // reduce music volume
+      PlayFlashSequence((byte*) PB_OpenVisorSeq);     // play flasher sequence
+      ActC_BankSol(1);                                // TODO check knocker
+      PlaySound(53, "1_ab.snd");
+      ActivateTimer(4300, 0, PB_AdvancePlanet);}      // jump to case 0 after sound has been played
+    else if  (PB_Planet[Player] == 10 || PB_Planet[Player] == 20) { // is it the sun?
+      MusicVolume = 4;                                // reduce music volume
+      PlaySound(53, "0_e1.snd");
+      ActC_BankSol(8);                                // sun flasher
+      for (byte i=0; i<9; i++) {                      // turn off planet lamps
+        TurnOffLamp(19 + i);}
+      ActivateTimer(150, 30, PB_AdvancePlanet);
+      PB_SpecialLit = true;
+      AddBlinkLamp(51, 100);}
     else {
-      if  (PB_Planet[Player] == 10 || PB_Planet[Player] == game_settings[PB_ReachPlanet]) { //  10 = Sun
-        MusicVolume = 4;                              // reduce music volume
-        if (PB_Planet[Player] == 10) {                // is it the sun?
-          PlaySound(53, "0_e1.snd");
-          ActC_BankSol(8);                            // sun flasher
-          for (byte i=0; i<9; i++) {                  // turn off planet lamps
-            TurnOffLamp(19 + i);}
-          ActivateTimer(150, 30, PB_AdvancePlanet);
-          PB_SpecialLit = true;
-          AddBlinkLamp(51, 100);}                     // blink 'special' lamp
-        else {                                        // planet reached
-          PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
-          ActC_BankSol(1);                            // TODO check knocker
-          PlaySound(53, "1_ab.snd");
-          ActivateTimer(4300, 0, PB_AdvancePlanet);}} // jump to case 0 after sound has been played
-      else {
-        ActC_BankSol(8);                              // sun flasher
-        char FileName[13] = "0_e1_000.snd";
-        FileName[7] = 48 + (PB_Planet[Player] % 10);
-        FileName[6] = 48 + (PB_Planet[Player] / 10);
-        PlaySound(51, (char*) FileName);
-        QueueNextSound("0_e1_000.snd");
-        ActivateTimer(500, 2, PB_AdvancePlanet);
-        ActivateTimer(4050, 21, PB_AdvancePlanet);    // reset AfterSound
-        RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);}} // stop blinking
+      ActC_BankSol(8);                                // sun flasher
+      char FileName[13] = "0_e1_000.snd";
+      if (Planets > 10) {                             // sun already reached?
+        Planets = Planets - 10;}
+      FileName[7] = 48 + (Planets % 10);
+      FileName[6] = 48 + (Planets / 10);
+      PlaySound(51, (char*) FileName);
+      QueueNextSound("0_e1_000.snd");
+      ActivateTimer(500, 2, PB_AdvancePlanet);
+      ActivateTimer(4050, 21, PB_AdvancePlanet);      // reset AfterSound
+      RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);} // stop blinking
     break;
   case 2:                                             // first step of advance planet
-    if (PB_Planet[Player] < 9) {
+    if (Planets > 10) {                               // sun already reached?
+      Planets = Planets - 10;}
+    if (Planets < 9) {
       TurnOnLamp(27);
       ActivateTimer(350, State+1, PB_AdvancePlanet);}
     else {
@@ -2040,10 +2051,12 @@ void PB_AdvancePlanet(byte State) {
       ActivateTimer(1000, 20, PB_AdvancePlanet);}
     break;
   case 20:                                            // animation reached planet
-    RemoveBlinkLamp(18 + PB_Planet[Player]);
-    TurnOnLamp(18 + PB_Planet[Player]);
     if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {
       AddBlinkLamp(18+game_settings[PB_ReachPlanet], 100);}
+    if (Planets > 10) {                               // sun already reached?
+      Planets = Planets - 10;}
+    RemoveBlinkLamp(18 + Planets);
+    TurnOnLamp(18 + Planets);
     break;
   case 21:                                            // reset AfterSound
     AfterSound = 0;
@@ -2061,11 +2074,13 @@ void PB_AdvancePlanet(byte State) {
   default:                                            // all intermediate steps
     if (State < 30) {                                 // advance planet animation?
       TurnOffLamp(30 - State);
-      if (State < 11 - PB_Planet[Player]) {           // not the final step?
+      if (Planets > 10) {                             // sun already reached?
+        Planets = Planets - 10;}
+      if (State < 11 - Planets) {                     // not the final step?
         TurnOnLamp(29 - State);
         ActivateTimer(350, State+1, PB_AdvancePlanet);}
       else {                                          // final step
-        AddBlinkLamp(18 + PB_Planet[Player], 100);
+        AddBlinkLamp(18 + Planets, 100);
         ActivateTimer(1000, 20, PB_AdvancePlanet);}}
     else {                                            // sun reached animation
       if (State < 38) {                               // planets being lit
@@ -2391,7 +2406,7 @@ void PB_CountBonus(byte State) {
       ActivateTimer(29, 21, PB_CountBonus);}          // continue counting
     else {                                            // check planets
       PB_PlayMultiplierSequence(0);
-      if (PB_Planet[Player]) {                        // planets lit?
+      if (PB_Planet[Player] && PB_Planet[Player] != 10 && PB_Planet[Player] != 20) { // planets lit?
         ActivateTimer(10, 30, PB_CountBonus);}
       else {                                          // no planets lit
         PlaySound(53, "0_65.snd");
@@ -2402,7 +2417,12 @@ void PB_CountBonus(byte State) {
     Points[Player] += 20000;                          // add points for each planet
     WriteUpper((char*)PlanetTxt[State - 30]);         // show planet names
     ShowPoints(Player);
-    if (PB_Planet[Player] > State - 29) {
+    byte Planets = PB_Planet[Player];
+    if (Planets > 10) {                               // sun already reached?
+      Planets = Planets - 10;}
+    if (Planets == 10) {                              // sun reached for the 2nd time?
+      Planets = 0;}
+    if (Planets > State - 29) {
       ActivateTimer(500, State+1, PB_CountBonus);}
     else {
       ActivateTimer(1000, 40, PB_CountBonus);}}
