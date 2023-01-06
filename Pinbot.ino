@@ -960,19 +960,16 @@ void PB_ClearOuthole(byte State) {
       if (!BlockOuthole) {                            // outhole switch still active?
         BlockOuthole = true;                          // block outhole until this ball has been processed
         Trunk = PB_CountBallsInTrunk();
-        if ((Trunk == 5)||(Trunk != 2-Multiballs)) {  // something's wrong in the trunk
+        Serial.print("C0 ");
+        Serial.println(Trunk);
+        if ((Multiballs == 1 && Trunk == 1 - InLock) || (Multiballs == 2 && Trunk == 0)) {  // ball count OK?
+          ActivateTimer(10, 5, PB_ClearOuthole);}
+        else {                                        // ball count not OK
           InLock = 0;
-          if (Multiballs == 1) {
-            for (byte i=0; i<2; i++) {                // check how many balls are in the eyes
-              if (QuerySwitch(25+i)) {
-                InLock++;}}}
-          ActivateTimer(1000, 1, PB_ClearOuthole);}        // if not try again in 1s
-        else {                                        // ball count OK
-          if (!C_BankActive) {
-            ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
-            ActivateTimer(1000, 10, PB_ClearOuthole);}
-          else {                                      // C bank active
-            ActivateTimer(1000, 5, PB_ClearOuthole);}}}
+          for (byte i=0; i<2; i++) {                  // check how many balls are in the eyes
+            if (QuerySwitch(25+i)) {
+              InLock++;}}
+          ActivateTimer(1000, 1, PB_ClearOuthole);}}  // if not try again in 1s
       else {                                          // outhole still blocked
         ActivateTimer(2000, 0, PB_ClearOuthole);}}    // try again
     else {                                            // outhole free
@@ -980,16 +977,20 @@ void PB_ClearOuthole(byte State) {
     break;
   case 1:                                             // trunk count doesn't match
     Trunk = PB_CountBallsInTrunk();
+    Serial.print("C1 ");
+    Serial.println(Trunk);
     InLock = 0;
-    if ((Trunk == 5)||(Trunk != 2-Multiballs)) {      // something's still wrong in the trunk
-      //if (Trunk == 2-Multiballs-InLock)
-      if (Multiballs == 1) {
-        for (byte i=0; i<2; i++) {                    // check how many balls are in the eyes
-          if (QuerySwitch(25+i)) {
-            InLock++;}}}}
-    ActivateTimer(2000, 5, PB_ClearOuthole);
+    if ((Multiballs == 1 && Trunk == 1 - InLock) || (Multiballs == 2 && Trunk == 0)) {  // ball count OK?
+      ActivateTimer(10, 5, PB_ClearOuthole);}         // proceed
+    else {                                            // ball count not OK
+      for (byte i=0; i<2; i++) {                      // check how many balls are in the eyes
+        if (QuerySwitch(25+i)) {
+          InLock++;}}}
+    ActivateTimer(2000, 5, PB_ClearOuthole);          // and try again
     break;
   case 5:
+    Serial.print("C5 ");
+    Serial.println(Trunk);
     if (!C_BankActive) {
       ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
       ActivateTimer(1000, 10, PB_ClearOuthole);}
@@ -1001,8 +1002,12 @@ void PB_ClearOuthole(byte State) {
       if (Trunk == 0) {                               // assume that 2 balls have been in the outhole
         Trunk++;}
       ActA_BankSol(1);                                // make the coil a bit stronger
-      ActivateTimer(2000, 10, PB_ClearOuthole);}           // and come back in 2s
+      Serial.print("C8 ");
+      Serial.println(Trunk);
+      ActivateTimer(2000, 10, PB_ClearOuthole);}      // and come back in 2s
     else {
+      Serial.print("C9 ");
+      Serial.println(Trunk);
       PB_BallEnd(Trunk+1);}}}
 
 void PB_MultiballThunder2(byte Dummy) {
