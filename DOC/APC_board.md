@@ -18,7 +18,7 @@ If you want to place an order, the manufacturer will need the APC_Gerber.zip fil
 
 ## The Components
 
-As most of the components can be populated by the board manufacturer. They can do all SMD and most of the other stuff as well. Hence, there's only a few components left for you to assemble. You can find a list of these components with their respective order number from [Mouser](http://www.mouser.com) and [Reichelt](http://www.reichelt.de) in the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Hardware/Assembly/APC_BOMselfSolder.pdf)
+Most of the components can be populated by the board manufacturer. They can do all SMD and most of the other stuff as well. Hence, there's only a few components left for you to assemble. You can find a list of these components with their respective order number from [Mouser](http://www.mouser.com) and [Reichelt](http://www.reichelt.de) in the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Hardware/Assembly/APC_BOMselfSolder.pdf)
 
 The german electronics retailer Reichelt doesn't sell all required components, but some (especially connectors) are much cheaper compared to Mouser, so for people in Europe it might still make sense to order them separately.
 
