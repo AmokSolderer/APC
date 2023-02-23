@@ -29,7 +29,7 @@ There's a table of contents of the available documentation at the end of this pa
 ### Special features
 
 * Hardware extensions interface. The pinout is compatible to the Sound Overlay Solenoid Board used in games like Whirlwind, but it is upgraded a bit to support all kind of self made hardware
-* A socket for a Raspberry Pi which can be used to run PinMame on the APC board
+* A socket for a Raspberry Pi which can be used to run PinMame on the APC board. With this you can run the original ROM code on your APC.
 * [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md#programming-exceptions) are game specific code blocks that act like a man-in-the-middle between the game HW and PinMame. That means even if your game is running in PinMame you can still introduce some changes. Take a look at my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) or my [Comet ball saver](https://youtu.be/JbgMa_pn0Lo) to see how a few lines of code can change a game dramatically.
 
 Typical examples for the use of PinMameExceptions are:
@@ -48,9 +48,9 @@ To see the APC in an early stage you might want take a look at my [Black Knight 
 
 ### PinMame
 
-You can use [Lisy](https://lisy.dev/apc.html) to run PinMame on an APC board. This spares you the effort to do any game Software as you can run the old EPROM code.  
+You can use [Lisy](https://lisy.dev/apc.html) to run PinMame on an APC board. This spares you the effort to do any game Software as you can run the old ROM code.
 For System 3 - 7 machines the APC can be used with the old original soundboards. That means in this case it's a plug & play solution.
-If you want the APC to generate the audio, either because you don't have an audio board, you want to do your own sounds or you have a System 9/11 game then it's going to require some work to set up your game with PinMame. Take a look at the [PinMame Sound page](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame.md) to see what I mean.
+You might want the APC to generate the audio any way, either because you don't have an audio board, you want to do your own sounds or you have a System 9/11 game. In this case then it's going to require some work to set up your game with PinMame. Take a look at the [PinMame Sound page](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame.md) to see what I mean.
 
 With PinMame running for your game you can use the [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md#programming-exceptions) functionality of the APC to change the rules of your game even though it's running under PinMame control.  
 Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see an example. The corresponding code can be found in PinMameExceptions.ino in the AmokPrivate branch on Github.  
@@ -74,7 +74,8 @@ Furthermore there're the above mentioned [PinMameExceptions](https://github.com/
 
 ## Hardware
 
-The APC hardware status is mature. I have version 2.0 in use since January 2018 without anything to complain about. You can find the schematics, BOM and layout data in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware). There have been some minor HW updates which are explained in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md).
+The APC hardware status is mature. I have version 2.0 in use since January 2018 without anything to complain about. Since then the HW has basically stayed the same, just some features have been added and the board has been prepared for automatic assembly.
+You can find the schematics, BOM and layout data in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware). There have been some minor HW updates which are explained in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md).
 
 The APC features an HW extensions interface which is an 8 bit bus with several enable signals. At the moment there're two extension board available, but you could use it for all kinds of additional hardware.
 

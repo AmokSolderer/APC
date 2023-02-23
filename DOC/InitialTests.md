@@ -79,4 +79,6 @@ The following table shows the avaiable tests and their number which is shown for
 | 5 | All Lamps |
 | 6 | Music Test |
 
+## Next steps
 
+If the tests are completed and your board is working properly you're ready to [run a game](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/RunGame.md)
