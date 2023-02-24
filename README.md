@@ -30,7 +30,7 @@ There's a table of contents of the available documentation at the end of this pa
 
 * Hardware extensions interface. The pinout is compatible to the Sound Overlay Solenoid Board used in games like Whirlwind, but it is upgraded a bit to support all kind of self made hardware
 * A socket for a Raspberry Pi which can be used to run PinMame on the APC board. With this you can run the original ROM code on your APC.
-* [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md#programming-exceptions) are game specific code blocks that act like a man-in-the-middle between the game HW and PinMame. That means even if your game is running in PinMame you can still introduce some changes. Take a look at my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) or my [Comet ball saver](https://youtu.be/JbgMa_pn0Lo) to see how a few lines of code can change a game dramatically.
+* [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMameExceptions.md) are game specific code blocks that act like a man-in-the-middle between the game HW and PinMame. That means even if your game is running in PinMame you can still introduce some changes. Take a look at my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) or my [Comet ball saver](https://youtu.be/JbgMa_pn0Lo) to see how a few lines of code can change a game dramatically.
 
 Typical examples for the use of PinMameExceptions are:
 
@@ -52,7 +52,7 @@ You can use [Lisy](https://lisy.dev/apc.html) to run PinMame on an APC board. Th
 For System 3 - 7 machines the APC can be used with the old original soundboards. That means in this case it's a plug & play solution.
 You might want the APC to generate the audio any way, either because you don't have an audio board, you want to do your own sounds or you have a System 9/11 game. In this case then it's going to require some work to set up your game with PinMame. Take a look at the [PinMame Sound page](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame.md) to see what I mean.
 
-With PinMame running for your game you can use the [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md#programming-exceptions) functionality of the APC to change the rules of your game even though it's running under PinMame control.  
+With PinMame running for your game you can use the [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMameExceptions.md) functionality of the APC to change the rules of your game even though it's running under PinMame control.  
 Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see an example. The corresponding code can be found in PinMameExceptions.ino in the AmokPrivate branch on Github.  
 Another example is the ball saver I [added to my Comet](https://youtu.be/JbgMa_pn0Lo).
 
@@ -70,7 +70,7 @@ If you're familiar with C you can also program the APC directly. This SW would t
 For this the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to control a pinball machine. It's still a lot of effort to program a game completely from scratch, but you could even run your game in PinMame and only use the API to do changes or extensions to the original rules.
 
 You don't necessarily have to do the code from scratch. There is a [Base Code](https://github.com/AmokSolderer/APC/blob/V00.31/BaseCode.ino) which covers the basics of a pinball machine and can be used as a starting point.  
-Furthermore there're the above mentioned [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md#programming-exceptions) which can change a game dramatically with just a few lines of code.
+Furthermore there're the above mentioned [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMameExceptions.md) which can change a game dramatically with just a few lines of code.
 
 ## Hardware
 
@@ -176,8 +176,8 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 4.1. [Lisy Homepage](https://lisy.dev/apc.html) - Location of the Lisy SW download and more  
 4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame  
 4.3. [PinMame Sound howto](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that  
-4.4. [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/lisyminigames.csv) - list of the PinMame game numbers  
-4.5. [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMameExceptions.md) - change your game, but let PinMame do the main work  
+4.4. [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMameExceptions.md) - change your game, but let PinMame do the main work  
+4.5. [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/lisyminigames.csv) - list of the PinMame game numbers  
 4.6. [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/LisyDebug.md) - updating Lisy and using the debug mode  
 4.7. [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
 
