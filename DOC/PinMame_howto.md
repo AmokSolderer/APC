@@ -202,5 +202,5 @@ When audio channel 2 receives command 4 then the intro 1_04.snd is played first 
 
 # More PinMameExceptions
 
-These were the Exception you have to provide for the APC to be able to use the audio files on your SD card correctly.
+These were basic exception you have to provide for the APC to be able to use the audio files on your SD card correctly.
 However, PinMameExceptions can do much more than that, so take a look at the [PinMameExceptions page](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMameExceptions.md) to learn more.
