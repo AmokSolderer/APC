@@ -184,6 +184,7 @@ byte EX_JungleLord(byte Type, byte Command){
   static byte MultiballTimer = 0;                     // stores the timer number for the optional LORD lane change multiball detect timer
   static byte PMlamp;                                 // stores the PinMame state of the LORD lamps
   static byte LampMov;                                // record the LORD lane change movements
+  static bool LaneChangeDone = 0;                     // disable the magna save switches after the mini ball has activated a switch
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
@@ -223,6 +224,7 @@ byte EX_JungleLord(byte Type, byte Command){
     return(0);                                        // return number not relevant for sounds
   case SwitchActCommand:                              // activated switches
     if (LordModeTimer && Command > 12 && Command < 17) {  // LORD lane change mode active and one of the LORD switches triggered?
+      LaneChangeDone = true;                          // stop lane change
       Command = Command - LampMov;                    // apply lane change moves to switch number
       if (Command < 13) {
         Command = Command + 4;}
@@ -248,40 +250,42 @@ byte EX_JungleLord(byte Type, byte Command){
       EX_BallRelease(0);}                             // stop ball release timer
     else if (Command == 49) {                         // right magnet button
       if (LordModeTimer) {                            // mini playfield active?
-        LampMov++;                                    // store right move of lamps
-        if (LampMov > 3) {
-          LampMov = 0;}
-        bool Buffer = QueryLamp(16);                  // move all LORD lamps to the right
-        for (byte i=0; i<3; i++) {
-          if (QueryLamp(15-i)) {
-            TurnOnLamp(16-i);}
+        if (!LaneChangeDone) {                        // mini ball has not already triggered a switch
+          LampMov++;                                  // store right move of lamps
+          if (LampMov > 3) {
+            LampMov = 0;}
+          bool Buffer = QueryLamp(16);                // move all LORD lamps to the right
+          for (byte i=0; i<3; i++) {
+            if (QueryLamp(15-i)) {
+              TurnOnLamp(16-i);}
+            else {
+              TurnOffLamp(16-i);}}
+          if (Buffer) {
+            TurnOnLamp(13);}
           else {
-            TurnOffLamp(16-i);}}
-        if (Buffer) {
-          TurnOnLamp(13);}
-        else {
-          TurnOffLamp(13);}
-        return(1);}
+            TurnOffLamp(13);}
+          return(1);}}
       else {
         if (QueryLamp(8) && QueryLamp(2)) {           // right magnet and ball in play lamp lit?
           ActivateSolenoid(0, 22);}}}                 // activate right magnet
     else if (Command == 50) {                         // left magnet button
       if (LordModeTimer) {                            // mini playfield active?
-        if (LampMov) {                                // store left move of lamps
-          LampMov--;}
-        else {
-          LampMov = 3;}
-        bool Buffer = QueryLamp(13);                  // move all LORD lamps to the left
-        for (byte i=0; i<3; i++) {
-          if (QueryLamp(14+i)) {
-            TurnOnLamp(13+i);}
+        if (!LaneChangeDone) {                        // mini ball has not already triggered a switch
+          if (LampMov) {                              // store left move of lamps
+            LampMov--;}
           else {
-            TurnOffLamp(13+i);}}
-        if (Buffer) {
-          TurnOnLamp(16);}
-        else {
-          TurnOffLamp(16);}
-        return(1);}
+            LampMov = 3;}
+          bool Buffer = QueryLamp(13);                // move all LORD lamps to the left
+          for (byte i=0; i<3; i++) {
+            if (QueryLamp(14+i)) {
+              TurnOnLamp(13+i);}
+            else {
+              TurnOffLamp(13+i);}}
+          if (Buffer) {
+            TurnOnLamp(16);}
+          else {
+            TurnOffLamp(16);}
+          return(1);}}
       else {
         if (QueryLamp(39) && QueryLamp(2)) {          // left magnet and ball in play lamp lit?
           ActivateSolenoid(0, 21);}}}                 // activate left magnet
@@ -315,6 +319,7 @@ byte EX_JungleLord(byte Type, byte Command){
         if (LordModeTimer) {                          // LordModeTimer already active
           KillTimer(LordModeTimer);}                  // stop it
         else {                                        // fresh start of Lord Mode
+          LaneChangeDone = false;
           LampMov = 0;                                // reset lane change movements
           PMlamp = 0;                                 // read current status of LORD lamps
           for (byte i=0; i<4; i++) {
