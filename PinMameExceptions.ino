@@ -118,80 +118,83 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
 
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
-    if (Command == 33 ||                              // ignore sound command 0x21, 0x27, 0x7f,0xff
-        Command == 39 ||
-        Command == 127 ||
-        Command == 255) { }
-    else if (Command == 108) {                        // sound command 0x6c - stop all sounds and reset series
-      AfterSound = 0;
-      SoundSeries[0] = 0;
-      SoundSeries[1] = 0;
-      SoundSeries[2] = 0;
-      SoundSeries[3] = 0;
-      SoundSeries[4] = 0;
-      StopPlayingSound();}
-    else if (Command == 100){                         // 0x64 End game - random speech
-      char FileName[13] = "0_64_000.snd";             // generate base filename
-      FileName[7] = 48 + random(9) + 1;               // change the counter according to random number
-      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-    else if (Command == 103){                         // 0x67 Fire one/two/three series (multiball!)
-      // code for individual sounds
-      if (PlayCombinedSoundForMultiball == 0) {
-        PlayingMultiballSound = 1;                    // remember we're in a multiball start session
-        if (SoundSeries[0] < 3)                       // this sound has 3 tunes
-          SoundSeries[0]++;                           // every call of this sound proceeds with next tune
-        else                                          //
-          SoundSeries[0] = 1;                         // start all over again
-        char FileName[13] = "0_67_000.snd";           // generate base filename
-        FileName[7] = 48 + (SoundSeries[0] % 10);     // change the 7th character of filename according to current tune
-        PlaySound(51, (char*) FileName);}             // play the sound
-      else {                                          // code for combined sounds (not standard but works better)
-        if (PlayingMultiballSound == 0) {
-          PlayingMultiballSound = 1;
-          char FileName[13] = "0_67_004.snd"; // this wav is combined version from 67_001 to 67_003
-          PlaySound(51, (char*) FileName);}}}
-    else if (Command == 105){                         // 0x69 Bonus
-      if (SoundSeries[1] < 146)                       // this sound has 146 tunes
-        SoundSeries[1]++;                             // every call of this sound proceeds with next tune
-      char FileName[13] = "0_69_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current tune
-      FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
-      FileName[5] = 48 + (SoundSeries[1] / 100);      // the same with the 5th character
-      PlaySound(51, (char*) FileName);}               // play the sound
-    else if (Command == 106) {                        // 0x6a Whirlling background
-      if (SoundSeries[2] < 29 )                       // this sound has 29 tunes
-        SoundSeries[2]++;                             // every call of this sound proceeds with next tune
-      char FileName[13] = "0_6a_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[2] % 10);       // change the 7th character of filename according to current tune
-      FileName[6] = 48 + (SoundSeries[2] % 100) / 10; // the same with the 6th character
-      PlaySound(51, (char*) FileName);}               // play the sound
-    else if (Command == 109) {                        // 0x6d Spinner
-      if (SoundSeries[3] < 31 )                       // this sound has 31 tunes
-        SoundSeries[3]++;                             // every call of this sound proceeds with next tune
-      char FileName[13] = "0_6d_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[3] % 10);       // change the 7th character of filename according to current tune
-      FileName[6] = 48 + (SoundSeries[3] % 100) / 10; // the same with the 6th character
-      PlaySound(51, (char*) FileName);}               // play the sound
-    else if (Command == 110) {                        // 0x6e Background // repeated
-      PlayingMultiballSound = 0;                      // if the background plays, we're not in a multiball start session
-      if (SoundSeries[4] < 31 )                       // this sound has 31 tunes
-        SoundSeries[4]++;                             // every call of this sound proceeds with next tune
-      char FileName[13] = "0_6e_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[4] % 10);       // change the 7th character of filename according to current tune
-      FileName[6] = 48 + (SoundSeries[4] % 100) / 10; // the same with the 6th character
-      for (byte i=0; i<12; i++) {                     // store the name of this sound
-        USB_RepeatSound[i] = FileName[i];}
-      QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
-      PlaySound(51, (char*) FileName);}               // play the sound
-    else if ((Command == 104 || Command == 107 || Command == 60 || Command == 63)      // ignore these sounds at beginning of multiball
-        && PlayingMultiballSound == 1) { }
-    else {                                            // standard sound
-      char FileName[9] = "0_00.snd";                  // handle standard sound
-      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-        PlaySound(51, (char*) FileName);}}
-    return(0);                                        // return number not relevant for sounds
+	  if (Command == 33 ||                              // ignore sound command 0x21, 0x27, 0x7f,0xff
+			  Command == 39 ||
+			  Command == 127 ||
+			  Command == 255) { }
+	  else if (Command == 108) {                        // sound command 0x6c - stop all sounds and reset series
+		  AfterSound = 0;
+		  SoundSeries[0] = 0;
+		  SoundSeries[1] = 0;
+		  SoundSeries[2] = 0;
+		  SoundSeries[3] = 0;
+		  SoundSeries[4] = 0;
+		  StopPlayingSound();}
+	  else {
+		  if (Command > 127) {
+			  Command &= 127;}
+		  if (Command == 100){                         // 0x64 End game - random speech
+			  char FileName[13] = "0_64_000.snd";             // generate base filename
+			  FileName[7] = 48 + random(9) + 1;               // change the counter according to random number
+			  PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+		  else if (Command == 103){                         // 0x67 Fire one/two/three series (multiball!)
+			  // code for individual sounds
+			  if (PlayCombinedSoundForMultiball == 0) {
+				  PlayingMultiballSound = 1;                    // remember we're in a multiball start session
+				  if (SoundSeries[0] < 3)                       // this sound has 3 tunes
+					  SoundSeries[0]++;                           // every call of this sound proceeds with next tune
+				  else                                          //
+					  SoundSeries[0] = 1;                         // start all over again
+				  char FileName[13] = "0_67_000.snd";           // generate base filename
+				  FileName[7] = 48 + (SoundSeries[0] % 10);     // change the 7th character of filename according to current tune
+				  PlaySound(51, (char*) FileName);}             // play the sound
+			  else {                                          // code for combined sounds (not standard but works better)
+				  if (PlayingMultiballSound == 0) {
+					  PlayingMultiballSound = 1;
+					  char FileName[13] = "0_67_004.snd"; // this wav is combined version from 67_001 to 67_003
+					  PlaySound(51, (char*) FileName);}}}
+		  else if (Command == 105){                         // 0x69 Bonus
+			  if (SoundSeries[1] < 146)                       // this sound has 146 tunes
+				  SoundSeries[1]++;                             // every call of this sound proceeds with next tune
+			  char FileName[13] = "0_69_000.snd";             // generate base filename
+			  FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current tune
+			  FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
+			  FileName[5] = 48 + (SoundSeries[1] / 100);      // the same with the 5th character
+			  PlaySound(51, (char*) FileName);}               // play the sound
+		  else if (Command == 106) {                        // 0x6a Whirlling background
+			  if (SoundSeries[2] < 29 )                       // this sound has 29 tunes
+				  SoundSeries[2]++;                             // every call of this sound proceeds with next tune
+			  char FileName[13] = "0_6a_000.snd";             // generate base filename
+			  FileName[7] = 48 + (SoundSeries[2] % 10);       // change the 7th character of filename according to current tune
+			  FileName[6] = 48 + (SoundSeries[2] % 100) / 10; // the same with the 6th character
+			  PlaySound(51, (char*) FileName);}               // play the sound
+		  else if (Command == 109) {                        // 0x6d Spinner
+			  if (SoundSeries[3] < 31 )                       // this sound has 31 tunes
+				  SoundSeries[3]++;                             // every call of this sound proceeds with next tune
+			  char FileName[13] = "0_6d_000.snd";             // generate base filename
+			  FileName[7] = 48 + (SoundSeries[3] % 10);       // change the 7th character of filename according to current tune
+			  FileName[6] = 48 + (SoundSeries[3] % 100) / 10; // the same with the 6th character
+			  PlaySound(51, (char*) FileName);}               // play the sound
+		  else if (Command == 110) {                        // 0x6e Background // repeated
+			  PlayingMultiballSound = 0;                      // if the background plays, we're not in a multiball start session
+			  if (SoundSeries[4] < 31 )                       // this sound has 31 tunes
+				  SoundSeries[4]++;                             // every call of this sound proceeds with next tune
+			  char FileName[13] = "0_6e_000.snd";             // generate base filename
+			  FileName[7] = 48 + (SoundSeries[4] % 10);       // change the 7th character of filename according to current tune
+			  FileName[6] = 48 + (SoundSeries[4] % 100) / 10; // the same with the 6th character
+			  for (byte i=0; i<12; i++) {                     // store the name of this sound
+				  USB_RepeatSound[i] = FileName[i];}
+			  QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
+			  PlaySound(51, (char*) FileName);}               // play the sound
+		  else if ((Command == 104 || Command == 107 || Command == 60 || Command == 63)      // ignore these sounds at beginning of multiball
+				  && PlayingMultiballSound == 1) { }
+		  else {                                            // standard sound
+			  char FileName[9] = "0_00.snd";                  // handle standard sound
+			  if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+				  PlaySound(51, (char*) FileName);}}}
+	  return(0);                                        // return number not relevant for sounds
   default:
-    return(0);}}                                      // no exception rule found for this type so proceed as normal
+	  return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_JungleLord(byte Type, byte Command){
   static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
