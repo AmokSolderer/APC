@@ -102,5 +102,5 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 61 | System3 Set 16 | - | - | - | Use this to change the 16th setting of system 3 games |
 | 62 | System3 Set 17 | - | - | - | Use this to change the 17th setting of system 3 games |
 | 63 | System3 Set 18 | - | - | - | Use this to change the 18th setting of system 3 games |
-| 5 | Restore Default | - | - | - | No setting - restores the default settings |
-| 6 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 64 | Restore Default | - | - | - | No setting - restores the default settings |
+| 65 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
