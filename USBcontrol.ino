@@ -43,11 +43,70 @@ unsigned int USB_SolTimes[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
 const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
 
-const struct SettingTopic USB_setList[8] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
     {" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
     {"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
     {"PINMAME GAME    ",HandleNumSetting,0,0,72},
     {" LISY  DEBUG    ",HandleNumSetting,0,1,31},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SYSTEM3 SET 1   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 2   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 3   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 4   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 5   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 6   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 7   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 8   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 9   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 10  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 11  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 12  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 13  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 14  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 15  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 16  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 17  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 18  ",HandleNumSetting,0,0,72},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
@@ -85,6 +144,7 @@ void USB_AttractMode() {                              // Attract Mode
   Switch_Pressed = USB_SwitchHandler;
   Switch_Released = USB_ReleasedSwitches;
   EX_Init(game_settings[USB_PinMameGame]);            // set exceptions for selected game
+  USB_ReleasedSwitches(72);                           // tell Lisy to start PinMame
   for (byte i=0; i<5; i++) {
     USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
   if (game_settings[USB_Watchdog]) {                  // watchdog enabled?
@@ -199,7 +259,7 @@ void USB_Testmode(byte Dummy) {                       // enter system settings i
     USB_DisplayProtocol[i] = 6;}                      // use ASCII protocol for displays
   if (APC_settings[ConnType] == 2) {                  // USB mode selected?
     Serial.end();}
-  else if ((APC_settings[ConnType] == 1) && OnBoardCom) { // onbeard Pi selected and detected?
+  else if ((APC_settings[ConnType] == 1) && OnBoardCom) { // onboard Pi selected and detected?
     Serial3.end();}
   Settings_Enter();}
 
