@@ -310,6 +310,51 @@ byte EX_Pharaoh(byte Type, byte Command){             // thanks to Grangeomatic 
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
+byte EX_Barracora(byte Type, byte Command){
+  static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
+    else if (Command == 44) {                         // sound command 0x2c - stop sound
+      AfterSound = 0;
+      SoundSeries[0] = 0;                             // Reset BG sound
+      SoundSeries[1] = 0;                             // reset the multiball start sound
+      StopPlayingSound();}
+    else if (Command == 45){                          // sound command 0x2d - sound series
+      if (SoundSeries[0] < 31) {                      // this sound has 31 tunes
+        SoundSeries[0]++;}                            // every call of this sound proceeds with next tune
+      char FileName[13] = "0_2d_000.snd";             // generate base filename
+      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current tune
+      FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
+      PlaySound(51, (char*) FileName);}               // play the sound
+    else if (Command == 46) {                         // sound command 0x2e - background sound - sound series
+      SoundSeries[0] = 0;
+      if (SoundSeries[1] < 29) {                      // this sound has 29 tunes
+        SoundSeries[1]++;}
+      char FileName[13] = "0_2e_000.snd";
+      FileName[7] = 48 + (SoundSeries[1] % 10);
+      FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
+      for (byte i=0; i<12; i++) {                     // prepare the filename
+        USB_RepeatSound[i] = FileName[i];}
+      QueueNextSound(USB_RepeatSound);                // sound is being auto repeated
+      PlaySound(51, (char*) FileName);}
+    else {                                            // standard sound
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}
+    return(0);                                        // return number not relevant for sounds
+  case SwitchActCommand:                              // activated switches
+    if (Command == 16) {                              // ball successfully ejected
+      EX_BallRelease(0);}                             // stop ball release timer
+    return(0);                                        // all switches are reported to PinMame
+  case SolenoidActCommand:                            // activated solenoids
+    if (Command == EX_EjectSolenoid){                 // ball eject coil
+      if (QueryLamp(2)) {                             // ball in play lamp lit?
+        EX_BallRelease(1);}}                          // start ball release timer
+    return(0);                                        // solenoid will be activated
+  default:
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
+
 byte EX_BlackKnight(byte Type, byte Command){
   static byte SoundSeries[3];                         // buffer to handle pre system11 sound series
   static byte LastCh1Sound;                           // preSys11: stores the number of the last sound that has been played on Ch1
@@ -737,6 +782,10 @@ void EX_Init(byte GameNumber) {
     break;
   case 21:                                            // Pharaoh
     PinMameException = EX_Pharaoh;                    // use exception rules for Pharaoh
+    break;
+  case 25:                                            // Barracora
+    EX_EjectSolenoid = 12;                            // specify eject coil for improved ball release
+    PinMameException = EX_Barracora;                  // use exception rules for Barracora
     break;
   case 34:                                            // Black Knight
     EX_EjectSolenoid = 6;                             // specify eject coil for improved ball release

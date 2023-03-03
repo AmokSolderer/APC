@@ -15,7 +15,7 @@ The LED_exp board which is connected here is also not needed.
 
 ## Features
 
-* Timed Magna Saves -> When activated the Magna Saves behave like in games like Jungle Lord, for the magnets are active as long as the corresponding button is being held and you still have Magna Save Time left. Clearing a drop target bank adds one second to the Magna Save Time. The Black Knight is lacking the playfield lamps to indicate the remaining Magna Save Time, so this is done by letting the Magna Save lamps blink. The slower the blinking frequency the more Magna Save Time is left until the lamps stay on permanently when the Magna Save Time has reached 5 seconds.
+* Timed Magna Saves -> When activated, the Magna Saves behave like in games like Jungle Lord, for the magnets are active as long as the corresponding button is being held and you still have Magna Save Time left. Clearing a drop target bank adds one second to the Magna Save Time. The Black Knight is lacking the playfield lamps to indicate the remaining Magna Save Time, so this is done by letting the Magna Save lamps blink. The slower the blinking frequency the more Magna Save Time is left until the lamps stay on permanently when the Magna Save Time has reached 5 seconds.
 * Multi Ball Jackpot -> When activated a music score is played after Multiball has started. After all balls are released a music score starts and the lamp of the lower eject hole starts blinking. A shot to this hole enables the upper lock for Jackpot. After the Jackpot has been scored, the lower hole starts blinking and the Jackpot can be enabled again.
 * Improved ball release -> In System7 games it sometimes happens that a ball ejected into the plunger lane bounces back from the side rail and into the trunk again. If it gets back into the trunk completely the SW will recognize this and eject the ball again. But sometimes the ball doesn't really get back into the trunk. Instead it gets stuck above the shooter lane feeder and there isn't much to do about it except of opening the coin door and operating the feeder manually to push the ball into the shooter lane. The APC Black Knight SW offers a settings to adjust the strength of the ball feeder. When properly adjusted this avoids that the ball is bouncing back.
 * Ball search -> The SW features a ball search mode which is started when no playfield switch has been triggered for 30 seconds. The SW will recheck the locks and the ball through and will activate certain solenoids if a ball is missing.
@@ -26,7 +26,7 @@ The LED_exp board which is connected here is also not needed.
 You need to have the audio files for this game. [Contact me](https://github.com/AmokSolderer/APC/tree/master#feedback) to get the corresponding sound file package.  
 
 If you want to use the Multiball Jackpot feature you need to pick a music track to be played during Multi Ball. Take a track of your choice, convert it to the APC sound format and rename it to BK_M01.snd.  
-The same needs to be done for the High Score table feature. In this case the name of the music track has to be BK_M02.snd.
+The same needs to be done for the High Score table feature. In this case the name of the music track has to be BK_M02.snd. As already mentioned, the High Score table is only available when alphanumeric displays are used.
 
 ## BK Game Settings
 
@@ -52,5 +52,3 @@ Check the [settings page](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Se
 ## Things to do
 
 * The Jackpot still needs some sound effects.
-* The attract mode and display effects of this game are still taylored to the '4 Alpha+Credit' display, but as long as no one is using it with a standard display I see no need to change this, wouldn't be a big deal though. However, the basics like score display and so on are already working.
-
