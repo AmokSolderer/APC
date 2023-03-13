@@ -326,6 +326,9 @@ byte EX_Barracora(byte Type, byte Command){
       char FileName[13] = "0_2d_000.snd";             // generate base filename
       FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current tune
       FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
+      for (byte i=0; i<12; i++) {                     // prepare the filename
+        USB_RepeatSound[i] = FileName[i];}
+      QueueNextSound(USB_RepeatSound);                // sound is being auto repeated
       PlaySound(51, (char*) FileName);}               // play the sound
     else if (Command == 46) {                         // sound command 0x2e - background sound - sound series
       SoundSeries[0] = 0;
