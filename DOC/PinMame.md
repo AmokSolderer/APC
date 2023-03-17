@@ -19,6 +19,7 @@ At the moment the list of available sound packages is still quite short, but we 
 |System|Game| Sound File URL|Comments|
 |--|--|--|--|
 |6|Firepower| Ask Matiou in the Pinside forum | PinMameExceptions also done by Matiou |
+|7|Barracora| URL available on request| |
 |7|Black Knight| URL available on request| |
 |7|Jungle Lord| URL available on request| Works great. Sound samples are also good. |
 |7|Pharaoh| Ask Grangeomatic in the Pinside forum| PinMameExceptions also done by Grangeomatic |

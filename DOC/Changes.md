@@ -1,17 +1,23 @@
 # APC News and Changelog
 
-## TBD
+## March 2023
 
 ### New SW Version V0.31
 
 * The ActivateSolenoid and ReleaseSolenoid commands can now handle recycle times for the 22 A-bank solenoids. Hence, you can prevent your slingshots from machine gunning without having to bend the switches.  
 Check the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) to learn how to use it.
 
+* The Pinbot and Black Knight game SW has been improved
+
 ### New HW Version V0.31
 
 * The packages of the LEDs have been changed to SMD.
 
-* An SMD adapter for SD cards has been added (P14). The old connector for the self made adapter (P8) is still there, so you can decide which one you like more.
+* An SMD adapter for SD cards has been added (P14).
+
+![SD slot](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/SDonBoard.JPG)
+
+The old connector for the self made adapter (P8) is still there, so you can decide which one you like more.
 
 ## August 2022
 

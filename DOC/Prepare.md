@@ -8,15 +8,17 @@ From HW version 3.1 onwards the APC has an on-board SD-Card slot which is locate
 
 ![SD slot](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/SDonBoard.JPG)
 
-If you want to let the APC generate the sound then you should format your SD Card befort using it, preferably with the tool provided from the SD Association (sdcard.org). This can improve the file access time of the card which is crucial for the sound system to work properly.
+If you want to let the APC generate the sound then you should reformat your SD Card befort using it, preferably with the tool provided from the SD Association (sdcard.org). This can improve the file access time of the card which is crucial for the sound system to work properly.
 
 ### Self made SD adapter
 
-Depending on your pinbal machine the on-board SD-Card slot might be cumbersome access. You might therefore want to built a simple adapter which can be plugged into connector P8 and can be very easily accessed.
+Depending on your pinbal machine the on-board SD-Card slot might be cumbersome to access. You might therefore want to built a simple adapter which can be plugged into connector P8 and can be accessed comfortably.
 
 ![SD adapter](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/SDadapter.JPG)
 
-This adapter can be build very easily by just using a micro SD adapter and soldering a pin row beneath it. It must then be plugged into the SD card connector P8 of the APC. The orientation must be to make the adapter point away from the Arduino. Look at the photos of the APC prototypes inside of my machines if you're unsure about the orientation.
+This adapter can be build very easily by just using a micro SD adapter and soldering a pin row beneath it. It must then be plugged into the SD card connector P8 of the APC. The orientation must be to make the adapter point away from the Arduino. Look at the photo below if you're unsure about the orientation.
+
+Of course you cannot use the SD-Card slot and the self made adapter simultaneously, as the APC can only use one SD-Card at a time.
 
 # Machine specific preparation
 
@@ -41,6 +43,14 @@ You can use a simple 5 wire cable to use System7 audio boards with the APC 3.0 (
 A cable like this is shown below. 
 
 ![Sys7SoundCable](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/Sys7SoundCable.jpg)
+
+|APC pin (P11)| 1P8 pin |
+|--|--|
+|3|12|
+|4|11|
+|5|10|
+|6|9|
+|7|8|
 
 To make the APC use this interface, you have to set the 'PinMame Sound' setting to 'Board'. The setting can be found in the 'Game Settings' menu in 'Remote Control' mode.
 

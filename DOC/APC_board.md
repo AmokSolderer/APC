@@ -12,7 +12,7 @@ However, the APC is only suited for you if you have some basic knowledge of elec
 ## Order a board
 
 I recommend to use [JLCPCB](https://jlcpcb.com) as your board manufacturer, because the assembly files are tailored to their specifications. You need to order at least five boards, so you might want to ask in the forum first whether someone from your country has a board for sale.  
-If you want to place an order, the manufacturer will need the APC_Gerber.zip file to build the boards. You also have to select 'SMT Assembly' and provide the APC_BOM.csv and APC_cpl_top.csv files to make them populate the parts. The required files are located [here](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SSOP).
+If you want to place an order, the manufacturer will need the APC_Gerber.zip file to build the boards. You also have to select 'PCB Assembly' and choose the top side for assembly. In the next step you have to provide the APC_BOM.csv and APC_cpl_top.csv files to make them populate the parts. All required files are located [here](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SSOP).
 
 However, it has become increasingly difficult to get all the required parts. In this case JLCPCB would state an 'Inventory shortage' in the parts list. You can either try to select another part with the same package or you could pre-order the part. Go to the 'Parts Manager' to do so. If the pre-ordering was successful you can use these parts for your boards.
 
