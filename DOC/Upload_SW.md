@@ -20,7 +20,7 @@ Enter the APC folder and open the Arduino.ino sketch in the Arduino IDE. The oth
 I recommend to initially program the Arduino before installing the APC into your pinball machine. The APC's power consumption is quite low so the USB connection to yor PC is enough to supply it.  
 Connect the 'Programming Port' of the DUE to your PC and press 'Upload' in your Arduino IDE. The SW should be compiled and uploaded automatically.
 
-You're now ready for the [basic preparation](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Prepare.md) that might be necessary for your machine to work with the APC.
+You're now ready for the [basic preparation](https://github.com/AmokSolderer/APC/blob/master/DOC/Prepare.md) that might be necessary for your machine to work with the APC.
 
 ## Updating the SW
 

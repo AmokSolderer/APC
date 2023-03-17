@@ -5,7 +5,7 @@ First you should know what you're dealing with, so take a look at the [APC schem
 In the schematics the names of the connectors are given for System7 and System11, but the System7 names are also valid for System3 - 6 and the System11 names match to System9. The following picture should help you to determine where the various connectors belong. The direction of the Molex connectors is printed on the boards and also visible in the picture below: the friction lock belongs to the side where the additional thin line is drawn.  
 The solenoid GND connector of Sys11 games (1J13) has only 4 pins, in the picture it is marked as a black rectangle. The X symbols indicate which pins have to be removed.
 
-![APC connectors](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/APC_Connectors.png)
+![APC connectors](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Connectors.png)
 
 However, the APC is only suited for you if you have some basic knowledge of electronics, because you can easily damage your precious pinball machine when you don't do things right.
 
@@ -20,7 +20,7 @@ Note that JLCPCB will populate the Molex connectors, but they wont remove the ke
 
 ## The Components
 
-Most of the components can be populated by the board manufacturer. They can do all SMD and most of the other stuff as well. Hence, there're only a few components left for you to assemble. You can find a list of these components with their respective order number from [Mouser](http://www.mouser.com) and [Reichelt](http://www.reichelt.de) in the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Hardware/Assembly/APC_BOMselfSolder.pdf)
+Most of the components can be populated by the board manufacturer. They can do all SMD and most of the other stuff as well. Hence, there're only a few components left for you to assemble. You can find a list of these components with their respective order number from [Mouser](http://www.mouser.com) and [Reichelt](http://www.reichelt.de) in the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/Assembly/APC_BOMselfSolder.pdf)
 
 The german electronics retailer Reichelt doesn't sell all required components, but some (especially connectors) are much cheaper compared to Mouser, so for people in Europe it might still make sense to order them separately.
 
@@ -33,10 +33,10 @@ That means you should try to get these ICs before you order any boards.
 
 ## The assembly
 
-As the boards have the component names printed at the corresponding locations, you can just use the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Hardware/Assembly/APC_BOMselfSolder.pdf) to identify the  right component to put there.  
+As the boards have the component names printed at the corresponding locations, you can just use the [Bill of Materials](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/Assembly/APC_BOMselfSolder.pdf) to identify the  right component to put there.  
 The resistor network RR8 has to be populated in the correct orientation. There's a marking for pin 1 printed on the APC boards. On the resistor networks pin 1 is usually marked with a dot.
 
 ## Getting your board started
 
 Plug the Arduino DUE on your APC board, but don't populate the Pi yet. I recommend to do the basic tests before assembling the Pi.
-The next step is to [Upload the SW](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Upload_SW.md). I'd do this before you put the APC board into your pinball machine, because if this works you know, that your 5V supply has no short and is working properly.
+The next step is to [Upload the SW](https://github.com/AmokSolderer/APC/blob/master/DOC/Upload_SW.md). I'd do this before you put the APC board into your pinball machine, because if this works you know, that your 5V supply has no short and is working properly.

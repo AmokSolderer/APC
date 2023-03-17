@@ -1,6 +1,6 @@
 # PinMameExceptions
 
-PinMameExceptions are a simple but powerful tool to change the behaviour of your game even though it is controlled by PinMame. Some exceptions are inevitable to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame howto](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PinMame_howto.md) page.
+PinMameExceptions are a simple but powerful tool to change the behaviour of your game even though it is controlled by PinMame. Some exceptions are inevitable to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) page.
 
 In this section we'll focus on exceptions that change a game. This can be by just fixing flaws in the original game SW or adding new features.
 
@@ -66,7 +66,7 @@ This routine shall be called with a State argument which determines what it has 
 If State is 0 then the timer is not needed any more and must be deactivated. In our case this would happen if the ball has triggered the shooter lane switch.
 State = 1 means that a timer shall be started. The number of this timer is being stored in the Timer variable and the Timer is configured to call our handler again after 3s. When it does so it'll pass a 2 as an argument which will indicate that our handling routine has been called by the timer.
 Hence, our handler knows that the timer has run out when it's called with State = 2 which means that the ball is probably stuck. So it activates the shooter lane feeder again and restarts the timer in case the ball gets stuck again.
-For more information about timers read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/GameCodeTutorial.md#2-basic-game-functions) tutorial.
+For more information about timers read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md#2-basic-game-functions) tutorial.
 
 With this timer handler in place we just have to tell our exception handler to use it. First of all it needs to know which coil is for the shooter lane feeder. In case of the Jungle Lord this is solenoid number 2 which we already defined before in EX_Init by setting EX_EjectSolenoid = 2.
 The rest is easy. We just have to create an exception for EX_EjectSolenoid being activated
@@ -87,7 +87,7 @@ Last but not least we have to switch off the timer when the shooter lane switch 
 These were just a few simple examples of what you could do with exception handling, but with this you could even do significant changes of the rules without having to program the whole game by yourself.
 
 Refer to PinMameExceptions.ino to see all the above mentioned changes in place.
-For more information about using the APC API read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/GameCodeTutorial.md#2-basic-game-functions) tutorial.
+For more information about using the APC API read the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) and the [Basic Game Functions](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md#2-basic-game-functions) tutorial.
 Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see an example. The corresponding code can be found in PinMameExceptions.ino in the AmokPrivate branch on Github.
 
 ## How to add a ball saver

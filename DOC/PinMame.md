@@ -1,6 +1,6 @@
 # PinMame Sound
 
-For some of the game generations you could install the original audio board. In this case you cannot do any sound related changes of course. For System 3 - 6, the sound board is controlled by some reserved solenoid drivers, so it will work out of the box. System 7 needs an [adapter](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Prepare.md#system-7-audio-cable) for connecting the audio board to the HW extension interface of the APC. System 9, 11, 11a and 11b are having some sound related circuitry on the CPU, so their audio boards cannot be used any more.
+For some of the game generations you could install the original audio board. In this case you cannot do any sound related changes of course. For System 3 - 6, the sound board is controlled by some reserved solenoid drivers, so it will work out of the box. System 7 needs an [adapter](https://github.com/AmokSolderer/APC/blob/master/DOC/Prepare.md#system-7-audio-cable) for connecting the audio board to the HW extension interface of the APC. System 9, 11, 11a and 11b are having some sound related circuitry on the CPU, so their audio boards cannot be used any more.
 
 Our current setup is not using the Raspberry Pi to generate the PinMame sounds. Instead all sound and music files have to be created once and stored on the SD card of the APC. Of course this requires some work, but we think the benefits are worth it.
 

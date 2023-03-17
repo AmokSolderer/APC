@@ -21,7 +21,7 @@ Put your board into your pinball machine, but only plug the connectors for Logic
 | Display Segments 1 | 1J5 | 1J3 |
 | Display Segments 2 | - | 1J22 |
 
-The [additional display cables](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Prepare.md#system-7) of System 3 - 7 games must also be installed at this point.
+The [additional display cables](https://github.com/AmokSolderer/APC/blob/master/DOC/Prepare.md#system-7) of System 3 - 7 games must also be installed at this point.
 
 Now power up your pinball machine. After some status messages your display should show 'USB CONTROL'. If you just see two brightly illuminated digits then turn off your machine immediately, because in this case your display strobing doesn't work.  
 If you have a pre System11 machine with numerical displays or a System11 2x16 digit one you have to adjust the display setting to make it work correctly. A description how to do it is in the [settings section](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md).
@@ -81,4 +81,4 @@ The following table shows the avaiable tests and their number which is shown for
 
 ## Next steps
 
-If the tests are completed and your board is working properly you're ready to [run a game](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/RunGame.md)
+If the tests are completed and your board is working properly you're ready to [run a game](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md)

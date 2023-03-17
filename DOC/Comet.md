@@ -6,11 +6,11 @@ This page is about the PinMameExtensions I did for my Comet. You need to install
 As you can see, my Comet is using my [4 Alpha+Credit](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) displays. All extensions will also work with the original numerical displays except the custom text feature of course.  
 The blue shine on the playfield is from the LED effects I added to my GI.
 
-![APC Comet](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/Comet.jpg)
+![APC Comet](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/Comet.jpg)
 
 This is a view inside the backbox.
 
-![APC open Comet](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/CometLED.jpg)
+![APC open Comet](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/CometLED.jpg)
 
 You can see the [LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) which is needed for the LED effects.
 
@@ -59,4 +59,4 @@ Watch [this video](https://youtu.be/JbgMa_pn0Lo) to see how the ball saver works
 
 These are the GI LEDs I've used. They match exactly into the holes for the normal lightbulbs.
 
-![GI_LEDs](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/GI_LEDs.jpg)
+![GI_LEDs](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/GI_LEDs.jpg)
