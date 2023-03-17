@@ -1,16 +1,22 @@
 # Basic Preparation
 
-## SD card adapter
+## SD cards
 
-For using SD cards with the APC an adapter is needed. It can be build very easily by just using a micro SD adapter and soldering a pin row beneath it.
+The APC needs an SD card for it's settings as well as for the audio files.
 
-![SD adapter](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/SDadapter.JPG)
+From HW version 3.1 onwards the APC has an on-board SD-Card slot which is located below the Arduino.
 
-This adapter must then be plugged into the SD card connector P8 of the APC. The orientation must be to make the adapter point away from the Arduino. Look at the photos of the APC inside of my machines if you're unsure about the orientation.
+![SD slot](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/SDonBoard.JPG)
 
 If you want to let the APC generate the sound then you should format your SD Card befort using it, preferably with the tool provided from the SD Association (sdcard.org). This can improve the file access time of the card which is crucial for the sound system to work properly.
 
-Even if you don't want the APC to generate the sound, you should still install an SD card, as it is also used to store the settings. Reformatting is not necessary in this case.
+### Self made SD adapter
+
+Depending on your pinbal machine the on-board SD-Card slot might be cumbersome access. You might therefore want to built a simple adapter which can be plugged into connector P8 and can be very easily accessed.
+
+![SD adapter](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/PICS/SDadapter.JPG)
+
+This adapter can be build very easily by just using a micro SD adapter and soldering a pin row beneath it. It must then be plugged into the SD card connector P8 of the APC. The orientation must be to make the adapter point away from the Arduino. Look at the photos of the APC prototypes inside of my machines if you're unsure about the orientation.
 
 # Machine specific preparation
 
