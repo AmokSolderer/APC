@@ -13,15 +13,15 @@ byte BK_TimedRightMagnaTimer = 0;                     // number of the timer for
 byte BK_TimedLeftMagnaTimer = 0;                      // number of the timer for the left timed magna save
 byte BK_BonusToAdd = 0;                               // bonus points to be added by AddBonus()
 byte BK_BonusCountTime = 0;                           // counter to reduce the waiting time between the bonus counts
-const byte BK_BonusLamp = 48;                            // first lamp of the bonus ladder
-bool BK_LowerExBall[5];                                  // extra ball in turnaround pending?
-bool BK_UpperExBall[5];                                  // extra ball in left ramp pending?
-bool BK_PlayersExBalls[5];                               // did the player already get an extra ball?
-byte BK_DropTimer[4];                                    // timer for all drop target banks
-byte BK_DropHits[16];                                    // counts how often the target banks have been cleared
-bool BK_DropWait[5];                                     // indicates that a waiting time for this drop target bank is active before it it being processed
+const byte BK_BonusLamp = 48;                         // first lamp of the bonus ladder
+bool BK_LowerExBall[5];                               // extra ball in turnaround pending?
+bool BK_UpperExBall[5];                               // extra ball in left ramp pending?
+bool BK_PlayersExBalls[5];                            // did the player already get an extra ball?
+byte BK_DropTimer[4];                                 // timer for all drop target banks
+byte BK_DropHits[16];                                 // counts how often the target banks have been cleared
+bool BK_DropWait[5];                                  // indicates that a waiting time for this drop target bank is active before it it being processed
 const byte BK_BallSearchCoils[12] = {1,8,10,9,2,3,4,5,7,19,15,0}; // coils to fire when the ball watchdog timer runs out
-const unsigned int BK_SolTimes[24] = {30,50,50,50,50,10,50,50,1999,1999,0,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
+const unsigned int BK_SolTimes[24] = {30,50,50,50,50,40,50,50,1999,1999,0,5,5,5,999,999,50,50,50,5,5,5,0,0}; // Activation times for solenoids
 const char BK_TestSounds[16][15] = {{"0_2f.snd"},{"0_30.snd"},{"0_31.snd"},{"0_32.snd"},{"0_33.snd"},{"0_15.snd"},{"0_36.snd"},{"0_37.snd"},
     {"0_38.snd"},{"0_39.snd"},{"0_3a.snd"},{"0_3b.snd"},{"0_3c.snd"},{"BK_E14.snd"},{"0_3e.snd"},0};
 
@@ -189,23 +189,24 @@ const struct LampPat BK_AttractPat4[52] = {{30,0,0b00000000,0b00000000,0b0000000
                                         {30,0,0b00000000,0b00000000,0b00000000,0b00000000,0b11000000,0b00000000,0b00000000},
                                         {30,0,0b00000000,0b00000000,0b00000000,0b00000000,0b01000000,0b00000000,0b00000000},
                                         {0,0,0,0,0,0,0,0,0}};
-
-const struct LampPat BK_AttractPat5[17] = {{50,0,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000100,0b11000000},
-                                        {50,0,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00001000,0b11000000},
-                                        {50,0,0b00001001,0b00000000,0b10000000,0b00000000,0b00000000,0b00010000,0b00000000},
-                                        {50,0,0b00001001,0b00000000,0b10000000,0b00000000,0b00000000,0b00100000,0b00000000},
-                                        {50,0,0b00100000,0b10000000,0b00010000,0b10000000,0b00000000,0b01000000,0b00000000},
-                                        {50,0,0b00100000,0b10000000,0b00010000,0b10000000,0b00000000,0b10000000,0b00000000},
-                                        {50,0,0b00000000,0b00011000,0b00000000,0b01110000,0b00000000,0b00000000,0b00000001},
-                                        {50,0,0b00000000,0b00011000,0b00000000,0b01110000,0b00000000,0b00000000,0b00000010},
-                                        {50,0,0b00000000,0b00000100,0b00000000,0b00000110,0b00000010,0b00000000,0b00000100},
-                                        {50,0,0b00000000,0b00000100,0b00000000,0b00000110,0b00000010,0b00000000,0b00001000},
-                                        {50,0,0b00010000,0b01100000,0b01100000,0b00000001,0b00000001,0b00000000,0b00000000},
-                                        {50,0,0b00010000,0b01100000,0b01000000,0b00001000,0b00000001,0b00000000,0b00000000},
-                                        {50,0,0b00000000,0b00000001,0b00000111,0b00000000,0b01000000,0b00000000,0b00000000},
-                                        {50,0,0b00000000,0b00000001,0b00000111,0b00000000,0b10000000,0b00000000,0b00000000},
-                                        {50,0,0b10000110,0b00000000,0b00001000,0b00000000,0b00000000,0b00000001,0b00110000},
-                                        {50,0,0b10000110,0b00000000,0b00001000,0b00000000,0b00000000,0b00000010,0b00110000},
+                                  //  Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
+                                  //  Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
+const struct LampPat BK_AttractPat5[17] = {{50,0,0b11000110,0b00000000,0b00001000,0b00000000,0b00000000,0b00000111,0b11110000},
+                                        {50,0,0b01000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00001100,0b11000000},
+                                        {50,0,0b01001001,0b00000000,0b10000000,0b00000000,0b00000000,0b00011000,0b11000000},
+                                        {50,0,0b00001001,0b00000000,0b10000000,0b00000000,0b00000000,0b00110000,0b00000000},
+                                        {50,0,0b00101001,0b10000000,0b10010000,0b10000000,0b00000000,0b01100000,0b00000000},
+                                        {50,0,0b00100000,0b10000000,0b00010000,0b10000000,0b00000000,0b11000000,0b00000000},
+                                        {50,0,0b00100000,0b10011000,0b00010000,0b11110000,0b00000000,0b10000000,0b00000001},
+                                        {50,0,0b00000000,0b00011000,0b00000000,0b01110000,0b00000000,0b00000000,0b00000011},
+                                        {50,0,0b00000000,0b00011100,0b00000000,0b01110110,0b00000010,0b00000000,0b00000110},
+                                        {50,0,0b00000000,0b00000100,0b00000000,0b00000110,0b00000010,0b00000000,0b00001100},
+                                        {50,0,0b00010000,0b01100110,0b00100000,0b00000111,0b00000011,0b00000000,0b00001000},
+                                        {50,0,0b00010000,0b01100010,0b01100000,0b00001001,0b00000001,0b00000000,0b00000000},
+                                        {50,0,0b00010000,0b01100011,0b01000111,0b00001000,0b01000001,0b00000000,0b00000000},
+                                        {50,0,0b00000000,0b00000001,0b00000111,0b00000000,0b11000000,0b00000000,0b00000000},
+                                        {50,0,0b10000110,0b00000001,0b00001111,0b00000000,0b10000000,0b00000001,0b00110000},
+                                        {50,0,0b10000110,0b00000000,0b00001000,0b00000000,0b00000000,0b00000011,0b00110000},
                                         {0,0,0,0,0,0,0,0,0}};
 
 const struct LampFlow BK_AttractFlow[6] = {{3,BK_AttractPat1},{10,BK_AttractPat2},{3,BK_AttractPat4},{10,BK_AttractPat3},{10,BK_AttractPat5},{0,0}};
@@ -217,7 +218,6 @@ const byte BK_FirstMultLamp = 61;
 const byte BK_DropTargets[4] = {25, 29, 33, 37};
 const byte BK_DropSolenoid = 2;
 const byte BK_DropLamp = 17;
-const byte BK_ACselectRelay = 0;                      // no A/C select relay
 
 struct GameDef BK_GameDefinition = {
   BK_setList,                                         // GameSettingsList
@@ -231,7 +231,9 @@ void BK_init() {
   digitalWrite(VolumePin,HIGH);                       // mute sound
   if (APC_settings[DebugMode]) {                      // activate serial interface in debug mode
     Serial.begin(115200);}
-  ACselectRelay = BK_ACselectRelay;                   // assign the number of the A/C select relay
+  SolRecycleTime[17-1] = 200;                         // set recycle time for both slingshots
+  SolRecycleTime[18-1] = 200;
+  ACselectRelay = 0;                                  // no A/C select relay
   GameDefinition = BK_GameDefinition;}                // read the game specific settings and highscores
 
 void BK_AttractMode() {                               // Attract Mode
@@ -244,7 +246,10 @@ void BK_AttractMode() {                               // Attract Mode
   LampReturn = BK_AttractLampCycle;
   AddBlinkLamp(4, 150);                               // blink Game Over lamp
   ActivateTimer(1000, 0, BK_AttractLampCycle);
-  BK_AttractDisplayCycle(1);}
+  if (APC_settings[DisplayType]) {                    // check display setting
+    BK_AttractNumCycle(1);}                           // use Sys7 standard animation
+  else {                                              // it's the 4Alpha + Credit display
+    BK_AttractDisplayCycle(1);}}                      // use alphanumeric animation
 
 void BK_CheckForLockedBalls(byte Event) {             // check if balls are locked and release them
   UNUSED(Event);
@@ -289,6 +294,46 @@ void BK_AddScrollUpper(byte Step) {                   // shifts Step times and a
     ActivateTimer(50, Step, BK_AddScrollUpper);}
   else {
     Position = 0;}}
+
+void BK_AttractNumCycle(byte Step) {
+  static byte Timer0 = 0;
+  switch (Step) {
+  case 0:                                             // stop command
+    RemoveBlinkLamp(4);                               // stop blinking of game over lamp
+    if (Timer0) {
+      KillTimer(Timer0);
+      Timer0 = 0;}
+    return;
+  case 1:                                             // start command
+    AddBlinkLamp(4, 150);                             // blink game over lamp
+    Step = 2;
+    break;
+  case 2:                                             // show high score
+    AddBlinkLamp(6, 150);                             // blink highest Score lamp
+    DisplayScore(1, HallOfFame.Scores[0]);
+    DisplayScore(2, HallOfFame.Scores[0]);
+    DisplayScore(3, HallOfFame.Scores[0]);
+    DisplayScore(4, HallOfFame.Scores[0]);
+    Step = 3;
+    break;
+  case 3:                                             // show scores of previous game
+    RemoveBlinkLamp(6);                               // stop blinking of high score lamp
+    for (byte i=0; i<16; i++) {                       // clear displays
+      *(DisplayUpper+2*i) = 255;
+      *(DisplayUpper+2*i+1) = 0;
+      *(DisplayLower+2*i) = 255;
+      *(DisplayLower+2*i+1) = 0;}
+    DisplayScore(1, Points[1]);
+    if (Points[2]) {
+      DisplayScore(2, Points[2]);
+      if (Points[3]) {
+        DisplayScore(3, Points[3]);
+        if (Points[4]) {
+          DisplayScore(4, Points[4]);}}}
+    Step = 1;
+    break;}
+  BK_CheckForLockedBalls(0);                          // check for a ball in the outhole
+  Timer0 = ActivateTimer(3000, Step, BK_AttractNumCycle);}  // come back for the next 'page'
 
 void BK_AttractDisplayCycle(byte Step) {
   static byte Timer0 = 0;
@@ -403,7 +448,10 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
     RemoveBlinkLamp(6);                               // stop blinking of Highest Score lamp
     StrobeLights(0);
     ShowLampPatterns(0);                              // stop lamp animations
-    BK_AttractDisplayCycle(0);                        // stop display animations
+    if (APC_settings[0]) {                          // check display setting
+      BK_AttractNumCycle(0);}                       // stop Sys7 standard animation
+    else {                                          // it's the 4Alpha + Credit display
+      BK_AttractDisplayCycle(0);}                   // stop animation
     BK_TestMode_Enter();
     break;
   case 3:                                             // start game
@@ -416,7 +464,10 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
       RemoveBlinkLamp(4);
       RemoveBlinkLamp(6);
       Switch_Pressed = DummyProcess;                  // Switches do nothing
-      BK_AttractDisplayCycle(0);                      // stop display animations
+      if (APC_settings[0]) {                          // check display setting
+        BK_AttractNumCycle(0);}                       // stop Sys7 standard animation
+      else {                                          // it's the 4Alpha + Credit display
+        BK_AttractDisplayCycle(0);}                   // stop animation
       if (APC_settings[Volume]) {                     // system set to digital volume control?
         analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
       else {
@@ -426,8 +477,15 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
       LampPattern = LampColumns;
       TurnOnLamp(2);                                  // turn on Ball in Play lamp
       NoPlayers = 0;
-      WriteUpper("              ");
-      WriteLower("              ");
+      if (APC_settings[DisplayType]) {                // check display setting
+        for (byte i=0; i<16; i++) {                   // clear displays
+          *(DisplayUpper+2*i) = 255;
+          *(DisplayUpper+2*i+1) = 0;
+          *(DisplayLower+2*i) = 255;
+          *(DisplayLower+2*i+1) = 0;}}
+      else {                                          // alphanumeric displays
+        WriteUpper("              ");
+        WriteLower("              ");}
       Ball = 1;
       BK_ResetAllDTargets(0);
       BK_AddPlayer();
@@ -469,8 +527,10 @@ void BK_NewBall(byte Balls) {                         // release ball (Balls = e
   BK_ShowBonus();
   if (!((Player == 1) && (Ball == 1) && !InLock)) {   // skip for the first ball of the game to wait for speech sequence
     BK_StartBgMusic(0);}
-  *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
-  //*(DisplayUpper+17) = LeftCredit[33 + 2 * Ball];
+  if (APC_settings[DisplayType]) {
+    *(DisplayLower+16) = ConvertNumUpper(Ball,(byte) *(DisplayLower+16));}
+  else {
+    *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];}  // show current ball in left credit
   BK_LockChaseLight(1);
   BlinkScore(1);                                      // start score blinking
   TurnOnLamp(36);                                     // bumper light on
@@ -610,12 +670,14 @@ void BK_CheckReleasedBall(byte Balls) {               // ball release watchdog
     ActivateSolenoid(game_settings[BK_BallEjectStrength], 6);}
   byte c = BK_CountBallsInTrunk();
   if (c == Balls) {                                   // expected number of balls in trunk
-    WriteUpper("  BALL MISSING");
+    if (APC_settings[DebugMode]) {
+      WriteUpper("  BALL MISSING");}
     if (QuerySwitch(20)) {                            // outhole switch still active?
       ActivateSolenoid(0, 1);}}                       // shove the ball into the trunk
   else {
     if (c == 5) {                                     // balls not settled
-      WriteLower(" TRUNK  ERROR ");
+      if (APC_settings[DebugMode]) {
+        WriteLower(" TRUNK  ERROR ");}
       Balls = 10;}
     else {
       if ((c > Balls) || !c) {                        // more balls in trunk than expected or none at all
@@ -1008,7 +1070,8 @@ void BK_BallEnd(byte Event) {
       for (i=0; i<3; i++) {                           // check how many balls are on the ball ramp
         if (QuerySwitch(41+i)) {
           InLock++;}}}
-    WriteLower(" BALL   ERROR ");
+    if (APC_settings[DebugMode]) {
+      WriteLower(" BALL   ERROR ");}
     if (QuerySwitch(20)) {                            // ball still in outhole?
       ActivateSolenoid(0, 1);                         // make the coil a bit stronger
       ActivateTimer(2000, Event, BK_BallEnd);}        // and come back in 2s
@@ -1035,6 +1098,8 @@ void BK_BallEnd(byte Event) {
       Multiballs = 1;
       if (Bonus < 49 || BonusMultiplier < 5) {
         BK_CycleSwordLights(0);}                      // stop sword lamp animation
+      BK_DisplayMultiball(0);                         // stop display animation
+      ShowAllPoints(0);
       RemoveBlinkLamp(28);                            // stop blinking of double scoring lamp
       BK_ShowBonus();                                 // restore bonus lamps
       BK_LockChaseLight(1);                           // restart Lock lights
@@ -1051,7 +1116,8 @@ void BK_BallEnd(byte Event) {
       break;
     case 1:                                           // end of ball
       if (BallsInTrunk + InLock != 3) {
-        WriteUpper(" COUNT  ERROR ");
+        if (APC_settings[DebugMode]) {
+          WriteUpper(" COUNT  ERROR ");}
         InLock = 0;
         for (i=0; i<3; i++) {                         // check how many balls are on the ball ramp
           if (QuerySwitch(41+i)) {
@@ -1138,9 +1204,11 @@ void BK_BallEnd2(byte Balls) {
       if (APC_settings[DisplayType]) {                // not a 4 Alpha + Credit display?
         if (Points[Player] > HallOfFame.Scores[0]) {  // only top score counts
           PlaySound(55, "0_24.snd");
-          HallOfFame.Scores[0] = Points[Player];}
-        else {
-          BK_BallEnd3(Balls);}}
+          EnterIni[0] = ' ';                          // use dummy initials
+          EnterIni[1] = ' ';
+          EnterIni[2] = ' ';
+          HandleHighScores(Points[Player]);}
+        BK_BallEnd3(Balls);}
       else {                                          // it's a 4 Alpha + Credit display
         if (APC_settings[Volume]) {
           analogWrite(VolumePin,255-APC_settings[Volume]-game_settings[BK_HighScoreVolume]);} // increase volume
@@ -1457,6 +1525,113 @@ void BK_ResetDropWait(byte Event) {                   // ensure waiting time to 
   else {
     BK_DropWait[Event] = false;}}                     // reset flag to ignore switch bouncing during drop target reset
 
+void BK_SetDigit(byte Pos,byte Content) {
+  if (Pos < 8) {                                      // player 1 display?
+    if (APC_settings[DisplayType] < 8) {              // alphanumeric upper display
+      *(DisplayUpper+Pos*2) = DispPattern1[32+Content*2];
+      *(DisplayUpper+Pos*2+1) = DispPattern1[33+Content*2];}
+    else {                                            // BCD upper display
+      *(DisplayLower+Pos*2) = ConvertNumUpper(Content, *(DisplayLower+Pos*2));}}
+  else if (Pos < 15) {                                // player 2 display?
+    if (APC_settings[DisplayType] < 8) {              // alphanumeric upper display
+      *(DisplayUpper+Pos*2+2) = DispPattern1[32+Content*2];
+      *(DisplayUpper+Pos*2+3) = DispPattern1[33+Content*2];}
+    else {                                            // BCD upper display
+      *(DisplayLower+Pos*2+2) = ConvertNumUpper(Content, *(DisplayLower+Pos*2+2));}}
+  else {                                              // lower row
+    Pos = Pos - 14;                                   // subtract upper row
+    if (Pos < 8) {                                    // player 3 display?
+      if (APC_settings[DisplayType] < 8) {            // pattern capable lower display
+        *(DisplayLower+Pos*2) = DispPattern2[32+Content*2];
+        *(DisplayLower+Pos*2+1) = DispPattern2[33+Content*2];}
+      else {                                          // BCD lower display
+        *(DisplayLower+Pos*2) = ConvertNumLower(Content, *(DisplayLower+Pos*2));}}
+    else {                                            // player 4 display
+      if (APC_settings[DisplayType] < 8) {            // pattern capable lower display
+        *(DisplayLower+Pos*2+2) = DispPattern2[32+Content*2];
+        *(DisplayLower+Pos*2+3) = DispPattern2[33+Content*2];}
+      else {                                          // BCD lower display
+        *(DisplayLower+Pos*2+2) = ConvertNumLower(Content, *(DisplayLower+Pos*2+2));}}}}
+
+void BK_DisplayMultiball(byte State) {
+  static byte Timer = 0;
+  const byte Position[21] = {2,17,8,5,21,11,7,19,12,1,18,14,6,16,9,4,15,10,3,20,13};
+  const byte EffectPat[14][3] = {{0b11000000,0b00110000,0b00001100},
+      {0b01100000,0b00011000,0b00000110},
+      {0b00110000,0b00001100,0b00000010},
+      {0b00011000,0b00000110,0b00000110},
+      {0b00001100,0b00000010,0b00001100},
+      {0b00000110,0b00000110,0b00011000},
+      {0b00000010,0b00001100,0b00110000},
+      {0b00000110,0b00011000,0b01100000},
+      {0b00001100,0b00110000,0b11000000},
+      {0b00011000,0b01100000,0b10000000},
+      {0b00110000,0b11000000,0b11000000},
+      {0b01100000,0b10000000,0b01100000},
+      {0b11000000,0b11000000,0b00110000},
+      {0b10000000,0b01100000,0b00011000}};
+  if (!State) {
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    if (APC_settings[DisplayType]) {                  // check display setting
+      for (byte i=0; i<16; i++) {                     // clear displays
+        *(DisplayUpper+2*i) = 255;
+        *(DisplayUpper+2*i+1) = 0;
+        *(DisplayLower+2*i) = 255;
+        *(DisplayLower+2*i+1) = 0;}}
+    else {                                            // alphanumeric displays
+      WriteUpper("              ");
+      WriteLower("              ");}
+    ShowPoints(Player);
+    return;}
+  if (State < 2) {
+    if (APC_settings[DisplayType]) {                  // check display setting
+      for (byte i=0; i<16; i++) {                     // clear displays
+        *(DisplayUpper+2*i) = 255;
+        *(DisplayUpper+2*i+1) = 0;
+        *(DisplayLower+2*i) = 255;
+        *(DisplayLower+2*i+1) = 0;}}
+    else {                                            // alphanumeric displays
+      WriteUpper("              ");
+      WriteLower("              ");}
+    ShowPoints(Player);}
+  if (State < 22) {                                   // first effect - add numbers
+    byte Pos = Position[State-1];
+    if (Player == 1 || (Player == 2 && Pos > 7) || (Player == 3 && Pos > 14)) { // if display is supposed to show the player's points
+      Pos = Pos + 7;}                                 // then shift everything up
+    BK_SetDigit(Pos, Multiballs);                     // write number of balls
+    Timer = ActivateTimer(51, State+1, BK_DisplayMultiball);} // come back for next step
+  else if (State < 43) {                              // second effect - remove numbers
+    byte Pos = Position[State-22];
+    if (Player == 1 || (Player == 2 && Pos > 7) || (Player == 3 && Pos > 14)) { // if display is supposed to show the player's points
+      Pos = Pos + 7;}                                 // then shift everything up
+    BK_SetDigit(Pos, 15);                             // write blank
+    Timer = ActivateTimer(51, State+1, BK_DisplayMultiball);} // come back for next step
+  else {                                              // permanent multiball effect
+    for (byte y=0;y<3;y++) {                          // for 3 displays
+      byte Buffer = EffectPat[State-43][y];           // get previous pattern
+      for (byte x=1;x<8;x++) {                        // for all digits
+        if (Buffer & 128) {                           // pattern bit set?
+          byte Pos = x+y*7;                           // calculate display position
+          if (Player == 1 || (Player == 2 && Pos > 7) || (Player == 3 && Pos > 14)) { // if display is supposed to show the player's points
+            Pos = Pos + 7;}                           // then shift everything up
+          BK_SetDigit(Pos, 15);}                      // write blank
+        Buffer = Buffer<<1;}}
+    State++;                                          // proceed to next pattern
+    if (State > 56) {                                 // last pattern reached?
+      State = 43;}                                    // start over
+    for (byte y=0;y<3;y++) {
+      byte Buffer = EffectPat[State-43][y];
+      for (byte x=1;x<8;x++) {
+        if (Buffer & 128) {
+          byte Pos = x+y*7;
+          if (Player == 1 || (Player == 2 && Pos > 7) || (Player == 3 && Pos > 14)) { // if display is supposed to show the player's points
+            Pos = Pos + 7;}                           // then shift everything up
+          BK_SetDigit(Pos, Multiballs);}
+        Buffer = Buffer<<1;}}
+    Timer = ActivateTimer(100, State, BK_DisplayMultiball);}} // come back for next step
+
 void BK_StartMultiball() {
   if (LockedBalls[Player] == 3) {                     // 2 or 3 ball multiball?
     Multiballs = 3;}
@@ -1470,8 +1645,8 @@ void BK_StartMultiball() {
   TurnOffLamp(42);
   LampPattern = NoLamps;
   for (byte i=0; i<4; i++) {                          // check for running drop target timers
-    if (BK_DropTimer[i]) {                               // found one?
-      KillTimer(BK_DropTimer[i]);                        // kill it
+    if (BK_DropTimer[i]) {                            // found one?
+      KillTimer(BK_DropTimer[i]);                     // kill it
       BK_DropTimer[i] = 0;
       RemoveBlinkLamp(BK_DropLamp+i);}}
   PlayFlashSequence((byte*) BK_ResetAllDropTargets);  // reset all drop targets
@@ -1485,7 +1660,8 @@ void BK_Multiball2(byte Step) {
     PlaySound(55, "0_38_001.snd");
     Counter = 0;
     Step++;
-    LampPattern = (BK_AttractPat1->Pattern)-1;}
+    BK_DisplayMultiball(1);                           // show display effects
+    LampPattern = (BK_AttractPat1->Pattern);}
   else {
     if (Step < 26) {                                  // 26 steps to fill the lamps to the top
       switch (Counter) {
@@ -1498,7 +1674,7 @@ void BK_Multiball2(byte Step) {
         Counter++;
         break;
       case 2:
-        LampPattern = ((BK_AttractPat1+Step)->Pattern)-1;  // turn on the lamps from the bottom to the top
+        LampPattern = ((BK_AttractPat1+Step)->Pattern);  // turn on the lamps from the bottom to the top
         Counter = 0;
         Step++;}}
     else {
@@ -1520,14 +1696,12 @@ void BK_Multiball2(byte Step) {
           Counter++;
           break;
         case 2:
-          LampPattern = ((BK_AttractPat1+51-Step)->Pattern)-1; // turn off the lamps from the top to the bottom
+          LampPattern = ((BK_AttractPat1+51-Step)->Pattern); // turn off the lamps from the top to the bottom
           Counter = 0;
           Step++;}}}}
   if (Step < 52) {
     ActivateTimer(30, Step, BK_Multiball2);}
   else {
-    WriteUpper2(" MULTI  BALL  ");                    // switch display to alternate buffer
-    DispRow1 = DisplayUpper2;
     if (BK_LastChance) {                              // last chance active?
       BK_LastChance = false;                          // deactivate it
       TurnOffLamp(11);
@@ -1538,7 +1712,6 @@ void BK_Multiball2(byte Step) {
     else {
       AddBlinkLamp(28, 500);}                         // let double points lamp blink
     LockedBalls[Player] = 0;
-    ActivateTimer(3000, 1, SwitchDisplay);            // switch display back to main buffer in 3 seconds
     BK_CycleSwordLights(1);                           // start sword lamp animation
     BK_DropWait[4] = false;                           // clear ignore flag
     if (game_settings[BK_MultiballJackpot]) {
@@ -1891,223 +2064,7 @@ void BK_TestMode_Enter() {
   else {
     WriteUpper("  TEST  MODE  ");                     // Show Test Mode
     WriteLower("              ");
-    LampPattern = NoLamps;                            // Turn off all lamps
-    ActivateTimer(1000, 0, BK_DisplayTest_Enter);}}   // Wait 1 second and proceed to Display Test
-
-void BK_DisplayTest_Enter(byte Event) {
-  UNUSED(Event);
-  Switch_Pressed = BK_DisplayTest_EnterSw;            // Switch functions
-  WriteUpper("DISPLAY TEST  ");}                      // Show 'Display Test'
-
-void BK_DisplayTest_EnterSw(byte Event) {             // Display Test Enter switch handler
-  switch (Event) {
-  case 72:                                            // Next test
-    WriteUpper(" SWITCHEDGES  ");                     // Show 'Switch Edges'
-    Switch_Pressed = BK_SwitchEdges_Enter;            // Next mode
-    break;
-  case 3:
-    WriteUpper("0000000000000000");
-    WriteLower("0000000000000000");
-    Switch_Pressed = BK_DisplayTestSw;
-    AppByte = ActivateTimer(1000, 32, BK_DisplayCycle);}} // Activate timer for display pattern change}
-
-void BK_DisplayTestSw(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);
-    Switch_Pressed = BK_DisplayTest_EnterSw;
-    *(DisplayLower) = 0;
-    *(DisplayLower+16) = 0;
-    *(DisplayUpper) = 0;
-    *(DisplayUpper+16) = 0;
-    WriteUpper("DISPLAY TEST  ");
-    WriteLower("              ");}}
-
-void BK_DisplayCycle(byte Event) {                    // Display cycle test
-  if (QuerySwitch(73)) {                              // cycle only if Up/Down switch is not pressed
-    if (Event == 116) {                               // if the last character is reached
-      AppByte2 = 32;}                                 // start from the beginning
-    else {
-      if (Event == 50) {                              // reached the gap between numbers and characters?
-        AppByte2 = 66;}
-      else {
-        AppByte2 = Event+2;}}                         // otherwise show next character
-    for (i=0; i<16; i++) {                            // use for all alpha digits
-      if ((i==0) || (i==8)) {
-        DisplayUpper[2*i] = LeftCredit[AppByte2];
-        DisplayUpper[2*i+1] = LeftCredit[AppByte2+1];
-        DisplayLower[2*i] = RightCredit[AppByte2];
-        DisplayLower[2*i+1] = RightCredit[AppByte2+1];}
-      else {
-        DisplayUpper[2*i] = DispPattern1[AppByte2];
-        DisplayUpper[2*i+1] = DispPattern1[AppByte2+1];
-        DisplayLower[2*i] = DispPattern2[AppByte2];
-        DisplayLower[2*i+1] = DispPattern2[AppByte2+1];}}}
-  AppByte = ActivateTimer(500, AppByte2, BK_DisplayCycle);}   // restart timer
-
-void BK_SwitchEdges_Enter(byte Event) {
-  switch (Event) {
-  case 72:
-    WriteUpper("  COIL  TEST  ");                     // go to Solenoid Test Enter
-    WriteLower("              ");
-    Switch_Pressed = BK_Solenoids_Enter;
-    break;
-  case 3:
-    WriteUpper(" LATESTEDGES  ");                     // show 'Latest Edges'
-    WriteLower("              ");
-    Switch_Pressed = BK_SwitchEdges;}}
-
-void BK_SwitchEdges(byte Event) {
-  if (Event == 72) {
-    Switch_Pressed = BK_SwitchEdges_Enter;            // back to Switch edges enter
-    WriteUpper(" SWITCHEDGES  ");
-    WriteLower("              ");}
-  else {
-    for (i=1; i<24; i++) {                            // move all characters in the lower display row 4 chars to the left
-      DisplayLower[i] = DisplayLower[i+8];}
-    *(DisplayLower+30) = DispPattern2[32 + 2 * (Event % 10)]; // and insert the switch number to the right of the row
-    *(DisplayLower+31) = DispPattern2[33 + 2 * (Event % 10)];
-    *(DisplayLower+28) = DispPattern2[32 + 2 * (Event - (Event % 10)) / 10];
-    *(DisplayLower+29) = DispPattern2[33 + 2 * (Event - (Event % 10)) / 10];}}
-
-void BK_Solenoids_Enter(byte Event) {
-  switch (Event) {
-  case 72:
-    WriteUpper(" SINGLE LAMP  ");                     // go to next test
-    Switch_Pressed = BK_SingleLamp_Enter;
-    break;
-  case 3:
-    WriteUpper(" FIRINGCOIL NO");
-    WriteLower("              ");
-    Switch_Pressed = BK_SolenoidsTest;
-    AppByte2 = 1;                                     // start with solenoid 1
-    AppByte = ActivateTimer(1000, 0, BK_FireSolenoids);}} // start after 1 second
-
-void BK_SolenoidsTest(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);                               // kill running timer for next solenoid
-    WriteUpper("  COIL  TEST  ");                     // back to Solenoid Test Enter
-    WriteLower("              ");
-    Switch_Pressed = BK_Solenoids_Enter;}}
-
-void BK_FireSolenoids(byte Event) {                   // cycle all solenoids
-  UNUSED(Event);
-  *(DisplayLower+30) = DispPattern2[32 + 2 * (AppByte2 % 10)]; // and show the actual solenoid number
-  *(DisplayLower+31) = DispPattern2[33 + 2 * (AppByte2 % 10)];
-  *(DisplayLower+28) = DispPattern2[32 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
-  *(DisplayLower+29) = DispPattern2[33 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
-  ActivateSolenoid(0, AppByte2);                      // activate the solenoid for 50ms
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    AppByte2++;                                       // increase the solenoid counter
-    if (AppByte2 == 20) {                             // maximum reached?
-      AppByte2 = 1;}}                                 // then start again
-  AppByte = ActivateTimer(1000, 0, BK_FireSolenoids);}   // come back in one second
-
-void BK_SingleLamp_Enter(byte Event) {
-  switch (Event) {
-  case 72:
-    WriteUpper("  ALL   LAMPS ");                     // go to next test
-    Switch_Pressed = BK_AllLamps_Enter;
-    break;
-  case 3:
-    WriteUpper(" ACTUAL LAMP  ");
-    WriteLower("              ");
-    for (i=0; i<8; i++){                              // erase lamp matrix
-      LampColumns[i] = 0;}
-    LampPattern = LampColumns;                        // and show it
-    Switch_Pressed = BK_SingleLamp;
-    AppByte2 = 1;                                     // start with lamp 1
-    AppByte = ActivateTimer(1000, 0, BK_ShowLamp);}}  // start after 1 second
-
-void BK_SingleLamp(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);                               // kill running timer for next solenoid
-    LampPattern = NoLamps;                            // Turn off all lamps
-    WriteUpper(" SINGLE LAMP  ");
-    WriteLower("              ");
-    Switch_Pressed = BK_SingleLamp_Enter;}}
-
-void BK_ShowLamp(byte Event) {                        // cycle all lamps
-  UNUSED(Event);
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    *(DisplayLower+30) = DispPattern2[32 + 2 * (AppByte2 % 10)]; // and show the actual solenoid number
-    *(DisplayLower+31) = DispPattern2[33 + 2 * (AppByte2 % 10)];
-    *(DisplayLower+28) = DispPattern2[32 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
-    *(DisplayLower+29) = DispPattern2[33 + 2 * (AppByte2 - (AppByte2 % 10)) / 10];
-    TurnOnLamp(AppByte2);                             // turn on lamp
-    if (AppByte2 > 1) {                               // and turn off the previous one
-      TurnOffLamp(AppByte2-1);}
-    else {
-      TurnOffLamp(LampMax);}
-    AppByte2++;                                       // increase the lamp counter
-    if (AppByte2 == LampMax+1) {                      // maximum reached?
-      AppByte2 = 1;}}                                 // then start again
-  AppByte = ActivateTimer(1000, 0, BK_ShowLamp);}     // come back in one second
-
-void BK_AllLamps_Enter(byte Event) {
-  switch (Event) {
-  case 72:
-    WriteUpper(" SOUND  TEST  ");                     // go to next test
-    Switch_Pressed = BK_SoundTest_Enter;
     AppByte = 0;
-    break;
-  case 3:
-    WriteUpper("FLASHNG LAMPS ");
-    Switch_Pressed = BK_ModeAllLamps;
-    AppByte2 = 0;
-    AppByte = ActivateTimer(500, 0, BK_ShowAllLamps);}}  // start after 500ms
-
-void BK_ModeAllLamps(byte Event) {
-  if (Event == 72) {
-    KillTimer(AppByte);                               // kill running timer for next solenoid
     LampPattern = NoLamps;                            // Turn off all lamps
-    WriteUpper("  ALL   LAMPS ");
-    Switch_Pressed = BK_AllLamps_Enter;}}
+    ActivateTimer(1000, 0, BC_Testmode);}}            // Wait 1 second and proceed to Display Test
 
-void BK_ShowAllLamps(byte Event) {                    // Flash all lamps
-  UNUSED(Event);
-  if (AppByte2) {                                     // if all lamps are on
-    LampPattern = NoLamps;                            // turn them off
-    AppByte2 = 0;}
-  else {                                              // or the other way around
-    LampPattern = AllLamps;
-    AppByte2 = 1;}
-  AppByte = ActivateTimer(500, 0, BK_ShowAllLamps);}  // come back in 500ms
-
-void BK_SoundTest_Enter(byte Switch) {
-  switch (Switch) {
-  case 72:
-    analogWrite(VolumePin,255);                       // set volume to zero
-    StopPlayingSound();
-    ReleaseSolenoid(23);                              // disable flipper fingers
-    ReleaseSolenoid(24);
-    GameDefinition.AttractMode();
-    break;
-  case 3:
-    WriteUpper("PLAYING SOUND ");
-    WriteLower("            01");
-    analogWrite(VolumePin,255-APC_settings[Volume]);  // set volume
-    Switch_Pressed = BK_SoundTest;
-    AfterSound = BK_NextTestSound;
-    PlaySound(50, (char*) BK_TestSounds[AppByte]);}}
-
-void BK_NextTestSound(byte Dummy) {
-  UNUSED(Dummy);
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    AppByte++;}
-  if (!BK_TestSounds[AppByte][0]) {
-    AppByte = 0;}
-  *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte+1) % 10)]; // and show the next sound number
-  *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte+1) % 10)];
-  *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  PlaySound(50, (char*) BK_TestSounds[AppByte]);}
-
-void BK_SoundTest(byte Switch) {
-  if (Switch == 3) {
-    BK_NextTestSound(0);}
-  if (Switch == 72) {
-    AfterSound = 0;
-    StopPlayingMusic();
-    WriteUpper(" SOUND  TEST  ");
-    Switch_Pressed = BK_SoundTest_Enter;
-    AppByte = 0;}}

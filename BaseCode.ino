@@ -666,17 +666,17 @@ void BC_Testmode(byte Select) {
           *(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
           *(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}}
       break;
-      case 2:                                           // solenoid test
-        switch(Select) {                                // switch events
-        case 0:                                         // init (not triggered by switch)
-          if (APC_settings[DisplayType] < 7) {          // Sys11 display
+      case 2:                                         // solenoid test
+        switch(Select) {                              // switch events
+        case 0:                                       // init (not triggered by switch)
+          if (APC_settings[DisplayType] < 7) {        // Sys11 display
             WriteUpper("  COIL  TEST    ");
             WriteLower("                ");}
-          else {                                        // Sys3 - 9 display
-            for(byte c=0; c<16; c++) {                  // clear numerical displays
-              *(DisplayLower+2*c) = 255;                // delete numbers
-              *(DisplayLower+1+2*c) = 0;}               // delete commas
-            DisplayScore(1, 3);}                        // show test number
+          else {                                      // Sys3 - 9 display
+            for(byte c=0; c<16; c++) {                // clear numerical displays
+              *(DisplayLower+2*c) = 255;              // delete numbers
+              *(DisplayLower+1+2*c) = 0;}             // delete commas
+            DisplayScore(1, 3);}                      // show test number
           AppByte2 = 0;
           break;
         case 3:
@@ -686,27 +686,28 @@ void BC_Testmode(byte Select) {
           break;
         case 72:
           if (AppByte2) {
+            ReleaseAllSolenoids();
             KillTimer(AppByte2);
             AppByte2 = 0;}
           else {
             AppByte++;}
           BC_Testmode(0);}
         break;
-        case 3:                                           // single lamp test
-          switch(Select) {                                // switch events
-          case 0:                                         // init (not triggered by switch)
-            if (APC_settings[DisplayType] < 7) {          // Sys11 display
+        case 3:                                       // single lamp test
+          switch(Select) {                            // switch events
+          case 0:                                     // init (not triggered by switch)
+            if (APC_settings[DisplayType] < 7) {      // Sys11 display
               WriteUpper(" SINGLE LAMP    ");
               WriteLower("                ");}
-            else {                                        // Sys3 - 9 display
-              for(byte c=0; c<16; c++) {                  // clear numerical displays
-                *(DisplayLower+2*c) = 255;                // delete numbers
-                *(DisplayLower+1+2*c) = 0;}               // delete commas
-              DisplayScore(1, 4);}                        // show test number
+            else {                                    // Sys3 - 9 display
+              for(byte c=0; c<16; c++) {              // clear numerical displays
+                *(DisplayLower+2*c) = 255;            // delete numbers
+                *(DisplayLower+1+2*c) = 0;}           // delete commas
+              DisplayScore(1, 4);}                    // show test number
             AppByte2 = 0;
-            for (i=0; i<8; i++){                          // erase lamp matrix
+            for (i=0; i<8; i++){                      // erase lamp matrix
               LampColumns[i] = 0;}
-            LampPattern = LampColumns;                    // and show it
+            LampPattern = LampColumns;                // and show it
             break;
           case 3:
             WriteUpper(" ACTUAL LAMP    ");
@@ -721,17 +722,17 @@ void BC_Testmode(byte Select) {
               AppByte++;}
             BC_Testmode(0);}
           break;
-          case 4:                                           // all lamps test
-            switch(Select) {                                // switch events
-            case 0:                                         // init (not triggered by switch)
-              if (APC_settings[DisplayType] < 7) {          // Sys11 display
+          case 4:                                     // all lamps test
+            switch(Select) {                          // switch events
+            case 0:                                   // init (not triggered by switch)
+              if (APC_settings[DisplayType] < 7) {    // Sys11 display
                 WriteUpper("  ALL   LAMPS   ");
                 WriteLower("                ");}
-              else {                                        // Sys3 - 9 display
-                for(byte c=0; c<16; c++) {                  // clear numerical displays
-                  *(DisplayLower+2*c) = 255;                // delete numbers
-                  *(DisplayLower+1+2*c) = 0;}               // delete commas
-                DisplayScore(1, 5);}                        // show test number
+              else {                                  // Sys3 - 9 display
+                for(byte c=0; c<16; c++) {            // clear numerical displays
+                  *(DisplayLower+2*c) = 255;          // delete numbers
+                  *(DisplayLower+1+2*c) = 0;}         // delete commas
+                DisplayScore(1, 5);}                  // show test number
               AppByte2 = 0;
               break;
             case 3:
@@ -747,22 +748,22 @@ void BC_Testmode(byte Select) {
                 AppByte++;}
               BC_Testmode(0);}
             break;
-            case 5:                                           // all music test
-              switch(Select) {                                // switch events
-              case 0:                                         // init (not triggered by switch)
-                if (APC_settings[DisplayType] < 7) {          // Sys11 display
+            case 5:                                   // all music test
+              switch(Select) {                        // switch events
+              case 0:                                 // init (not triggered by switch)
+                if (APC_settings[DisplayType] < 7) {  // Sys11 display
                   WriteUpper(" MUSIC  TEST    ");
                   WriteLower("                ");}
-                else {                                        // Sys3 - 9 display
-                  for(byte c=0; c<16; c++) {                  // clear numerical displays
-                    *(DisplayLower+2*c) = 255;                // delete numbers
-                    *(DisplayLower+1+2*c) = 0;}               // delete commas
-                  DisplayScore(1, 6);}                        // show test number
+                else {                                // Sys3 - 9 display
+                  for(byte c=0; c<16; c++) {          // clear numerical displays
+                    *(DisplayLower+2*c) = 255;        // delete numbers
+                    *(DisplayLower+1+2*c) = 0;}       // delete commas
+                  DisplayScore(1, 6);}                // show test number
                 AppByte2 = 0;
                 break;
               case 3:
                 WriteUpper("PLAYING MUSIC   ");
-                if (APC_settings[Volume]) {                   // system set to digital volume control?
+                if (APC_settings[Volume]) {           // system set to digital volume control?
                   analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
                 AfterMusic = BC_RepeatMusic;
                 AppByte2 = 1;
@@ -770,7 +771,7 @@ void BC_Testmode(byte Select) {
                 break;
               case 72:
                 AfterMusic = 0;
-                digitalWrite(VolumePin,HIGH);                 // set volume to zero
+                digitalWrite(VolumePin,HIGH);         // set volume to zero
                 StopPlayingMusic();
                 if (AppByte2) {
                   AppByte2 = 0;}
@@ -838,7 +839,7 @@ void BC_FireSolenoids(byte Solenoid) {                // cycle all solenoids
       ActivateSolenoid(500, Solenoid);}               // then the duration must be specified
     else {
       ActivateSolenoid(0, Solenoid);}                 // activate the solenoid with default duration
-    if ((Solenoid < 9) && game_settings[BCset_ACselectRelay]) { // A solenoid and Sys11 machine?
+    if ((Solenoid < 9) && ACselectRelay) {            // A solenoid and Sys11 machine?
       *(DisplayLower+30) = DispPattern2[('A'-32)*2];  // show the A
       *(DisplayLower+31) = DispPattern2[('A'-32)*2+1];
       if (QuerySwitch(73)) {                          // Up/Down switch pressed?

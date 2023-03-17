@@ -3,7 +3,7 @@
 ## Preparation
 
 For these tests you need to have all components except of the Raspberry Pi populated and the APC SW installed.  
-For the audio test take your sound file of choice, convert it with the [Audio Converter](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md), rename it to MUSIC.BIN and copy it to an SD card which needs to be connected to P8 of the APC board.
+For the audio test take your sound file of choice, convert it with the [Audio Converter](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md), rename it to MUSIC.BIN and copy it to an SD card which needs to be connected to P8 of the APC board. Of course you can skip this if you don't want to the APC to generate the sound.
 
 ## Switches and Displays
 
@@ -15,10 +15,13 @@ Put your board into your pinball machine, but only plug the connectors for Logic
 | Switch Drivers | 2J2 | 1J8 |
 | Switch Inputs | 2J3 | 1J10 |
 | Diag_sw | 1J4 | 1J14 |
+| Special Switches | 2J13 | 1J18 (if present) |
 | Display Strobes 1 | 1J7 | 1J1 |
 | Display Strobes 2 | 1J6 | 1J2 |
 | Display Segments 1 | 1J5 | 1J3 |
 | Display Segments 2 | - | 1J22 |
+
+The [additional display cables](https://github.com/AmokSolderer/APC/blob/master/DOC/Prepare.md#system-7) of System 3 - 7 games must also be installed at this point.
 
 Now power up your pinball machine. After some status messages your display should show 'USB CONTROL'. If you just see two brightly illuminated digits then turn off your machine immediately, because in this case your display strobing doesn't work.  
 If you have a pre System11 machine with numerical displays or a System11 2x16 digit one you have to adjust the display setting to make it work correctly. A description how to do it is in the [settings section](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md).
@@ -58,10 +61,13 @@ Now it's time for the lamps and the audio part.
 
 Turn on your machine. As you have an SD card plugged into the APC, the previous setting should have been stored and the Base Code should come up automatically. The attract mode of the base code has the lamps cycling from 1 to 64 which should be visible now.
 
+Some words about audio:  
+The APC offers a digital volume setting which let's you adjust the volume in the System Settings (Setting 6 'Speaker Volume'). This has the advantage of not having to use the old volume pots which are often bad after 40 years. However, the default volume setting is zero which means if you don't connect the volume connector 10J4 (1J16 for System11) you have to adjust the volume setting in order to have any sound.
+
 ## Using the Test Mode
 
 Press the Advance button with Up/Down being in the down position to enter the test mode of the Base Code.  
-The name of the current test is shown in the Display. For numerical displays the number of the test is shown in the Player 1 display. You can enter the test by pressing the game start button or proceed to the next test by pressing Advance again. The display, coil and single lamp tests are cycling automatically. This cycling can be stopped by the Up/Down button being in Down position.  
+The name of the current test is shown in the Display. For numerical displays the number of the test is shown in the Player 1 display. You can enter the test by pressing the game start button or proceed to the next test by pressing Advance again. The display, coil and single lamp tests are cycling automatically, the corresponding number is shown in the Player 4 display. This cycling can be stopped by the Up/Down button being in Down position.  
 The following table shows the avaiable tests and their number which is shown for numerical displays.
 
 | Test number | Test name |
@@ -73,4 +79,6 @@ The following table shows the avaiable tests and their number which is shown for
 | 5 | All Lamps |
 | 6 | Music Test |
 
+## Next steps
 
+If the tests are completed and your board is working properly you're ready to [run a game](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md)
