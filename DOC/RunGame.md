@@ -20,7 +20,7 @@ Here's what to do:
 2.1. Select the corresponding [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) in the Game Settings  
 2.2. If you want to let the APC generate the audio then the Game Setting 'PinMame Sound' has to be APC, 'Board' means that an old audio board is used which is possible for System 3 - 7 machines. System 7 machines need an additional cable for this to work  
 2.3. Exit the settings and switch off your machine  
-3. Go to the [Lisy project page](https://lisy.dev/apc.html) and download a Lisy image file. Note that only the Raspberry Pi Zero, Zero W, 3A+ and 3B+ models are currently supported by Lisy.  
+3. Go to the [Lisy project page](https://lisy.dev/apc.html) and download a Lisy image file. Note that only the Raspberry Pi Zero, Zero W, Pi 2W, 3A+, 3B+ as well as the Banana PI M2 Zero models are currently supported by Lisy.  
 3.1. Install the image file on an SD card and put it in your Raspberry Pi  
 3.2. Install the Pi on your APC board  
 4. Turn on your pinball machine  
