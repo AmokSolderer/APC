@@ -2,9 +2,11 @@
 
 ## March 2023
 
-### New HW Version V0.31
+### New HW Version V3.1
 
 * The packages of the LEDs have been changed to SMD.
+
+* The fabrication files have been updated to let JLCPCB populate most of the non-SMD components also.
 
 * An SMD adapter for SD cards has been added (P14).
 
@@ -18,6 +20,10 @@ The old connector for the self made adapter (P8) is still there, so you can deci
 Check the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) to learn how to use it.
 
 * The Pinbot and [Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) game SW has been improved
+
+### Misc
+
+* DOCs have been reworked, especially [section 1](https://github.com/AmokSolderer/APC#documentation-contents) "Building and setting up an APC".
 
 ## August 2022
 

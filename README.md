@@ -21,8 +21,9 @@ The APC is a freely programmable controller for Williams pinball machines. It us
 To summarize the above it can be said that the APC does replace all CPU, power driver and sound related boards at a price of well below 100€ per board. 
 
 ![APC 2.0](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC.JPG)
-The picture shows an APC 3.0 board configured for System 9 + 11 machines as the connectors for System 3 - 7 are not populated.  
-See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impression what has changed compared to the previous versions.
+
+The picture shows an APC 3.1 board with the new on-board SD-Card slot below the Arduino.  
+See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJyxMXo) to get an impression what the boards can do.
 
 There's a table of contents of the available documentation at the end of this page.
 
