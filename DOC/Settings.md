@@ -54,8 +54,8 @@ For pre Sys11 displays all text settings are represented by their item number as
 | 2 | No of balls | - | - | 3 | Numerical setting - range 1 -5 |
 | 3 | Free game | - | - | Yes | Bool setting |
 | 4 | Connect Type | 0| Off | - | No remote control during Remote Control mode |
-| 4 |  | 1 | On board | X | APC is controlled by the Pi on board |
-| 4 |  | 2 | USB | - | APC is controlled via USB |
+| 4 |  | 1 | On board | - | APC is controlled by the Pi on board |
+| 4 |  | 2 | USB | X | APC is controlled via USB |
 | 5 | Dim inserts | - | - | No | Bool setting - brightness of playfield lamps is set to 50% when on |
 | 6 | Speaker volume | - | - | 0 | Numerical setting - range 1 - 255 / must be set to 0 when volume pot is connected at 10J4 / 1J16 |
 | 7 | LED lamps | 0 | No LEDs | X | The APC_LED_exp board is not used |
