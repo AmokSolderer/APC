@@ -1756,38 +1756,69 @@ void BK_GiveMultiballs(byte Step) {                   // release locked balls wi
 
 void BK_Jackpot(byte State) {
   static byte PrevState = 0;
+  static byte Timer = 0;
   switch (State) {
-  case 0:
+  case 0:                                             // end of multiball
     if (PrevState == 1) {
       RemoveBlinkLamp(24);}
     if (PrevState == 2) {
       RemoveBlinkLamp(21);
       RemoveBlinkLamp(40);
       RemoveBlinkLamp(42);}
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
     PrevState = 0;
     break;
-  case 1:
+  case 1:                                             // light lower eject hole
     if (!PrevState) {
       AddBlinkLamp(24, 300);
       PrevState = 1;}
     break;
-  case 2:
+  case 2:                                             // lower eject hole hit
     if (PrevState == 1) {
+      MusicVolume = 4;
+      char FileName[13] = "BK_S18_0.snd";             // generate base filename
+      FileName[7] = 48 + random(3) + 1;               // change the counter according to random number
+      PlaySound(55, (char*) FileName);                // play the corresponding sound file
+      RestoreMusicVolumeAfterSound(100);
+      if (!Timer) {
+        Timer = ActivateTimer(1000, 4, BK_Jackpot);}     // turn on GI effect
       AddBlinkLamp(21, 300);
       AddBlinkLamp(40, 300);
       AddBlinkLamp(42, 300);
       RemoveBlinkLamp(24);
       PrevState = 2;}
     break;
-  case 3:
+  case 3:                                             // jackpot scored
     if (PrevState == 2) {
+      MusicVolume = 4;
       Points[Player] += 250000 * (game_settings[BK_MultiballJackpot] + 1);
+      if (Timer) {
+        KillTimer(Timer);}
+      PlaySound(55, "BK_E19.snd");
+      ActivateTimer(1, 5, BK_Jackpot);
       AddBlinkLamp(24, 300);
       RemoveBlinkLamp(21);
       RemoveBlinkLamp(40);
       RemoveBlinkLamp(42);
       PrevState = 1;}
-    break;}}
+    break;
+  case 4:
+    ActivateSolenoid(200, 11);
+    Timer = ActivateTimer(1000, 4, BK_Jackpot);
+    break;
+  default:
+    ActivateSolenoid(100, 11);
+    if (State < 10) {
+      State++;
+      Timer = ActivateTimer(230, State, BK_Jackpot);}
+    else {
+      Timer = 0;
+      char FileName[13] = "BK_S19_0.snd";             // generate base filename
+      FileName[7] = 48 + random(3) + 1;               // change the counter according to random number
+      PlaySound(55, (char*) FileName);                // play the corresponding sound file
+      RestoreMusicVolumeAfterSound(100);}}}
 
 void BK_ClearLocks(byte Event) {
   UNUSED(Event);
