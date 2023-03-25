@@ -1770,6 +1770,7 @@ void BK_Jackpot(byte State) {
       KillTimer(Timer);
       Timer = 0;}
     PrevState = 0;
+    AfterSound = BK_PlayBgMusic;
     break;
   case 1:                                             // light lower eject hole
     if (!PrevState) {

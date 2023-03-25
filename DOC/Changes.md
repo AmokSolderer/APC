@@ -1,5 +1,11 @@
 # APC News and Changelog
 
+## TDB
+
+### New SW Version V1.00
+
+* Bugfix -> if a sound/music file was invoked immediately after another, the first one was dropped regardless of the priority.
+
 ## March 2023
 
 ### New HW Version V3.1
