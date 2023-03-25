@@ -2237,7 +2237,9 @@ void PlayMusic(byte Priority, const char* Filename) {
     if ((Priority > 99 && Priority > MusicPriority) || (Priority < 100 && Priority >= MusicPriority)) {
       MusicFile.close();                              // close the previous file
       StartMusic = 0;                                 // cancel the startup
-      MBP = 0;}}                                      // and neglect its data
+      MBP = 0;}                                       // and neglect its data
+    else {
+      return;}}
   if (!PlayingMusic) {                                // no music in play at the moment?
     MusicFile = SD.open(Filename);                    // open file
     if (!MusicFile) {
@@ -2334,7 +2336,9 @@ void PlaySound(byte Priority, const char* Filename) {
     if ((Priority > 99 && Priority > SoundPriority) || (Priority < 100 && Priority >= SoundPriority)) {
       SoundFile.close();
       StartSound = 0;
-      SBP = 0;}}
+      SBP = 0;}
+    else {
+      return;}}
   if (!PlayingSound) {                                // no sound in play at the moment?
     SoundFile = SD.open(Filename);                    // open file
     if (!SoundFile) {
