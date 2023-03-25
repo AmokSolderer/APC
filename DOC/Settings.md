@@ -33,6 +33,11 @@ Games with a credit display show 00 for System Settings and 01 for Game Settings
 
 For pre Sys11 displays all text settings are represented by their item number as shown in the tables. For example, if a pre Sys11 display is selected and the credit display shows 00 01 you have selected the System Settings and the 'Active Game' setting is currently being shown. An early System11 display (upper display row alphanumerical and lower row numerical) will still try to show the name of the currently selected game as a text which is not perfect, but good enough. A pre System11 display will show the item number instead and if there is a 3 stated in the player 4 display then you're in Remote Control mode.
 
+### Using PinMame settings
+
+While you're running PinMame you can adjust the original Williams settings as usual with one exception:  
+You must not keep Advance pressed for more than 1 second with Up/Down in up position as this will trigger the APC settings. If you want to browse the Williams Settings quickly, just do it backwards with Up/Down in down position.
+
 ## System Settings
 
 | Number | Text  | Item Nr | Item Text | Default | Comment |
