@@ -111,6 +111,62 @@ byte EX_DummyProcess(byte Type, byte Command) {       // plays just the standard
       PlayMusic(51, (char*) FileName);}}
   return(0);}                                         // no exception rule found for this type so proceed as normal
 
+byte EX_Flash(byte Type, byte Command){
+  static byte SoundSeries[3];                         // buffer to handle pre system11 sound series
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
+    else if (Command == 108) {                        // sound command 0x6c - stop sound
+      AfterSound = 0;
+      SoundSeries[0] = 0;
+      SoundSeries[1] = 0;                             // reset the multiball start sound
+      SoundSeries[2] = 0;                             // Reset BG sound
+      StopPlayingSound();}
+    else if (Command == 106){                         // sound command 0x6a - sound series
+      if (SoundSeries[0] < 80) {                      // this sound has 80 tunes
+        SoundSeries[0]++;}                            // every call of this sound proceeds with next tune
+      char FileName[13] = "0_6a_000.snd";             // generate base filename
+      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current tune
+      FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
+      PlaySound(51, (char*) FileName);}               // play the sound
+    else if (Command == 107) {                        // sound command 0x6b - sound series
+      if (SoundSeries[1] < 200) {                     // this sound has 200 tunes
+        SoundSeries[1]++;}
+      char FileName[13] = "0_6b_000.snd";
+      FileName[7] = 48 + (SoundSeries[1] % 10);
+      FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
+      FileName[5] = 48 + (SoundSeries[1] / 100);      // the same with the 5th character
+      PlaySound(51, (char*) FileName);}
+    else if (Command == 109) {                        // sound command 0x6d - background sound - sound series
+      SoundSeries[0] = 0;
+      if (SoundSeries[2] < 25) {                      // this sound has 25 tunes
+        SoundSeries[2]++;}
+      char FileName[13] = "0_6e_000.snd";
+      FileName[7] = 48 + (SoundSeries[2] % 10);
+      FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
+      for (byte i=0; i<12; i++) {                     // prepare the filename
+        USB_RepeatSound[i] = FileName[i];}
+      QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
+      PlaySound(51, (char*) FileName);}
+    else if (Command == 110) {                        // sound command 0x6e - background sound - sound series
+      SoundSeries[2] = 0;
+      char FileName[13] = "0_6e_001.snd";
+      for (byte i=0; i<12; i++) {                     // prepare the filename
+        USB_RepeatSound[i] = FileName[i];}
+      QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
+      PlaySound(51, (char*) FileName);}
+    else if (Command == 111) {                        // sound command 0x6f - start game
+      char FileName[13] = "0_6f_000.snd";             // generate base filename
+      FileName[7] = 48 + random(8) + 1;               // change the counter according to random number
+      PlaySound(51, (char*) FileName);}               // play the corresponding sound file
+    else {                                            // standard sound
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}
+    return(0);                                        // return number not relevant for sounds
+  default:
+    return(0);}}
+
 byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for sending me this code
   static byte SoundSeries[5] = {0, 0, 0, 0, 0};       // buffer to handle pre system11 sound series
   static byte PlayingMultiballSound = 0;
@@ -321,7 +377,7 @@ byte EX_Barracora(byte Type, byte Command){
       SoundSeries[1] = 0;                             // reset the multiball start sound
       StopPlayingSound();}
     else if (Command == 45){                          // sound command 0x2d - sound series
-      if (SoundSeries[0] < 31) {                      // this sound has 31 tunes
+      if (SoundSeries[0] < 32) {                      // this sound has 32 tunes
         SoundSeries[0]++;}                            // every call of this sound proceeds with next tune
       char FileName[13] = "0_2d_000.snd";             // generate base filename
       FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current tune
@@ -332,7 +388,7 @@ byte EX_Barracora(byte Type, byte Command){
       PlaySound(51, (char*) FileName);}               // play the sound
     else if (Command == 46) {                         // sound command 0x2e - background sound - sound series
       SoundSeries[0] = 0;
-      if (SoundSeries[1] < 29) {                      // this sound has 29 tunes
+      if (SoundSeries[1] < 30) {                      // this sound has 30 tunes
         SoundSeries[1]++;}
       char FileName[13] = "0_2e_000.snd";
       FileName[7] = 48 + (SoundSeries[1] % 10);
@@ -776,6 +832,9 @@ byte EX_Blank(byte Type, byte Command){               // use this as a template 
 
 void EX_Init(byte GameNumber) {
   switch(GameNumber) {
+  case 6:                                             // Flash
+    PinMameException = EX_Flash;                      // use exception rules for Flash
+    break;
   case 16:                                            // Firepower
     PinMameException = EX_Firepower;                  // use exception rules for Firepower
     break;
