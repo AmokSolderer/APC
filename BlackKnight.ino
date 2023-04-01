@@ -934,7 +934,9 @@ void BK_GameMain(byte Event) {                        // game switch events
       else {
         if (Multiballs > 1) {                         // multiball running?
           if (game_settings[BK_MultiballJackpot]) {
-            BK_Jackpot(2);}
+            BK_Jackpot(2);
+            ActivateTimer(2000, 8, DelaySolenoid);
+            break;}
           else {
             BK_GiveMultiballs(1);}}                      // eject ball with some ado
         else {
