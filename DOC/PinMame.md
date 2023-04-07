@@ -1,25 +1,6 @@
-# The APC and PinMame
+# PinMame Sound
 
-Bringing PinMame and the APC together was only possible with the help of the [Lisy project](https://lisy.dev).  
-To set it up you have to get a Raspberry Pi (all Zero and Pi3 variants are supported) and install the [Lisy image](https://lisy.dev/apc.html) on the SD card of your Pi.  
-The APC's 'Active Game' setting has to be set to 'Remote Control' (which is the default setting) to make it communicate with the Pi.
-
-If you have an APC 3 board you can just plug the Pi on the J1 connector of the APC directly. As the APC is set to USB communication by default, you have to change the 'Connect Type' setting in the 'System Settings' to 'On board'. Take a look at the [settings page](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) for a desription of the settings. Connect an SD-card to P8 of the APC for the settings to be stored permanently.  
-It might be necessary to power cycle the system as the synchonization between the APC and Lisy is still under development.
-
-If you have an APC 2.x board or you just want a portable Lisy system you can use the [Lisy_Mini](https://lisy.dev/lisy_mini.html) board which controls the APC via USB.
-
-Read the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page to learn how to make incremental updates or use the Lisy Debug functions.
-
-We have started our PinMame experiments with my old trusty Pinbot which is running quite well as you can see in the following video:
-
-[Lisy, APC and PinMame](https://youtu.be/cXrh-XPqCKw)
-
-PinMame support is still in it's early stages. As you can see the Pinbot is already working quite well, but it's not yet perfect. The main challenges when adding support for more machines are sound related. This has to do with the way we did the sound implementation which offers a lot more than just playing the original sounds and music, but requires a bit more work to do so.
-
-For most of the game generations you could also install the original audio board. In this case you cannot do any sound related changes of course. For System 3 - 6, the sound board is controlled by some reserved solenoid drivers, so it will work out of the box. System 7 and System 11c need an adapter for connecting the audio board to the HW extension interface of the APC. System 9, 11, 11a and 11b are having some sound related circuitry on the CPU, so their audio boards cannot be used any more.
-
-## The Sounds
+For some of the game generations you could install the original audio board. In this case you cannot do any sound related changes of course. For System 3 - 6, the sound board is controlled by some reserved solenoid drivers, so it will work out of the box. System 7 needs an [adapter](https://github.com/AmokSolderer/APC/blob/master/DOC/Prepare.md#system-7-audio-cable) for connecting the audio board to the HW extension interface of the APC. System 9, 11, 11a and 11b are having some sound related circuitry on the CPU, so their audio boards cannot be used any more.
 
 Our current setup is not using the Raspberry Pi to generate the PinMame sounds. Instead all sound and music files have to be created once and stored on the SD card of the APC. Of course this requires some work, but we think the benefits are worth it.
 
@@ -31,11 +12,14 @@ To make this possible, it is necessary that PinMame and the APC can play sounds 
 
 The drawback of this is that you have to extract the music files from PinMame. Furthermore we have to understand how the audio boards work and emulate their behaviour. The first task is easy and if we find some server space to store the files somewhere in the internet then this work must only be done once for each game. For System 3 - 9 games I expect this to be easy anyway, as they have a very limited sound performance. You could use the Audio Debug Mode which is explained later to find out which sounds to extract.
 
+## Available Sounds
+
 At the moment the list of available sound packages is still quite short, but we hope that some of you will do this for their machines also. Of course it would be great if you'd share you sound package with the rest of us. Up to now we haven't found some server space to store the files on, so send me a PM via Pinside or Flippertreff (see the feedback section on the main page) if you want to have one of the sound packages listed below.
 
 |System|Game| Sound File URL|Comments|
 |--|--|--|--|
 |6|Firepower| Ask Matiou in the Pinside forum | PinMameExceptions also done by Matiou |
+|7|Barracora| URL available on request| |
 |7|Black Knight| URL available on request| |
 |7|Jungle Lord| URL available on request| Works great. Sound samples are also good. |
 |7|Pharaoh| Ask Grangeomatic in the Pinside forum| PinMameExceptions also done by Grangeomatic |

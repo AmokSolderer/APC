@@ -1,5 +1,7 @@
 # Setting up the Base Code
 
+To switch to the Base Code you have to select the Base Code in the System Settings (Setting 1 'Active Game' should be set to 0 'Base Code'). Look at the [Settings page](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) to learn how to do this.
+
 In order for the Base Code to work properly, you have to set it up with the properties of your machine. Usually you would do this in the code itself, but for the Base Code this has been implemented in the 'Game Settings'.  
 To get there press the Advance button while running the Base Code, then enter the 'Game Settings' which are shown below:
 

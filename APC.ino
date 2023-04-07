@@ -103,7 +103,7 @@ byte BlinkingLamps[65][65];                           // [BlinkTimer] used by th
 byte SolMax = 24;                                     // maximum number of solenoids
 bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
 byte SolLatch = 0;                                    // Indicates which solenoid latches must be updated
-byte SolRecycleTime[22];                          // recycle time for each solenoid
+byte SolRecycleTime[22];                              // recycle time for each solenoid
 byte SolRecycleTimers[22];                            // stores the numbers of the recycle timers for each solenoid
 bool C_BankActive = false;                            // A/C relay currently doing C bank?
 byte SolWaiting[256][2];                              // list of waiting A/C solenoid requests
@@ -195,7 +195,7 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 #define NumOfLEDs 8                                   // The length of the LED stripe. Setting is only effective when 'Additional' is selected as 'LED lamps' setting
 #define SolenoidExp 9                                 // Solenoid expander present?
 #define DebugMode  10                                 // debug mode enabled?
-#define BackboxLamps 11																// Column of backbox lamps
+#define BackboxLamps 11                               // Column of backbox lamps
 
 const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{"   TUTORIAL     "}};
 const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
@@ -215,7 +215,7 @@ const struct SettingTopic APC_setList[15] = {
     {" NO OF   LEDS   ",HandleNumSetting,0,1,192},
     {"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
-		{"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,2},
+    {"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,2},
     {"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS  ",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
@@ -1715,36 +1715,98 @@ void ActSolenoid(byte GivenState) {                   // activate waiting A/C so
 void ShowPoints(byte Player) {                        // display the points of the selected player
   DisplayScore(Player, Points[Player]);}
 
-void BlinkScore(byte State) {                         // State = 0 -> stop blinking / State = 0 -> start blinking
+void BlinkScore(byte State) {                         // State = 0 -> stop blinking / State = 1 -> start blinking
   static byte Timer = 0;
-  byte Buffer = 0;
-  if ((State > 1) || ((State == 1) && !Timer)) {
-    switch (Player) {
-    case 1:                                           // for the players 1 and 3
-    case 3:
-      Buffer = 2;                                     // start in column 1
-      break;
-    case 2:                                           // for the players 2 and 4
-    case 4:
-      Buffer = 18;                                    // start in column 9
-      break;}
-    if (State == 2) {                                 // called by itself - score currently displayed
-      if (Player < 3) {
-        for (i=0; i<14; i++) {
-          *(DisplayUpper+Buffer+i) = 0;}}
+  byte Position = 0;
+  if (State) {
+    if (APC_settings[DisplayType] < 3) {              // early Sys11 display
+      switch (Player) {
+      case 1:                                         // for the players 1 and 3
+      case 3:
+        Position = 0;                                 // start in column 1
+        break;
+      case 2:                                         // for the players 2 and 4
+      case 4:
+        Position = 16;                                // start in column 9
+        break;}
+      if (State == 1) {                               // (re-) start command
+        if (Timer) {
+          KillTimer(Timer);}
+        Timer = ActivateTimer(2000, 2, BlinkScore);
+        return;}
+      else {                                          // animation ongoing
+        if (State < 5) {                              // first 3 digits only require to delete them one by one
+          if (Player < 3) {
+            *(DisplayUpper+Position+2*(State-1)) = 0;
+            *(DisplayUpper+Position+2*(State-1)+1) = 0;}
+          else {
+            *(DisplayLower+Position+2*(State-1)) = 0;
+            *(DisplayLower+Position+2*(State-1)+1) = 0;}}
+        else {                                        // later digits require to rewrite the points
+          DisplayScore(Player, Points[Player]);       // rewrite player's points
+          if (State < 9) {                            // middle digits need to delete 3 of them
+            if (Player < 3) {
+              for (byte i=1;i<7;i++) {
+                *(DisplayUpper+Position+2*State-i) = 0;}}
+            else {
+              for (byte i=1;i<7;i++) {
+                *(DisplayLower+Position+2*State-i) = 0;}}}
+          else if (State < 11) {                      // last digits have to delete only the rest
+            if (Player < 3) {
+              for (byte i=2*(State-3);i<16;i++) {
+                *(DisplayUpper+Position+i) = 0;}}
+            else {
+              for (byte i=2*(State-3);i<16;i++) {
+                *(DisplayLower+Position+i) = 0;}}}
+          else {                                      // amination over
+            Timer = ActivateTimer(2000, 2, BlinkScore); // redo in 2 seconds
+            return;}}}}
+    else if (APC_settings[DisplayType] > 6) {         // Sys7 - 9 display
+      switch (Player) {
+      case 1:                                         // for the players 1 and 3
+      case 3:
+        Position = 0;                                 // start in column 1
+        break;
+      case 2:                                         // for the players 2 and 4
+      case 4:
+        Position = 16;                                // start in column 9
+        break;}
+      if (State == 1) {                               // (re-) start command
+        if (Timer) {
+          KillTimer(Timer);}
+        Timer = ActivateTimer(2000, 2, BlinkScore);
+        return;}
       else {
-        for (i=0; i<14; i++) {
-          *(DisplayLower+Buffer+i) = 0;}}
-      Timer = ActivateTimer(300, 3, BlinkScore);}
-    else {                                            // turn off score display
-      ShowPoints(Player);
-      Timer = ActivateTimer(2000, 2, BlinkScore);}}
-  else {
-    if (!State) {
-      if (Timer) {
-        KillTimer(Timer);
-        Timer = 0;}
-      ShowPoints(Player);}}}
+        if (State < 5) {                              // first 3 digits only require to delete them one by one
+          if (Player < 3) {
+            *(DisplayLower+Position+2*(State-1)) = ConvertNumUpper(255, (byte) *(DisplayLower+Position+2*(State-1)));}
+          else {
+            *(DisplayLower+Position+2*(State-1)) = ConvertNumLower(255, (byte) *(DisplayLower+Position+2*(State-1)));}}
+        else {                                        // later digits require to rewrite the points
+          DisplayScore(Player, Points[Player]);       // rewrite player's points
+          if (State < 9) {                            // middle digits need to delete 3 of them
+            if (Player < 3) {
+              for (byte i=2;i<7;i=i+2) {
+                *(DisplayLower+Position+2*State-i) = ConvertNumUpper(255, (byte) *(DisplayLower+Position+2*State-i));}}
+            else {
+              for (byte i=2;i<7;i=i+2) {
+                *(DisplayLower+Position+2*State-i) = ConvertNumLower(255, (byte) *(DisplayLower+Position+2*State-i));}}}
+          else if (State < 11) {                      // last digits have to delete only the rest
+            if (Player < 3) {
+              for (byte i=2*(State-3);i<16;i=i+2) {
+                *(DisplayLower+Position+i) = ConvertNumUpper(255, (byte) *(DisplayLower+Position+i));}}
+            else {
+              for (byte i=2*(State-3);i<16;i=i+2) {
+                *(DisplayLower+Position+i) = ConvertNumLower(255, (byte) *(DisplayLower+Position+i));}}}
+          else {                                      // amination over
+            Timer = ActivateTimer(2000, 2, BlinkScore); // redo in 2 seconds
+            return;}}}}
+    Timer = ActivateTimer(50, State+1, BlinkScore);}
+  else {                                              // disable command
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    ShowPoints(Player);}}
 
 void DisplayBCD (byte Position, byte* BCDnumber) {    // displays BCD values on numerical displays
   if (APC_settings[DisplayType] == 7) {               // Sys6 display
@@ -1880,7 +1942,7 @@ void DisplayScore (byte Position, unsigned int Score) {
       break;
     case 7:                                           // Sys3 - 6 type display
       switch (Position) {
-      case 1:                                        // for the players 1 and 3
+      case 1:                                         // for the players 1 and 3
       case 3:
         Buffer1 = 0;                                  // start in column 1
         break;
