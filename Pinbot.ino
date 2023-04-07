@@ -962,7 +962,7 @@ void PB_ClearOuthole(byte State) {
       if (!BlockOuthole) {                            // outhole switch still active?
         BlockOuthole = true;                          // block outhole until this ball has been processed
         Trunk = PB_CountBallsInTrunk();
-        if ((!game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 1 - InLock) || (Multiballs == 2 && Trunk == 0))) || (game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 2 - InLock) || (Multiballs == 2 && Trunk == 0)))) {  // ball count OK?
+        if ((!game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 1 - InLock) || (Multiballs == 2 && Trunk == 0))) || (game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 2 - InLock) || Multiballs == 2 || (Multiballs == 3 && Trunk == 0)))) {  // ball count OK?
           ActivateTimer(10, 5, PB_ClearOuthole);}
         else {                                        // ball count not OK
           InLock = 0;
@@ -978,7 +978,7 @@ void PB_ClearOuthole(byte State) {
   case 1:                                             // trunk count doesn't match
     Trunk = PB_CountBallsInTrunk();
     InLock = 0;
-    if ((!game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 1 - InLock) || (Multiballs == 2 && Trunk == 0))) || (game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 2 - InLock) || (Multiballs == 2 && Trunk == 0)))) {  // ball count OK?
+    if ((!game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 1 - InLock) || (Multiballs == 2 && Trunk == 0))) || (game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 2 - InLock) || Multiballs == 2 || (Multiballs == 3 && Trunk == 0)))) {  // ball count OK?
       ActivateTimer(10, 5, PB_ClearOuthole);}         // proceed
     else {                                            // ball count not OK
       for (byte i=0; i<2; i++) {                      // check how many balls are in the eyes
@@ -1790,7 +1790,7 @@ void PB_HandleLock(byte State) {
             ActivateTimer(game_settings[PB_MballHoldTime]*1000, 0, PB_ClearOutLock);}
           else {
             if (Multiballs == 2 && InLock == 2) {
-              PB_EyeFlash(1);
+              //PB_EyeFlash(1);
               MusicVolume = 3;
               PlaySound(55, "0_b0.snd");              // 'now I see you'
               ActivateTimer(2400, 25, RestoreMusicVolume);  // restore music volume after sound has been played
@@ -2345,13 +2345,7 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       PlayMusic(50, "1_0a.snd");                      // play multiball end theme
       QueueNextMusic("1_02L.snd");                    // track is looping so queue it also
       if (game_settings[PB_Multiballs]) {
-        // TODO fix double drain
-      }
-      else {
-      if (Balls == 2) {                               // all balls detected in the trunk
-        Balls = PB_CountBallsInTrunk();               // count again
-        ActivateTimer(1000, Balls, PB_BallEnd);}      // come back and check again
-      else {
+                                          // TODO fix double drain
         PB_ClearOutLock(1);                           // clear out lock and close visor
         InLock = 0;
         PB_ChestLightHandler(0);                      // stop chest animation
@@ -2359,7 +2353,20 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
         PB_ClearChest();                              // turn off chest lamps
         PB_ChestLightHandler(100);                    // restart chest animation
         ActivateTimer(3000, 10, PB_Multiball);        // return to main music theme
-        BlockOuthole = false;}}}                       // remove outhole block
+        BlockOuthole = false;}                        // remove outhole block
+      else {
+        if (Balls == 2) {                             // all balls detected in the trunk
+          Balls = PB_CountBallsInTrunk();             // count again
+          ActivateTimer(1000, Balls, PB_BallEnd);}    // come back and check again
+        else {
+          PB_ClearOutLock(1);                         // clear out lock and close visor
+          InLock = 0;
+          PB_ChestLightHandler(0);                    // stop chest animation
+          PB_ChestMode = 1;
+          PB_ClearChest();                            // turn off chest lamps
+          PB_ChestLightHandler(100);                  // restart chest animation
+          ActivateTimer(3000, 10, PB_Multiball);      // return to main music theme
+          BlockOuthole = false;}}}                    // remove outhole block
     else {                                            // no multiball running
       LockedBalls[Player] = 0;
       PB_HandleDropTargets(100);                      // turn off drop target blinking
