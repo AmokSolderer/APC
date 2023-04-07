@@ -96,6 +96,7 @@ void USB_AttractMode() {                              // Attract Mode
   Switch_Pressed = USB_SwitchHandler;
   Switch_Released = USB_ReleasedSwitches;
   EX_Init(game_settings[USB_PinMameGame]);            // set exceptions for selected game
+  USB_ReleasedSwitches(72);                           // tell Lisy to start PinMame
   for (byte i=0; i<5; i++) {
     USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
   if (game_settings[USB_Watchdog]) {                  // watchdog enabled?
@@ -210,7 +211,7 @@ void USB_Testmode(byte Dummy) {                       // enter system settings i
     USB_DisplayProtocol[i] = 6;}                      // use ASCII protocol for displays
   if (APC_settings[ConnType] == 2) {                  // USB mode selected?
     Serial.end();}
-  else if ((APC_settings[ConnType] == 1) && OnBoardCom) { // onbeard Pi selected and detected?
+  else if ((APC_settings[ConnType] == 1) && OnBoardCom) { // onboard Pi selected and detected?
     Serial3.end();}
   Settings_Enter();}
 
