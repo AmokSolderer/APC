@@ -114,6 +114,14 @@ byte EX_DummyProcess(byte Type, byte Command) {       // plays just the standard
 byte EX_Flash(byte Type, byte Command){
   static byte SoundSeries[3];                         // buffer to handle pre system11 sound series
   switch(Type){
+  case SolenoidActCommand:
+    if (Command > 8 && Command < 14) {                // ignore sound control solenoids
+      return(1);}
+    return(0);
+  case SolenoidRelCommand:
+    if (Command > 8 && Command < 14) {                // ignore sound control solenoids
+      return(1);}
+    return(0);
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
     else if (Command == 108) {                        // sound command 0x6c - stop sound
