@@ -1943,7 +1943,7 @@ void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar v
   RemoveBlinkLamp(35);
   PB_ClearOutLock(0);}
 
-void PB_ClearOutLock(byte CloseVisor) {
+void PB_ClearOutLock(byte CloseVisor) {               // CloseVisor = 1 -> Visor will be closed / = 2 -> clear out both balls but don't close visor
   if (QuerySolenoid(13)) {                            // visor motor on?
     ActivateTimer(1100, CloseVisor, PB_ClearOutLock);} // come back later
   else {
@@ -1953,8 +1953,10 @@ void PB_ClearOutLock(byte CloseVisor) {
       else {
         if (QuerySwitch(26)) {                        // right eye
           ActA_BankSol(8);}}                          // eject it
-      if (CloseVisor) {                               // closed visor requested?
-        ActivateTimer(1000, 1, PB_CloseVisor);}}      // set close flag
+      if (CloseVisor == 1) {                          // closed visor requested?
+        ActivateTimer(1000, 1, PB_CloseVisor);}       // set close flag
+      else if (CloseVisor == 2) {                     // eject 2nd ball but don't close visor
+        ActivateTimer(1000, 0, PB_CloseVisor);}}
     else {
       ActivateTimer(1000, 0, PB_OpenVisor);
       PlaySound(52, "0_f1.snd");                      // moving visor sound
@@ -2324,7 +2326,7 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
     if (QuerySwitch(38)) {                            // ball in eject hole?
       ActivateTimer(1000, 3, PB_ClearEjectHole);}     // clear eject hole
     BlockOuthole = false;                             // remove outhole block
-    PB_ClearOutLock(0);}
+    PB_ClearOutLock(2);}                              // eject all balls but don't close visor
   else {                                              // not a 3 ball multiball
     PB_EyeBlink(0);
     if (Multiballs == 2) {                            // multiball running?
