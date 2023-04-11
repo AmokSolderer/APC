@@ -440,42 +440,44 @@ void USB_SerialCommand() {
       USB_WriteByte((byte) QuerySolenoid(USB_SerialBuffer[0]));}
     break;
   case 21:                                            // set solenoid # to on
-    if (!PinMameException(SolenoidActCommand, USB_SerialBuffer[0])){  // check for machine specific exceptions
-      if (USB_SerialBuffer[0] < 23) {                 // max 24 solenoids
-        if (!SolRecycleTimers[USB_SerialBuffer[0]-1]) {  // recycling time over for this coil?
-          SolChange = false;                          // block IRQ solenoid handling
-          if (USB_SerialBuffer[0] > 8) {              // does the solenoid not belong to the first latch?
-            if (USB_SerialBuffer[0] < 17) {           // does it belong to the second latch?
-              SolBuffer[1] |= 1<<(USB_SerialBuffer[0]-9);   // latch counts from 0
-              SolLatch |= 2;}                         // select second latch
+    if (game_settings[USB_PinMameGame] > 18 || USB_SerialBuffer[0] < 9 || USB_SerialBuffer[0] > 13) { // block solenoid commands for Sys 3 - 6 sound control lines
+      if (!PinMameException(SolenoidActCommand, USB_SerialBuffer[0])){  // check for machine specific exceptions
+        if (USB_SerialBuffer[0] < 23) {               // max 24 solenoids
+          if (!SolRecycleTimers[USB_SerialBuffer[0]-1]) {  // recycling time over for this coil?
+            SolChange = false;                        // block IRQ solenoid handling
+            if (USB_SerialBuffer[0] > 8) {            // does the solenoid not belong to the first latch?
+              if (USB_SerialBuffer[0] < 17) {         // does it belong to the second latch?
+                SolBuffer[1] |= 1<<(USB_SerialBuffer[0]-9);   // latch counts from 0
+                SolLatch |= 2;}                       // select second latch
+              else {
+                SolBuffer[2] |= 1<<(USB_SerialBuffer[0]-17);
+                SolLatch |= 4;}}                      // select third latch
             else {
-              SolBuffer[2] |= 1<<(USB_SerialBuffer[0]-17);
-              SolLatch |= 4;}}                        // select third latch
-          else {
-            SolBuffer[0] |= 1<<(USB_SerialBuffer[0]-1);
-            SolLatch |= 1;}                           // select first latch
-          SolChange = true;}}
-      else if (USB_SerialBuffer[0] == 23) {           // right flipper
-        ActivateSolenoid(0, 23);}
-      else if (USB_SerialBuffer[0] == 24) {           // left flipper
-        ActivateSolenoid(0, 24);}
-      else if (USB_SerialBuffer[0] == 25) {           // 25 is a shortcut for both flipper fingers
-        ActivateSolenoid(0, 23);                      // enable both flipper fingers
-        ActivateSolenoid(0, 24);}
-      else if ((USB_SerialBuffer[0] <= SolMax) && APC_settings[SolenoidExp]) {  // sol exp board selected
-        WriteToHwExt(SolBuffer[3] |= 1<<(USB_SerialBuffer[0]-26), 128+4);
-        WriteToHwExt(SolBuffer[3] |= 1<<(USB_SerialBuffer[0]-26), 4);}}
+              SolBuffer[0] |= 1<<(USB_SerialBuffer[0]-1);
+              SolLatch |= 1;}                         // select first latch
+            SolChange = true;}}
+        else if (USB_SerialBuffer[0] == 23) {         // right flipper
+          ActivateSolenoid(0, 23);}
+        else if (USB_SerialBuffer[0] == 24) {         // left flipper
+          ActivateSolenoid(0, 24);}
+        else if (USB_SerialBuffer[0] == 25) {         // 25 is a shortcut for both flipper fingers
+          ActivateSolenoid(0, 23);                    // enable both flipper fingers
+          ActivateSolenoid(0, 24);}
+        else if ((USB_SerialBuffer[0] <= SolMax) && APC_settings[SolenoidExp]) {  // sol exp board selected
+          WriteToHwExt(SolBuffer[3] |= 1<<(USB_SerialBuffer[0]-26), 128+4);
+          WriteToHwExt(SolBuffer[3] |= 1<<(USB_SerialBuffer[0]-26), 4);}}}
     break;
   case 22:                                            // set solenoid # to off
-    if (!PinMameException(SolenoidRelCommand, USB_SerialBuffer[0])){  // check for machine specific exceptions
-      if (USB_SerialBuffer[0] < 25) {                 // max 24 solenoids
-        ReleaseSolenoid(USB_SerialBuffer[0]);}
-      else if (USB_SerialBuffer[0] == 25) {           // 25 is a shortcut for both flipper fingers
-        ReleaseSolenoid(23);                          // disable both flipper fingers
-        ReleaseSolenoid(24);}
-      else if ((USB_SerialBuffer[0] <= SolMax) && APC_settings[SolenoidExp]) {  // sol exp board selected
-        WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 128+4);
-        WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 4);}}
+    if (game_settings[USB_PinMameGame] > 18 || USB_SerialBuffer[0] < 9 || USB_SerialBuffer[0] > 13) { // block solenoid commands for Sys 3 - 6 sound control lines
+      if (!PinMameException(SolenoidRelCommand, USB_SerialBuffer[0])){  // check for machine specific exceptions
+        if (USB_SerialBuffer[0] < 25) {               // max 24 solenoids
+          ReleaseSolenoid(USB_SerialBuffer[0]);}
+        else if (USB_SerialBuffer[0] == 25) {         // 25 is a shortcut for both flipper fingers
+          ReleaseSolenoid(23);                        // disable both flipper fingers
+          ReleaseSolenoid(24);}
+        else if ((USB_SerialBuffer[0] <= SolMax) && APC_settings[SolenoidExp]) {  // sol exp board selected
+          WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 128+4);
+          WriteToHwExt(SolBuffer[3] &= 255-(1<<(USB_SerialBuffer[0]-26)), 4);}}}
     break;
   case 23:                                            // pulse solenoid
     if (USB_SolTimes[USB_SerialBuffer[0]-1]) {        // pulse length set?

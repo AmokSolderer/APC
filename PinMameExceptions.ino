@@ -115,15 +115,19 @@ byte EX_Flash(byte Type, byte Command){
   static byte SoundSeries[3];                         // buffer to handle pre system11 sound series
   switch(Type){
   case SolenoidActCommand:
-    if (Command > 8 && Command < 14) {                // ignore sound control solenoids
+    if (Command == 1) {                     // ball release
+      ActivateSolenoid(40, 1);              // Temporary fix to increase the strength of the ball release
+      return(1);}
+    else if (Command == 3) {                // reset of the lower two of the five drop targets
+      ActivateSolenoid(40, 3);              // Temporary fix to increase the strength of the ball release
       return(1);}
     return(0);
   case SolenoidRelCommand:
-    if (Command > 8 && Command < 14) {                // ignore sound control solenoids
-      return(1);}
+    if (Command == 1 || Command == 3) {     // ball release or the reset of the lower two of the five drop targets
+      return(1);}                           // ignore it
     return(0);
   case SoundCommandCh1:                               // sound commands for channel 1
-    if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
+    if (Command == 127 || Command == 255) { }         // ignore sound command 0x7f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
     else if (Command == 108) {                        // sound command 0x6c - stop sound
       AfterSound = 0;
       SoundSeries[0] = 0;
@@ -841,6 +845,7 @@ byte EX_Blank(byte Type, byte Command){               // use this as a template 
 void EX_Init(byte GameNumber) {
   switch(GameNumber) {
   case 6:                                             // Flash
+    SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
     PinMameException = EX_Flash;                      // use exception rules for Flash
     break;
   case 16:                                            // Firepower
