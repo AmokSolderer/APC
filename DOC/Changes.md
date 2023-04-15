@@ -5,6 +5,7 @@
 ### New SW Version V1.00
 
 * Bugfix -> if a sound/music file was invoked immediately after another, the first one was dropped regardless of the priority.
+* Bugfix -> Controlling the original audio boards of System 3 - 6 games has been fixed.
 
 ## March 2023
 
