@@ -164,7 +164,7 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 1.5. [Run a game](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md)  - All the ways to get a game running  
 
 2. References  
-2.1. [Setting up the BaseCode](https://github.com/AmokSolderer/APC/blob/master/DOC/SetUpBC.md)
+2.1. [Setting up the BaseCode](https://github.com/AmokSolderer/APC/blob/master/DOC/SetUpBC.md)  
 2.2. [Useful software tools](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md) - Simple tools for audio data conversion and so on  
 2.3. [APC settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) - a table of the settings and how to use them  
 2.4. [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
