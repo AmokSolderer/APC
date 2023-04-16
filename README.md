@@ -161,16 +161,17 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 1.2. [Upload the SW](https://github.com/AmokSolderer/APC/blob/master/DOC/Upload_SW.md) - How to program the Arduino DUE  
 1.3. [Basic Preparation](https://github.com/AmokSolderer/APC/blob/master/DOC/Prepare.md) - Required cables and stuff  
 1.4. [Do the tests](https://github.com/AmokSolderer/APC/blob/master/DOC/InitialTests.md) - Test your board  
-1.5. [Run a game](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md)  - All the ways to get a game running  
+1.5. [Run a game](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md) - All the ways to get a game running  
 
 2. References  
+2.1. [Setting up the BaseCode](https://github.com/AmokSolderer/APC/blob/master/DOC/SetUpBC.md) - Do the BaseCode setup to get a very simple game  
 2.2. [Useful software tools](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md) - Simple tools for audio data conversion and so on  
 2.3. [APC settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) - a table of the settings and how to use them  
 2.4. [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
 2.5. [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) - If you have a problem, check here first
 
 3. Writing my own game code - You want to program your own game in C? Then read this.  
-3.1. [Game code tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md)  
+3.1. [Game code tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md) - A step by step introduction to writing your own game code  
 3.2. [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) - All commands of the API in a nutshell  
 
 4. Running PinMame  
