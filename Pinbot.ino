@@ -1949,14 +1949,16 @@ void PB_ClearOutLock(byte CloseVisor) {               // CloseVisor = 1 -> Visor
   else {
     if (QuerySwitch(47)) {                            // visor is open
       if (QuerySwitch(25)) {                          // left eye?
-        ActA_BankSol(7);}                             // eject it
+        ActA_BankSol(7);                              // eject it
+        if (QuerySwitch(26)) {
+          ActivateTimer(1000, CloseVisor, PB_ClearOutLock);}
+        else if (CloseVisor) {
+          ActivateTimer(1000, 1, PB_CloseVisor);}}
       else {
         if (QuerySwitch(26)) {                        // right eye
-          ActA_BankSol(8);}}                          // eject it
-      if (CloseVisor == 1) {                          // closed visor requested?
-        ActivateTimer(1000, 1, PB_CloseVisor);}       // set close flag
-      else if (CloseVisor == 2) {                     // eject 2nd ball but don't close visor
-        ActivateTimer(1000, 0, PB_CloseVisor);}}
+          ActA_BankSol(8);}                           // eject it
+        if (CloseVisor == 1) {                        // closed visor requested?
+          ActivateTimer(1000, 1, PB_CloseVisor);}}}   // set close flag
     else {
       ActivateTimer(1000, 0, PB_OpenVisor);
       PlaySound(52, "0_f1.snd");                      // moving visor sound
@@ -1978,8 +1980,8 @@ void PB_EnergyReset(byte Counter) {
   if (Counter) {
     ActivateTimer(110, Counter, PB_EnergyReset);}
   else {
-    PB_EnergyActive = false;                        // energy value off
-    PB_DropRamp = true;}}                           // ramp needs to be dropped
+    PB_EnergyActive = false;                          // energy value off
+    PB_DropRamp = true;}}                             // ramp needs to be dropped
 
 void PB_TurnOffLamp(byte Lamp) {
   TurnOffLamp(Lamp);}
@@ -2319,6 +2321,10 @@ void PB_PlayAfterGameSequence(byte State) {
       ReleaseAllSolenoids();}}}
 
 void PB_BallEnd(byte Balls) {                         // ball has been kicked into trunk
+  Serial.print("BeLock = ");
+  Serial.println(InLock);
+  Serial.print("BEballs = ");
+  Serial.println(Multiballs);
   if (Multiballs == 3) {                              // 3 ball multiball running
     RemoveBlinkLamp(35);                              // solar energy lamp
     Multiballs = 2;
@@ -2347,14 +2353,17 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       PlayMusic(50, "1_0a.snd");                      // play multiball end theme
       QueueNextMusic("1_02L.snd");                    // track is looping so queue it also
       if (game_settings[PB_Multiballs]) {
-                                          // TODO fix double drain
-        PB_ClearOutLock(1);                           // clear out lock and close visor
+        // TODO fix double drain
+        if (InLock == 2) {
+          PB_ClearOutLock(2);}
+        else {
+          PB_ClearOutLock(1);                         // clear out lock and close visor
+          PB_ChestLightHandler(0);                    // stop chest animation
+          PB_ChestMode = 1;
+          PB_ClearChest();                            // turn off chest lamps
+          PB_ChestLightHandler(100);                  // restart chest animation
+          ActivateTimer(3000, 10, PB_Multiball);}     // return to main music theme
         InLock = 0;
-        PB_ChestLightHandler(0);                      // stop chest animation
-        PB_ChestMode = 1;
-        PB_ClearChest();                              // turn off chest lamps
-        PB_ChestLightHandler(100);                    // restart chest animation
-        ActivateTimer(3000, 10, PB_Multiball);        // return to main music theme
         BlockOuthole = false;}                        // remove outhole block
       else {
         if (Balls == 2) {                             // all balls detected in the trunk
