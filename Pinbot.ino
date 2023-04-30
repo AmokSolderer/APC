@@ -956,53 +956,118 @@ void PB_CloseVisor(byte State) {
   else {
     PB_CloseVisorFlag = true;}}                       // set flag to stop visor motor when closed
 
+void PB_CountBallsInLock() {
+  InLock = 0;
+  for (byte i=0; i<2; i++) {                  // check how many balls are in the eyes
+    if (QuerySwitch(25+i)) {
+      InLock++;}}}
+
 void PB_ClearOuthole(byte State) {
   static byte Trunk;
-  switch (State) {
-  case 0:                                             // inital call
-    if (QuerySwitch(16)) {
-      if (!BlockOuthole) {                            // outhole switch still active?
-        BlockOuthole = true;                          // block outhole until this ball has been processed
+  if (game_settings[PB_Multiballs]) {                 // 3 ball multiball selected?
+    switch (State) {
+    case 0:                                           // inital call
+      if (QuerySwitch(16)) {                          // outhole switch still active?
         Trunk = PB_CountBallsInTrunk();
-        if ((!game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 1 - InLock) || (Multiballs == 2 && Trunk == 0))) || (game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 2 - InLock) || Multiballs == 2 || (Multiballs == 3 && Trunk == 0)))) {  // ball count OK?
-          ActivateTimer(10, 5, PB_ClearOuthole);}
-        else {                                        // ball count not OK
-          InLock = 0;
+        switch (PB_MballState) {
+        case 1:                                       // one ball in play
+          if (Trunk == 2) {                           // 2 balls expected to be in trunk
+            ActivateTimer(10, 5, PB_ClearOuthole);}   // proceed to next state
+          else {                                      // wrong ball count
+            ActivateTimer(1000, 1, PB_ClearOuthole);}
+          break;
+        case 2:                                       // one ball in lock
+        case 5:                                       // two balls in game but none in lock
+        case 6:                                       // one ball in lock after multiball
+          if (Trunk == 1) {                           // 1 ball expected to be in trunk
+            ActivateTimer(10, 5, PB_ClearOuthole);}   // proceed to next state
+          else {                                      // wrong ball count
+            ActivateTimer(1000, 1, PB_ClearOuthole);}
+          break;
+        case 3:                                       // two balls in lock
+        case 4:                                       // 3 ball multiball
+          if (!Trunk) {                               // 0 balls expected to be in trunk
+            ActivateTimer(10, 5, PB_ClearOuthole);}   // proceed to next state
+          else {                                      // wrong ball count
+            ActivateTimer(1000, 1, PB_ClearOuthole);}
+          break;}}
+      else {                                          // outhole free
+        BlockOuthole = false;}
+      break;
+    case 1:                                           // trunk count doesn't match
+      Trunk = PB_CountBallsInTrunk();
+      PB_CountBallsInLock();
+        switch (PB_MballState) {
+        case 1:                                       // one ball in play
+          if (Trunk == 2) {                           // 2 balls expected to be in trunk
+            ActivateTimer(10, 5, PB_ClearOuthole);}   // proceed to next state
+          else {                                      // wrong ball count
+            if (!InLock) {
+              PB_MballState = 5;
+              ActivateTimer(10, 0, PB_ClearOuthole);}
+            else if (InLock == 1) {
+              PB_MballState = 6;
+              ActivateTimer(10, 0, PB_ClearOuthole);}
+            else {
+              PB_MballState = 3;
+              ActivateTimer(10, 0, PB_ClearOuthole);}}
+          break;
+
+        }
+
+
+      break;
+    case 5:
+      if (!C_BankActive) {
+        ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
+        ActivateTimer(1000, 10, PB_ClearOuthole);}
+      else {
+        ActivateTimer(1000, 5, PB_ClearOuthole);}     // try again
+      break;
+    case 10:                                          // ball was kicked in outhole
+      if (QuerySwitch(16)) {                          // ball still in outhole?
+        if (PB_MballState == 4 || PB_MballState == 5) {
+          PB_BallEnd(1);                              // call ball end twice
+          BlockOuthole = true;}                       // block outhole again
+        ActA_BankSol(1);                              // make the coil a bit stronger
+        ActivateTimer(2000, 10, PB_ClearOuthole);}    // and come back in 2s
+      else {
+        PB_BallEnd(Trunk+1);}}}
+  else {                                              // 2 ball multiball selected
+    switch (State) {
+    case 0:
+      if (QuerySwitch(16)) {                          // outhole switch still active?
+        if (!C_BankActive) {                          // correct solenoid bank active?
+          ActivateSolenoid(30, 1);                    // put ball in trunk
+          ActivateTimer(2000, 1, PB_ClearOuthole);}   // come back to check
+        else {
+          ActivateTimer(500, 0, PB_ClearOuthole);}}   // wait for A-bank to be active
+      else {                                          // outhole free
+        BlockOuthole = false;}
+      break;
+    case 1:                                           // check if ball is in trunk
+    case 2:
+    case 3:
+      Trunk = PB_CountBallsInTrunk();
+      if ((Trunk == 5)||(Trunk < 3-Multiballs-InLock)) {  // something's wrong in the trunk
+        InLock = 0;
+        if (Multiballs == 1) {
           for (byte i=0; i<2; i++) {                  // check how many balls are in the eyes
             if (QuerySwitch(25+i)) {
-              InLock++;}}
-          ActivateTimer(1000, 1, PB_ClearOuthole);}}  // if not try again in 1s
-      else {                                          // outhole still blocked
-        ActivateTimer(2000, 0, PB_ClearOuthole);}}    // try again
-    else {                                            // outhole free
-      BlockOuthole = false;}
-    break;
-  case 1:                                             // trunk count doesn't match
-    Trunk = PB_CountBallsInTrunk();
-    InLock = 0;
-    if ((!game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 1 - InLock) || (Multiballs == 2 && Trunk == 0))) || (game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 2 - InLock) || Multiballs == 2 || (Multiballs == 3 && Trunk == 0)))) {  // ball count OK?
-      ActivateTimer(10, 5, PB_ClearOuthole);}         // proceed
-    else {                                            // ball count not OK
-      for (byte i=0; i<2; i++) {                      // check how many balls are in the eyes
-        if (QuerySwitch(25+i)) {
-          InLock++;}}}
-    ActivateTimer(2000, 5, PB_ClearOuthole);          // and try again
-    break;
-  case 5:
-    if (!C_BankActive) {
-      ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
-      ActivateTimer(1000, 10, PB_ClearOuthole);}
-    else {
-      ActivateTimer(1000, 5, PB_ClearOuthole);}       // try again
-    break;
-  case 10:                                            // ball was kicked in outhole
-    if (QuerySwitch(16)) {                            // ball still in outhole?
-      if ((!game_settings[PB_Multiballs] && Trunk == 0) || (game_settings[PB_Multiballs] && Trunk < 2)) {  // assume that 2 balls have been in the outhole
-        Trunk++;}
-      ActA_BankSol(1);                                // make the coil a bit stronger
-      ActivateTimer(2000, 10, PB_ClearOuthole);}      // and come back in 2s
-    else {
-      PB_BallEnd(Trunk+1);}}}
+              InLock++;}}}
+        WriteLower(" BALL   ERROR ");
+        if (QuerySwitch(16)) {                        // ball still in outhole?
+          ActA_BankSol(1);                            // make the coil a bit stronger
+          ActivateTimer(2000, 1, PB_ClearOuthole);}   // and come back in 2s
+        else {
+          State++;
+          ActivateTimer(1000, State, PB_ClearOuthole);}}   // if not try again in 1s
+      else {
+        ActivateTimer(100, Trunk, PB_BallEnd);}
+      break;
+    case 4:                                           // ball count still wrong but proceeding anyway
+      ActivateTimer(100, Trunk, PB_BallEnd);}}}
+
 
 void PB_MultiballThunder2(byte Dummy) {
   UNUSED(Dummy);
@@ -1224,7 +1289,9 @@ void PB_GameMain(byte Switch) {
         PB_GiveExBall();}}
     break;
   case 16:                                            // outhole
-    ActivateTimer(200, 0, PB_ClearOuthole);           // check again in 200ms
+    if (!BlockOuthole) {
+      BlockOuthole = true;                            // block outhole until this ball has been processed
+      ActivateTimer(200, 0, PB_ClearOuthole);}        // check again in 200ms
     break;
   case 19:                                            // advance planet
     if (PB_SpecialLit) {                              // special lit?
@@ -1783,24 +1850,30 @@ void PB_HandleLock(byte State) {      // TODO Handle Lock
         if (game_settings[PB_Multiballs]) {           // 3 ball multiball mode?
           switch (PB_MballState) {
           case 1:                                     // one ball locked
-            ActivateSolenoid(0, 12);                  // turn off playfield GI
-            PB_EyeBlink(0);                           // stop eye blinking
-            PlayFlashSequence((byte*) PB_Ball_Locked);
-            PlayMusic(52, "1_80.snd");
-            ActivateTimer(1000, 1, PB_2ndLock);       // 'partial link up'
-            PB_GiveBall(2);
-            PB_MballState = 2;
+            if (InLock == 1) {
+              ActivateSolenoid(0, 12);                // turn off playfield GI
+              PB_EyeBlink(0);                         // stop eye blinking
+              PlayFlashSequence((byte*) PB_Ball_Locked);
+              PlayMusic(52, "1_80.snd");
+              ActivateTimer(1000, 1, PB_2ndLock);     // 'partial link up'
+              PB_GiveBall(2);
+              PB_MballState = 2;}
+            else {                                    // not the correct amount of balls in lock
+              if (InLock) {                           // two balls in lock
+                PB_MballState = 2;
+                ActivateTimer(200, 1, PB_HandleLock);}}
             break;
           case 2:                                     // second ball locked
           case 6:                                     // second ball re-locked
             //PB_EyeFlash(1);
-            MusicVolume = 3;
-            PlaySound(55, "0_b0.snd");                // 'now I see you'
-            ActivateTimer(2400, 25, RestoreMusicVolume);  // restore music volume after sound has been played
-            ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
-            ActivateSolenoid(0, 13);                  // start visor motor
-            PB_GiveBall(1);
-            PB_MballState = 3;
+            if (InLock == 2) {                        // correct number of balls in lock?
+              MusicVolume = 3;
+              PlaySound(55, "0_b0.snd");              // 'now I see you'
+              ActivateTimer(2400, 25, RestoreMusicVolume);  // restore music volume after sound has been played
+              ActivateTimer(2000, 0, PB_CloseVisor);  // close visor
+              ActivateSolenoid(0, 13);                // start visor motor
+              PB_GiveBall(1);
+              PB_MballState = 3;}
             break;
           case 4:                                     // 3 ball multiball
             ActivateTimer(game_settings[PB_MballHoldTime]*1000, 0, PB_ClearOutLock);
@@ -2322,7 +2395,7 @@ void PB_PlayAfterGameSequence(byte State) {
       ReleaseAllSolenoids();}}}
 
 void PB_BallEnd(byte Balls) {                         // ball has been kicked into trunk
-  if (game_settings[PB_Multiballs]) {
+  if (game_settings[PB_Multiballs]) {                 // 3 ball multiball selected?
     switch (PB_MballState) {
     case 4:                                           // 3 ball multiball running
       RemoveBlinkLamp(35);                            // solar energy lamp
