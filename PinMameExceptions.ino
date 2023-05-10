@@ -127,48 +127,48 @@ byte EX_Flash(byte Type, byte Command){
       return(1);}                           // ignore it
     return(0);
   case SoundCommandCh1:                               // sound commands for channel 1
-    if (Command == 127 || Command == 255) { }         // ignore sound command 0x7f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
-    else if (Command == 108) {                        // sound command 0x6c - stop sound
+    if (Command == 31) { }                            // ignore sound command 0x1f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
+    else if (Command == 12) {                         // sound command 0x0c - stop sound
       AfterSound = 0;
       SoundSeries[0] = 0;
       SoundSeries[1] = 0;                             // reset the multiball start sound
       SoundSeries[2] = 0;                             // Reset BG sound
       StopPlayingSound();}
-    else if (Command == 106){                         // sound command 0x6a - sound series
+    else if (Command == 10){                          // sound command 0x0a - sound series
       if (SoundSeries[0] < 80) {                      // this sound has 80 tunes
         SoundSeries[0]++;}                            // every call of this sound proceeds with next tune
-      char FileName[13] = "0_6a_000.snd";             // generate base filename
+      char FileName[13] = "0_0a_000.snd";             // generate base filename
       FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current tune
       FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
       PlaySound(51, (char*) FileName);}               // play the sound
-    else if (Command == 107) {                        // sound command 0x6b - sound series
+    else if (Command == 11) {                         // sound command 0x0b - sound series
       if (SoundSeries[1] < 200) {                     // this sound has 200 tunes
         SoundSeries[1]++;}
-      char FileName[13] = "0_6b_000.snd";
+      char FileName[13] = "0_0b_000.snd";
       FileName[7] = 48 + (SoundSeries[1] % 10);
       FileName[6] = 48 + (SoundSeries[1] % 100) / 10;
       FileName[5] = 48 + (SoundSeries[1] / 100);      // the same with the 5th character
       PlaySound(51, (char*) FileName);}
-    else if (Command == 109) {                        // sound command 0x6d - background sound - sound series
+    else if (Command == 13) {                         // sound command 0x0d - background sound - sound series
       SoundSeries[0] = 0;
       if (SoundSeries[2] < 25) {                      // this sound has 25 tunes
         SoundSeries[2]++;}
-      char FileName[13] = "0_6e_000.snd";
+      char FileName[13] = "0_0e_000.snd";
       FileName[7] = 48 + (SoundSeries[2] % 10);
       FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
       for (byte i=0; i<12; i++) {                     // prepare the filename
         USB_RepeatSound[i] = FileName[i];}
       QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
       PlaySound(51, (char*) FileName);}
-    else if (Command == 110) {                        // sound command 0x6e - background sound - sound series
+    else if (Command == 14) {                         // sound command 0x0e - background sound - sound series
       SoundSeries[2] = 0;
-      char FileName[13] = "0_6e_001.snd";
+      char FileName[13] = "0_0e_001.snd";
       for (byte i=0; i<12; i++) {                     // prepare the filename
         USB_RepeatSound[i] = FileName[i];}
       QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
       PlaySound(51, (char*) FileName);}
-    else if (Command == 111) {                        // sound command 0x6f - start game
-      char FileName[13] = "0_6f_000.snd";             // generate base filename
+    else if (Command == 15) {                         // sound command 0x0f - start game
+      char FileName[13] = "0_0f_000.snd";             // generate base filename
       FileName[7] = 48 + random(8) + 1;               // change the counter according to random number
       PlaySound(51, (char*) FileName);}               // play the corresponding sound file
     else {                                            // standard sound
