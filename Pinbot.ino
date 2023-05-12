@@ -997,42 +997,57 @@ void PB_ClearOuthole(byte State) {
     case 1:                                           // trunk count doesn't match
       Trunk = PB_CountBallsInTrunk();
       PB_CountBallsInLock();
-        switch (PB_MballState) {
-        case 1:                                       // one ball in play
-          if (Trunk == 2) {                           // 2 balls expected to be in trunk
-            ActivateTimer(10, 5, PB_ClearOuthole);}   // proceed to next state
-          else {                                      // wrong ball count
-            if (!InLock) {
-              PB_MballState = 5;
-              ActivateTimer(10, 0, PB_ClearOuthole);}
-            else if (InLock == 1) {
-              PB_MballState = 6;
-              ActivateTimer(10, 0, PB_ClearOuthole);}
-            else {
-              PB_MballState = 3;
-              ActivateTimer(10, 0, PB_ClearOuthole);}}
-          break;
-
-        }
-
-
+      switch (PB_MballState) {
+      case 1:                                         // one ball in play
+        if (Trunk == 2) {                             // 2 balls expected to be in trunk
+          ActivateTimer(10, 5, PB_ClearOuthole);}     // proceed to next state
+        else {                                        // wrong ball count
+          if (!InLock) {
+            PB_MballState = 5;
+            ActivateTimer(10, 0, PB_ClearOuthole);}
+          else if (InLock == 1) {
+            PB_MballState = 6;
+            ActivateTimer(10, 0, PB_ClearOuthole);}
+          else {
+            PB_MballState = 3;
+            ActivateTimer(10, 0, PB_ClearOuthole);}}
+        break;
+      case 2:                                         // one ball in lock
+      case 5:                                         // 2 balls still in game
+      case 6:                                         // one ball re-locked
+        if (Trunk == 1) {                             // 1 ball expected to be in trunk
+          ActivateTimer(10, 5, PB_ClearOuthole);}     // proceed to next state
+        else if (Trunk == 2){                         // ball may have jumped through outhole
+          if (!QuerySwitch(16)) {                     // no ball in outhole?
+            ActivateTimer(1000, 10, PB_ClearOuthole);}  // then it's confirmed
+          else {
+            PB_MballState = 1;
+            ActivateTimer(10, 0, PB_ClearOuthole);}}
+        break;
+      case 3:                                         // 2 balls in lock
+      case 4:                                         // 3 ball multiball
+        if (!Trunk) {                                 // trunk is supposed to be empty
+          ActivateTimer(10, 5, PB_ClearOuthole);}     // proceed to next state
+        else if (Trunk == 1){                         // ball may have jumped through outhole
+          if (!QuerySwitch(16)) {                     // no ball in outhole?
+            ActivateTimer(1000, 10, PB_ClearOuthole);}}}  // then it's confirmed
       break;
-    case 5:
-      if (!C_BankActive) {
-        ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
-        ActivateTimer(1000, 10, PB_ClearOuthole);}
-      else {
-        ActivateTimer(1000, 5, PB_ClearOuthole);}     // try again
-      break;
-    case 10:                                          // ball was kicked in outhole
-      if (QuerySwitch(16)) {                          // ball still in outhole?
-        if (PB_MballState == 4 || PB_MballState == 5) {
-          PB_BallEnd(1);                              // call ball end twice
-          BlockOuthole = true;}                       // block outhole again
-        ActA_BankSol(1);                              // make the coil a bit stronger
-        ActivateTimer(2000, 10, PB_ClearOuthole);}    // and come back in 2s
-      else {
-        PB_BallEnd(Trunk+1);}}}
+      case 5:                                         // ball count OK, put ball in trunk
+        if (!C_BankActive) {
+          ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
+          ActivateTimer(1000, 10, PB_ClearOuthole);}
+        else {
+          ActivateTimer(1000, 5, PB_ClearOuthole);}   // try again
+        break;
+      case 10:                                        // ball was kicked in outhole
+        if (QuerySwitch(16)) {                        // ball still in outhole?
+          if (PB_MballState == 4 || PB_MballState == 5) { // probably a double drain
+            PB_BallEnd(1);                            // call ball end twice
+            BlockOuthole = true;}                     // block outhole again
+          ActA_BankSol(1);                            // make the coil a bit stronger
+          ActivateTimer(2000, 10, PB_ClearOuthole);}  // and come back in 2s
+        else {
+          PB_BallEnd(Trunk+1);}}}
   else {                                              // 2 ball multiball selected
     switch (State) {
     case 0:
