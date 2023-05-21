@@ -2132,7 +2132,7 @@ void PB_HandleDropTargets(byte Target) {
       PB_AdvancePlanet(1);}
     else {
       if (!PB_DropTimer) {                            // first target hit
-        if (Target-8 == PB_DropBlinkLamp) {           // blinking target hit?
+        if (Target-8 == PB_DropBlinkLamp && Multiballs != 3) { // blinking target hit?
           //MusicVolume = 4;                            // reduce music volume
           PlaySound(51, "0_71.snd");
           ActivateTimer(1000, 0, PB_RaiseRamp);       // raise ramp in 1s
@@ -2425,6 +2425,7 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       RemoveBlinkLamp(35);                            // solar energy lamp
       Multiballs = 1;                                 // reset score multiplier
       PB_MballDisplay(0);                             // stop display animation
+      PB_SolarValue = 0;                              // reset jackpot
       PB_MballState = 5;                              // indicate a ball loss
       PB_MballDisplay(0);                             // stop display animation
       PB_ShowMessage(255);                            // release message block
