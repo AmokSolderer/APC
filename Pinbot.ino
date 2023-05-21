@@ -617,16 +617,20 @@ void PB_AddPlayer() {
 
 void PB_NewBall(byte Balls) {                         // release ball (Balls = expected balls on ramp)
   ShowAllPoints(0);
+  if (game_settings[PB_Multiballs]) {                 // 3 ball multiball selected?
+    PB_SolarValue = 0;                                // reset jackpot
+    PB_SkillMultiplier = 1;}
+  else {                                              // 2 ball multiball selected
+    if (Balls < 10) {                                 // is it an extra ball?
+      PB_SkillMultiplier = 0;}                        // no extra ball -> reset skill shot multiplier
+    else {                                            // it's an extra ball
+      Balls -= 10;}}                                  // restore balls value
   PlayMusic(50, "1_94.snd");                          // play non looping part of music track
   QueueNextMusic("1_94L.snd");                        // queue looping part as next music to be played}
   Bonus = 1;
   BonusMultiplier = 1;                                // reset bonus multiplier
   for (byte i=0; i<4; i++) {                          // turn off the corresponding lamps
     TurnOffLamp(9+i);}
-  if (Balls < 10) {                                   // is it an extra ball?
-    PB_SkillMultiplier = 0;}                          // no extra ball -> reset skill shot multiplier
-  else {                                              // it's an extra ball
-    Balls -= 10;}                                     // restore balls value
   *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
   BlinkScore(1);                                      // turn on score blinking
   PB_ClearChest();                                    // turn off chest lamps
@@ -1083,12 +1087,6 @@ void PB_ClearOuthole(byte State) {
     case 4:                                           // ball count still wrong but proceeding anyway
       ActivateTimer(100, Trunk, PB_BallEnd);}}}
 
-
-void PB_MultiballThunder2(byte Dummy) {
-  UNUSED(Dummy);
-  PlayMusic(50, "1_04.snd");                          // play non looping part of music track
-  QueueNextMusic("1_04L.snd");}                       // queue looping part as next music to be played
-
 void PB_MultiballThunder(byte State) {
   if (State < 8) {
     PlaySound(54, "0_d7.snd");
@@ -1097,10 +1095,16 @@ void PB_MultiballThunder(byte State) {
   else if (State < 9) {
     MusicVolume = 0;
     PlaySound(54, "0_fb.snd");
-    ActivateTimer(3300, 0, PB_MultiballThunder2);
-    ActivateTimer(6000, 9, PB_MultiballThunder);}
+    ActivateTimer(3300, 9, PB_MultiballThunder);
+    ActivateTimer(6000, 10, PB_MultiballThunder);}
+  else if (State < 10) {
+    PlayMusic(50, "1_04.snd");                        // play non looping part of music track
+    QueueNextMusic("1_04L.snd");}                     // queue looping part as next music to be played
   else {
-    StopPlayingSound();}}
+    if (Multiballs == 3 && PB_SolarValue == 1000) {   // 1M jackpot in 3 ball multiball mode?
+      PlaySound(58, "0_af.snd");}                     // 'million activated'
+    else {
+      StopPlayingSound();}}}
 
 void PB_RampThunder(byte State) {                     // State = 0 -> Stop
   static byte Timer = 0;
@@ -1433,18 +1437,23 @@ void PB_GameMain(byte Switch) {
     RampSound = false;
     MusicVolume = 3;                                  // reduce music volume
     if (Multiballs ==3 || PB_SolarValueTimer) {       // solar ramp lit
-      if (PB_SolarValueTimer) {
-        KillTimer(PB_SolarValueTimer);
-        PB_SolarValueTimer = 0;
-        RemoveBlinkLamp(35);}                         // solar energy lamp
+      if (game_settings[PB_Multiballs]) {             // 3 ball multiball mode?
+        if (PB_SolarValue < 1000) {                   // jackpot < 1M?
+          PB_SolarValue += 200;}                      // add 200K
+        Buffer = PB_SolarValue;}
+      else {                                          // 2 ball multiball mode?
+        if (PB_SolarValueTimer) {
+          KillTimer(PB_SolarValueTimer);
+          PB_SolarValueTimer = 0;
+          RemoveBlinkLamp(35);}                       // solar energy lamp
+        ActivateTimer(2000,1,PB_EyeBlink);
+        Buffer = PB_SolarValue;
+        PB_SolarValue = 100;
+        PB_ClearOutLock(0);}
+      PlayFlashSequence((byte*) PB_OpenVisorSeq);
       PB_MultiballThunder(0);                         // play sound effects
       Points[Player] += PB_SolarValue * 1000;
-      ShowPoints(Player);
-      ActivateTimer(2000,1,PB_EyeBlink);
-      Buffer = PB_SolarValue;
-      PB_SolarValue = 100;
-      PlayFlashSequence((byte*) PB_OpenVisorSeq);
-      PB_ClearOutLock(0);}
+      ShowPoints(Player);}
     else {                                            // solar ramp not lit
       PlaySound(51, "1_a9.snd");
       Points[Player] += 1000;
