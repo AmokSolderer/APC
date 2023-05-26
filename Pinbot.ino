@@ -634,7 +634,8 @@ void PB_NewBall(byte Balls) {                         // release ball (Balls = e
   *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
   BlinkScore(1);                                      // turn on score blinking
   PB_ClearChest();                                    // turn off chest lamps
-  if ((PB_Chest_Status[Player] > 100)) {              // > 100 means visor has to be open
+  if ((!game_settings[PB_Multiballs] && PB_Chest_Status[Player] > 100) ||
+      (game_settings[PB_Multiballs] && (PB_MballState != 1 && PB_MballState != 3))) {              // > 100 means visor has to be open
     PB_Chest_Status[Player] = PB_Chest_Status[Player] - 100; // use it as a counter for opened visors
     PB_LampsToLight = 1;
     PB_ChestMode = 0;                                 // indicate an open visor
