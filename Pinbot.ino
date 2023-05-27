@@ -1905,44 +1905,44 @@ void PB_HandleLock(byte State) {      // TODO Handle Lock
     ActivateTimer(200, 1, PB_HandleLock);}            // and come back to recheck
   else {                                              // number of locked balls as expected
     if (InLock) {                                     // locked ball found?
-      if (PB_ChestMode) {                             // visor is supposed to be closed
-        PB_ClearOutLock(1);}                          // remove balls from lock
-      else {
-        if (game_settings[PB_Multiballs]) {           // 3 ball multiball mode?
-          switch (PB_MballState) {
-          case 1:                                     // one ball locked
-            if (InLock == 1) {
-              ActivateSolenoid(0, 12);                // turn off playfield GI
-              PB_EyeBlink(0);                         // stop eye blinking
-              PlayFlashSequence((byte*) PB_Ball_Locked);
-              PlayMusic(52, "1_80.snd");
-              ActivateTimer(1000, 1, PB_2ndLock);     // 'partial link up'
-              PB_GiveBall(2);
-              PB_MballState = 2;}
-            else {                                    // not the correct amount of balls in lock
-              if (InLock) {                           // two balls in lock
-                PB_MballState = 2;
-                ActivateTimer(200, 1, PB_HandleLock);}}
-            break;
-          case 2:                                     // second ball locked
-          case 6:                                     // second ball re-locked
-            //PB_EyeFlash(1);
-            if (InLock == 2) {                        // correct number of balls in lock?
-              MusicVolume = 3;
-              PlaySound(55, "0_b0.snd");              // 'now I see you'
-              ActivateTimer(2400, 25, RestoreMusicVolume);  // restore music volume after sound has been played
-              ActivateTimer(2000, 0, PB_CloseVisor);  // close visor
-              ActivateSolenoid(0, 13);                // start visor motor
-              PB_GiveBall(1);
-              PB_MballState = 3;}
-            break;
-          case 4:                                     // 3 ball multiball
-            ActivateTimer(game_settings[PB_MballHoldTime]*1000, 0, PB_ClearOutLock);
-            break;
-          case 5:                                     // still two balls in game
-            PB_MballState = 6;
-            break;}}
-        else {                                        // 2ball multiball mode
+      if (game_settings[PB_Multiballs]) {             // 3 ball multiball mode?
+        switch (PB_MballState) {
+        case 1:                                       // one ball locked
+          if (InLock == 1) {
+            ActivateSolenoid(0, 12);                  // turn off playfield GI
+            PB_EyeBlink(0);                           // stop eye blinking
+            PlayFlashSequence((byte*) PB_Ball_Locked);
+            PlayMusic(52, "1_80.snd");
+            ActivateTimer(1000, 1, PB_2ndLock);       // 'partial link up'
+            PB_GiveBall(2);
+            PB_MballState = 2;}
+          else {                                      // not the correct amount of balls in lock
+            if (InLock) {                             // two balls in lock
+              PB_MballState = 2;
+              ActivateTimer(200, 1, PB_HandleLock);}}
+          break;
+        case 2:                                       // second ball locked
+        case 6:                                       // second ball re-locked
+          //PB_EyeFlash(1);
+          if (InLock == 2) {                          // correct number of balls in lock?
+            MusicVolume = 3;
+            PlaySound(55, "0_b0.snd");                // 'now I see you'
+            ActivateTimer(2400, 25, RestoreMusicVolume);  // restore music volume after sound has been played
+            ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
+            ActivateSolenoid(0, 13);                  // start visor motor
+            PB_GiveBall(1);
+            PB_MballState = 3;}
+          break;
+        case 4:                                       // 3 ball multiball
+          ActivateTimer(game_settings[PB_MballHoldTime]*1000, 0, PB_ClearOutLock);
+          break;
+        case 5:                                       // still two balls in game
+          PB_MballState = 6;
+          break;}}
+      else {                                          // 2ball multiball mode
+        if (PB_ChestMode) {                           // visor is supposed to be closed
+          PB_ClearOutLock(1);}                        // remove balls from lock
+        else {
           if (InLock == 1) {
             if (Multiballs > 1) {                     // multiball already running?
               MusicVolume = 4;                        // reduce music volume
