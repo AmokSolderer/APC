@@ -2087,7 +2087,7 @@ void PB_ClearOutLock(byte CloseVisor) {               // CloseVisor = 1 -> Visor
         ActA_BankSol(7);                              // eject it
         if (QuerySwitch(26)) {
           ActivateTimer(1000, CloseVisor, PB_ClearOutLock);}
-        else if (CloseVisor) {
+        else if (CloseVisor == 1) {                   // closed visor requested?
           ActivateTimer(1000, 1, PB_CloseVisor);}}
       else {
         if (QuerySwitch(26)) {                        // right eye
