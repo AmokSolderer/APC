@@ -1435,6 +1435,7 @@ void PB_GameMain(byte Switch) {
           Multiballs = 3;                             // set score multiplier
           PB_MballState = 4;
           AddBlinkLamp(35, 100);                      // start blinking of solar energy ramp
+          PB_HandleEnergy(0);                         // turn off energy and lower ramp
           ActivateTimer(1000, 3, PB_ClearEjectHole);
           PB_ClearOutLock(0);
           ActivateTimer(2400, 0, PB_Multiball);}      // call after sound
@@ -1937,6 +1938,8 @@ void PB_HandleLock(byte State) {      // TODO Handle Lock
           break;
         case 5:                                       // still two balls in game
           PB_MballState = 6;
+          if (InLock == 2) {                          // second ball also locked?
+            ActivateTimer(200, 1, PB_HandleLock);}
           break;}}
       else {                                          // 2ball multiball mode
         if (PB_ChestMode) {                           // visor is supposed to be closed
@@ -2701,6 +2704,7 @@ void PB_BallEnd3(byte Balls) {
       Ball++;
       ActivateTimer(100, Balls, PB_NewBall);}
     else {                                            // game end
+      PB_EyeBlink(0);
       ReleaseSolenoid(23);                            // disable flipper fingers
       ReleaseSolenoid(24);
       LampPattern = NoLamps;                          // Turn off all lamps
