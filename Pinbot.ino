@@ -2080,27 +2080,32 @@ void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar v
   RemoveBlinkLamp(35);
   PB_ClearOutLock(0);}
 
-void PB_ClearOutLock(byte CloseVisor) {               // CloseVisor = 1 -> Visor will be closed / = 2 -> clear out both balls but don't close visor
+void PB_ClearOutLock(byte State) {                    // CloseVisor = 0 -> eject 1 ball / CloseVisor = 1 -> Visor will be closed / = 2 -> clear out both balls but don't close visor
+  static byte Timer = 0;
+  if (State < 3) {                                    // inital call?
+    if (Timer) {
+      KillTimer(Timer);}
+    State += 3;}
   if (QuerySolenoid(13)) {                            // visor motor on?
-    ActivateTimer(1100, CloseVisor, PB_ClearOutLock);} // come back later
+    ActivateTimer(1100, State, PB_ClearOutLock);}     // come back later
   else {
     if (QuerySwitch(47)) {                            // visor is open
       if (QuerySwitch(25)) {                          // left eye?
         ActA_BankSol(7);                              // eject it
-        if (QuerySwitch(26)) {
-          ActivateTimer(1000, CloseVisor, PB_ClearOutLock);}
-        else if (CloseVisor == 1) {                   // closed visor requested?
+        if (QuerySwitch(26) && State == 5) {          // 2nd ball shall be ejected also
+          ActivateTimer(1000, 3, PB_ClearOutLock);}
+        else if (State == 4) {                        // closed visor requested?
           ActivateTimer(1000, 1, PB_CloseVisor);}}
       else {
         if (QuerySwitch(26)) {                        // right eye
           ActA_BankSol(8);}                           // eject it
-        if (CloseVisor == 1) {                        // closed visor requested?
+        if (State == 4) {                             // closed visor requested?
           ActivateTimer(1000, 1, PB_CloseVisor);}}}   // set close flag
-    else {
+    else {                                            // open visor
       ActivateTimer(1000, 0, PB_OpenVisor);
       PlaySound(52, "0_f1.snd");                      // moving visor sound
       ActivateSolenoid(0, 13);                        // activate visor motor
-      ActivateTimer(2000, CloseVisor, PB_ClearOutLock);}}}
+      ActivateTimer(2000, State, PB_ClearOutLock);}}}
 
 void PB_DropTargetReset(byte Counter) {
   PlaySound(52, "0_9b.snd");
