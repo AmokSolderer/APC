@@ -906,7 +906,7 @@ byte PB_CountBallsInTrunk() {
       Balls++;}}
   return Balls;}
 
-void PB_SearchBallCycle(byte Counter) {
+byte PB_SearchBallCycle(byte Counter) {
   WriteUpper("  BALL  SEARCH");
   ActivateSolenoid(0, PB_BallSearchCoils[Counter]); // fire coil to get ball free
   if (PB_BallSearchCoils[Counter] == 5) {   // ramp raise?
@@ -918,9 +918,12 @@ void PB_SearchBallCycle(byte Counter) {
     Counter = 0;}                           // start again
   if (QuerySwitch(46) && !QuerySolenoid(13)) {  // visor closed and motor not active?
     ActivateSolenoid(0, 13);                // open it enough to deactivate switch 46
-    ActivateTimer(2000, 0, PB_CloseVisor);}} // and prepare to close it again
+    ActivateTimer(2000, 0, PB_CloseVisor);} // and prepare to close it again
+  return(Counter);}
 
 void PB_SearchBall(byte Counter) {                    // ball watchdog timer has run out
+  Serial.print("SearchBall Mballs = ");
+  Serial.println(PB_MballState);
   BallWatchdogTimer = 0;
   if (!QuerySwitch(10) && !QuerySwitch(11) && !QuerySwitch(20)) { // if ball is waiting to be launched or any flipper finger up
     if (QuerySwitch(16)) {                            // ball in outhole?
@@ -938,7 +941,7 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
         if (game_settings[PB_Multiballs]) {           // 3 ball multiball selected?
           switch (PB_MballState) {
           case 1:                                     // one ball in play
-            PB_SearchBallCycle(Counter);              // fire coils to search ball
+            Counter = PB_SearchBallCycle(Counter);              // fire coils to search ball
             BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);
             break;
           case 2:                                     // one ball in lock
@@ -947,7 +950,7 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
             if (InLock != 1) {                        // number of locked balls not as expected
               PB_HandleLock(0);}                      // and call it
             else {
-              PB_SearchBallCycle(Counter);            // fire coils to search ball
+              Counter = PB_SearchBallCycle(Counter);            // fire coils to search ball
               BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}
             break;
           case 3:                                     // two balls in lock
@@ -957,11 +960,11 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
             else if (c > 0) {                         // unexpected ball in trunk
               PB_BallEnd(c);}
             else {
-              PB_SearchBallCycle(Counter);            // fire coils to search ball
+              Counter = PB_SearchBallCycle(Counter);            // fire coils to search ball
               BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}
             break;
           default:
-            PB_SearchBallCycle(Counter);              // fire coils to search ball
+            Counter = PB_SearchBallCycle(Counter);              // fire coils to search ball
             BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);
             break;}}
         else {                                        // 2 ball multiball selected
@@ -979,7 +982,7 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
               PB_HandleLock(0);                       // lock them
               BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
             else {
-              PB_SearchBallCycle(Counter);            // fire coils to search ball
+              Counter = PB_SearchBallCycle(Counter);            // fire coils to search ball
               BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}}}}}} // come again in 1s if no switch is activated
   else {
     BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}
