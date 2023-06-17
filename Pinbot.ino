@@ -1075,22 +1075,22 @@ void PB_ClearOuthole(byte State) {
           if (!QuerySwitch(16)) {                     // no ball in outhole?
             ActivateTimer(1000, 10, PB_ClearOuthole);}}}  // then it's confirmed
       break;
-      case 5:                                         // ball count OK, put ball in trunk
-        if (!C_BankActive) {
-          ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
-          ActivateTimer(1000, 10, PB_ClearOuthole);}
-        else {
-          ActivateTimer(1000, 5, PB_ClearOuthole);}   // try again
-        break;
-      case 10:                                        // ball was kicked in outhole
-        if (QuerySwitch(16)) {                        // ball still in outhole?
-          if (PB_MballState == 4 || PB_MballState == 5) { // probably a double drain
-            PB_BallEnd(1);                            // call ball end twice
-            BlockOuthole = true;}                     // block outhole again
-          ActA_BankSol(1);                            // make the coil a bit stronger
-          ActivateTimer(2000, 10, PB_ClearOuthole);}  // and come back in 2s
-        else {
-          PB_BallEnd(Trunk+1);}}}
+    case 5:                                         // ball count OK, put ball in trunk
+      if (!C_BankActive) {
+        ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
+        ActivateTimer(1000, 10, PB_ClearOuthole);}
+      else {
+        ActivateTimer(1000, 5, PB_ClearOuthole);}   // try again
+      break;
+    case 10:                                        // ball was kicked in outhole
+      if (QuerySwitch(16)) {                        // ball still in outhole?
+        if (PB_MballState == 4 || PB_MballState == 5) { // probably a double drain
+          PB_BallEnd(1);                            // call ball end twice
+          BlockOuthole = true;}                     // block outhole again
+        ActA_BankSol(1);                            // make the coil a bit stronger
+        ActivateTimer(2000, 10, PB_ClearOuthole);}  // and come back in 2s
+      else {
+        PB_BallEnd(Trunk+1);}}}
   else {                                              // 2 ball multiball selected
     switch (State) {
     case 0:
