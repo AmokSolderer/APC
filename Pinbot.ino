@@ -2104,7 +2104,7 @@ void PB_ClearOutLock(byte State) {                    // CloseVisor = 0 -> eject
           ActA_BankSol(8);}                           // eject it
         if (State == 4) {                             // closed visor requested?
           ActivateTimer(1000, 1, PB_CloseVisor);}}}   // set close flag
-    else {                                            // open visor
+    else if (QuerySwitch(25) || QuerySwitch(26)) {    // open visor if there's still a ball in lock
       ActivateTimer(1000, 0, PB_OpenVisor);
       PlaySound(52, "0_f1.snd");                      // moving visor sound
       ActivateSolenoid(0, 13);                        // activate visor motor
