@@ -713,6 +713,9 @@ byte EX_Comet(byte Type, byte Command) {
     if (Command == 3) {                               // credit switch
       EX_AttractLEDeffects(0);                        // and stop GI animations
       BlockDisplay = false;                           // don't show the custom text
+      if (game_settings[USB_CustomText]) {
+        WriteUpper("              ");
+        WriteLower("              ");}
       LEDhandling(6, 103);                            // write 103 to stop the GI animation
       LEDhandling(7, 1);
       LEDsetColorMode(0);                             // turn off unwanted LEDs
