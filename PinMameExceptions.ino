@@ -268,7 +268,7 @@ byte EX_JungleLord(byte Type, byte Command){
         PlaySound(51, (char*) FileName);}}
     return(0);                                        // return number not relevant for sounds
   case SwitchActCommand:                              // activated switches
-    if (LordModeTimer && Command > 12 && Command < 17) {  // LORD lane change mode active and one of the LORD switches triggered?
+    if (!LaneChangeDone && LordModeTimer && Command > 12 && Command < 17) {  // LORD lane change mode active and one of the LORD switches triggered?
       LaneChangeDone = true;                          // stop lane change
       Command = Command - LampMov;                    // apply lane change moves to switch number
       if (Command < 13) {
