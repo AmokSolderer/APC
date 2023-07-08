@@ -667,13 +667,7 @@ void PB_NewBall(byte Balls) {                         // release ball (Balls = e
       TurnOnLamp(PB_ExBallLamps[i]);}
     else {
       TurnOffLamp(PB_ExBallLamps[i]);}}
-  if (PB_EjectMode[Player] < 5) {
-    for (byte i=0; i<PB_EjectMode[Player]; i++) {
-      TurnOnLamp(13+i);}}
-  else {
-    for (byte i=0; i<(PB_EjectMode[Player]-5); i++) {
-      TurnOnLamp(13+i);}
-    AddBlinkLamp(PB_EjectMode[Player]+8, 100);}
+  PB_HandleEjectHole(10);                             // restore eject hole lamps
   PB_DropBlinkLamp = 41;
   PB_CycleDropLights(1);                              // start the blinking drop target lights
   if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {  // target planet not reached yet?
@@ -1323,12 +1317,7 @@ void PB_GameMain(byte Switch) {
       TurnOffLamp(58);
       PB_ExBallsLit[Player]--;
       PB_GiveExBall();}
-    if (PB_EjectMode[Player] < 5) {
-      if (PB_EjectMode[Player] == 4) {
-        AddBlinkLamp(15, 100);}
-      else {
-        AddBlinkLamp(PB_EjectMode[Player]+13, 100);}
-      PB_EjectMode[Player] = PB_EjectMode[Player] + 5;}
+    PB_HandleEjectHole(11);                           // proceed to next eject hole state
     break;
   case 15:                                            // right outlane
     PlaySound(51, "1_a5.snd");
@@ -1881,6 +1870,7 @@ void PB_HandleLock(byte State) {
           //PB_EyeFlash(1);
           if (InLock == 2) {                          // correct number of balls in lock?
             MusicVolume = 3;
+            PB_HandleEjectHole(15);                   // start eject hole animation
             PlaySound(55, "0_b0.snd");                // 'now I see you'
             ActivateTimer(2400, 25, RestoreMusicVolume);  // restore music volume after sound has been played
             ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
@@ -1936,6 +1926,7 @@ void PB_HandleLock(byte State) {
               PB_EyeFlash(1);
               PlaySound(55, "0_b0.snd");              // 'now I see you'
               ActivateTimer(2400, 0, PB_Multiball);   // call after sound
+              PB_HandleEjectHole(15);                 // start eject hole animation
               Multiballs = 2;}                        // start multiball
             else {                                    // second ball is not supposed to be there
               if (!PB_SolarValueTimer) {              // 'shoot for solar value' phase not running?
@@ -1944,13 +1935,16 @@ void PB_HandleLock(byte State) {
 
 void PB_HandleEjectHole(byte State) {
   static bool EjectIgnore = false;
+  static byte MBallAnimation = 0;
+  static byte Timer = 0;
+  const byte AniPattern[7] = {0b1000, 0b1001, 0b1011, 0b0111, 0b0110, 0b0100,0};
   switch (State) {
   case 1:                                             // initial call
     if (!EjectIgnore) {                               // hole not locked?
       EjectIgnore = true;                             // lock it
       ActivateTimer(200, 2, PB_HandleEjectHole);}
     break;
-  case 2:                                             // ball hass settled
+  case 2:                                             // ball has settled
     if (QuerySwitch(38)) {                            // is it still in the hole?
       PB_AddBonus(1);
       if (PB_MballState == 4) {                       // 3 ball multiball running?
@@ -2005,6 +1999,59 @@ void PB_HandleEjectHole(byte State) {
       ActivateTimer(100, 3, PB_HandleEjectHole);}
     else {
       EjectIgnore = false;}
+    break;
+  case 10:                                            // restore eject hole lamps
+    if (PB_EjectMode[Player] < 5) {
+      for (byte i=0; i<PB_EjectMode[Player]; i++) {
+        TurnOnLamp(13+i);}}
+    else {
+      for (byte i=0; i<(PB_EjectMode[Player]-5); i++) {
+        TurnOnLamp(13+i);}
+      AddBlinkLamp(PB_EjectMode[Player]+8, 100);}
+    break;
+  case 11:                                            // proceed to next eject hole state
+    if (!MBallAnimation) {                            // no multiball animation running
+      if (PB_EjectMode[Player] < 5) {
+        if (PB_EjectMode[Player] == 4) {
+          AddBlinkLamp(15, 100);}
+        else {
+          AddBlinkLamp(PB_EjectMode[Player]+13, 100);}
+        PB_EjectMode[Player] = PB_EjectMode[Player] + 5;}}
+    break;
+  case 15:                                            // switch to 3 ball multiball animation
+    if (!MBallAnimation && !Timer) {                  // multiball animation already running?
+      if (PB_EjectMode[Player] > 4) {                 // any blinking eject mode lamps?
+        if (PB_EjectMode[Player] == 9) {              // turn them off
+          RemoveBlinkLamp(15);}
+        else {
+          RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
+      ActivateTimer(10, 20, PB_HandleEjectHole);}     // start animation
+    break;
+  case 16:                                            // end animation
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    MBallAnimation = 0;
+    TurnOffLamp(13);
+    TurnOffLamp(14);
+    TurnOffLamp(15);
+    TurnOffLamp(16);
+    ActivateTimer(10, 10, PB_HandleEjectHole);        // restore eject hole lamps
+    break;
+  case 20:                                            // play animation
+    byte Buff = AniPattern[MBallAnimation];
+    for (byte i=0; i<4; i++) {
+      if (Buff & 1) {
+        TurnOnLamp(13+i);}
+      else {
+        TurnOffLamp(13+i);}
+      Buff = Buff>>1;}
+    if (MBallAnimation < 6) {
+      MBallAnimation++;
+      Timer = ActivateTimer(120, 20, PB_HandleEjectHole);}
+    else {
+      MBallAnimation = 0;
+      Timer = ActivateTimer(900, 20, PB_HandleEjectHole);}
     break;}}
 
 void PB_Multiball_RestoreLamps(byte Dummy) {
@@ -2497,6 +2544,7 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       WriteLower("              ");
       ShowPoints(Player);
       PB_LampSweepActive = 0;                         // turn off backbox lamp sweep
+      PB_HandleEjectHole(16);                         // stop eject hole animation
       ReleaseSolenoid(11);                            // turn backbox GI back on
       if (QuerySwitch(38)) {                          // ball in eject hole?
         ActivateTimer(1000, 3, PB_HandleEjectHole);}  // clear eject hole
