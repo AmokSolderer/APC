@@ -289,7 +289,8 @@ byte EX_JungleLord(byte Type, byte Command){
       byte i = 0;                                     // add switch number to list of changed switches
       while (USB_ChangedSwitches[i] && (i<63)) {
         i++;}
-      USB_ChangedSwitches[i] = Command | 128;         // send manipulated switch number to PinMame
+      USB_ChangedSwitches[i] = Command | 128;         // send manipulated set switch number to PinMame
+      USB_ChangedSwitches[i+1] = Command;             // send manipulated released switch number to PinMame
       return(1);}                                     // don't report the original switch number to PinMame
     else if (Command == 43) {                         // ball successfully ejected
       EX_BallRelease(0);}                             // stop ball release timer
@@ -337,14 +338,7 @@ byte EX_JungleLord(byte Type, byte Command){
     return(0);                                        // all switches are reported to PinMame
   case SwitchRelCommand:                              // deactivated switches
     if (LordModeTimer && Command > 12 && Command < 17) {  // LORD lane change mode active and one of the LORD switches triggered?
-      Command = Command - LampMov;                    // apply lane change moves to switch number
-      if (Command < 13) {
-        Command = Command + 4;}
-      byte i = 0;                                     // add switch number to list of changed switches
-      while (USB_ChangedSwitches[i] && (i<63)) {
-        i++;}
-      USB_ChangedSwitches[i] = Command;               // send manipulated switch number to PinMame
-      return(1);}
+      return(1);}                                     // ignore them
     if (Command == 49){                               // right magnet button
       ReleaseSolenoid(22);}                           // turn off right magnet
     else if (Command == 50) {                         // left magnet button
@@ -396,6 +390,7 @@ byte EX_JungleLord(byte Type, byte Command){
     if (QueryLamp(24)) {                              // mini playfield illumination lamp
       LordModeTimer = ActivateTimer(1000, 20, EX_JL_LaneChange);}  // (re-) start timer
     else {                                            // mini playfield not active any more
+      LaneChangeDone = false;
       LordModeTimer = 0;                              // end lane change mode
       if (PMlamp == 15) {                             // all lamps set?
         PMlamp = 0;}                                  // turn them off
