@@ -870,8 +870,8 @@ void PB_ShooterLaneWarning(byte State) {
     break;
   case 2:                                             // every second
     if (QuerySwitch(20)) {                            // ball still in shooter lane?
-    PlaySound(55, "0_6b.snd");                        // warning sound
-    Timer = ActivateTimer(1000, 2, PB_ShooterLaneWarning);}
+      PlaySound(55, "0_6b.snd");                      // warning sound
+      Timer = ActivateTimer(1000, 2, PB_ShooterLaneWarning);}
     else {
       if (Timer) {
         KillTimer(Timer);
@@ -2056,6 +2056,7 @@ void PB_HandleEjectHole(byte State) {
           RemoveBlinkLamp(15);}
         else {
           RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
+      MBallAnimation = 1;
       ActivateTimer(10, 20, PB_HandleEjectHole);}     // start animation
     break;
   case 16:                                            // end animation
@@ -2070,18 +2071,18 @@ void PB_HandleEjectHole(byte State) {
     ActivateTimer(10, 10, PB_HandleEjectHole);        // restore eject hole lamps
     break;
   case 20:                                            // play animation
-    byte Buff = AniPattern[MBallAnimation];
+    byte Buff = AniPattern[MBallAnimation-1];
     for (byte i=0; i<4; i++) {
       if (Buff & 1) {
         TurnOnLamp(13+i);}
       else {
         TurnOffLamp(13+i);}
       Buff = Buff>>1;}
-    if (MBallAnimation < 6) {
+    if (MBallAnimation < 7) {
       MBallAnimation++;
       Timer = ActivateTimer(120, 20, PB_HandleEjectHole);}
     else {
-      MBallAnimation = 0;
+      MBallAnimation = 1;
       Timer = ActivateTimer(900, 20, PB_HandleEjectHole);}
     break;}}
 
