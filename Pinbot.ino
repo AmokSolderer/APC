@@ -720,6 +720,9 @@ void PB_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 20) {                                 // shooter lane switch released?
     Switch_Released = DummyProcess;
     PlaySound(53, "1_95.snd");
+    if (PB_MballState == 4) {                         // 3 ball multiball running?
+      Multiballs = 3;                                 // resume multiball
+      PB_ShooterLaneWarning(0);}                          // turn off shooter lane warning
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
@@ -847,6 +850,32 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         ShowPoints(Player);}}
     BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
   PB_GameMain(Switch);}                               // process current switch
+
+void PB_ShooterLaneWarning(byte State) {
+  static byte Timer = 0;
+  switch (State) {
+  case 0:                                             // stop shooter lane warning
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    break;
+  case 1:                                             // activate shooter lane warning
+    if (QuerySwitch(20)) {                            // ball still in shooter lane?
+      Multiballs = 2;                                 // stop jackpot as long as ball is in the shooter lane
+      PlaySound(55, "0_6b.snd");                      // warning sound
+      Switch_Released = PB_CheckShooterLaneSwitch;    // set mode to register when ball is shot
+      Timer = ActivateTimer(1000, 2, PB_ShooterLaneWarning);}
+    else {
+      PB_SkillShot = false;}
+    break;
+  case 2:                                             // every second
+    if (QuerySwitch(20)) {                            // ball still in shooter lane?
+    PlaySound(55, "0_6b.snd");                        // warning sound
+    Timer = ActivateTimer(1000, 2, PB_ShooterLaneWarning);}
+    else {
+      if (Timer) {
+        KillTimer(Timer);
+        Timer = 0;}}}}
 
 void PB_BallReleaseCheck(byte Switch) {               // handle switches during ball release
   if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
@@ -1366,7 +1395,9 @@ void PB_GameMain(byte Switch) {
           PlaySound(55, "0_af.snd");                  // "Million activated"
           PlayFlashSequence((byte*) PB_OpenVisorSeq);}}
       else {
-        PB_SkillMultiplier = 1;}
+        PB_SkillMultiplier = 1;
+        if (PB_MballState == 4) {                     // 3 ball multiball running?
+          ActivateTimer(200, 1, PB_ShooterLaneWarning);}} // turn on shooter lane warning
       PB_SkillShot = true;}                           // the first shot is a skill shot
     break;
   case 25:                                            // left eye
@@ -1421,7 +1452,7 @@ void PB_GameMain(byte Switch) {
     PB_AddBonus(1);
     RampSound = false;
     MusicVolume = 3;                                  // reduce music volume
-    if (Multiballs ==3 || PB_SolarValueTimer) {       // solar ramp lit
+    if (Multiballs == 3 || PB_SolarValueTimer) {      // solar ramp lit
       if (game_settings[PB_Multiballs]) {             // 3 ball multiball mode?
         if (PB_SolarValue < 1000) {                   // jackpot < 1M?
           PB_SolarValue += 200;}                      // add 200K
@@ -2243,7 +2274,7 @@ void PB_HandleDropTargets(byte Target) {
       PB_AdvancePlanet(1);}
     else {
       if (!PB_DropTimer) {                            // first target hit
-        if (Target-8 == PB_DropBlinkLamp && Multiballs != 3) { // blinking target hit?
+        if (Target-8 == PB_DropBlinkLamp && PB_MballState != 4) { // blinking target hit?
           //MusicVolume = 4;                            // reduce music volume
           PlaySound(51, "0_71.snd");
           ActivateTimer(1000, 0, PB_RaiseRamp);       // raise ramp in 1s
