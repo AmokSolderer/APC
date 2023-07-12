@@ -447,14 +447,11 @@ void USB_SerialCommand() {
             SolChange = false;                        // block IRQ solenoid handling
             if (USB_SerialBuffer[0] > 8) {            // does the solenoid not belong to the first latch?
               if (USB_SerialBuffer[0] < 17) {         // does it belong to the second latch?
-                SolBuffer[1] |= 1<<(USB_SerialBuffer[0]-9);   // latch counts from 0
-                SolLatch |= 2;}                       // select second latch
+                SolBuffer[1] |= 1<<(USB_SerialBuffer[0]-9);}   // latch counts from 0
               else {
-                SolBuffer[2] |= 1<<(USB_SerialBuffer[0]-17);
-                SolLatch |= 4;}}                      // select third latch
+                SolBuffer[2] |= 1<<(USB_SerialBuffer[0]-17);}}
             else {
-              SolBuffer[0] |= 1<<(USB_SerialBuffer[0]-1);
-              SolLatch |= 1;}                         // select first latch
+              SolBuffer[0] |= 1<<(USB_SerialBuffer[0]-1);}
             SolChange = true;}}
         else if (USB_SerialBuffer[0] == 23) {         // right flipper
           ActivateSolenoid(0, 23);}
@@ -924,9 +921,7 @@ void USB_SerialCommand() {
     if (game_settings[USB_PinMameSound]) {            // use old audio board
       if (game_settings[USB_PinMameGame] < 19) {      // Sys 3 - 6 game
         SolBuffer[1] = SolBuffer[1] & 224;            // turn off sound related solenoids
-        SolBuffer[1] = SolBuffer[1] | (~USB_SerialBuffer[1] & 31); // write sound number to solenoids 9 - 13
-        SolLatch |= 2;                                // trigger update of 2nd solenoid latch
-        SolChange = true;}
+        SolBuffer[1] = SolBuffer[1] | (~USB_SerialBuffer[1] & 31);} // write sound number to solenoids 9 - 13
       else if (game_settings[USB_PinMameGame] < 40) { // Sys 7 - 9 game
         WriteToHwExt(USB_SerialBuffer[1], 128+16);    // turn on Sel14
         WriteToHwExt(USB_SerialBuffer[1], 16);}       // turn off Sel14
@@ -1132,7 +1127,6 @@ void USB_SerialCommand() {
     SolBuffer[1] = 0;
     SolBuffer[2] = 192;                               // keep the flipper fingers alive
     SolBuffer[3] = 0;
-    SolLatch = 7;                                     // signal all latches to be processed
     SolChange = true;
     if (APC_settings[SolenoidExp]) {                  // sol exp board selected
       WriteToHwExt(0, 128+4);
