@@ -17,7 +17,7 @@ SdFat SD;
 #define AllData 510
 #define HwExtStackPosMax 20                           // size of the HwExtBuffer
 
-const char APC_Version[6] = "00.31";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "01.00";                  // Current APC version - includes the other INO files also
 
 void HandleBoolSetting(bool change);
 void HandleTextSetting(bool change);
@@ -102,7 +102,6 @@ unsigned int BlinkPeriod[65];                         // blink period for this t
 byte BlinkingLamps[65][65];                           // [BlinkTimer] used by these [lamps]
 byte SolMax = 24;                                     // maximum number of solenoids
 bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
-byte SolLatch = 0;                                    // Indicates which solenoid latches must be updated
 byte SolRecycleTime[22];                              // recycle time for each solenoid
 byte SolRecycleTimers[22];                            // stores the numbers of the recycle timers for each solenoid
 bool C_BankActive = false;                            // A/C relay currently doing C bank?
@@ -575,22 +574,18 @@ void TC7_Handler() {                                  // interrupt routine - run
 
   if (SolChange) {                                    // is there a solenoid state to be changed?
     REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
-    if (SolLatch & 1) {
-      c = SolBuffer[0];
-      REG_PIOC_SODR = c<<1;
-      REG_PIOC_SODR = 16777216;}                      // select first latch
-    if (SolLatch & 2) {
-      REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
-      c = SolBuffer[1];
-      REG_PIOC_SODR = c<<1;
-      REG_PIOC_SODR = 8388608;}                       // select second latch
-    if (SolLatch & 4) {
-      REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
-      c = SolBuffer[2];
-      REG_PIOC_SODR = c<<1;
-      REG_PIOC_SODR = 4194304;}                       // select third latch
-    SolLatch = 0;
-    SolChange = false;}                               // reset flag
+    c = SolBuffer[0];
+    REG_PIOC_SODR = c<<1;
+    REG_PIOC_SODR = 16777216;                         // select first latch
+    REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
+    c = SolBuffer[1];
+    REG_PIOC_SODR = c<<1;
+    REG_PIOC_SODR = 8388608;                          // select second latch
+    REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
+    c = SolBuffer[2];
+    REG_PIOC_SODR = c<<1;
+    REG_PIOC_SODR = 4194304;}                         // select third latch
+
 
   REG_PIOC_CODR = AllSelects - HwExtSels + AllData;   // clear all select signals and the data bus
 
@@ -1572,20 +1567,17 @@ void ShowMessage(byte Seconds) {                      // switch to the second di
 
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
   if ((Solenoid < 23 && !SolRecycleTimers[Solenoid-1]) || (Solenoid < 25 && Solenoid > 22)) { // consider recycling time for A bank solenoids only
-    SolChange = false;                                // block IRQ solenoid handling
+    SolChange = false;                                  // block IRQ solenoid handling
     if (Solenoid > 8) {                               // does the solenoid not belong to the first latch?
       if (Solenoid < 17) {                            // does it belong to the second latch?
-        SolBuffer[1] |= 1<<(Solenoid-9);              // latch counts from 0
-        SolLatch |= 2;}                               // select second latch
+        SolBuffer[1] |= 1<<(Solenoid-9);}             // latch counts from 0
       else {
-        SolBuffer[2] |= 1<<(Solenoid-17);
-        SolLatch |= 4;}}                              // select third latch
+        SolBuffer[2] |= 1<<(Solenoid-17);}}
     else {
-      SolBuffer[0] |= 1<<(Solenoid-1);
-      SolLatch |= 1;}                                 // select first latch
+      SolBuffer[0] |= 1<<(Solenoid-1);}
     if (!Duration) {
       Duration = *(GameDefinition.SolTimes+Solenoid-1);} // if no duration is specified use the solenoid specific default
-    if (Duration) {                                   // duration = 0 means solenoid is permanently on
+    if (Duration) {                                     // duration = 0 means solenoid is permanently on
       ActivateTimer(Duration, Solenoid, ReleaseSolenoid);} // otherwise use a timer to turn it off again
     SolChange = true;}}
 
@@ -1606,19 +1598,16 @@ void ReleaseSolenoid(byte Solenoid) {
   SolChange = false;                                  // block IRQ solenoid handling
   if (Solenoid > 8) {                                 // does the solenoid not belong to the first latch?
     if (Solenoid < 17) {                              // does it belong to the second latch?
-      SolBuffer[1] &= 255-(1<<(Solenoid-9));          // latch counts from 0
-      SolLatch |= 2;}                                 // select second latch
+      SolBuffer[1] &= 255-(1<<(Solenoid-9));}         // latch counts from 0
     else {
-      SolBuffer[2] &= 255-(1<<(Solenoid-17));
-      SolLatch |= 4;}}                                // select third latch
+      SolBuffer[2] &= 255-(1<<(Solenoid-17));}}
   else {
-    SolBuffer[0] &= 255-(1<<(Solenoid-1));
-    SolLatch |= 1;}                                   // select first latch
+    SolBuffer[0] &= 255-(1<<(Solenoid-1));}
   SolChange = true;                                   // remove IRQ block
   if (Solenoid < 23 && SolRecycleTime[Solenoid-1]) {  // is a recycling time specified?
     SolRecycleTimers[Solenoid-1] = ActivateTimer((unsigned int) SolRecycleTime[Solenoid-1], Solenoid, ReleaseSolBlock);}} // start the release timer
 
-void ReleaseSolBlock(byte Coil) {                 // release the coil block when the recycling time is over
+void ReleaseSolBlock(byte Coil) {                     // release the coil block when the recycling time is over
   SolRecycleTimers[Coil-1] = 0;}
 
 bool QuerySolenoid(byte Solenoid) {                   // determine the current state of a solenoid
@@ -2237,7 +2226,9 @@ void PlayMusic(byte Priority, const char* Filename) {
     if ((Priority > 99 && Priority > MusicPriority) || (Priority < 100 && Priority >= MusicPriority)) {
       MusicFile.close();                              // close the previous file
       StartMusic = 0;                                 // cancel the startup
-      MBP = 0;}}                                      // and neglect its data
+      MBP = 0;}                                       // and neglect its data
+    else {
+      return;}}
   if (!PlayingMusic) {                                // no music in play at the moment?
     MusicFile = SD.open(Filename);                    // open file
     if (!MusicFile) {
@@ -2334,7 +2325,9 @@ void PlaySound(byte Priority, const char* Filename) {
     if ((Priority > 99 && Priority > SoundPriority) || (Priority < 100 && Priority >= SoundPriority)) {
       SoundFile.close();
       StartSound = 0;
-      SBP = 0;}}
+      SBP = 0;}
+    else {
+      return;}}
   if (!PlayingSound) {                                // no sound in play at the moment?
     SoundFile = SD.open(Filename);                    // open file
     if (!SoundFile) {

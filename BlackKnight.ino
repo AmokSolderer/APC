@@ -934,12 +934,15 @@ void BK_GameMain(byte Event) {                        // game switch events
       else {
         if (Multiballs > 1) {                         // multiball running?
           if (game_settings[BK_MultiballJackpot]) {
-            BK_Jackpot(2);}
-          BK_GiveMultiballs(1);}                      // eject ball with some ado
+            BK_Jackpot(2);
+            ActivateTimer(2000, 8, DelaySolenoid);
+            break;}
+          else {
+            BK_GiveMultiballs(1);}}                      // eject ball with some ado
         else {
           StopPlayingMusic();}
-          PlaySound(50, "0_31.snd");
-          ActivateTimer(1000, 8, DelaySolenoid);}}   // eject ball
+        PlaySound(50, "0_31.snd");
+        ActivateTimer(1000, 8, DelaySolenoid);}}   // eject ball
     break;
   case 25:
   case 26:                                            // lower left drop targets
@@ -1769,6 +1772,7 @@ void BK_Jackpot(byte State) {
       KillTimer(Timer);
       Timer = 0;}
     PrevState = 0;
+    AfterSound = BK_PlayBgMusic;
     break;
   case 1:                                             // light lower eject hole
     if (!PrevState) {
