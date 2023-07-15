@@ -722,7 +722,7 @@ void PB_CheckShooterLaneSwitch(byte Switch) {
     PlaySound(53, "1_95.snd");
     if (PB_MballState == 4) {                         // 3 ball multiball running?
       Multiballs = 3;                                 // resume multiball
-      PB_ShooterLaneWarning(0);}                          // turn off shooter lane warning
+      PB_ShooterLaneWarning(0);}                      // turn off shooter lane warning
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
@@ -2567,6 +2567,7 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       PB_SolarValue = 0;                              // reset jackpot
       PB_MballState = 5;                              // indicate a ball loss
       PB_MballDisplay(0);                             // stop display animation
+      PB_ShooterLaneWarning(0);                       // turn off shooter lane warning
       PB_ShowMessage(255);                            // release message block
       WriteUpper("              ");
       WriteLower("              ");
