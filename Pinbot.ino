@@ -871,11 +871,7 @@ void PB_ShooterLaneWarning(byte State) {
   case 2:                                             // every second
     if (QuerySwitch(20)) {                            // ball still in shooter lane?
       PlaySound(55, "0_6b.snd");                      // warning sound
-      Timer = ActivateTimer(1000, 2, PB_ShooterLaneWarning);}
-    else {
-      if (Timer) {
-        KillTimer(Timer);
-        Timer = 0;}}}}
+      Timer = ActivateTimer(1000, 2, PB_ShooterLaneWarning);}}}
 
 void PB_BallReleaseCheck(byte Switch) {               // handle switches during ball release
   if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
