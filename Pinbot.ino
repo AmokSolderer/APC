@@ -722,6 +722,7 @@ void PB_CheckShooterLaneSwitch(byte Switch) {
     PlaySound(53, "1_95.snd");
     if (PB_MballState == 4) {                         // 3 ball multiball running?
       Multiballs = 3;                                 // resume multiball
+      AddBlinkLamp(35, 100);                          // start blinking of solar energy ramp
       PB_ShooterLaneWarning(0);}                      // turn off shooter lane warning
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
@@ -869,6 +870,7 @@ void PB_ShooterLaneWarning(byte State) {
       PB_SkillShot = false;}
     break;
   case 2:                                             // every second
+    Timer = 0;                                        // this case is called by timer
     if (QuerySwitch(20)) {                            // ball still in shooter lane?
       PlaySound(55, "0_6b.snd");                      // warning sound
       Timer = ActivateTimer(1000, 2, PB_ShooterLaneWarning);}}}
@@ -1393,6 +1395,7 @@ void PB_GameMain(byte Switch) {
       else {
         PB_SkillMultiplier = 1;
         if (PB_MballState == 4) {                     // 3 ball multiball running?
+          RemoveBlinkLamp(35);                        // solar energy lamp
           ActivateTimer(200, 1, PB_ShooterLaneWarning);}} // turn on shooter lane warning
       PB_SkillShot = true;}                           // the first shot is a skill shot
     break;
@@ -2172,7 +2175,7 @@ void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar v
   if (Multiballs == 2) {
     PB_EyeBlink(1);}
   PB_SolarValueTimer = 0;
-  RemoveBlinkLamp(35);
+  RemoveBlinkLamp(35);                                // solar energy lamp
   PB_ClearOutLock(0);}
 
 void PB_ClearOutLock(byte State) {                    // CloseVisor = 0 -> eject 1 ball / CloseVisor = 1 -> Visor will be closed / = 2 -> clear out both balls but don't close visor
