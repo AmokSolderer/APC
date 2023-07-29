@@ -1956,7 +1956,6 @@ void PB_HandleLock(byte State) {
               PB_EyeFlash(1);
               PlaySound(55, "0_b0.snd");              // 'now I see you'
               ActivateTimer(2400, 0, PB_Multiball);   // call after sound
-              PB_HandleEjectHole(15);                 // start eject hole animation
               Multiballs = 2;}                        // start multiball
             else {                                    // second ball is not supposed to be there
               if (!PB_SolarValueTimer) {              // 'shoot for solar value' phase not running?
@@ -2626,8 +2625,8 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
         PB_ClearChest();                              // turn off chest lamps
         PB_ChestLightHandler(100);                    // restart chest animation
         ActivateTimer(3000, 10, PB_Multiball);        // return to main music theme
-        BlockOuthole = false;}}                       // remove outhole block
-    return;}
+        BlockOuthole = false;}                        // remove outhole block
+      return;}}
   LockedBalls[Player] = 0;
   PB_HandleDropTargets(100);                          // turn off drop target blinking
   PB_HandleEnergy(0);                                 // turn off energy lamp and sounds
