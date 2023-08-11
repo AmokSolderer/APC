@@ -311,6 +311,8 @@ void setup() {
   TC2->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;             // IDR = interrupt disable register
   NVIC_EnableIRQ(TC7_IRQn);                           // enable interrupt
   delay(1000);
+  watchdogSetup();
+  watchdogEnable(2000);                               // set watchdog to 2s
   DispPattern1 = AlphaUpper;                          // use character definitions for alphanumeric displays
   DispPattern2 = AlphaLower;
   DispRow1 = DisplayUpper;                            // use the standard display buffer
@@ -435,6 +437,7 @@ void EnterAttractMode(byte Event) {                   // Enter the attract mode 
 
 void TC7_Handler() {                                  // interrupt routine - runs every ms
   TC_GetStatus(TC2, 1);                               // clear status
+  watchdogReset();                                    // reset system watchdog
   static byte SwDrv = 0;                              // switch driver being accessed at the moment
   static byte DispCol = 0;                            // display column being illuminated at the moment
   static byte LampCol = 0;                            // lamp column being illuminated at the moment
