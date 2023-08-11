@@ -8,6 +8,7 @@
 * Bugfix -> Controlling the original audio boards of System 3 - 6 games has been fixed.
 * Support for single ball games added to BaseCode
 * Solenoid latches are updated every ms instead of on request which will revoke any accidental state change of solenoids. This can happen in heavily distorted environments when the distortion spikes are strong enough to trigger the latches. Distortion levels like these usually mean that something is wrong in your machine, e.g. a broken free-wheeling diode can cause this.
+* System watchdog implemented. If the timer interrupt controlling the HW should not occur for 2s the system will restart.
 
 ## March 2023
 

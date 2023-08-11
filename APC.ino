@@ -26,6 +26,8 @@ void HandleNumSetting(bool change);
 void HandleVolumeSetting(bool change);
 void RestoreDefaults(bool change);
 void ExitSettings(bool change);
+void watchdogSetup(void){ }
+
 byte (*PinMameException)(byte, byte);
 
 const byte AlphaUpper[128] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
@@ -311,7 +313,6 @@ void setup() {
   TC2->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;             // IDR = interrupt disable register
   NVIC_EnableIRQ(TC7_IRQn);                           // enable interrupt
   delay(1000);
-  watchdogSetup();
   watchdogEnable(2000);                               // set watchdog to 2s
   DispPattern1 = AlphaUpper;                          // use character definitions for alphanumeric displays
   DispPattern2 = AlphaLower;
