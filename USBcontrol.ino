@@ -1101,7 +1101,7 @@ void USB_SerialCommand() {
       game_settings[USB_SerialBuffer[1]] = USB_SerialBuffer[2];}
     else {                                            // APC settings selected
       APC_settings[USB_SerialBuffer[1]] = USB_SerialBuffer[2];}
-    Init_System2(1);
+    //Init_System2(1);
     break;
   case 80:                                            // send command to HW_ext interface
     WriteToHwExt(USB_SerialBuffer[0], USB_SerialBuffer[1]);
