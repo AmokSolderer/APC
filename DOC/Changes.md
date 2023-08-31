@@ -10,6 +10,10 @@
 * Solenoid latches are updated every ms instead of on request which will revoke any accidental state change of solenoids. This can happen in heavily distorted environments when the distortion spikes are strong enough to trigger the latches. Distortion levels like these usually mean that something is wrong in your machine, e.g. a broken free-wheeling diode can cause this.
 * System watchdog implemented. If the timer interrupt controlling the HW should not occur for 2s the system will restart.
 
+### Misc
+
+* Page for [installation frames](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Frames.md) started. These make it easier to mount an APC in your backbox.
+
 ## March 2023
 
 ### New HW Version V3.1

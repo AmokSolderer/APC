@@ -502,6 +502,12 @@ void PB_AttractModeSW(byte Select) {
     LampReturn = PB_RestoreLamps;
     ShowLampPatterns(0);                              // stop lamp animations
     PB_AttractDisplayCycle(0);                        // stop display animations
+    if (QuerySwitch(16)) {                            // ball still in outhole?
+      WriteUpper("WAITINGF BALL ");
+      WriteLower("              ");
+      ActA_BankSol(1);                                // activate outhole kicker
+      ActivateTimer(1000, 3, PB_AttractModeSW);       // come back in 1s
+      break;}
     if (APC_settings[Volume]) {                       // system set to digital volume control?
       analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
     else {
@@ -2097,9 +2103,19 @@ void PB_Multiball_RestoreLamps(byte Dummy) {
   LampPattern = LampColumns;}
 
 void PB_MballDisplay(byte Step) {
-  const byte PB_2MballDispUpper[78] = {17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during multiball
+  const byte PB_2MballDispUpper[78] = {17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during 2 ball multiball
   const byte PB_2MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,96,0,98,0,106,0,122,0,90,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  const byte PB_3MballDispUpper[78] = {3,0,67,4,71,4,79,4,78,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,0,67,4,71,4,79,4,78,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during 3 ball multiball
+  const byte PB_3MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,160,0,162,0,170,0,186,0,154,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   static byte Timer = 0;
+  byte *PB_MballDispUpper;
+  byte *PB_MballDispLower;
+  if (Multiballs == 3) {
+    PB_MballDispUpper = (byte* ) PB_3MballDispUpper;
+    PB_MballDispLower = (byte* ) PB_3MballDispLower;}
+  else {
+    PB_MballDispUpper = (byte* ) PB_2MballDispUpper;
+    PB_MballDispLower = (byte* ) PB_2MballDispLower;}
   if (!Step) {
     if (Timer) {
       KillTimer(Timer);
@@ -2108,16 +2124,16 @@ void PB_MballDisplay(byte Step) {
     Step--;
     if (Player != 1) {
       for (byte y=0;y<14;y++) {
-        *(DisplayUpper+y+2) = PB_2MballDispUpper[2*Step+y];}}
+        *(DisplayUpper+y+2) = PB_MballDispUpper[2*Step+y];}}
     if (Player != 2) {
       for (byte y=0;y<14;y++) {
-        *(DisplayUpper+y+18) = PB_2MballDispUpper[2*Step+y+18];}}
+        *(DisplayUpper+y+18) = PB_MballDispUpper[2*Step+y+18];}}
     if (Player != 3) {
       for (byte y=0;y<14;y++) {
-        *(DisplayLower+y+2) = PB_2MballDispLower[2*Step+y];}}
+        *(DisplayLower+y+2) = PB_MballDispLower[2*Step+y];}}
     if (Player != 4) {
       for (byte y=0;y<14;y++) {
-        *(DisplayLower+y+18) = PB_2MballDispLower[2*Step+y+18];}}
+        *(DisplayLower+y+18) = PB_MballDispLower[2*Step+y+18];}}
     if (!Step) {
       Step = 24;}
     Timer = ActivateTimer(50, Step, PB_MballDisplay);}}

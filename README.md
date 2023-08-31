@@ -188,10 +188,11 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 5.2. [MPF setup](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/MPF) - my MPF test config files
 5.3. Lisy runs MPF
 
-6. Additional APC hardware - boards that might come in handy with the APC  
+6. Additional APC hardware - boards and other stuff that might come in handy with the APC  
 6.1. [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  
 6.2. [APC solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) - to control additional features  
 6.3. [System 7 alphanumeric display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) - to have alphanumerical displays in a pre System 11 machine  
+6.4. [Installation frames](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Frames.md) - To mount the APC in your backbox  
 
 7. Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
 7.1. [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7_Display) - an LED replacement display for System 7, purely numerical  
