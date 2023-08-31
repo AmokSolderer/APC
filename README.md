@@ -102,8 +102,8 @@ The PinMame support is still under development and even if a generation is basic
 
 | Williams System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
-|3| Not yet | Not yet | Yes|  |
-|4| Yes | Not yet | Yes|  |
+|3| Yes | Yes | Yes|  |
+|4| Yes | Yes | Yes|  |
 |6| Yes | Yes | Yes |  |
 |7| Yes | Yes | Yes | Needs two additional wires |
 |9| Yes | Yes | Yes |  |
