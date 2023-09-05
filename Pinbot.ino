@@ -362,6 +362,15 @@ void PB_init() {
   GameDefinition = PB_GameDefinition;}                // read the game specific settings and highscores
 
 void PB_AttractMode() {
+  InLock = 0;
+  if (QuerySwitch(25)) {                              // count locked balls
+    InLock++;}
+  if (QuerySwitch(26)) {
+    InLock++;}
+  if (QuerySwitch(38)) {                              // and check the eject hole
+    InLock++;}
+  if (QuerySwitch(16)) {                              // ball in the outhole?
+    ActA_BankSol(1);}
   AfterMusic = 0;
   DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
@@ -497,61 +506,61 @@ void PB_ShowMessage(byte Seconds) {                   // switch to the second di
 void PB_AttractModeSW(byte Select) {
   switch(Select) {
   case 3:                                             // credit button
-    RemoveBlinkLamp(1);                               // stop the blinking of the game over lamp
-    PB_PlayAfterGameSequence(0);                      // stop end of game animation
-    LampReturn = PB_RestoreLamps;
-    ShowLampPatterns(0);                              // stop lamp animations
-    PB_AttractDisplayCycle(0);                        // stop display animations
-    if (QuerySwitch(16)) {                            // ball still in outhole?
-      WriteUpper("WAITINGF BALL ");
+    if (!InLock) {                                    // only if all balls have been cleared out
+      RemoveBlinkLamp(1);                             // stop the blinking of the game over lamp
+      PB_PlayAfterGameSequence(0);                    // stop end of game animation
+      LampReturn = PB_RestoreLamps;
+      ShowLampPatterns(0);                            // stop lamp animations
+      PB_AttractDisplayCycle(0);                      // stop display animations
+      if (APC_settings[Volume]) {                     // system set to digital volume control?
+        analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+      else {
+        digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
+      Switch_Pressed = AddPlayerSW;
+      for (byte i=0; i< 8; i++) {
+        LampColumns[i] = 0;}
+      LampPattern = LampColumns;
+      TurnOnLamp(3);                                  // turn on Ball in Play lamp
+      NoPlayers = 0;
+      WriteUpper("              ");
       WriteLower("              ");
-      ActA_BankSol(1);                                // activate outhole kicker
-      ActivateTimer(1000, 3, PB_AttractModeSW);       // come back in 1s
-      break;}
-    if (APC_settings[Volume]) {                       // system set to digital volume control?
-      analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-    else {
-      digitalWrite(VolumePin,HIGH);}                  // turn off the digital volume control
-    Switch_Pressed = AddPlayerSW;
-    for (byte i=0; i< 8; i++) {
-      LampColumns[i] = 0;}
-    LampPattern = LampColumns;
-    TurnOnLamp(3);                                    // turn on Ball in Play lamp
-    NoPlayers = 0;
-    WriteUpper("              ");
-    WriteLower("              ");
-    Ball = 1;
-    PB_AddPlayer();
-    for (byte i=1;i<5;i++) {                          // for all players
-      PB_Chest_Status[i] = 0;                         // reset the number of number of visor openings
-      PB_ResetPlayersChestLamps(i);                   // reset the chest lamps
-      PB_EnergyValue[i] = 25;                         // reset the energy value to 50K
-      PB_ExBallsLit[i] = 0;                           // reset the lit extra balls
-      PB_EjectMode[i] = 0;                            // reset the mode of the eject hole
-      PB_LitChestLamps[Player-1] = 0;                 // reset the number of lit chest lamps
-      PB_Planet[i] = 0;}                              // reset reached planets
-    InLock = 0;
-    Player = 1;
-    ExBalls = 0;
-    Multiballs = 1;
-    PB_MballState = 1;
-    Bonus = 1;
-    BonusMultiplier = 1;
-    if (QuerySwitch(49) || QuerySwitch(50) || QuerySwitch(51)) {      // any drop target down?
-      ActA_BankSol(4);}                               // reset it
-    if (!QuerySwitch(44)) {                           // ramp in up state?
-      ActA_BankSol(6);}                               // put it down
-    ActivateSolenoid(0, 12);                          // turn off playfield GI
-    PB_ChestMode = 20;                                // just play a chest pattern
-    PB_ChestPatterns = (byte*)PB_GameStartPat;        // set chest lamps pattern
-    PB_ChestLightHandler(100);                        // start player
-    ActivateTimer(2400, 0, PB_GameStart) ;            // release a new ball (2 expected balls in the trunk)
-    PlaySound(55, "0_ad.snd");                        // 'Pinbot circuits activated'
-    ActivateSolenoid(0, 23);                          // enable flipper fingers
-    ActivateSolenoid(0, 24);
+      Ball = 1;
+      PB_AddPlayer();
+      for (byte i=1;i<5;i++) {                        // for all players
+        PB_Chest_Status[i] = 0;                       // reset the number of number of visor openings
+        PB_ResetPlayersChestLamps(i);                 // reset the chest lamps
+        PB_EnergyValue[i] = 25;                       // reset the energy value to 50K
+        PB_ExBallsLit[i] = 0;                         // reset the lit extra balls
+        PB_EjectMode[i] = 0;                          // reset the mode of the eject hole
+        PB_LitChestLamps[Player-1] = 0;               // reset the number of lit chest lamps
+        PB_Planet[i] = 0;}                            // reset reached planets
+      InLock = 0;
+      Player = 1;
+      ExBalls = 0;
+      Multiballs = 1;
+      PB_MballState = 1;
+      Bonus = 1;
+      BonusMultiplier = 1;
+      if (QuerySwitch(49) || QuerySwitch(50) || QuerySwitch(51)) {      // any drop target down?
+        ActA_BankSol(4);}                             // reset it
+      if (!QuerySwitch(44)) {                         // ramp in up state?
+        ActA_BankSol(6);}                             // put it down
+      ActivateSolenoid(0, 12);                        // turn off playfield GI
+      PB_ChestMode = 20;                              // just play a chest pattern
+      PB_ChestPatterns = (byte*)PB_GameStartPat;      // set chest lamps pattern
+      PB_ChestLightHandler(100);                      // start player
+      ActivateTimer(2400, 0, PB_GameStart) ;          // release a new ball (2 expected balls in the trunk)
+      PlaySound(55, "0_ad.snd");                      // 'Pinbot circuits activated'
+      ActivateSolenoid(0, 23);                        // enable flipper fingers
+      ActivateSolenoid(0, 24);}
     break;
   case 8:                                             // high score reset
     digitalWrite(Blanking, LOW);                      // invoke the blanking
+    break;
+  case 16:                                            // outhole
+    if (!BlockOuthole) {
+      BlockOuthole = true;                            // block outhole until this ball has been processed
+      ActivateTimer(200, 100, PB_AttractModeSW);}     // check again in 200ms
     break;
   case 46:
     if (PB_CloseVisorFlag) {
@@ -582,7 +591,17 @@ void PB_AttractModeSW(byte Select) {
     else {
       Settings_Enter();}
     break;
-  }}
+  case 100:                                           // push ball in trunk
+    if (QuerySwitch(16)) {                            // outhole switch still active?
+      if (QuerySwitch(17) && QuerySwitch(18)) {       // all balls found? - only possible in 3Mball mode
+        InLock = 0;}
+      ActA_BankSol(1);                                // use outhole kicker
+      ActivateTimer(1000, 100, PB_AttractModeSW);}    // check again in 500ms
+    else {
+      if (!game_settings[PB_Multiballs] && QuerySwitch(17) && QuerySwitch(18)) { // all balls found in 2Mball mode
+        InLock = 0;}                                  // stop blocking new games
+      BlockOuthole = false;}
+    break;}}
 
 void PB_GameStart(byte Dummy) {
   UNUSED(Dummy);
@@ -595,8 +614,6 @@ void AddPlayerSW(byte Switch) {
 
 void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are locked and release them
   UNUSED(Dummy);
-  if (QuerySwitch(16)) {                              // for the outhole
-    ActA_BankSol(1);}
   if (QuerySwitch(38)) {                              // for the single eject hole
     ActA_BankSol(3);}
   if (QuerySwitch(25) || QuerySwitch(26)) {           // for the eyes
@@ -1106,20 +1123,20 @@ void PB_ClearOuthole(byte State) {
           if (!QuerySwitch(16)) {                     // no ball in outhole?
             ActivateTimer(1000, 10, PB_ClearOuthole);}}}  // then it's confirmed
       break;
-    case 5:                                         // ball count OK, put ball in trunk
+    case 5:                                           // ball count OK, put ball in trunk
       if (!C_BankActive) {
         ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
         ActivateTimer(1000, 10, PB_ClearOuthole);}
       else {
-        ActivateTimer(1000, 5, PB_ClearOuthole);}   // try again
+        ActivateTimer(1000, 5, PB_ClearOuthole);}     // try again
       break;
-    case 10:                                        // ball was kicked in outhole
-      if (QuerySwitch(16)) {                        // ball still in outhole?
+    case 10:                                          // ball was kicked in outhole
+      if (QuerySwitch(16)) {                          // ball still in outhole?
         if (PB_MballState == 4 || PB_MballState == 5) { // probably a double drain
-          PB_BallEnd(1);                            // call ball end twice
-          BlockOuthole = true;}                     // block outhole again
-        ActA_BankSol(1);                            // make the coil a bit stronger
-        ActivateTimer(2000, 10, PB_ClearOuthole);}  // and come back in 2s
+          PB_BallEnd(1);                              // call ball end twice
+          BlockOuthole = true;}                       // block outhole again
+        ActA_BankSol(1);                              // make the coil a bit stronger
+        ActivateTimer(2000, 10, PB_ClearOuthole);}    // and come back in 2s
       else {
         PB_BallEnd(Trunk+1);}}}
   else {                                              // 2 ball multiball selected
@@ -2835,6 +2852,7 @@ void PB_BallEnd3(byte Balls) {
       ReleaseSolenoid(24);
       LampPattern = NoLamps;                          // Turn off all lamps
       TurnOffLamp(3);                                 // turn off Ball in Play lamp
+      PB_HandleEjectHole(16);                         // stop eject hole animation
       PB_PlayAfterGameSequence(1);                    // start end of game animation
       GameDefinition.AttractMode();}}}
 
