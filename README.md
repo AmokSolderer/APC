@@ -109,7 +109,7 @@ The PinMame support is still under development and even if a generation is basic
 |9| Yes | Yes | Yes |  |
 |11| Yes | Yes | Yes |  |
 |11a| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
-|11b| Not yet | Not yet | Yes |  |
+|11b| Not yet | Yes | Yes |  |
 |11c| Yes | Yes | Yes | The wires of three connectors must be extended |
 
 The following Data East MPUs are almost identical to their counterparts from Williams but DE used 2.1 audio boards. Check the [known issues](https://github.com/AmokSolderer/APC#known-issues) for details
@@ -176,17 +176,18 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 
 4. Running PinMame  
 4.1. [Lisy Homepage](https://lisy.dev/apc.html) - Location of the Lisy SW download and more  
-4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame  
-4.3. [PinMame Sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that  
-4.4. [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md) - change your game, but let PinMame do the main work  
-4.5. [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) - list of the PinMame game numbers  
-4.6. [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) - updating Lisy and using the debug mode  
-4.7. [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
+4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows whether your game is supported and what to do if not  
+4.3. [PinMame System 3 - 7 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_3_7.md) - How to enable the sound of System 3 - 7 games  
+4.4. PinMame System 9 Sound howto  
+4.5. [PinMame System 11 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md) - How to enable the sound of System 11 games  
+4.6. [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameExceptions.md) - change your game, but let PinMame do the main work  
+4.7. [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) - list of the PinMame game numbers  
+4.8. [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) - updating Lisy and using the debug mode  
+4.9. [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
 
 5. Using MPF  
 5.1. [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw) - see my first humble MPF steps in this video  
 5.2. [MPF setup](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/MPF) - my MPF test config files
-5.3. Lisy runs MPF
 
 6. Additional APC hardware - boards and other stuff that might come in handy with the APC  
 6.1. [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  

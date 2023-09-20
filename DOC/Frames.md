@@ -6,9 +6,9 @@ The installation frames on this page offer a solution to overcome this problem. 
 
 ![SD slot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/FrameExample.JPG)
 
-## System 7
+## System 3 - 7
 
-The System 7 frame consists of three parts to be also suited for smaller printers.
+The System 3 - 7 frame consists of three parts to be also suited for smaller printers.
 
 ![SD slot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/FrameSys7.JPG)
 

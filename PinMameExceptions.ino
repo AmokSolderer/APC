@@ -111,6 +111,23 @@ byte EX_DummyProcess(byte Type, byte Command) {       // plays just the standard
       PlayMusic(51, (char*) FileName);}}
   return(0);}                                         // no exception rule found for this type so proceed as normal
 
+byte EX_Fever(byte Type, byte Command){
+  switch(Type){
+  case SolenoidActCommand:
+    if (Command == 2) {                     // ball release
+      ActivateSolenoid(80, 2);              // Temporary fix to increase the strength of the ball release
+      return(1);}
+    else if (Command == 3) {                // reset of the lower two of the five drop targets
+      ActivateSolenoid(60, 3);              // Temporary fix to increase the strength of the ball release
+      return(1);}
+    return(0);
+  case SolenoidRelCommand:
+    if (Command == 2 || Command == 3) {     // ball release or the reset of the lower two of the five drop targets
+      return(1);}                           // ignore it
+    return(0);
+  default:
+    return(0);}}
+
 byte EX_Flash(byte Type, byte Command){
   static byte SoundSeries[3];                         // buffer to handle pre system11 sound series
   switch(Type){
@@ -839,6 +856,10 @@ byte EX_Blank(byte Type, byte Command){               // use this as a template 
 
 void EX_Init(byte GameNumber) {
   switch(GameNumber) {
+  case 4:                                             // Disco Fever
+    //SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
+    PinMameException = EX_Fever;                      // use exception rules for Flash
+    break;
   case 6:                                             // Flash
     SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
     PinMameException = EX_Flash;                      // use exception rules for Flash

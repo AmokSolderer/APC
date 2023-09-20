@@ -1,84 +1,84 @@
-No;Mame Name;Long Name;Type;throttle;comment
-0;httip_l1;Hot Tip ;SYS3;120;
-1;lucky_l1;Lucky Seven ;SYS3;120;
-2;wldcp_l1;World Cup ;SYS3;120;
-3;cntct_l1;Contact ;SYS3;120;
-4;disco_l1;Disco Fever ;SYS3;120;
-5;phnix_l1;Phoenix ;SYS4;120;
-6;flash_l1;Flash ;SYS4;120;
-7;flash_l2;Flash ;SYS4;120;
-8;trizn_l1;Tri Zone ;SYS4;120;
-9;pkrno_l1;Pokerino ;SYS4;120;
-10;tmwrp_l2;Time Warp ;SYS4;120;
-11;stlwr_l2;Stellar Wars ;SYS4;120;
-12;lzbal_l2;Laser Ball ;SYS6;120;
-13;scrpn_l1;Scorpion ;SYS6;120;
-14;blkou_l1;Blackout ;SYS6;120;
-15;grgar_l1;Gorgar ;SYS6;120;
-16;frpwr_l6;Firepower ;SYS6;120;
-17;algar_l1;Algar ;SYS6A;120;
-18;alpok_l6.zip;Alien Poker ;SYS6A;120;
-19;csmic_l1;Cosmic Gunfight ;SYS7;120;
-20;jngld_l2;Jungle Lord ;SYS7;120;
-21;pharo_l2;Pharaoh ;SYS7;120;
-22;solar_l2;Solar Fire ;SYS7;120;
-23;prototy;Thunderball;SYS7;120;
-24;hypbl_l6;Hyperball ;SYS7;120;
-25;barra_l1;Barracora ;SYS7;120;
-26;vrkon_l1;Varkon ;SYS7;120;
-27;wrlok_l3;Warlok ;SYS7;120;
-28;dfndr_l4;Defender ;SYS7;120;
-29;jst_l2;Joust ;SYS7;120;
-30;lsrcu_l2;Laser Cue ;SYS7;120;
-31;fpwr2_l2;Firepower II ;SYS7;120;
-32;ratrc_l1;Rat Race;SYS7;120;
-33;strlt_l1;Star Light ;SYS7;120;
-34;bk_l4;Black Knight ;SYS7;120;
-35;tmfnt_l5;Time Fantasy ;SYS7;120;
-36;pfevr_l2;Pennant Fever ;SYS8;120;
-37;sshtl_l7.zip;Space Shuttle ;SYS9;120;
-38;sorcr_l2;Sorcerer ;SYS9;120;
-39;comet_l5;Comet ;SYS9;120;
-40;hs_l4;High Speed ;SYS11;120;
-41;grand_l4;Grand Lizard ;SYS11;120;
-42;rdkng_l4;Road Kings ;SYS11RK;120;
-43;pb_l5;Pinbot ;SYS11A_;120;
-44;f14_l1;F-14 Tomcat ;SYS11A_;120;
-45;fire_l3;Fire! ;SYS11A;120;
-46;milln_l3;Millionaire ;SYS11A;120;
-47;bguns_l8;Big Guns ;SYS11B;120;
-48;spstn_l5;Space Station ;SYS11B;120;
-49;gmine_l2;Gold Mine ;SYS11B;120;
-50;cycln_l5;Cyclone ;SYS11B;120;
-51;bnzai_l3;Banzai Run ;SYS11B;120;
-52;swrds_l2;Swords of Fury ;SYS11B;120;
-53;taxi_l4;Taxi ;SYS11B;120;
-54;tdawg_l1;Top Dawg ;SYS11B;120;
-55;jokrz_l6;Jokerz! ;SYS11B;120;
-56;esha_la3;Earthshaker ;SYS11B;120;
-57;bk2k_l4;Black Knight 2000 ;SYS11B;120;
-58;tsptr_l3;Transporter the Rescue ;SYS11B;120;
-59;polic_l4;Police Force ;SYS11B;120;
-60;shfin_l1;Shuffle Inn ;SYS11B;120;
-61;afm_11b;Elvira and the Party Monsters ;SYS11B;120;
-62;bcats_l5;Bad Cats ;SYS11B;120;
-63;mousn_l1;Mousin' Around! ;SYS11B;120;
-64;whirl_l3;Whirlwind;SYS11B;120;
-65;gs_l4;The Bally Game Show ;SYS11C;120;
-66;pool_l7;Pool Sharks ;SYS11C;120;
-67;rollr_l3;Rollergames ;SYS11C;120;
-68;diner_l4;Diner ;SYS11C;120;
-69;radcl_l1;Radical! ;SYS11C;120;
-70;dd_l2;Dr. Dude ;SYS11C;120;
-71;rvrbt_l3;Riverboat Gambler ;SYS11RG;120;
-72;bbnny_l2;Bugs Bunny's Birthday Ball ;SYS11C;120;
-73;lwar_a83;Laser War;DE_A1;120;
-74;ssvc_a26;Secret Service;DE_A2;120;
-75;torp_e21;Torpedo Alley;DE_A2;120;
-76;tmac_a24;Time Machine;DE_A2;120;
-77;play_a24;Playboy 35th Anniversary ;DE_A2;120;
-78;mnfb_c27;Monday Night Football;DE_A2;120;
-79;robo_a34;Robocop;DE_A2;120;
-80;poto_a32;Phantom of the Opera;DE_A2;120;
-81;bttf_a28;Back to the Future;DE_A2;120;
-82;simp_a27;The Simpsons;DE_A3;120;
+No,Mame Name,Long Name,Type,throttle,comment
+0,httip_l1,Hot Tip ,SYS3,120,
+1,lucky_l1,Lucky Seven ,SYS3,120,
+2,wldcp_l1,World Cup ,SYS3,120,
+3,cntct_l1,Contact ,SYS3,120,
+4,disco_l1,Disco Fever ,SYS3,120,
+5,phnix_l1,Phoenix ,SYS4,120,
+6,flash_l1,Flash ,SYS4,120,
+7,flash_l2,Flash ,SYS4,120,
+8,trizn_l1,Tri Zone ,SYS4,120,
+9,pkrno_l1,Pokerino ,SYS4,120,
+10,tmwrp_l2,Time Warp ,SYS4,120,
+11,stlwr_l2,Stellar Wars ,SYS4,120,
+12,lzbal_l2,Laser Ball ,SYS6,120,
+13,scrpn_l1,Scorpion ,SYS6,120,
+14,blkou_l1,Blackout ,SYS6,120,
+15,grgar_l1,Gorgar ,SYS6,120,
+16,frpwr_l6,Firepower ,SYS6,120,
+17,algar_l1,Algar ,SYS6A,120,
+18,alpok_l6.zip,Alien Poker ,SYS6A,120,
+19,csmic_l1,Cosmic Gunfight ,SYS7,120,
+20,jngld_l2,Jungle Lord ,SYS7,120,
+21,pharo_l2,Pharaoh ,SYS7,120,
+22,solar_l2,Solar Fire ,SYS7,120,
+23,prototy,Thunderball,SYS7,120,
+24,hypbl_l6,Hyperball ,SYS7,120,
+25,barra_l1,Barracora ,SYS7,120,
+26,vrkon_l1,Varkon ,SYS7,120,
+27,wrlok_l3,Warlok ,SYS7,120,
+28,dfndr_l4,Defender ,SYS7,120,
+29,jst_l2,Joust ,SYS7,120,
+30,lsrcu_l2,Laser Cue ,SYS7,120,
+31,fpwr2_l2,Firepower II ,SYS7,120,
+32,ratrc_l1,Rat Race,SYS7,120,
+33,strlt_l1,Star Light ,SYS7,120,
+34,bk_l4,Black Knight ,SYS7,120,
+35,tmfnt_l5,Time Fantasy ,SYS7,120,
+36,pfevr_l2,Pennant Fever ,SYS8,120,
+37,sshtl_l7.zip,Space Shuttle ,SYS9,120,
+38,sorcr_l2,Sorcerer ,SYS9,120,
+39,comet_l5,Comet ,SYS9,120,
+40,hs_l4,High Speed ,SYS11,120,
+41,grand_l4,Grand Lizard ,SYS11,120,
+42,rdkng_l4,Road Kings ,SYS11RK,120,
+43,pb_l5,Pinbot ,SYS11A_,120,
+44,f14_l1,F-14 Tomcat ,SYS11A_,120,
+45,fire_l3,Fire! ,SYS11A,120,
+46,milln_l3,Millionaire ,SYS11A,120,
+47,bguns_l8,Big Guns ,SYS11B,120,
+48,spstn_l5,Space Station ,SYS11B,120,
+49,gmine_l2,Gold Mine ,SYS11B,120,
+50,cycln_l5,Cyclone ,SYS11B,120,
+51,bnzai_l3,Banzai Run ,SYS11B,120,
+52,swrds_l2,Swords of Fury ,SYS11B,120,
+53,taxi_l4,Taxi ,SYS11B,120,
+54,tdawg_l1,Top Dawg ,SYS11B,120,
+55,jokrz_l6,Jokerz! ,SYS11B,120,
+56,esha_la3,Earthshaker ,SYS11B,120,
+57,bk2k_l4,Black Knight 2000 ,SYS11B,120,
+58,tsptr_l3,Transporter the Rescue ,SYS11B,120,
+59,polic_l4,Police Force ,SYS11B,120,
+60,shfin_l1,Shuffle Inn ,SYS11B,120,
+61,afm_11b,Elvira and the Party Monsters ,SYS11B,120,
+62,bcats_l5,Bad Cats ,SYS11B,120,
+63,mousn_l1,Mousin' Around! ,SYS11B,120,
+64,whirl_l3,Whirlwind,SYS11B,120,
+65,gs_l4,The Bally Game Show ,SYS11C,120,
+66,pool_l7,Pool Sharks ,SYS11C,120,
+67,rollr_l3,Rollergames ,SYS11C,120,
+68,diner_l4,Diner ,SYS11C,120,
+69,radcl_l1,Radical! ,SYS11C,120,
+70,dd_l2,Dr. Dude ,SYS11C,120,
+71,rvrbt_l3,Riverboat Gambler ,SYS11RG,120,
+72,bbnny_l2,Bugs Bunny's Birthday Ball ,SYS11C,120,
+73,lwar_a83,Laser War,DE_A1,120,
+74,ssvc_a26,Secret Service,DE_A2,120,
+75,torp_e21,Torpedo Alley,DE_A2,120,
+76,tmac_a24,Time Machine,DE_A2,120,
+77,play_a24,Playboy 35th Anniversary ,DE_A2,120,
+78,mnfb_c27,Monday Night Football,DE_A2,120,
+79,robo_a34,Robocop,DE_A2,120,
+80,poto_a32,Phantom of the Opera,DE_A2,120,
+81,bttf_a28,Back to the Future,DE_A2,120,
+82,simp_a27,The Simpsons,DE_A3,120,

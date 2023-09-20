@@ -35,11 +35,26 @@ If you feel that your game is not running at the correct speed, you can change P
 boot/lisy/lisy_m/cfg/lisyminigames.csv  
 There's a throttle value specified for each game. Changing this value to a lower value will make the game run faster and vice versa.
 
+## PinMame sound
 
-### PinMame sound
+### Using old ausio boards
 
-When you're not using an old audio board but you want the APC to do the audio instead, then you need to have the necessary sound files. Check the table on the [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page to see whether your game is already supported and the audio files are available. If your game is listet here, you can simply request the files and put them on the SD card on the APC board (not the one of the Pi). That's it, have fun.  
-If your game is not yet supported or you want to change the sounds (or even rules) then read the [PinMame howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md).
+For some of the game generations you could install the original audio board. In this case you cannot do any sound related changes of course. For System 3 - 6, the sound board is controlled by some reserved solenoid drivers, so it will work out of the box. System 7 needs an [adapter](https://github.com/AmokSolderer/APC/blob/master/DOC/Prepare.md#system-7-audio-cable) for connecting the audio board to the HW extension interface of the APC.  
+For the APC to control the external audio board you have to enter the [game settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode) while in Remote Control Mode and set setting 2 (PinMame Sound) from 0 (APC) to 1 (Board).
+
+System 9 and 11 audio boards are not supported, you have to let the APC generate the sound instead.
+
+### Using the APC to generate audio
+
+Letting the APC generate the sounds has several benefits.
+
+The audio quality of the APC is quite good. It is also better in noise suppression than the old audio boards, so if you have a hum in your sound due to worn out capacitors, the chances are that it is much weaker with the APC.  
+You can also change your sounds as you wish. This can be as simple as replacing certain sound files, but you could also add a music track to your old System 3 - 7 game. Let your Flash play Queen as background music if you like.
+
+The drawback of this is that someone has to extract the music files from PinMame and if your game is already supported then this someone is probably you.
+
+Check the table on the [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page to see whether your game is already supported and the audio files are available. If your game is listet here, you can simply request the files and put them on the SD card on the APC board (not the one of the Pi). That's it, have fun.  
+If your game is not yet supported then you should also read this page to find out how to proceed.
 
 ## MPF
 
