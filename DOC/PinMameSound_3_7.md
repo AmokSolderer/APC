@@ -16,7 +16,8 @@ Some of these games are featuring what I call a sound series. This means that if
 
 The audio boards haven't changed much between System 3 - 6 and System 7. This means everything written above is also valid for System 7 with two exceptions:  
 For some reason PinMame adds 32 (hex 20) to each audio command when it's a System 7 game. Hence, the audio commands are in the range from 0x20 to 0x3f and not from 0x00 to 0x1f as for the previous generations.  
-This changes the 'Stop Sound' Command to 0x2c. The second exception is that 0x7f is sent for the bus initialization, but we don't care that much about this as the APC needs no initialization and we therefore ignore this command anyway.  
+This changes the 'Stop Sound' Command to 0x2c.  
+The second exception is that 0x7f is sent for the bus initialization, but we don't care that much about this as the APC needs no initialization and we therefore ignore this command anyway.  
 Find the special command table for System 7 below:
 
 |Command / Hex|Comment|
@@ -33,12 +34,12 @@ In order to find out the correct sound names you have to install PinMame32 for W
 After PinMame is running press F4 to enter the 'Sound Command Mode'. To play a sound you have to enter  7fXX with XX being the sound number in hex format and press the space bar. Try to find a match for each previously downloaded WAV file. If you found one, rename the WAV file to 0_XX.wav with XX being the sound number you just found out. If you found a sound series rename their tunes to 0_XX_001 and increase the 001 for each tune.  
 This could be performed with an automatic renaming tool ( eg. Bulk Rename Utility https://www.bulkrenameutility.co.uk).
 
-The big advantage of the downmloaded files is that they usually don't need any preprocessing (unlike those derived from PinMame), so you can directly convert them.
+The big advantage of the downloaded files is that they usually don't need any preprocessing as their amplitudes and sampling rate are already fine (unlike those derived from PinMame), so you can directly convert them.
 
 ## Audio file conversion
 
-Put all renamed WAV files in one folder and execute the [AudioSaveFolder.pl]https://github.com/AmokSolderer/APC/blob/V01.00/DOC/UsefulSWtools.md tool.  
-The resulting .snd files need to be copied to the APC SD-CARD. Please format your card before with a special SD-card formatting tool like the one from the SD Association (sdcard.org).
+Put all renamed WAV files in one folder and execute the [AudioSaveFolder.pl](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/UsefulSWtools.md) tool.  
+The resulting .snd files must be copied to the APC SD-CARD. Please format your card before with a special SD-card formatting tool like the one from the SD Association (sdcard.org) to improve the card's access time.
 
 If you start your game now you should already hear most of the sounds, but everything out of the ordinary like sound series and so on won't work correctly. We need to tell the APC about special sound sommands and how to deal with them. 
 
@@ -55,7 +56,7 @@ However, the basic setup is the same for every System 3 - 7 game.
 
 First of all we need to generate a Jungle Lord specific code section to handle all the required exceptions. There's a template named
 
-    byte EX_DummyProcess(byte Type, byte Command)
+    byte EX_Blank(byte Type, byte Command)
 
 in PinMameExceptions.ino you could use as a start. So let's create a copy of this and rename it to
 
@@ -89,7 +90,32 @@ and so on.
 All games not listet here do not have exceptions defined yet, so the exception pointer just points to a dummy process which only plays the standard sounds, but knows no exceptions.
 The definition of EX_EjectSolenoid is only there because I also want to improve the ball release of System 7 machines. The way it works is handled on the general [PinMameExceptions page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md), but let's skip it for now as it has nothing to do with the sound.
 
-As System7 just uses one sound channel, all sound exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program. For a System11 game you'd also have to prepare exceptions for SoundCommandCh2 as these games use both sound channels.
+### Handle ordinary sounds
+    
+As System7 just uses one sound channel, all sound exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program. Hence you can delete all cases except of SoundCommandCh1 and the default case. The result should look like this:
+
+    byte EX_Blank(byte Type, byte Command){               // use this as a template and an example of how to add your own exceptions
+      switch(Type){                                       // usually just a few exception cases are needed, just delete the rest
+      case SoundCommandCh1:                               // sound commands for channel 1
+        if (Command == 38){                               // sound command 0x26
+          // enter your special sound command 0x26 here
+        }
+        else {
+          char FileName[9] = "0_00.snd";                  // handle standard sound
+          if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+            PlaySound(51, (char*) FileName);}}
+        return(0);                                        // return number not relevant for sounds
+      default:                                            // use default treatment for undefined types
+        return(0);}}
+
+What we have now is a default handler for all the sound numbers that have exceptions defined.  
+The filenames of these sounds just consist of the channel number, an underscore and the sound number in hex followed by ".snd". There is a routine called
+
+    byte USB_GenerateFilename(byte Channel, byte Sound, char* FileName)
+
+which adds the hex code to a given filename and handles the display messages if the audio debug mode is active. It returns a 1 in case the soundfiles does exist and a 0 if it doesn't. Is is therefore only necessary to play the sound when the return value has been 1.
+
+In EX_Blank the 'if' for sound command 38 is just meant as an example to make it clear where exceptions have to be added, but for the Jungle Lord we can keep this as our first audio command is indeed 38 (0x26).
 
 ### Random sounds
 
@@ -118,10 +144,10 @@ The next special sound command of the Jungle Lord is 0x2d. This is a looping sou
       FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
       PlaySound(51, (char*) FileName);}               // play the sound
 
-For this we need an additional variable SoundSeries which stores the number of the tune currently being played. This variable has to be defined as static byte at the beginning of our EX_JungleLord.
+For this we need an additional variable SoundSeries which stores the number of the tune currently being played. As Jungle Lord features more than one sound series we need an array here. This variable has to be defined as static byte at the beginning of our EX_JungleLord.
 At first it is checked whether the last tune of this series is currently being played. If yes then the tune number is set back to one otherwise it is increased by one. After that the base filename is generated, the new tune number is written into it and the sound is played.
 
-### The bachground sound
+### The background sound
 
 Sound command 0x2a is also a sound series, so it's treated very similarly.
 
@@ -157,24 +183,6 @@ This command sets AfterSound = 0 which will prevent the BG sound from being rest
 Another basic command every System 3 - 7 game has is the bus initialization (0x1f for Sys 3 - 6 and 0x7f for Sys7). This command is only needed when an old audio board is used, so we can just ignore it for the APC.
 
     if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
-
-### Handle ordinary sounds
-    
-Up to now we have only implemented the sounds that are somehow special for the Jungle Lord, but the majority of the sounds are ordinary ones. That means we need a default handler for all the sound numbers that have not been covered by the exceptions above.
-
-    else {                                            // standard sound
-      char FileName[9] = "0_00.snd";                  // handle standard sound
-      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-        PlaySound(51, (char*) FileName);}}
-    return(0);                                        // return number not relevant for sounds
-
-The filenames of these sounds just consist of the channel number, an underscore and the sound number in hex followed by ".snd". There is a routine called
-
-    byte USB_GenerateFilename(byte Channel, byte Sound, char* FileName)
-
-which adds the hex code to a given filename and handles the display messages if the audio debug mode is active. It returns a 1 in case the soundfiles does exist and a 0 if it doesn't. Is is therefore only necessary to play the sound when the return value has been 1.
-
-The return marks the end of the SoundCommandCh1 case.
 
 ### The result
 
@@ -222,4 +230,4 @@ The final result is shown below. It contains the PinMameExceptions needed to mak
           default:
         return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-The actual EX_JungleLord in PinMameExceptions.ino looks slightly different as it features some additional improvements, but these have nothing to do with audio. However, you can more infos about that on the general [PinMameExceptions page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md).
+The actual EX_JungleLord in PinMameExceptions.ino looks slightly different as it features some additional improvements, but these have nothing to do with audio. However, if you're interested you can find more infos about that on the general [PinMameExceptions page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md).

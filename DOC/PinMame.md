@@ -24,9 +24,9 @@ At the moment the list of available sound packages is still quite short, but we 
 
 The fact that you're reading this probably means that your machine is not yet supported. So let's first summarize what you have to do to change that:
 
-* Extract the sounds from PinMame or record them by yourself.
+* Get the sounds. This can be done from the internet, PinMame or by self recording.
+* Adjust the amplitude, DC offset and sampling rate if necessary. You need a mono WAV file with 44.1KHz sampling rate
 * Ensure the filenames are correct to help the APC find the correct audio file
-* Adjust the amplitude, DC offset and sampling rate to get a mono WAV file with 44.1KHz sampling rate
 * Convert them to the APC sound file format
 * Put them on the SD card of the APC
 * Do the necessary PinMameExceptions to incorporate the special functions of the respective audio board

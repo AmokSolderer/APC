@@ -15,6 +15,8 @@
 
 * Page for [installation frames](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Frames.md) started. These make it easier to mount an APC in your backbox.
 
+* PinMame Sound how-tos added to make it more clear what to do to let the APC play the original sounds
+
 ## March 2023
 
 ### New HW Version V3.1

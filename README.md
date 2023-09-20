@@ -176,7 +176,7 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 
 4. Running PinMame  
 4.1. [Lisy Homepage](https://lisy.dev/apc.html) - Location of the Lisy SW download and more  
-4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows whether your game is supported and what to do if not  
+4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMame.md) - shows whether your game is supported and what to do if not  
 4.3. [PinMame System 3 - 7 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_3_7.md) - How to enable the sound of System 3 - 7 games  
 4.4. PinMame System 9 Sound howto  
 4.5. [PinMame System 11 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md) - How to enable the sound of System 11 games  
