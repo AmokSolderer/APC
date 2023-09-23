@@ -17,7 +17,7 @@ For this documentation I expect the other System 11 machines to work in a simila
 
 ## Sound file preparation
 
-There're multiple ways to obtain the original sounds for System 11 machines. Some can be found on the internet, or recorded them from your pinball machine or you can extract them from PinMame. What ever you do, the result should be a mono WAV file with 44.1KHz sampling rate and reasonable amplitude.  
+There're multiple ways to obtain the original sounds for System 11 machines. Some can be found on the internet, or directly recorded from your pinball machine or you can extract them from PinMame. What ever you do, the result should be a mono WAV file with 44.1KHz sampling rate and reasonable amplitude.  
 If you find the files on the internet you can proceed to the [Audio file conversion](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md#audio-file-conversion) section, as you don't have to extract them from PinMame.
 
 The method decribed here will be the the manual way, there're also more automatic solutions which might save some time. I've never tried them myself, but Mokopin (from the Flippertreff forum) has written some [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) which explain the automatic extraction of sound files and the use of Audacity in more detail.
