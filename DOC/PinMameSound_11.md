@@ -17,7 +17,7 @@ For this documentation I expect the other System 11 machines to work in a simila
 
 ## Sound file preparation
 
-There're multiple ways to obtain the original sounds for System 11 machines. Some can be found on the internet, or directly recorded from your pinball machine or you can extract them from PinMame. What ever you do, the result should be a mono WAV file with 44.1KHz sampling rate and reasonable amplitude.  
+There're multiple ways to obtain the original sounds for System 11 machines. Some can be found on the internet, directly recorded from your pinball machine or you can extract them from PinMame. What ever you do, the result should be a mono WAV file with 44.1KHz sampling rate and reasonable amplitude.  
 If you find the files on the internet you can proceed to the [Audio file conversion](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md#audio-file-conversion) section, as you don't have to extract them from PinMame.
 
 The method decribed here will be the the manual way, there're also more automatic solutions which might save some time. I've never tried them myself, but Mokopin (from the Flippertreff forum) has written some [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) which explain the automatic extraction of sound files and the use of Audacity in more detail.
@@ -40,6 +40,14 @@ In lisy_m_debug.txt playing a sound looks like
     [461.373005][0.000020] USB_write(3 bytes): 0x32 0x01 0x79
 
 In this case sound 0x79 of prefix (board) 0 shall be played which means you have to record the sound command 0079 in PinMame.
+
+### Finding out which sounds are still missing
+
+After you have extracted most of the files, there'll be the point when only a few files are still missing and you need to find out their numbers. Of course you could still scan the Lisy log for unknown sound numbers, but in this stage it might be easier to use the 'Audio Debug Mode' of the APC.  
+You can activate this mode in the [game settings](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Settings.md#game-settings-in-remote-control-mode).
+
+In Audio Debug mode the lower display(s) are used for audio information. The Player 3 display (or the left part of the lower display for BK2K type displays) shows information for sound prefix 00 and the Player 4 display (right part of lower display for BK2K) does the same for prefix 01. If the requested sound is found on the SD card, it's hex number is shown in the left side of the corresponding display and the sound is played normally. If the sound file is missing it's hex number is shown on the right side of the corresponding display which makes it easy to find missing sound files.  
+As the pre System11 displays cannot show letters, the corresponding sound numbers are shown in decimal values when this kind of display is selected.
 
 ### Manual extraction from PinMame
 
@@ -225,14 +233,6 @@ There're still several commands we don't know the meaning of. If you find out wh
     else if (Command > 29 && Command < 48) { }        // ignore unknown sound commands 0x1d to 0x30
 
 to prevent them from causing 'File not found' messages on your display.
-
-### Finding out which sounds are still missing
-
-After you have extracted most of the files, there'll be the point when only a few files are still missing and you need to find out their numbers. Of course you could still scan the Lisy log for unknown sound numbers, but in this stage it might be easier to use the 'Audio Debug Mode' of the APC.  
-You can activate this mode in the [game settings](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Settings.md#game-settings-in-remote-control-mode).
-
-In Audio Debug mode the lower display(s) are used for audio information. The Player 3 display (or the left part of the lower display for BK2K type displays) shows information for sound prefix 00 and the Player 4 display (right part of lower display for BK2K) does the same for prefix 01. If the requested sound is found on the SD card, it's hex number is shown in the left side of the corresponding display and the sound is played normally. If the sound file is missing it's hex number is shown on the right side of the corresponding display which makes it easy to find missing sound files.  
-As the pre System11 displays cannot show letters, the corresponding sound numbers are shown in decimal values when this kind of display is selected.
 
 ### The result
 
