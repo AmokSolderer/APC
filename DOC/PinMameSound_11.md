@@ -1,9 +1,10 @@
 # System 11
 
-The first System11 machines had two independent audio circuits, each containing a processor and sound EPROMS. One of these circuits was located on the main CPU board while the other was on a seperate audio board.  
-In case of the Pinbot, PinMame distinguishes these boards by using two audio prefixes which can be selected by 00 and 01 in PinMame's 'Sound Command Mode'. Both of these prefixes offer different sound commands. Our current status of what we know about these sound commands is listed below. There're still lots of gaps, but we didn't want to spend too much effort in investigating these boards. Again, we see this more as a community task and there're probably plenty of people out there with a lot more knowledge about this stuff than we have.
-
+The first System11 machines had two independent audio circuits, each containing a processor and sound EPROMS. One of these circuits was located on the main CPU board while the other was on a seperate audio board. PinMame distinguishes these boards by using two audio prefixes which can be selected by 00 and 01 in PinMame's 'Sound Command Mode'. Both of these prefixes offer different sound commands.
+The table below shows the special commands of the Pinbot audio system that we know about. There might still be some gaps, but it's enough to make the Pinbot work.  
 So if you have additional information to fill these gaps please tell us and we're going to include it.
+
+For this documentation I expect the other System 11 machines to work in a similar way.
 
 |Prefix|Command / Hex|Comment|
 |--|--|--|
@@ -14,9 +15,45 @@ So if you have additional information to fill these gaps please tell us and we'r
 |01|7f|Stop sounds of prefix 01|
 |01|6X|Music volume setting 0x60 is full volume 0x64 is almost nothing|
 
-Prefix 01 plays music and sounds simultaneously. It looks like sound numbers below 0x80 are for music and the rest is for sounds. As the APC has only two independent sound channels, only the music of prefix 01 is played on the APC's music channel while the sounds are being forwarded to the sound channel.
+## Sound file preparation
 
-Somewhere in System11B all audio circuitry was removed from the CPU board and the functionality was added to the audio board. For these games only the prefix 01 is used by PinMame.
+There're multiple ways to obtain the original sounds for System 11 machines. Some can be found on the internet, you can record them from your pinball machine or you can extract them from PinMame. What ever you do, the result should be a mono WAV file with 44.1KHz sampling rate and reasonable amplitude.  
+If you find the files on the internet you can skip this section, as it will deal with how-to extract them from PinMame.
+
+The method decribed here will be the the manual way, there're also more automatic solutions which might save some time. I've never tried them myself, but Mokopin (from the Flippertreff forum) has written some [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) which explain the automatic extraction of sound files and the use of Audacity in more detail.
+
+### Which sounds are required?
+
+System 11 boards can handle 8 bit sound commands which leads to a possible number of 256 sounds per board minus some control commands, but only a part of these commands are actually used by a game.  
+With this manual method we have to extract and preprocess every sound by hand, so we try to keep the number of sounds as low as possible by just extracting those which are actually requested by PinMame.
+
+When you start from scratch you should play your game with Lisy being in Sound Debug Mode. Please read the [Controlling Lisy page](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) to learn how to do this.
+
+I'd recommend to do the sound and music test while your game is running. This will already give you most if not all of the music tracks and some sounds to start with.
+
+When you're done playing, press the shutdown switch SW1 on your APC board to make it exit the emulation and store the log file on the SD card. The file will be located on the Pi's SD card in the folder lisy/lisy_m/debug.
+
+In lisy_m_debug.txt playing a sound looks like
+
+    [461.372965][0.000064] LISY_W sound_handler: board:0 0x79 (121)
+    [461.372985][0.000020] play soundindex 121 on board 0 
+    [461.373005][0.000020] USB_write(3 bytes): 0x32 0x01 0x79
+
+In this case sound 0x79 of prefix (board) 0 shall be played which means you have to record the sound command 0079 in PinMame.
+
+### Manual extraction from PinMame
+
+For this to work you have to install PinMame32 for Windows as the Unix version has severe sound issues.
+
+After PinMame is running press F4 to enter the 'Sound Command Mode', then press DEL for the Manual / Command Mode. Now enter the prefix and the hexadecimal sound number of the sound you want to record. Then press F5 to start the recording, SPACE to play the sound and F5 again to stop recording. The sound can be found in PinMame's 'wave' folder. The sound command 00 stops the currently playing sound / music.  
+Remember to rename the files immediately to the correct name.
+
+### Preprocessing the WAV files with Audacity
+
+For some reason the PinMame sounds have a sampling rate of 48KHz and must therefore be converted to the normal sampling rate of 44.1KHz. You can use a free audio editor like Audacity to adjust the start and end time of your sound sample as well as the sampling rate.  
+Furthermore, the volume of the sound and music files generated by PinMame differ quite a lot, which means you should also use Audacity to adjust those levels accordingly.  
+
+
 
 ## How to make it work
 

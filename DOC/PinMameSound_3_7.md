@@ -10,7 +10,7 @@ Not all of these commands have to be sounds, up to now we know of two control co
 |0c|Stop Sound|
 |1f|Not a real sound command, but used to reset the data bus to the audio board between commands|
 
-Some of these games are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher tune). For the APC these sound file names have to be named like 0_0a_001, where the leading zero is selecting sound channel 0 (System 3 - 6 games use only this channel), 0a being the sound number in hex format and 001 the tune of this sound. The latter number is counted up for all tunes available for this sound. 
+Some of these games are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher tune). For the APC these sound file names have to be named like 0_0a_001, where the leading zero is selecting sound channel 0 (System 3 - 6 games use only this channel), 0a being the sound number in hex format and 001 the tune of this sound. The latter number is counted up (in decimal format) for all tunes available for this sound. 
 
 # System 7
 
@@ -34,31 +34,33 @@ In order to find out the correct sound names you have to install PinMame32 for W
 After PinMame is running press F4 to enter the 'Sound Command Mode'. To play a sound you have to enter  7fXX with XX being the sound number in hex format and press the space bar. Try to find a match for each previously downloaded WAV file. If you found one, rename the WAV file to 0_XX.wav with XX being the sound number you just found out. If you found a sound series rename their tunes to 0_XX_001 and increase the 001 for each tune.  
 This could be performed with an automatic renaming tool ( eg. Bulk Rename Utility https://www.bulkrenameutility.co.uk).
 
-The big advantage of the downloaded files is that they usually don't need any preprocessing as their amplitudes and sampling rate are already fine (unlike those derived from PinMame), so you can directly convert them.
+The big advantage of the downloaded files is that they usually don't need any preprocessing as their amplitude and sampling rate are already fine (unlike those derived from PinMame), so you can directly convert them.
 
 ## Audio file conversion
 
 Put all renamed WAV files in one folder and execute the [AudioSaveFolder.pl](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/UsefulSWtools.md) tool.  
-The resulting .snd files must be copied to the APC SD-CARD. Please format your card before with a special SD-card formatting tool like the one from the SD Association (sdcard.org) to improve the card's access time.
+The resulting .snd files must be copied to the APC SD-CARD. Please format your card before with a special SD-card formatting tool from the SD Association (sdcard.org) to improve the card's access times.
 
-If you start your game now you should already hear most of the sounds, but everything out of the ordinary like sound series and so on won't work correctly. We need to tell the APC about special sound sommands and how to deal with them. 
+If you start your game now you should already hear most of the sounds, but everything out of the ordinary like sound series and so on won't work correctly. We need to tell the APC about these special sound sommands and how to deal with them. 
 
 ## PinMameExceptions for audio
 
 The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. To enable this for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.
-You can manipulate sound, lamp, switch, display and solenoid commands. Some of these expections are necessary to make your machine work correctly while others are simply improvements or moderate rule changes.
+You can manipulate sound, lamp, switch, display and solenoid commands. Some of these expections are necessary to make your machine work correctly, but you can also do improvements or moderate rule changes.
 
-In this case we're using these exceptions to tell the APC what to do when a certain audio command is issued by PinMame. I'm using the Jungle Lord as an example here because it incorporates everything these audio boards can do AFAIK.  
+In the case at hand we're using these exceptions to tell the APC what to do when a certain audio command is issued by PinMame. I'm using the Jungle Lord as an example here because it incorporates everything these audio boards can do AFAIK.  
 Note that the only difference between System 3 - 6 and System 7 is that PinMame adds 32 (hex 20) to each audio command when it's a System 7 game. Hence, the audio commands are in the range from 0x20 to 0x3f and not from 0x00 to 0x1f as for the previous generations.  
 However, the basic setup is the same for every System 3 - 7 game.
 
 ### Set up of PinMameExceptions for the Jungle Lord
 
-First of all we need to generate a Jungle Lord specific code section to handle all the required exceptions. There's a template named
+The following steps have been done by me to make my Jungle Lord work correctly. That means you can find the code which is described here in PinMameExceptions.ino.
+
+There's a template named
 
     byte EX_Blank(byte Type, byte Command)
 
-in PinMameExceptions.ino you could use as a start. So let's create a copy of this and rename it to
+in PinMameExceptions.ino to be used as a starting point. So let's create a copy of this and rename it to
 
     byte EX_JungleLord(byte Type, byte Command)
 
@@ -67,23 +69,22 @@ In order for the system to use this code section, we have to add it to EX_Init w
     void EX_Init(byte GameNumber) {
       switch(GameNumber) {
       case 4:                                             // Disco Fever
-    //SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
-    PinMameException = EX_Fever;                      // use exception rules for Flash
-    break;
+        PinMameException = EX_Fever;                      // use exception rules for Flash
+        break;
       case 6:                                             // Flash
-    SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
-    PinMameException = EX_Flash;                      // use exception rules for Flash
-    break;
+        SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
+        PinMameException = EX_Flash;                      // use exception rules for Flash
+        break;
       case 16:                                            // Firepower
-    PinMameException = EX_Firepower;                  // use exception rules for Firepower
-    break;
+        PinMameException = EX_Firepower;                  // use exception rules for Firepower
+        break;
       case 20:                                            // Jungle Lord
-    EX_EjectSolenoid = 2;                             // specify eject coil for improved ball release
-    PinMameException = EX_JungleLord;                 // use exception rules for Jungle Lord
-    break;
+        EX_EjectSolenoid = 2;                             // specify eject coil for improved ball release
+        PinMameException = EX_JungleLord;                 // use exception rules for Jungle Lord
+        break;
       case 21:                                            // Pharaoh
-    PinMameException = EX_Pharaoh;                    // use exception rules for Pharaoh
-    break;
+        PinMameException = EX_Pharaoh;                    // use exception rules for Pharaoh
+        break;
 
 and so on.
 
@@ -94,7 +95,7 @@ The definition of EX_EjectSolenoid is only there because I also want to improve 
     
 As System7 just uses one sound channel, all sound exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program. Hence you can delete all cases except of SoundCommandCh1 and the default case. The result should look like this:
 
-    byte EX_Blank(byte Type, byte Command){               // use this as a template and an example of how to add your own exceptions
+    byte EX_JungleLord(byte Type, byte Command){          // use this as a template and an example of how to add your own exceptions
       switch(Type){                                       // usually just a few exception cases are needed, just delete the rest
       case SoundCommandCh1:                               // sound commands for channel 1
         if (Command == 38){                               // sound command 0x26
@@ -108,14 +109,14 @@ As System7 just uses one sound channel, all sound exceptions have to be put into
       default:                                            // use default treatment for undefined types
         return(0);}}
 
-What we have now is a default handler for all the sound numbers that have exceptions defined.  
+What we have now is a default handler for all the sound numbers that have no exceptions defined.  
 The filenames of these sounds just consist of the channel number, an underscore and the sound number in hex followed by ".snd". There is a routine called
 
     byte USB_GenerateFilename(byte Channel, byte Sound, char* FileName)
 
-which adds the hex code to a given filename and handles the display messages if the audio debug mode is active. It returns a 1 in case the soundfiles does exist and a 0 if it doesn't. Is is therefore only necessary to play the sound when the return value has been 1.
+which adds the hex code to a given filename and handles the display messages if the audio debug mode is active. It returns a 1 in case the soundfile does exist and a 0 if it doesn't. Is is therefore only necessary to play the sound when the return value has been 1.
 
-In EX_Blank the 'if' for sound command 38 is just meant as an example to make it clear where exceptions have to be added, but for the Jungle Lord we can keep this as our first audio command is indeed 38 (0x26).
+In EX_Blank the 'if' for sound command 38 is just meant as an example to make it clear where exceptions have to be added, but for the Jungle Lord we can keep this as our first special audio command is indeed 38 (0x26).
 
 ### Random sounds
 
@@ -144,7 +145,7 @@ The next special sound command of the Jungle Lord is 0x2d. This is a looping sou
       FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
       PlaySound(51, (char*) FileName);}               // play the sound
 
-For this we need an additional variable SoundSeries which stores the number of the tune currently being played. As Jungle Lord features more than one sound series we need an array here. This variable has to be defined as static byte at the beginning of our EX_JungleLord.
+For this we need an additional variable 'SoundSeries' which stores the number of the tune currently being played. As Jungle Lord features more than one sound series we need an array here. This variable has to be defined as static byte at the beginning of our EX_JungleLord.
 At first it is checked whether the last tune of this series is currently being played. If yes then the tune number is set back to one otherwise it is increased by one. After that the base filename is generated, the new tune number is written into it and the sound is played.
 
 ### The background sound
@@ -165,7 +166,8 @@ Sound command 0x2a is also a sound series, so it's treated very similarly.
 
 One difference is that this sound series is not a looping one which means the tune counter is not reset to one, but stays at the highest value until it is reset by the stop sound command 0x2c. Furthermore this command resets the tune of the 0x2d sound series (SoundSeries[1] = 0;).  
 However, the major difference is that 0x2a is the background sound which can be interrupted by other sounds, but will continue afterwards.  
-In the APC SW the Aftersound pointer can be used for this. This pointer can be set to a routine which is called automatically when a sound has run out. That's why the name of the current tune is always stored in the USB_RepeatSound variable. Then QueueNextSound is called which takes the filename USB_RepeatSound points to as an argument. It sets the AfterSound pointer to a routine which will play the filename stored in USB_RepeatSound when the current sound file is running out. This ensures that whenever the background sound is being interrupted by another sound, it is immediately being restarted as soon as this sound has run out. Setting AfterSound = 0 will disable this mechanism.
+In the APC SW the Aftersound pointer can be used for this. This pointer can be set to a routine which is called automatically when a sound has run out. That's why the name of the current tune is always stored in the USB_RepeatSound variable. Then QueueNextSound is called which takes the filename USB_RepeatSound points to as an argument. It sets the AfterSound pointer to a routine which will play the filename stored in USB_RepeatSound when the current sound file is running out. This ensures that whenever the background sound is being interrupted by another sound, it is immediately being restarted as soon as this sound has run out.  
+Setting AfterSound = 0 will disable this mechanism.
 
 ### Defining the basic special commands
 
