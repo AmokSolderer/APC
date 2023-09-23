@@ -52,7 +52,7 @@ In the case at hand we're using these exceptions to tell the APC what to do when
 Note that the only difference between System 3 - 6 and System 7 is that PinMame adds 32 (hex 20) to each audio command when it's a System 7 game. Hence, the audio commands are in the range from 0x20 to 0x3f and not from 0x00 to 0x1f as for the previous generations.  
 However, the basic setup is the same for every System 3 - 7 game.
 
-### Set up of PinMameExceptions for the Jungle Lord
+### Setting up PinMameExceptions for the Jungle Lord
 
 The following steps have been done by me to make my Jungle Lord work correctly. That means you can find the code which is described here in PinMameExceptions.ino.
 
@@ -64,34 +64,31 @@ in PinMameExceptions.ino to be used as a starting point. So let's create a copy 
 
     byte EX_JungleLord(byte Type, byte Command)
 
-In order for the system to use this code section, we have to add it to EX_Init which is at the ende of PinMameExceptions.ino and determines which code is used for which machine. The games are being distinguished by their [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv). Hence we have to add a case 20 for the Jungle Lord.
+In order for the system to use this code section, we have to add it to EX_Init which is at the end of PinMameExceptions.ino and determines which code is used for which machine. The games are being distinguished by their [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv). Hence we have to add a case 20 for the Jungle Lord.
 
     void EX_Init(byte GameNumber) {
       switch(GameNumber) {
-      case 4:                                             // Disco Fever
-        PinMameException = EX_Fever;                      // use exception rules for Flash
-        break;
-      case 6:                                             // Flash
-        SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
-        PinMameException = EX_Flash;                      // use exception rules for Flash
-        break;
-      case 16:                                            // Firepower
-        PinMameException = EX_Firepower;                  // use exception rules for Firepower
-        break;
       case 20:                                            // Jungle Lord
         EX_EjectSolenoid = 2;                             // specify eject coil for improved ball release
         PinMameException = EX_JungleLord;                 // use exception rules for Jungle Lord
         break;
-      case 21:                                            // Pharaoh
-        PinMameException = EX_Pharaoh;                    // use exception rules for Pharaoh
         break;
-
-and so on.
+      case 39:                                            // Comet
+        PinMameException = EX_Comet;                      // use exception rules for Comet
+        break;
+      case 43:                                            // Pinbot
+        PinMameException = EX_Pinbot;                     // use exception rules for Pinbot
+        break;
+      case 44:                                            // F-14 Tomcat
+        PinMameException = EX_F14Tomcat;                  // use exception rules for Tomcat
+        break;
+      default:
+        PinMameException = EX_DummyProcess;}}
 
 All games not listet here do not have exceptions defined yet, so the exception pointer just points to a dummy process which only plays the standard sounds, but knows no exceptions.
 The definition of EX_EjectSolenoid is only there because I also want to improve the ball release of System 7 machines. The way it works is handled on the general [PinMameExceptions page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md), but let's skip it for now as it has nothing to do with the sound.
 
-### Handle ordinary sounds
+### Handling of ordinary sounds
     
 As System7 just uses one sound channel, all sound exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program. Hence you can delete all cases except of SoundCommandCh1 and the default case. The result should look like this:
 
@@ -233,3 +230,7 @@ The final result is shown below. It contains the PinMameExceptions needed to mak
         return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 The actual EX_JungleLord in PinMameExceptions.ino looks slightly different as it features some additional improvements, but these have nothing to do with audio. However, if you're interested you can find more infos about that on the general [PinMameExceptions page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md).
+
+## Sound problems
+
+Most sound problems like lags and stuttering are caused by the performance of the SD card. Take a look at the [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) section for more.
