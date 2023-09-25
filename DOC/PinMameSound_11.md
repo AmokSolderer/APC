@@ -29,7 +29,7 @@ With this manual method we have to extract and preprocess every sound by hand, s
 
 When you start from scratch you should play your game with Lisy being in Sound Debug Mode. Please read the [Controlling Lisy page](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) to learn how to do this.
 
-I'd recommend to do the Williams sound and music test while PinMame is running. This will already give you most if not all of the music numbers and some sounds to start with. Later you'll have to repeat this step or use the [Audio Debug Mode}(https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md#finding-out-which-sounds-are-still-missing) of the APC to find the remaining missing sounds.
+I'd recommend to do the Williams sound and music test while PinMame is running. This will already give you most if not all of the music numbers and some sounds to start with. Later you'll have to repeat this step or use the [Audio Debug Mode](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md#finding-out-which-sounds-are-still-missing) of the APC to find the remaining missing sounds.
 
 When you're done press the shutdown switch SW1 on your APC board to make it exit the emulation and store the log file on the SD card. The file will be located on the Pi's SD card in the folder lisy/lisy_m/debug.
 
@@ -320,6 +320,8 @@ You can activate this mode in the [game settings](https://github.com/AmokSoldere
 
 In Audio Debug mode the lower display(s) are used for audio information. The Player 3 display (or the left part of the lower display for BK2K type displays) shows information for sound prefix 00 and the Player 4 display (right part of lower display for BK2K) does the same for prefix 01. If the requested sound is found on the SD card, it's hex number is shown in the left side of the corresponding display and the sound is played normally. If the sound file is missing it's hex number is shown on the right side of the corresponding display which makes it easy to find missing sound files.  
 As the pre System11 displays cannot show letters, the corresponding sound numbers are shown in decimal values when this kind of display is selected.
+
+By that you can just play your game and only if the number of a missing sound file pops up on the right side of your display you note it down and add it later.
 
 ## Sound problems
 
