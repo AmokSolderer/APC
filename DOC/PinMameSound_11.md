@@ -49,12 +49,18 @@ You can activate this mode in the [game settings](https://github.com/AmokSoldere
 In Audio Debug mode the lower display(s) are used for audio information. The Player 3 display (or the left part of the lower display for BK2K type displays) shows information for sound prefix 00 and the Player 4 display (right part of lower display for BK2K) does the same for prefix 01. If the requested sound is found on the SD card, it's hex number is shown in the left side of the corresponding display and the sound is played normally. If the sound file is missing it's hex number is shown on the right side of the corresponding display which makes it easy to find missing sound files.  
 As the pre System11 displays cannot show letters, the corresponding sound numbers are shown in decimal values when this kind of display is selected.
 
+The above mentioned Lisy sound debug log and the Audio Debug Mode of the APC only tell you which sound numbers are needed for your game. Now it's time to extract the corresponding sound files.
+
 ### Manual extraction from PinMame
 
 For this to work you have to install PinMame32 for Windows as the Unix version has severe sound issues.
 
-After PinMame is running, press F4 to enter the 'Sound Command Mode' then press DEL for the Manual / Command Mode. Now enter the prefix and the hexadecimal sound number of the sound you want to record. Then press F5 to start the recording, SPACE to play the sound and F5 again to stop recording. The sound can be found in PinMame's 'wave' folder. The sound command 00 stops the currently playing sound / music.  
-Remember to rename the files immediately to the correct name.
+After PinMame is running, press F4 to enter the 'Sound Command Mode' then press DEL for the Manual / Command Mode.
+
+The following steps have to be repeated for every sound you want to record. That means you have to do it for every sound number you've derived from the Lisy sound debug log or the Audio Debug Mode of the APC as described above.  
+Enter the prefix and the hexadecimal sound number. Then press F5 to start the recording, SPACE to play the sound and F5 again to stop recording. The sound can be found in PinMame's 'wave' folder.  
+The sound command 00 (with the corresponding prefix) stops the currently playing sound / music.  
+Remember to rename the files immediately to the correct names to avoid confusion.
 
 ### Preprocessing the WAV files with Audacity
 
