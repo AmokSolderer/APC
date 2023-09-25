@@ -29,7 +29,7 @@ With this manual method we have to extract and preprocess every sound by hand, s
 
 When you start from scratch you should play your game with Lisy being in Sound Debug Mode. Please read the [Controlling Lisy page](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) to learn how to do this.
 
-I'd recommend to do the Williams sound and music test while PinMame is running. This will already give you most if not all of the music numbers and some sounds to start with.
+I'd recommend to do the Williams sound and music test while PinMame is running. This will already give you most if not all of the music numbers and some sounds to start with. Later you'll have to repeat this step or use the [Audio Debug Mode}(https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md#finding-out-which-sounds-are-still-missing) of the APC to find the remaining missing sounds.
 
 When you're done press the shutdown switch SW1 on your APC board to make it exit the emulation and store the log file on the SD card. The file will be located on the Pi's SD card in the folder lisy/lisy_m/debug.
 
@@ -41,15 +41,7 @@ In lisy_m_debug.txt playing a sound looks like
 
 In this case sound 0x79 of prefix (board) 0 shall be played which means you have to record the sound command 0079 in PinMame.
 
-### Finding out which sounds are still missing
-
-After you have extracted most of the files, there'll be the point when only a few files are still missing and you need to find out their numbers. Of course you could still scan the Lisy log for unknown sound numbers, but in this stage it might be easier to use the 'Audio Debug Mode' of the APC.  
-You can activate this mode in the [game settings](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Settings.md#game-settings-in-remote-control-mode).
-
-In Audio Debug mode the lower display(s) are used for audio information. The Player 3 display (or the left part of the lower display for BK2K type displays) shows information for sound prefix 00 and the Player 4 display (right part of lower display for BK2K) does the same for prefix 01. If the requested sound is found on the SD card, it's hex number is shown in the left side of the corresponding display and the sound is played normally. If the sound file is missing it's hex number is shown on the right side of the corresponding display which makes it easy to find missing sound files.  
-As the pre System11 displays cannot show letters, the corresponding sound numbers are shown in decimal values when this kind of display is selected.
-
-The above mentioned Lisy sound debug log and the Audio Debug Mode of the APC only tell you which sound numbers are needed for your game. Now it's time to extract the corresponding sound files.
+The Lisy sound debug log only tells you which sound numbers are needed for your game. Now it's time to extract the corresponding sound files.
 
 ### Manual extraction from PinMame
 
@@ -57,9 +49,10 @@ For this to work you have to install PinMame32 for Windows as the Unix version h
 
 After PinMame is running, press F4 to enter the 'Sound Command Mode' then press DEL for the Manual / Command Mode.
 
-The following steps have to be repeated for every sound you want to record. That means you have to do it for every sound number you've derived from the Lisy sound debug log or the Audio Debug Mode of the APC as described above.  
+The following steps have to be repeated for every sound you want to record. That means you have to do it for every sound number you've found in the Lisy sound debug log.  
 Enter the prefix and the hexadecimal sound number. Then press F5 to start the recording, SPACE to play the sound and F5 again to stop recording. The sound can be found in PinMame's 'wave' folder.  
 The sound command 00 (with the corresponding prefix) stops the currently playing sound / music.  
+Not all sound numbers play a sound in PinMame, as some are just controlling the audio board. These commands have to be covered by PinMameExceptions and can be ignored for now.  
 Remember to rename the files immediately to the correct names to avoid confusion.
 
 ### Preprocessing the WAV files with Audacity
@@ -320,6 +313,13 @@ The final result is shown below. It contains the PinMameExceptions needed to mak
       default:                                            // use default treatment for undefined types
         return(0);}}                                      // no exception rule found for this type so proceed as normal
     
+### Finding out which sounds are still missing
+
+After you have extracted most of the files, there'll be the point when only a few files are still missing and you need to find out their numbers. Of course you could still scan the Lisy log for unknown sound numbers, but in this stage it might be easier to use the 'Audio Debug Mode' of the APC.  
+You can activate this mode in the [game settings](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Settings.md#game-settings-in-remote-control-mode).
+
+In Audio Debug mode the lower display(s) are used for audio information. The Player 3 display (or the left part of the lower display for BK2K type displays) shows information for sound prefix 00 and the Player 4 display (right part of lower display for BK2K) does the same for prefix 01. If the requested sound is found on the SD card, it's hex number is shown in the left side of the corresponding display and the sound is played normally. If the sound file is missing it's hex number is shown on the right side of the corresponding display which makes it easy to find missing sound files.  
+As the pre System11 displays cannot show letters, the corresponding sound numbers are shown in decimal values when this kind of display is selected.
 
 ## Sound problems
 
