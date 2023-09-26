@@ -20,11 +20,11 @@ For this documentation I expect the other System 11 machines to work in a simila
 There're multiple ways to obtain the original sounds for System 11 machines. Some can be found on the internet, directly recorded from your pinball machine or you can extract them from PinMame. What ever you do, the result should be a mono WAV file with 44.1KHz sampling rate and reasonable amplitude.  
 If you find the files on the internet you can proceed to the [Audio file conversion](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md#audio-file-conversion) section, as you don't have to extract them from PinMame.
 
-The method decribed here will be the the manual way, there're also more automatic solutions which might save some time. I've never tried them myself, but Mokopin (from the Flippertreff forum) has written some [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) which explain the automatic extraction of sound files and the use of Audacity in more detail.
+The method decribed here is the the manual way, there're also more automatic solutions which might save some time. I've never tried them myself, but Mokopin (from the Flippertreff forum) has written some [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) which explain the automatic extraction of sound files and the use of Audacity in more detail.
 
 ### Which sounds are required?
 
-System 11 boards can handle 8 bit sound commands which leads to a possible number of 256 sounds per board minus some control commands, but only a part of these commands are actually used by a game.  
+System 11 boards can handle 8 bit sound commands which leads to a possible number of 256 sounds per board minus some control commands, but only a part of these numbers are actually used by a game.  
 With this manual method we have to extract and preprocess every sound by hand, so we try to keep the number of sounds as low as possible by just extracting those which are actually requested by PinMame.
 
 When you start from scratch you should play your game with Lisy being in Sound Debug Mode. Please read the [Controlling Lisy page](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) to learn how to do this.
@@ -85,7 +85,7 @@ If you start your game now you should already hear most of the sounds, but every
 
 ## PinMameExceptions for audio
 
-The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. The exceptions are written in C and are using the commands of the APC SW framework. More information about the framework can the found in [the tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md) and the [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf).
+The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. The exceptions are written in C and are using the commands of the APC SW framework. More information about the framework can be found in [the tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md) and the [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf).
 
 To enable PinMameExceptions for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.
 You can manipulate sound, lamp, switch, display and solenoid commands. Some of these expections are necessary to make your machine work correctly, but you can also do improvements or moderate rule changes.

@@ -1,7 +1,7 @@
 # System 9
 
-The audio generation circuits of System 9 machines are basically the same as of System 7. The main difference seems to be that System 9 boards use larger EPROMs and can therefore store more sound data. Hence, the data bus is not limited to 5 bit any more, but the whole 8 bit are used which makes 256 different sound commands possible.  
-Furthermore these machine seem to feature some kind of crude background music. As these board still have just one audio channel, this 'music' must be interrupted as long as another sound is played.
+The audio generation circuits of System 9 machines are basically the same as of System 7. The main difference seems to be that System 9 boards use larger EPROMs and can therefore store more sound data. Hence, the data bus is not limited to 5 bit any more but uses the whole 8 bit which makes 256 different sound commands possible.  
+Furthermore these machine feature some kind of crude background music. As these board still have just one audio channel, this 'music' must be interrupted as long as another sound is played.
 
 This documentation uses Comet as an example as APC sound files and PinMameExceptions are available for this machine. I expect the other System 9 machines to work in a similar way.
 
@@ -10,25 +10,25 @@ Comet uses the following audio commands which are not sounds:
 |Command / Hex|Comment|
 |--|--|
 |00|Stop Sound/Music|
-|0b|Unknown command -> ignored|
+|0b, fe|Unknown command -> ignored|
 |2f|Background music|
-|fe|Stop Sound/Music|
+|ff|Stop Sound/Music|
 
 ## Sound file preparation
 
 There're multiple ways to obtain the original sounds for System 11 machines. Some can be found on the internet, directly recorded from your pinball machine or you can extract them from PinMame. What ever you do, the result should be a mono WAV file with 44.1KHz sampling rate and reasonable amplitude.  
-If you find the files on the internet you can proceed to the [Audio file conversion](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md#audio-file-conversion) section, as you don't have to extract them from PinMame.
+If you find the files on the internet you can proceed to the [Audio file conversion](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_9.md#audio-file-conversion) section, as you don't have to extract them from PinMame.
 
-The method decribed here will be the the manual way, there're also more automatic solutions which might save some time. I've never tried them myself, but Mokopin (from the Flippertreff forum) has written some [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) which explain the automatic extraction of sound files and the use of Audacity in more detail.
+The method decribed here is the the manual way, there're also more automatic solutions which might save some time. I've never tried them myself, but Mokopin (from the Flippertreff forum) has written some [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) which explain the automatic extraction of sound files and the use of Audacity in more detail.
 
 ### Which sounds are required?
 
-System 9 boards can handle 8 bit sound commands which leads to a possible number of 256 sounds per board minus some control commands, but only a part of these commands are actually used by a game.  
+System 9 boards can handle 8 bit sound commands which leads to a possible number of 256 sounds minus some control commands, but only a part of these numbers are actually used by a game.  
 With this manual method we have to extract and preprocess every sound by hand, so we try to keep the number of sounds as low as possible by just extracting those which are actually requested by PinMame.
 
 When you start from scratch you should play your game with Lisy being in Sound Debug Mode. Please read the [Controlling Lisy page](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) to learn how to do this.
 
-Now start a game and let Lisy log the sound commands. This will already give you the most common sound numbers to start with. Later you'll have to repeat this step or use the [Audio Debug Mode](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md#finding-out-which-sounds-are-still-missing) of the APC to find the remaining missing sounds.
+Now start a game and let Lisy log the sound commands. This will already give you the most common sound numbers to start with. Later you'll have to repeat this step or use the [Audio Debug Mode](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_9.md#finding-out-which-sounds-are-still-missing) of the APC to find the remaining missing sounds.
 
 When you're done press the shutdown switch SW1 on your APC board to make it exit the emulation and store the log file on the SD card. The file will be located on the Pi's SD card in the folder lisy/lisy_m/debug.
 
@@ -84,12 +84,12 @@ If you start your game now you should already hear most of the sounds, but every
 
 ## PinMameExceptions for audio
 
-The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. The exceptions are written in C and are using the commands of the APC SW framework. More information about the framework can the found in [the tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md) and the [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf).
+The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. The exceptions are written in C and are using the commands of the APC SW framework. More information about the framework can be found in [the tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md) and the [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf).
 
 To enable PinMameExceptions for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.
 You can manipulate sound, lamp, switch, display and solenoid commands. Some of these expections are necessary to make your machine work correctly, but you can also do improvements or moderate rule changes.
 
-In the case at hand we're using these exceptions to tell the APC what to do when a certain audio command is issued by PinMame. I'm using the Pinbot as an example here.
+In the case at hand we're using these exceptions to tell the APC what to do when a certain audio command is issued by PinMame. I'm using the Comet as an example here.
 
 ### Setting up PinMameExceptions for the Comet
 
@@ -128,7 +128,7 @@ All games not listet here do not have exceptions defined yet, so the exception p
 
 ### Handling ordinary sounds
      
-As System9 just uses one sound channel, all sound exceptions have to be put into the SoundCommandCh1 case of our EX_JungleLord program. Hence you can delete all cases except of SoundCommandCh1 and the default case. The result should look like this:
+As System9 just uses one sound channel, all sound exceptions have to be put into the SoundCommandCh1 case of our EX_Comet program. Hence you can delete all cases except of SoundCommandCh1 and the default case. The result should look like this:
 
     byte EX_Comet(byte Type, byte Command){               // use this as a template and an example of how to add your own exceptions
       switch(Type){                                       // usually just a few exception cases are needed, just delete the rest
@@ -151,7 +151,7 @@ The filenames of these sounds just consist of the channel number, an underscore 
 
 which adds the hex code to a given filename and handles the display messages if the audio debug mode is active. It returns a 1 in case the soundfile does exist and a 0 if it doesn't. Is is therefore only necessary to play the sound when the return value has been 1.
 
-In EX_Blank the 'if' for sound command 38 is just meant as an example to make it clear where exceptions have to be added, but for the Comet we can change this to incorporate the Sound Stop commands (00 and 0xfe):
+In EX_Blank the 'if' for sound command 38 is just meant as an example to make it clear where exceptions have to be added, but for the Comet we can change this to incorporate the Sound Stop commands (00 and 0xff):
 
     byte EX_Comet(byte Type, byte Command) {
       switch(Type){
@@ -180,7 +180,7 @@ In order to prevent this from happening, an exception rule must handle the loopi
 When audio command 47 is issued by PinMame then the music is played and the QueueNextMusic command is used to queue the file also for looping. As long as the AfterMusic variable is not set to zero, the looping part will be repeated automatically.
 
 Due to the restriction to one audio channel of the old audio boards, this music had to be suspended every time another sound was played.  
-Note that the code snippet above is using the PlayMusic and QueueNextMusic commands to play this file on the music channel of the APC which means that means the music is running independently from the sounds.  
+Note that the code snippet above is using the PlayMusic and QueueNextMusic commands to play this file on the music channel of the APC which means that the music is running independently from the sounds.  
 We can therefore choose whether we want to mute the music for as long as another sound is played or whether we want to play the music continuously in the background like System11 machines are doing.  
 In this case I decided for the latter and only muted the music for one special sound sequence which starts with sound number 9 and ends with number 0xf1 (dec 241). The APC handles the volume of the music by the MusicVolume variable. A value of zero means full volume and every count up cuts the amplitude by half. Hence, the corresponding code looks like this:
 
@@ -193,7 +193,7 @@ In this case I decided for the latter and only muted the music for one special s
 
 There're still several commands we don't know the meaning of. If you find out what they do please drop us a note, but for the time being we can just ignore them (which worked quite well so far). So for every command that doesn't produce a sound in PinMame, just add a line like 
 
-    else if (Command > 29 && Command < 48) { }        // ignore unknown sound commands 0x1d to 0x30
+    else if (Command == 11 || Command == 254) { }     // ignore sound commands 0x0b and 0xfe
 
 to prevent them from causing 'File not found' messages on your display.
 
