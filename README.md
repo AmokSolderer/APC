@@ -151,7 +151,7 @@ Feedback is very important for me, because if there is none I must assume that n
 
 ## How to get startet?
 
-I'm sorry, but I'm not going to sell any boards. Check whether anyone in the above mentioned forums has a spare board for sale. If this fails you can still order populated board in China.  
+I'm sorry, but I'm not going to sell any boards. Check whether anyone in the above mentioned forums has a spare board for sale. If this fails you can still order populated boards from China.  
 If you're interested in using an APC, then be sure to follow the instructions given in the first part of the documentation listet below. They will guide you through the process of getting and setting up an APC board.
 
 ## Documentation contents
@@ -178,7 +178,7 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 4.1. [Lisy Homepage](https://lisy.dev/apc.html) - Location of the Lisy SW download and more  
 4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMame.md) - shows whether your game is supported and what to do if not  
 4.3. [PinMame System 3 - 7 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_3_7.md) - How to enable the sound of System 3 - 7 games  
-4.4. PinMame System 9 Sound howto  
+4.4. [PinMame System 9 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_9.md) - How to enable the sound of System 9 games  
 4.5. [PinMame System 11 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md) - How to enable the sound of System 11 games  
 4.6. [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameExceptions.md) - change your game, but let PinMame do the main work  
 4.7. [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) - list of the PinMame game numbers  
@@ -193,7 +193,7 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 6.1. [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  
 6.2. [APC solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) - to control additional features  
 6.3. [System 7 alphanumeric display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) - to have alphanumerical displays in a pre System 11 machine  
-6.4. [Installation frames](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Frames.md) - To mount the APC in your backbox  
+6.4. [Installation frames](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Frames.md) - to mount the APC in your backbox  
 
 7. Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
 7.1. [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7_Display) - an LED replacement display for System 7, purely numerical  

@@ -10,7 +10,7 @@ Not all of these commands have to be sounds, up to now we know of two control co
 |0c|Stop Sound|
 |1f|Not a real sound command, but used to reset the data bus to the audio board between commands|
 
-Some of these games are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher tune). For the APC these sound file names have to be named like 0_0a_001, where the leading zero is selecting sound channel 0 (System 3 - 6 games use only this channel), 0a being the sound number in hex format and 001 the tune of this sound. The latter number is counted up (in decimal format) for all tunes available for this sound. 
+Some of these games are featuring what I call a sound series. This means that if a certain sound number is called multiple times, a different version of this sound is played (usually with a higher pitch). For the APC these sound file names have to be named like 0_0a_001, where the leading zero is selecting sound channel 0 (System 3 - 6 games use only this channel), 0a being the sound number in hex format and 001 the pitch of this sound. The latter number is counted up (in decimal format) for all pitches available for this sound. 
 
 # System 7
 
@@ -27,11 +27,11 @@ Find the special command table for System 7 below:
 
 ## Sound file preparation
 
-If your game features one or more of the above mentioned sound series then extracting the sounds from PinMame will be quite cumbersome as every tune of a series has to be recorded and preprocessed.  
+If your game features one or more of the above mentioned sound series then extracting the sounds from PinMame will be quite cumbersome as every pitch of a series has to be recorded and preprocessed.  
 Luckily all sounds for these machines are available on the internet and only the naming has to be adapted.
 
 In order to find out the correct sound names you have to install PinMame32 for Windows.  
-After PinMame is running press F4 to enter the 'Sound Command Mode'. To play a sound you have to enter  7fXX with XX being the sound number in hex format and press the space bar. Try to find a match for each previously downloaded WAV file. If you found one, rename the WAV file to 0_XX.wav with XX being the sound number you just found out. If you found a sound series rename their tunes to 0_XX_001 and increase the 001 for each tune.  
+After PinMame is running press F4 to enter the 'Sound Command Mode'. To play a sound you have to enter  7fXX with XX being the sound number in hex format and press the space bar. Try to find a match for each previously downloaded WAV file. If you found one, rename the WAV file to 0_XX.wav with XX being the sound number you just found out. If you found a sound series rename their pitches to 0_XX_001 and increase the 001 for each pitch.  
 This could be performed with an automatic renaming tool ( eg. Bulk Rename Utility https://www.bulkrenameutility.co.uk).
 
 The big advantage of the downloaded files is that they usually don't need any preprocessing as their amplitude and sampling rate are already fine (unlike those derived from PinMame), so you can directly convert them.
@@ -45,7 +45,9 @@ If you start your game now you should already hear most of the sounds, but every
 
 ## PinMameExceptions for audio
 
-The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. To enable this for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.
+The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. The exceptions are written in C and are using the commands of the APC SW framework. More information about the framework can the found in [the tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md) and the [APC software reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf).
+
+To enable PinMameExceptions for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.
 You can manipulate sound, lamp, switch, display and solenoid commands. Some of these expections are necessary to make your machine work correctly, but you can also do improvements or moderate rule changes.
 
 In the case at hand we're using these exceptions to tell the APC what to do when a certain audio command is issued by PinMame. I'm using the Jungle Lord as an example here because it incorporates everything these audio boards can do AFAIK.  
@@ -130,20 +132,20 @@ First we generate the base filename "0_26_000.snd", then we change the 8th chara
 
 ### Looping sound series
 
-The next special sound command of the Jungle Lord is 0x2d. This is a looping sound series, which means it starts again with the first tune after the last has been played. The corresponding code is:
+The next special sound command of the Jungle Lord is 0x2d. This is a looping sound series, which means it starts again with the first pitch after the last has been played. The corresponding code is:
 
     else if (Command == 45){                          // sound command 0x2d - multiball start - sound series
-      if (SoundSeries[1] < 31)                        // this sound has 31 tunes
-        SoundSeries[1]++;                             // every call of this sound proceeds with next tune
+      if (SoundSeries[1] < 31)                        // this sound has 31 pitches
+        SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
       else
         SoundSeries[1] = 1;                           // start all over again
       char FileName[13] = "0_2d_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current tune
+      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
       FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
       PlaySound(51, (char*) FileName);}               // play the sound
 
-For this we need an additional variable 'SoundSeries' which stores the number of the tune currently being played. As Jungle Lord features more than one sound series we need an array here. This variable has to be defined as static byte at the beginning of our EX_JungleLord.
-At first it is checked whether the last tune of this series is currently being played. If yes then the tune number is set back to one otherwise it is increased by one. After that the base filename is generated, the new tune number is written into it and the sound is played.
+For this we need an additional variable 'SoundSeries' which stores the number of the pitch currently being played. As Jungle Lord features more than one sound series we need an array here. This variable has to be defined as static byte at the beginning of our EX_JungleLord.
+At first it is checked whether the last pitch of this series is currently being played. If yes then the pitch number is set back to one otherwise it is increased by one. After that the base filename is generated, the new pitch number is written into it and the sound is played.
 
 ### The background sound
 
@@ -151,19 +153,19 @@ Sound command 0x2a is also a sound series, so it's treated very similarly.
 
     else if (Command == 42){                          // sound command 0x2a - background sound - sound series
       SoundSeries[1] = 0;                             // reset the multiball start sound
-      if (SoundSeries[0] < 29)                        // BG sound has 29 tunes
-        SoundSeries[0]++;                             // every call of this sound proceeds with the next tune
+      if (SoundSeries[0] < 29)                        // BG sound has 29 pitches
+        SoundSeries[0]++;                             // every call of this sound proceeds with the next pitch
       char FileName[13] = "0_2a_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current tune
+      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current pitch
       FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
       for (byte i=0; i<12; i++) {                     // store the name of this sound
         USB_RepeatSound[i] = FileName[i];}
       QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
       PlaySound(51, (char*) FileName);}               // play the sound
 
-One difference is that this sound series is not a looping one which means the tune counter is not reset to one, but stays at the highest value until it is reset by the stop sound command 0x2c. Furthermore this command resets the tune of the 0x2d sound series (SoundSeries[1] = 0;).  
+One difference is that this sound series is not a looping one which means the pitch counter is not reset to one, but stays at the highest value until it is reset by the stop sound command 0x2c. Furthermore this command resets the pitch of the 0x2d sound series (SoundSeries[1] = 0;).  
 However, the major difference is that 0x2a is the background sound which can be interrupted by other sounds, but will continue afterwards.  
-In the APC SW the Aftersound pointer can be used for this. This pointer can be set to a routine which is called automatically when a sound has run out. That's why the name of the current tune is always stored in the USB_RepeatSound variable. Then QueueNextSound is called which takes the filename USB_RepeatSound points to as an argument. It sets the AfterSound pointer to a routine which will play the filename stored in USB_RepeatSound when the current sound file is running out. This ensures that whenever the background sound is being interrupted by another sound, it is immediately being restarted as soon as this sound has run out.  
+In the APC SW the Aftersound pointer can be used for this. This pointer can be set to a routine which is called automatically when a sound has run out. That's why the name of the current pitch is always stored in the USB_RepeatSound variable. Then QueueNextSound is called which takes the filename USB_RepeatSound points to as an argument. It sets the AfterSound pointer to a routine which will play the filename stored in USB_RepeatSound when the current sound file is running out. This ensures that whenever the background sound is being interrupted by another sound, it is immediately being restarted as soon as this sound has run out.  
 Setting AfterSound = 0 will disable this mechanism.
 
 ### Defining the basic special commands
@@ -198,10 +200,10 @@ The final result is shown below. It contains the PinMameExceptions needed to mak
           PlaySound(52, (char*) FileName);}               // play the corresponding sound file
         else if (Command == 42){                          // sound command 0x2a - background sound - sound series
           SoundSeries[1] = 0;                             // reset the multiball start sound
-          if (SoundSeries[0] < 29)                        // BG sound has 29 tunes
-            SoundSeries[0]++;                             // every call of this sound proceeds with the next tune
+          if (SoundSeries[0] < 29)                        // BG sound has 29 pitches
+            SoundSeries[0]++;                             // every call of this sound proceeds with the next pitch
           char FileName[13] = "0_2a_000.snd";             // generate base filename
-          FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current tune
+          FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current pitch
           FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
           for (byte i=0; i<12; i++) {                     // store the name of this sound
             USB_RepeatSound[i] = FileName[i];}
@@ -213,12 +215,12 @@ The final result is shown below. It contains the PinMameExceptions needed to mak
           SoundSeries[1] = 0;                             // reset the multiball start sound
           StopPlayingSound();}
         else if (Command == 45){                          // sound command 0x2d - multiball start - sound series
-          if (SoundSeries[1] < 31)                        // this sound has 31 tunes
-            SoundSeries[1]++;                             // every call of this sound proceeds with next tune
+          if (SoundSeries[1] < 31)                        // this sound has 31 pitches
+            SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
           else
             SoundSeries[1] = 1;                           // start all over again
           char FileName[13] = "0_2d_000.snd";             // generate base filename
-          FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current tune
+          FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
           FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
           PlaySound(51, (char*) FileName);}               // play the sound
         else {                                            // standard sound

@@ -36,7 +36,7 @@ For timed magna saves we have to do the same for the magna save buttons being re
 
 ## Improving the System7 ball release
 
-The previous examples were just to improve the emulation of a machine, which is necessary to make your game work correct with PinMame. However, you are not limited to this, but you can also use this to apply changes to a game.
+The previous example was just to improve the emulation of a machine, which is necessary to make your game work correct with PinMame. However, you are not limited to this, but you can also use this to apply changes to a game.
 
 As an example I want to fix one nasty problem that affected both of my System7 machines.
 It didn't happen often but regularly that a ball ejected into the plunger lane bounced back from the side rail and into the trunk again. If it got back into the trunk completely the SW would recognize this and eject the ball again. But sometimes the ball didn't really get back into the trunk. Instead it got stuck above the shooter lane feeder and there wasn't much I could do about it except of opening the coin door and operating the feeder manually to push the ball into the shooter lane. I really wonder how these games survived in the pubs with a bug like this.
