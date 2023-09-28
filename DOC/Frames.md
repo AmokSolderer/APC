@@ -18,7 +18,7 @@ The STL files for printing can be found [here](https://github.com/AmokSolderer/A
 
 ## System 9
 
-Note that the two parts of the System 9 are not identical as the APC board must be shifted a bit to the right to avoid a metal mounting post of the backbox.
+Note that the two parts of the System 9 frame are not identical as the APC board must be shifted a bit to the right to avoid a metal mounting post of the backbox.
 
 ![SD slot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/FrameSys9.JPG)
 

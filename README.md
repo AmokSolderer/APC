@@ -84,7 +84,7 @@ The first board is an LED expansion board to control WS2812 based LED-Strips wit
 
 The following picture shows the APC in a Comet with the LED Expansion board connected to the hardware extensions interface.
 
-![APC Comet LED](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/CometLED.jpg)
+![APC Comet LED](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/CometLED.jpg)
 
 A short video with this setup can be found here : 
 
