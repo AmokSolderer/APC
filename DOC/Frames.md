@@ -16,3 +16,13 @@ The left side of the System 7 frame is split into two parts to be also suited fo
 
 The STL files for printing can be found [here](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Hardware/InstallationFrames/System7_stl.zip)
 
+## System 9
+
+Note that the two parts of the System 9 are not identical as the APC board must be shifted a bit to the right to avoid a metal mounting post of the backbox.
+
+![SD slot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/FrameSys9.JPG)
+
+![SD slot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/CometLED.jpg)
+
+The STL files for printing can be found [here](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Hardware/InstallationFrames/System9_stl.zip)
+

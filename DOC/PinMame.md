@@ -35,6 +35,6 @@ Click on the generation of your game to get to the corresponding how-to page:
 
 [System 3 - 7 sound how-to](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_3_7.md)
 
-System 9 sound how-to
+[PinMame System 9 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_9.md)
 
 [System 11 sound how-to](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md)

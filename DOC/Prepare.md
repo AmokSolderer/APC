@@ -20,6 +20,10 @@ This adapter can be build very easily by just using a micro SD adapter and solde
 
 Of course you cannot use the SD-Card slot and the self made adapter simultaneously, as the APC can only use one SD-Card at a time.
 
+### Installation frames
+
+There're [installation frames](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Frames.md) available which can be 3D printed and help you install the APC board in your backbox.
+
 # Machine specific preparation
 
 This page is divided in different sections, depending on which generation your pinball machine is from. 
