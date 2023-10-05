@@ -51,7 +51,7 @@ To see the APC in an early stage you might want take a look at my [Black Knight 
 
 You can use [Lisy](https://lisy.dev/apc.html) to run PinMame on an APC board. This spares you the effort to do any game Software as you can run the old ROM code.
 For System 3 - 7 machines the APC can be used with the old original soundboards. That means in this case it's a plug & play solution.
-You might want the APC to generate the audio anyway, either because you don't have an audio board, you want to do your own sounds or you have a System 9 or 11 game. In this case then it's going to require some work to set up your game with PinMame. Take a look at the [PinMame Sound page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) to see what I mean.
+You might want the APC to generate the audio anyway, either because you don't have an audio board, you want to do your own sounds or you have a System 9 or 11 game. In this case it's going to require some work to set up your game with PinMame. Take a look at the [PinMame Sound page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) to see what I mean.
 
 With PinMame running for your game you can use the [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md) functionality of the APC to change the rules of your game even though it's running under PinMame control.  
 Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see an example. The corresponding code can be found in PinMameExceptions.ino in the AmokPrivate branch on Github.  

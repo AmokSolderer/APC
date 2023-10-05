@@ -37,9 +37,10 @@ There's a throttle value specified for each game. Changing this value to a lower
 
 ## PinMame sound
 
-### Using old ausio boards
+### Using old audio boards
 
-For some of the game generations you could install the original audio board. In this case you cannot do any sound related changes of course. For System 3 - 6, the sound board is controlled by some reserved solenoid drivers, so it will work out of the box. System 7 needs an [adapter](https://github.com/AmokSolderer/APC/blob/master/DOC/Prepare.md#system-7-audio-cable) for connecting the audio board to the HW extension interface of the APC.  
+For some game generations you could install the original audio board. In this case you cannot do any sound related changes of course.  
+For System 3 - 6, the sound board is controlled by some reserved solenoid drivers, so it will work out of the box. System 7 needs an [adapter](https://github.com/AmokSolderer/APC/blob/master/DOC/Prepare.md#system-7-audio-cable) for connecting the audio board to the HW extension interface of the APC.  
 For the APC to control the external audio board you have to enter the [game settings](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Settings.md#game-settings-in-remote-control-mode) while in Remote Control Mode and set setting 2 (PinMame Sound) from 0 (APC) to 1 (Board).
 
 System 9 and 11 audio boards are not supported, you have to let the APC generate the sound instead.
