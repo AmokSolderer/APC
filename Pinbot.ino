@@ -357,7 +357,10 @@ void PB_init() {
     Serial.begin(115200);}
   SolRecycleTime[20-1] = 200;                         // set recycle time for both slingshots
   SolRecycleTime[21-1] = 200;
-  digitalWrite(VolumePin,HIGH);                       // set volume to zero
+  if (APC_settings[Volume]) {                         // system set to digital volume control?
+    analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+  else {
+    digitalWrite(VolumePin,HIGH);}                    // turn off the digital volume control
   ACselectRelay = PB_ACselectRelay;                   // assign the number of the A/C select relay
   GameDefinition = PB_GameDefinition;}                // read the game specific settings and highscores
 
@@ -382,6 +385,7 @@ void PB_AttractMode() {
   PB_AttractDisplayCycle(1);}
 
 void PB_AttractDisplayCycle(byte Step) {
+  static byte Count = 0;
   static byte Timer0 = 0;
   static byte Timer1 = 0;
   static byte Timer2 = 0;
@@ -405,15 +409,28 @@ void PB_AttractDisplayCycle(byte Step) {
     AddScrollUpper(100);
     return;
   case 1:                                             // attract mode title 'page'
-    WriteUpper2("THE APC         ");
-    Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
-    Timer3 = ActivateTimer(2000, 7, PB_AttractDisplayCycle);
-    WriteLower2("                ");
-    Timer2 = ActivateTimer(1400, 6, PB_AttractDisplayCycle);
-    if (NoPlayers) {                                  // if there were no games before skip the next step
-      Step++;}
+    if (Count == 2) {
+      Count++;
+      Step = 0;
+      RemoveBlinkLamp(1);                             // stop the blinking of the game over lamp
+      ShowLampPatterns(0);                            // stop lamp animations
+      LampPattern = NoLamps;
+      LampReturn = PB_RestoreLamps;
+      WriteUpper(" NOW I SEE YOU  ");                 // erase display
+      WriteLower("                ");
+      PlaySound(55, "0_b0.snd");                      // 'now I see you'
+      Timer3 = ActivateTimer(3000, 10, PB_AttractDisplayCycle);}
     else {
-      Step = 3;}
+      Count++;
+      WriteUpper2("THE APC         ");
+      Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
+      Timer3 = ActivateTimer(2000, 7, PB_AttractDisplayCycle);
+      WriteLower2("                ");
+      Timer2 = ActivateTimer(1400, 6, PB_AttractDisplayCycle);
+      if (NoPlayers) {                                // if there were no games before skip the next step
+        Step++;}
+      else {
+        Step = 3;}}
     break;
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
@@ -464,7 +481,13 @@ void PB_AttractDisplayCycle(byte Step) {
     Timer3 = 0;
     WriteUpper2("PINBOT        ");
     AddScrollUpper(0);
-    return;}
+    return;
+  case 10:
+    AddBlinkLamp(1, 150);                             // blink Game Over lamp
+    LampReturn = PB_AttractLampCycle;
+    PB_AttractLampCycle(1);
+    PB_AttractDisplayCycle(1);
+    break;}
   PB_CheckForLockedBalls(0);                          // check for a ball in the outhole
   Timer0 = ActivateTimer(4000, Step, PB_AttractDisplayCycle);}  // come back for the next 'page'
 
@@ -512,10 +535,6 @@ void PB_AttractModeSW(byte Select) {
       LampReturn = PB_RestoreLamps;
       ShowLampPatterns(0);                            // stop lamp animations
       PB_AttractDisplayCycle(0);                      // stop display animations
-      if (APC_settings[Volume]) {                     // system set to digital volume control?
-        analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-      else {
-        digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
       Switch_Pressed = AddPlayerSW;
       for (byte i=0; i< 8; i++) {
         LampColumns[i] = 0;}
@@ -2588,8 +2607,7 @@ void PB_PlayAfterGameSequence(byte State) {
       PlayMusic(50, "1_80.snd");
       Timer = ActivateTimer(6000, State+1, PB_PlayAfterGameSequence);}
     else {
-      Timer = 0;
-      digitalWrite(VolumePin,HIGH);}}                 // set volume to zero
+      Timer = 0;}}
   else {
     if (!State) {
       if (Timer) {
@@ -2964,8 +2982,6 @@ void PB_BlinkInitial(byte State) {                    // blink actual character
 
 void PB_EnterInitials2(byte Dummy) {
   UNUSED(Dummy);
-  if (APC_settings[Volume]) {
-    analogWrite(VolumePin, 255);}
   if (ByteBuffer > 2) {
     ByteBuffer2 = HandleHighScores(Points[Player]);
     WriteUpper2(" HIGH   SCORE ");
@@ -3124,10 +3140,6 @@ void PB_Testmode(byte Select) {
               case 3:
                 if (!AppByte2) {                      // first sound?
                   WriteUpper("PLAYING MUSIC ");
-                  if (APC_settings[Volume]) {         // system set to digital volume control?
-                    analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-                  else {
-                    digitalWrite(VolumePin,HIGH);}    // turn off the digital volume control
                   *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte2+1) % 10)]; // show the actual sound number
                   *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte2+1) % 10)];
                   *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
@@ -3140,7 +3152,6 @@ void PB_Testmode(byte Select) {
                 break;
               case 72:
                 AfterMusic = 0;
-                digitalWrite(VolumePin,HIGH);         // turn off the digital volume control
                 StopPlayingMusic();
                 if (AppByte2) {
                   AppByte2 = 0;}
