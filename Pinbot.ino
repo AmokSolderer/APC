@@ -357,10 +357,6 @@ void PB_init() {
     Serial.begin(115200);}
   SolRecycleTime[20-1] = 200;                         // set recycle time for both slingshots
   SolRecycleTime[21-1] = 200;
-  if (APC_settings[Volume]) {                         // system set to digital volume control?
-    analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-  else {
-    digitalWrite(VolumePin,HIGH);}                    // turn off the digital volume control
   ACselectRelay = PB_ACselectRelay;                   // assign the number of the A/C select relay
   GameDefinition = PB_GameDefinition;}                // read the game specific settings and highscores
 
@@ -375,6 +371,10 @@ void PB_AttractMode() {
   if (QuerySwitch(16)) {                              // ball in the outhole?
     ActA_BankSol(1);}
   AfterMusic = 0;
+  if (APC_settings[Volume]) {                         // system set to digital volume control?
+    analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+  else {
+    digitalWrite(VolumePin,HIGH);}                    // turn off the digital volume control
   DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
   Switch_Pressed = PB_AttractModeSW;
