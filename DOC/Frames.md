@@ -31,6 +31,8 @@ The STL files for printing can be found [here](https://github.com/AmokSolderer/A
 
 This frame is for the early System11 games without an interconnect board. It consists of four parts as the right side is split into two parts to be also suited for smaller printers.
 
+![SD slot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/FrameSys11a.JPG)
+
 ![SD slot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/APC_Pinbot.JPG)
 
 The STL files for printing can be found [here](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Hardware/InstallationFrames/System11_stl.zip)
