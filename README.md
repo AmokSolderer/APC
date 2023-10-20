@@ -94,7 +94,7 @@ The second board is a [driver for 8 additional solenoids](https://github.com/Amo
 
 I use [special alphanumerical displays](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) in my Black Knight which can also be found in the HW section as well as an LED replacement for the original System7 numerical displays.
 
-## Current Status (March 2023)
+## Current Status (October 2023)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md#cable-extensions)
 
@@ -102,8 +102,8 @@ The PinMame support is still under development and even if a generation is basic
 
 | Williams System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
-|3| Yes | Yes | Yes|  |
-|4| Yes | Yes | Yes|  |
+|3| Yes | Yes | Yes|When PinMame is used, some solenoid activation times need to be increase by a [PinMameException](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameExceptions.md#fixing-the-drop-targets-of-system-3-&-4-games)|
+|4| Yes | Yes | Yes|When PinMame is used, some solenoid activation times need to be increase by a [PinMameException](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameExceptions.md#fixing-the-drop-targets-of-system-3-&-4-games)|
 |6| Yes | Yes | Yes |  |
 |7| Yes | Yes | Yes | Needs two additional wires |
 |9| Yes | Yes | Yes |  |

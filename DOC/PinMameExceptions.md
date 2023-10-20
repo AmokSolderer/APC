@@ -1,8 +1,49 @@
 # PinMameExceptions
 
-PinMameExceptions are a simple but powerful tool to change the behaviour of your game even though it is controlled by PinMame. Some exceptions are inevitable to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) page.
+PinMameExceptions are a simple but powerful tool to change the behaviour of your game even though it is controlled by PinMame. Some exceptions are inevitable to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMame.md) page.
 
 In this section we'll focus on exceptions that change a game. This can be by just fixing flaws in the original game SW or adding new features.
+
+## Fixing the drop targets of System 3 & 4 games
+
+PinMame has a timing issue with System 3 & 4 games. For some reason the activation times of some solenoids is too short to trigger them correctly. This is especially problematic with drop targets because they won't reset any more.  
+Even though it's a PinMame issue we decided to fix this in PinMameExceptions which means you have to do it if your machines shows this problem.
+
+Let's use the System 3 Disco Fever as an example. In this machine solenoid 2 is for resetting the drop targets.  
+Normally PinMame sends turn-on and off commands for the solenoids and does therefore control the activation time by itself. In order to increase the length of the activation time, we capture the turn-on command from PinMame and activate the solenoid for a time of our choosing, in this case 80ms.
+
+    case SolenoidActCommand:
+      if (Command == 2) {                               // ball release
+        ActivateSolenoid(80, 2);                        // FEV drop target reset
+        return(1);}
+
+Here it's important to end this case with return(1) as the 1 will cause the APC not to process this command any further, which means it will skip the normal turn-on command for this solenoid.  
+However, this alone won't do the trick. PinMame will still send the turn-off command for solenoid 2 which will turn it off even though the activation of 80ms time is not over yet. To prevent this from happening we have to tell the APC to ignore all solenoid turn-off commands for solenoid 2:
+
+    case SolenoidRelCommand:
+      if (Command == 2) {                               // ignore turn-off command 
+        return(1);} 
+
+We just use return(1) again to tell the APC not no process this command any further.
+
+The complete PinMameExceptions to increase the activation times of both drop target reset coils look like this:
+
+    byte EX_DiscoFever(byte Type, byte Command){
+      switch(Type){
+      case SolenoidActCommand:
+        if (Command == 2) {                               // ball release
+          ActivateSolenoid(80, 2);                        // FEV drop target reset
+          return(1);}
+        else if (Command == 3) {                          // ER drop target reset
+          ActivateSolenoid(60, 3);                        // Fix to increase the strength of the ball release
+          return(1);}
+        return(0);
+      case SolenoidRelCommand:
+        if (Command == 2 || Command == 3) {               // ignore turn-off commands for drop target solenoids 
+          return(1);}                                     // ignore it
+        return(0);
+      default:
+        return(0);}}
 
 ## Doing exceptions for the magna save of the Jungle Lord
 

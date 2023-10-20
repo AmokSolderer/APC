@@ -7,18 +7,20 @@ If you're lucky then your machine is listed below which means that someone else 
 
 At the moment the list of available sound packages is still quite short, but we hope that some of you will do this for their machines also. Of course it would be great if you'd share your sound package with the rest of us. Up to now we haven't found some server space to store the files on, so send me a PM via Pinside or Flippertreff (see the feedback section on the main page) if you want to have one of the sound packages listed below.
 
-|System|Game| Sound File URL|Comments|
+|System|Game| Sound Files |Comments|
 |--|--|--|--|
-|4|Flash| URL available on request| |
+|3|Disco Fever| available on request| |
+|4|Flash| available on request| |
 |6|Firepower| Ask Matiou in the Pinside forum | PinMameExceptions also done by Matiou |
-|7|Barracora| URL available on request| |
-|7|Black Knight| URL available on request| |
-|7|Jungle Lord| URL available on request| Works great. Sound samples are also good. |
+|6|Alien Poker| available on request| |
+|7|Barracora| available on request| |
+|7|Black Knight| available on request| |
+|7|Jungle Lord| available on request| Works great. Sound samples are also good. |
 |7|Pharaoh| Ask Grangeomatic in the Pinside forum| PinMameExceptions also done by Grangeomatic |
-|9|Comet|URL available on request| Works great. Sound samples are also good. |
-|11a|Pinbot| URL available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW.|
+|9|Comet|available on request| Works great. Sound samples are also good. |
+|11a|Pinbot| available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW.|
 |11a|F-14 Tomcat| Ask Snux in the Pinside forum | PinMameExceptions also done by Snux |
-|11c|Rollergames| URL available on request| There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. The issue doesn't seem to affect the Windows version of PinMame. Please contact me if you have any idea what the root cause might be. |
+|11c|Rollergames| available on request| There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. The issue doesn't seem to affect the Windows version of PinMame. Please contact me if you have any idea what the root cause might be. |
 
 # What needs to be done
 
@@ -35,6 +37,6 @@ Click on the generation of your game to get to the corresponding how-to page:
 
 [System 3 - 7 sound how-to](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_3_7.md)
 
-[System 9 Sound how-to](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_9.md)
+[System 9 sound how-to](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_9.md)
 
 [System 11 sound how-to](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md)

@@ -111,19 +111,19 @@ byte EX_DummyProcess(byte Type, byte Command) {       // plays just the standard
       PlayMusic(51, (char*) FileName);}}
   return(0);}                                         // no exception rule found for this type so proceed as normal
 
-byte EX_Fever(byte Type, byte Command){
+byte EX_DiscoFever(byte Type, byte Command){
   switch(Type){
   case SolenoidActCommand:
-    if (Command == 2) {                     // ball release
-      ActivateSolenoid(80, 2);              // Temporary fix to increase the strength of the ball release
+    if (Command == 2) {                               // ball release
+      ActivateSolenoid(80, 2);                        // Fix to increase the strength of the ball release
       return(1);}
-    else if (Command == 3) {                // reset of the lower two of the five drop targets
-      ActivateSolenoid(60, 3);              // Temporary fix to increase the strength of the ball release
+    else if (Command == 3) {                          // reset of the lower two of the five drop targets
+      ActivateSolenoid(60, 3);                        // Temporary fix to increase the strength of the ball release
       return(1);}
     return(0);
   case SolenoidRelCommand:
-    if (Command == 2 || Command == 3) {     // ball release or the reset of the lower two of the five drop targets
-      return(1);}                           // ignore it
+    if (Command == 2 || Command == 3) {               // ball release or the reset of the lower two of the five drop targets
+      return(1);}                                     // ignore it
     return(0);
   default:
     return(0);}}
@@ -132,16 +132,16 @@ byte EX_Flash(byte Type, byte Command){
   static byte SoundSeries[3];                         // buffer to handle pre system11 sound series
   switch(Type){
   case SolenoidActCommand:
-    if (Command == 1) {                     // ball release
-      ActivateSolenoid(40, 1);              // Temporary fix to increase the strength of the ball release
+    if (Command == 1) {                               // ball release
+      ActivateSolenoid(40, 1);                        // Fix to increase the strength of the ball release
       return(1);}
-    else if (Command == 3) {                // reset of the lower two of the five drop targets
-      ActivateSolenoid(40, 3);              // Temporary fix to increase the strength of the ball release
+    else if (Command == 3) {                          // reset of the lower two of the five drop targets
+      ActivateSolenoid(40, 3);                        // Fix to increase the strength of the ball release
       return(1);}
     return(0);
   case SolenoidRelCommand:
-    if (Command == 1 || Command == 3) {     // ball release or the reset of the lower two of the five drop targets
-      return(1);}                           // ignore it
+    if (Command == 1 || Command == 3) {               // ball release or the reset of the lower two of the five drop targets
+      return(1);}                                     // ignore it
     return(0);
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 31) { }                            // ignore sound command 0x1f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
@@ -241,7 +241,7 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
         FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
         FileName[5] = 48 + (SoundSeries[1] / 100);    // the same with the 5th character
         PlaySound(51, (char*) FileName);}             // play the sound
-      else if (Command == 10) {                       // 0x6a Whirlling background
+      else if (Command == 10) {                       // 0x0a Whirling background
         if (SoundSeries[2] < 29 )                     // this sound has 29 pitches
           SoundSeries[2]++;                           // every call of this sound proceeds with next pitch
         char FileName[13] = "0_0a_000.snd";           // generate base filename
@@ -272,6 +272,55 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
         char FileName[9] = "0_00.snd";                // handle standard sound
         if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
           PlaySound(51, (char*) FileName);}}}
+    return(0);                                        // return number not relevant for sounds
+  default:
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
+
+byte EX_AlienPoker(byte Type, byte Command){
+  static byte SoundSeries[3] = {0, 0, 0};             // buffer to handle pre system11 sound series
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (Command == 31) { }                            // ignore sound command 0x1f
+    else if (Command == 12) {                         // sound command 0x0c - stop all sounds and reset series
+      AfterSound = 0;
+      SoundSeries[0] = 0;
+      SoundSeries[1] = 0;
+      SoundSeries[2] = 0;
+      StopPlayingSound();}
+    else if (Command == 10) {                         // sound series
+      if (SoundSeries[1] < 29 )                       // this sound has 29 pitches
+        SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
+      char FileName[13] = "0_0a_000.snd";             // generate base filename
+      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
+      FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
+      PlaySound(51, (char*) FileName);}               // play the sound
+    else if (Command == 13) {                         // sound series
+      if (SoundSeries[2] < 31 )                       // this sound has 31 pitches
+        SoundSeries[2]++;                             // every call of this sound proceeds with next pitch
+      char FileName[13] = "0_0d_000.snd";             // generate base filename
+      FileName[7] = 48 + (SoundSeries[2] % 10);       // change the 7th character of filename according to current pitch
+      FileName[6] = 48 + (SoundSeries[2] % 100) / 10; // the same with the 6th character
+      PlaySound(51, (char*) FileName);}               // play the sound
+    else if (Command == 14) {                         // 0x0e Background sound series - repeated
+      SoundSeries[0] = 0;
+      SoundSeries[1] = 0;
+      if (SoundSeries[3] < 36 )                       // this sound has 36 pitches
+        SoundSeries[3]++;                             // every call of this sound proceeds with next pitch
+      char FileName[13] = "0_0e_000.snd";             // generate base filename
+      FileName[7] = 48 + (SoundSeries[3] % 10);       // change the 7th character of filename according to current pitch
+      FileName[6] = 48 + (SoundSeries[3] % 100) / 10; // the same with the 6th character
+      for (byte i=0; i<12; i++) {                     // store the name of this sound
+        USB_RepeatSound[i] = FileName[i];}
+      QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
+      PlaySound(51, (char*) FileName);}               // play the sound
+    else if (Command == 23){                          // sound command 0x17 - game over random phrase
+      char FileName[13] = "0_17_000.snd";             // generate base filename
+      FileName[7] = 48 + random(6) + 1;               // change the counter according to random number
+      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+    else {                                            // standard sound
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}
     return(0);                                        // return number not relevant for sounds
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
@@ -861,7 +910,7 @@ void EX_Init(byte GameNumber) {
   switch(GameNumber) {
   case 4:                                             // Disco Fever
     //SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
-    PinMameException = EX_Fever;                      // use exception rules for Flash
+    PinMameException = EX_DiscoFever;                      // use exception rules for Flash
     break;
   case 6:                                             // Flash
     SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
@@ -869,6 +918,9 @@ void EX_Init(byte GameNumber) {
     break;
   case 16:                                            // Firepower
     PinMameException = EX_Firepower;                  // use exception rules for Firepower
+    break;
+  case 18:                                            // Alien Poker
+    PinMameException = EX_AlienPoker;                 // use exception rules for Alien Poker
     break;
   case 20:                                            // Jungle Lord
     EX_EjectSolenoid = 2;                             // specify eject coil for improved ball release
