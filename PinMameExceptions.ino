@@ -115,14 +115,14 @@ byte EX_DiscoFever(byte Type, byte Command){
   switch(Type){
   case SolenoidActCommand:
     if (Command == 2) {                               // ball release
-      ActivateSolenoid(80, 2);                        // Fix to increase the strength of the ball release
+      ActivateSolenoid(80, 2);                        // FEV drop target reset
       return(1);}
-    else if (Command == 3) {                          // reset of the lower two of the five drop targets
-      ActivateSolenoid(60, 3);                        // Temporary fix to increase the strength of the ball release
+    else if (Command == 3) {                          // ER drop target reset
+      ActivateSolenoid(60, 3);                        // Fix to increase the strength of the ball release
       return(1);}
     return(0);
   case SolenoidRelCommand:
-    if (Command == 2 || Command == 3) {               // ball release or the reset of the lower two of the five drop targets
+    if (Command == 2 || Command == 3) {               // ignore turn-off commands for drop target solenoids
       return(1);}                                     // ignore it
     return(0);
   default:
@@ -910,7 +910,7 @@ void EX_Init(byte GameNumber) {
   switch(GameNumber) {
   case 4:                                             // Disco Fever
     //SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
-    PinMameException = EX_DiscoFever;                      // use exception rules for Flash
+    PinMameException = EX_DiscoFever;                 // use exception rules for Flash
     break;
   case 6:                                             // Flash
     SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
