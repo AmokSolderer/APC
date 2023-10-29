@@ -288,27 +288,27 @@ byte EX_AlienPoker(byte Type, byte Command){
       SoundSeries[2] = 0;
       StopPlayingSound();}
     else if (Command == 10) {                         // sound series
-      if (SoundSeries[1] < 29 )                       // this sound has 29 pitches
-        SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
+      if (SoundSeries[0] < 29 )                       // this sound has 29 pitches
+        SoundSeries[0]++;                             // every call of this sound proceeds with next pitch
       char FileName[13] = "0_0a_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
-      FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
+      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current pitch
+      FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
       PlaySound(51, (char*) FileName);}               // play the sound
     else if (Command == 13) {                         // sound series
-      if (SoundSeries[2] < 31 )                       // this sound has 31 pitches
-        SoundSeries[2]++;                             // every call of this sound proceeds with next pitch
+      if (SoundSeries[1] < 31 )                       // this sound has 31 pitches
+        SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
       char FileName[13] = "0_0d_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[2] % 10);       // change the 7th character of filename according to current pitch
-      FileName[6] = 48 + (SoundSeries[2] % 100) / 10; // the same with the 6th character
+      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
+      FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
       PlaySound(51, (char*) FileName);}               // play the sound
     else if (Command == 14) {                         // 0x0e Background sound series - repeated
       SoundSeries[0] = 0;
       SoundSeries[1] = 0;
-      if (SoundSeries[3] < 36 )                       // this sound has 36 pitches
-        SoundSeries[3]++;                             // every call of this sound proceeds with next pitch
+      if (SoundSeries[2] < 36 )                       // this sound has 36 pitches
+        SoundSeries[2]++;                             // every call of this sound proceeds with next pitch
       char FileName[13] = "0_0e_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[3] % 10);       // change the 7th character of filename according to current pitch
-      FileName[6] = 48 + (SoundSeries[3] % 100) / 10; // the same with the 6th character
+      FileName[7] = 48 + (SoundSeries[2] % 10);       // change the 7th character of filename according to current pitch
+      FileName[6] = 48 + (SoundSeries[2] % 100) / 10; // the same with the 6th character
       for (byte i=0; i<12; i++) {                     // store the name of this sound
         USB_RepeatSound[i] = FileName[i];}
       QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
