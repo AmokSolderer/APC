@@ -3136,11 +3136,14 @@ void PB_RulesDisplay(byte State) {
     break;
   case 11:
     WriteUpper("PLUNGER MAKES ");
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
     break;
   case 12:
     WriteUpper("              ");
-    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    if (game_settings[Multiballs]) {
+      Timer = ActivateTimer(2500, 150, PB_RulesDisplay);}
+    else {
+      Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);}
     break;
   case 13:
     WriteUpper("VORTEX   1X   ");
@@ -3181,7 +3184,7 @@ void PB_RulesDisplay(byte State) {
   case 22:
     WriteUpper("VORTEX   10X  ");
     *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
-    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
     break;
   case 23:
     Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
@@ -3206,7 +3209,7 @@ void PB_RulesDisplay(byte State) {
   case 33:
     WriteUpper("VORTEX AT 10X ");
     *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
-    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
     break;
   case 34:
     Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
@@ -3216,7 +3219,7 @@ void PB_RulesDisplay(byte State) {
     WriteUpper("ADVANCEPLANETS");
     for (byte i=19; i<28; i++) {
       AddBlinkLamp(i, 100);}
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 36:
     WriteUpper("  BY 3  BANK  ");
@@ -3225,7 +3228,7 @@ void PB_RulesDisplay(byte State) {
     for (byte i=19; i<28; i++) {
       RemoveBlinkLamp(i);
       TurnOnLamp(i);}
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 37:
     WriteUpper(" OR BY TARGET ");
@@ -3241,18 +3244,14 @@ void PB_RulesDisplay(byte State) {
     PB_RulesEffect(0);
     break;
   case 39:
-  {char Planet[15] = " REACH        ";
-  for (byte i=7; i<15; i++) {
-    Planet[i] = PB_PlanetTxt[game_settings[PB_ReachPlanet]][i];}
-  for (byte i=19; i<28; i++) {
-    TurnOffLamp(i);}
-  for (byte i=41; i<44; i++) {
-    TurnOffLamp(i);}
-  WriteUpper((char*) Planet);}
-  AddBlinkLamp(19+game_settings[PB_ReachPlanet], 100);
-  RemoveBlinkLamp(18);
-  Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
-  break;
+    {char Planet[15] = " REACH        ";
+    for (byte i=7; i<15; i++) {
+      Planet[i] = PB_PlanetTxt[game_settings[PB_ReachPlanet]][i];}
+    WriteUpper((char*) Planet);}
+    AddBlinkLamp(19+game_settings[PB_ReachPlanet], 100);
+    RemoveBlinkLamp(18);
+    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    break;
   case 40:
     WriteUpper("  FOR  SPECIAL");
     *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
@@ -3305,6 +3304,8 @@ void PB_RulesDisplay(byte State) {
     RemoveBlinkLamp(51);
     for (byte i=19;i<28;i++) {
       TurnOffLamp(i);}
+    for (byte i=41; i<44; i++) {
+      TurnOffLamp(i);}
     ActivateSolenoid(150, 6);
     Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
     break;
@@ -3330,11 +3331,11 @@ void PB_RulesDisplay(byte State) {
     TurnOffLamp(18);
     for (byte i=41; i<44; i++) {
       AddBlinkLamp(i, 100);}
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 73:
     WriteUpper("   TO    LITE ");
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 74:
     WriteUpper(" SCORE  ENERGY");
@@ -3342,7 +3343,7 @@ void PB_RulesDisplay(byte State) {
     AddBlinkLamp(34, 100);
     for (byte i=41; i<44; i++) {
       RemoveBlinkLamp(i);}
-    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
     break;
   case 75:
     Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
@@ -3352,7 +3353,7 @@ void PB_RulesDisplay(byte State) {
     WriteUpper("  RAMP  GIVES ");
     AddBlinkLamp(35, 100);
     RemoveBlinkLamp(34);
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 77:
     WriteUpper(" BONUS  MULT  ");
@@ -3360,7 +3361,7 @@ void PB_RulesDisplay(byte State) {
     for (byte i=9; i<13; i++) {
       AddBlinkLamp(i, 100);}
     RemoveBlinkLamp(35);
-    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
     break;
   case 78:
     Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
@@ -3371,25 +3372,25 @@ void PB_RulesDisplay(byte State) {
     for (byte i=9; i<13; i++) {
       RemoveBlinkLamp(i);}
     PB_RuleLampEffects(1);
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 80:
     WriteUpper("  TO          ");
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 81:
     WriteUpper(" OPEN   VISOR ");
     *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
     PB_RuleLampEffects(0);
     PB_RuleLampEffects(10);
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 82:
     ActivateSolenoid(0, 10);
     ActivateSolenoid(0, 18);
     Timer = ActivateTimer(2000, 0, PB_OpenVisor);
     ActivateSolenoid(0, 13);
-    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
     break;
   case 83:
     Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
@@ -3403,7 +3404,7 @@ void PB_RulesDisplay(byte State) {
     break;
   case 85:
     WriteUpper(" AGAIN        ");
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 86:
     WriteUpper(" LITES EX BALL");
@@ -3426,16 +3427,19 @@ void PB_RulesDisplay(byte State) {
     RemoveBlinkLamp(57);
     RemoveBlinkLamp(58);
     PB_EyeBlink(1);
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    if (game_settings[Multiballs]) {
+      Timer = ActivateTimer(2500, 160, PB_RulesDisplay);}
+    else {
+      Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);}
     break;
   case 89:
     WriteUpper("  FOR         ");
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 90:
     WriteUpper("DOUBLE  SCORE ");
     *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
-    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
     break;
   case 91:
     Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
@@ -3446,20 +3450,20 @@ void PB_RulesDisplay(byte State) {
     PB_EyeBlink(0);
     ActivateSolenoid(0, 10);
     ActivateSolenoid(0, 18);
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 93:
     WriteUpper(" MULTI  BALL  ");
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 94:
     WriteUpper(" LOCK  1 BALL ");
     PB_EyeFlash(1);
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 95:
     WriteUpper("   TO   START ");
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 96:
     WriteUpper(" SOLAR ECLIPSE");
@@ -3467,7 +3471,7 @@ void PB_RulesDisplay(byte State) {
     PB_EyeFlash(0);
     PB_EyeFlash(1);
     AddBlinkLamp(35, 100);
-    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
     break;
   case 97:
     Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
@@ -3476,11 +3480,11 @@ void PB_RulesDisplay(byte State) {
   case 98:
     WriteUpper(" GO UP   RAMP ");
     PB_EyeFlash(0);
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 99:
     WriteUpper("   TO  COLLECT");
-    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 100:
     WriteUpper(" SOLAR  SCORE ");
@@ -3489,7 +3493,7 @@ void PB_RulesDisplay(byte State) {
     RemoveBlinkLamp(35);
     Timer = ActivateTimer(2000, 0, PB_CloseVisor);
     ActivateSolenoid(0, 13);
-    Timer = ActivateTimer(4000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(5000, State+1, PB_RulesDisplay);
     break;
   case 101:
     Timer = 0;
@@ -3497,9 +3501,159 @@ void PB_RulesDisplay(byte State) {
     ReleaseSolenoid(14);
     PB_AttractMode();
     break;
-
-  }
-}
+  case 150:
+    DisplayScore(2, 100000);
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 151:
+    Timer = ActivateTimer(800, 35, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 160:
+    WriteUpper("   TO   LITE  ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 161:
+    WriteUpper(" THIRD  LOCK  ");
+    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
+    PB_HandleEjectHole(15);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 162:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 163:
+    WriteUpper("  LOCK  BALL  ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 164:
+    WriteUpper("  TO    START ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 165:
+    WriteUpper(" MULTI  BALL  ");
+    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 166:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 167:
+    WriteUpper(" DURING       ");
+    PB_HandleEjectHole(16);
+    PB_EyeBlink(0);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 168:
+    WriteUpper(" MULTI  BALL  ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 169:
+    WriteUpper(" SHOOT RAMP   ");
+    AddBlinkLamp(35, 100);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 170:
+    WriteUpper("  FOR         ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 171:
+  case 172:
+  case 173:
+  case 174:
+  case 175:
+    WriteUpper("JACKPOT       ");
+    DisplayScore(2, 200000 * (State - 105));
+    Timer = ActivateTimer(500, State+1, PB_RulesDisplay);
+    break;
+  case 176:
+  case 178:
+  case 180:
+  case 182:
+    WriteUpper("JACKPOT       ");
+    Timer = ActivateTimer(500, State+1, PB_RulesDisplay);
+    break;
+  case 177:
+  case 179:
+  case 181:
+    WriteUpper("JACKPOT       ");
+    DisplayScore(2, 1000000);
+    Timer = ActivateTimer(500, State+1, PB_RulesDisplay);
+    break;
+  case 183:
+    WriteUpper("JACKPOT       ");
+    RemoveBlinkLamp(35);
+    DisplayScore(2, 1000000);
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 184:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 185:
+    WriteUpper(" LOCKS        ");
+    PB_EyeFlash(1);
+    PB_HandleEjectHole(15);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 186:
+    WriteUpper("  HOLD  BALLS ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 187:
+    {char Time[15] = "  FOR       S ";
+    Time[12] = game_settings[PB_MballHoldTime] % 10;
+    if (game_settings[PB_MballHoldTime] < 9) {
+      Time[11] = game_settings[PB_MballHoldTime] / 10;}
+    WriteUpper((char*) Time);
+    *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1);} // add a dot in column 13
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 188:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_EyeFlash(0);
+    PB_HandleEjectHole(16);
+    PB_RulesEffect(0);
+    break;
+  case 189:
+    WriteUpper(" IF ONE BALL  ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 190:
+    WriteUpper(" DRAINS       ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 191:
+    WriteUpper(" RELOCK2BALLS ");
+    PB_EyeBlink(1);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 192:
+    WriteUpper("  TO   RE-LITE");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 193:
+    WriteUpper(" THIRD  LOCK  ");
+    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
+    PB_EyeBlink(0);
+    PB_HandleEjectHole(15);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 194:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    Timer = ActivateTimer(5000, State+1, PB_RulesDisplay);
+    break;
+  case 195:
+    Timer = 0;
+    ReleaseSolenoid(12);
+    ReleaseSolenoid(14);
+    PB_AttractMode();
+    break;}}
 
 
 void PB_Testmode(byte Select) {
