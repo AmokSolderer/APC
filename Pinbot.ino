@@ -410,19 +410,19 @@ void PB_AttractDisplayCycle(byte Step) {
     AddScrollUpper(100);
     return;
   case 1:                                             // attract mode title 'page'
-    if (Count == 2) {
-      Count++;
-      Step = 0;
-      RemoveBlinkLamp(1);                             // stop the blinking of the game over lamp
-      ShowLampPatterns(0);                            // stop lamp animations
-      LampPattern = NoLamps;
-      LampReturn = PB_RestoreLamps;
-      WriteUpper(" NOW I SEE YOU  ");                 // erase display
-      WriteLower("                ");
-      PlaySound(55, "0_b0.snd");                      // 'now I see you'
-      Timer3 = ActivateTimer(3000, 10, PB_AttractDisplayCycle);}
-    else {
-      Count++;
+//    if (Count == 2) {
+//      Count++;
+//      Step = 0;
+//      RemoveBlinkLamp(1);                             // stop the blinking of the game over lamp
+//      ShowLampPatterns(0);                            // stop lamp animations
+//      LampPattern = NoLamps;
+//      LampReturn = PB_RestoreLamps;
+//      WriteUpper(" NOW I SEE YOU  ");                 // erase display
+//      WriteLower("                ");
+//      PlaySound(55, "0_b0.snd");                      // 'now I see you'
+//      Timer3 = ActivateTimer(3000, 10, PB_AttractDisplayCycle);}
+//    else {
+//      Count++;
       WriteUpper2("THE APC         ");
       Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
       Timer3 = ActivateTimer(2000, 7, PB_AttractDisplayCycle);
@@ -431,7 +431,7 @@ void PB_AttractDisplayCycle(byte Step) {
       if (NoPlayers) {                                // if there were no games before skip the next step
         Step++;}
       else {
-        Step = 3;}}
+        Step = 3;}//}
     break;
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
@@ -3136,14 +3136,14 @@ void PB_RulesDisplay(byte State) {
     break;
   case 11:
     WriteUpper("PLUNGER MAKES ");
-    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 12:
     WriteUpper("              ");
-    if (game_settings[Multiballs]) {
-      Timer = ActivateTimer(2500, 150, PB_RulesDisplay);}
+    if (game_settings[PB_Multiballs]) {
+      Timer = ActivateTimer(300, 150, PB_RulesDisplay);}
     else {
-      Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);}
+      Timer = ActivateTimer(300, State+1, PB_RulesDisplay);}
     break;
   case 13:
     WriteUpper("VORTEX   1X   ");
@@ -3250,6 +3250,7 @@ void PB_RulesDisplay(byte State) {
     WriteUpper((char*) Planet);}
     AddBlinkLamp(19+game_settings[PB_ReachPlanet], 100);
     RemoveBlinkLamp(18);
+    TurnOnLamp(18);
     Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
     break;
   case 40:
@@ -3259,11 +3260,13 @@ void PB_RulesDisplay(byte State) {
     break;
   case 41:
     Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    RemoveBlinkLamp(19+game_settings[PB_ReachPlanet]);
+    for (byte i=19; i<28; i++) {
+      TurnOffLamp(i);}
     PB_RulesEffect(0);
     break;
   case 42:
     WriteUpper(" REACH THE SUN");
-    RemoveBlinkLamp(19+game_settings[PB_ReachPlanet]);
     Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
     break;
   case 43:
@@ -3306,6 +3309,7 @@ void PB_RulesDisplay(byte State) {
       TurnOffLamp(i);}
     for (byte i=41; i<44; i++) {
       TurnOffLamp(i);}
+    TurnOffLamp(18);
     ActivateSolenoid(150, 6);
     Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
     break;
@@ -3427,7 +3431,7 @@ void PB_RulesDisplay(byte State) {
     RemoveBlinkLamp(57);
     RemoveBlinkLamp(58);
     PB_EyeBlink(1);
-    if (game_settings[Multiballs]) {
+    if (game_settings[PB_Multiballs]) {
       Timer = ActivateTimer(2500, 160, PB_RulesDisplay);}
     else {
       Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);}
@@ -3517,6 +3521,7 @@ void PB_RulesDisplay(byte State) {
   case 161:
     WriteUpper(" THIRD  LOCK  ");
     *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
+    PB_EyeBlink(0);
     PB_HandleEjectHole(15);
     Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
     break;
@@ -3543,8 +3548,8 @@ void PB_RulesDisplay(byte State) {
     break;
   case 167:
     WriteUpper(" DURING       ");
+    PB_ClearChest();
     PB_HandleEjectHole(16);
-    PB_EyeBlink(0);
     Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 168:
@@ -3566,7 +3571,7 @@ void PB_RulesDisplay(byte State) {
   case 174:
   case 175:
     WriteUpper("JACKPOT       ");
-    DisplayScore(2, 200000 * (State - 105));
+    DisplayScore(2, 200000 * (State - 170));
     Timer = ActivateTimer(500, State+1, PB_RulesDisplay);
     break;
   case 176:
@@ -3606,9 +3611,9 @@ void PB_RulesDisplay(byte State) {
     break;
   case 187:
     {char Time[15] = "  FOR       S ";
-    Time[12] = game_settings[PB_MballHoldTime] % 10;
-    if (game_settings[PB_MballHoldTime] < 9) {
-      Time[11] = game_settings[PB_MballHoldTime] / 10;}
+    Time[11] = 48 + game_settings[PB_MballHoldTime] % 10;
+    if (game_settings[PB_MballHoldTime] > 9) {
+      Time[10] = 48 + game_settings[PB_MballHoldTime] / 10;}
     WriteUpper((char*) Time);
     *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1);} // add a dot in column 13
     Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
@@ -3628,7 +3633,7 @@ void PB_RulesDisplay(byte State) {
     Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
   case 191:
-    WriteUpper(" RELOCK2BALLS ");
+    WriteUpper("RE-LOCK2 BALLS");
     PB_EyeBlink(1);
     Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
     break;
@@ -3650,6 +3655,7 @@ void PB_RulesDisplay(byte State) {
     break;
   case 195:
     Timer = 0;
+    PB_HandleEjectHole(16);
     ReleaseSolenoid(12);
     ReleaseSolenoid(14);
     PB_AttractMode();
