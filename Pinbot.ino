@@ -410,19 +410,32 @@ void PB_AttractDisplayCycle(byte Step) {
     AddScrollUpper(100);
     return;
   case 1:                                             // attract mode title 'page'
-//    if (Count == 2) {
-//      Count++;
-//      Step = 0;
-//      RemoveBlinkLamp(1);                             // stop the blinking of the game over lamp
-//      ShowLampPatterns(0);                            // stop lamp animations
-//      LampPattern = NoLamps;
-//      LampReturn = PB_RestoreLamps;
-//      WriteUpper(" NOW I SEE YOU  ");                 // erase display
-//      WriteLower("                ");
-//      PlaySound(55, "0_b0.snd");                      // 'now I see you'
-//      Timer3 = ActivateTimer(3000, 10, PB_AttractDisplayCycle);}
-//    else {
-//      Count++;
+    if (Count == 5) {
+      Count++;
+      Step = 0;
+      //RemoveBlinkLamp(1);                             // stop the blinking of the game over lamp
+      //ShowLampPatterns(0);                            // stop lamp animations
+      LampPattern = NoLamps;
+      LampReturn = PB_RestoreLamps;
+      WriteUpper(" NOW I SEE YOU  ");                 // erase display
+      WriteLower("                ");
+      PlaySound(55, "0_b0.snd");                      // 'now I see you'
+      Timer3 = ActivateTimer(3000, 10, PB_AttractDisplayCycle);}
+    else if (Count == 10) {
+      Timer0 = 0;
+      Count++;
+      Step = 0;
+      LampReturn = PB_RestoreLamps;
+      ShowLampPatterns(0);                            // stop lamp animations
+      PB_AttractDisplayCycle(0);                      // stop display animations
+      for (byte i=0; i< 8; i++) {
+        LampColumns[i] = 0;}
+      LampPattern = LampColumns;
+      PB_RulesDisplay(1);
+      Count = 0;
+      return;}
+    else {
+      Count++;
       WriteUpper2("THE APC         ");
       Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
       Timer3 = ActivateTimer(2000, 7, PB_AttractDisplayCycle);
@@ -431,7 +444,7 @@ void PB_AttractDisplayCycle(byte Step) {
       if (NoPlayers) {                                // if there were no games before skip the next step
         Step++;}
       else {
-        Step = 3;}//}
+        Step = 3;}}
     break;
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
@@ -536,6 +549,8 @@ void PB_AttractModeSW(byte Select) {
       LampReturn = PB_RestoreLamps;
       ShowLampPatterns(0);                            // stop lamp animations
       PB_AttractDisplayCycle(0);                      // stop display animations
+      PB_RulesDisplay(0);
+      PB_RuleLampEffects(0);
       Switch_Pressed = AddPlayerSW;
       for (byte i=0; i< 8; i++) {
         LampColumns[i] = 0;}
@@ -581,8 +596,7 @@ void PB_AttractModeSW(byte Select) {
     for (byte i=0; i< 8; i++) {
       LampColumns[i] = 0;}
     LampPattern = LampColumns;
-    PB_RulesDisplay(1);
-    //digitalWrite(Blanking, LOW);                      // invoke the blanking
+    digitalWrite(Blanking, LOW);                      // invoke the blanking
     break;
   case 16:                                            // outhole
     if (!BlockOuthole) {
@@ -865,7 +879,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         case 22:
           c = 20;
           PlayFlashSequence((byte*) PB_SkillShotFail);
-          PlaySound(53, "1_91.snd");
+          PlaySound(54, "1_91.snd");
           break;
         case 23:                                      // 100K hole hit
           c = 100;
@@ -879,7 +893,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         case 24:
           c = 5;
           PlayFlashSequence((byte*) PB_SkillShotFail);
-          PlaySound(51, "1_91.snd");
+          PlaySound(53, "1_91.snd");
           break;}
         if (!PB_ChestMode) {                          // visor is open
           if (InLock) {
@@ -3649,9 +3663,8 @@ void PB_RulesDisplay(byte State) {
     Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
     break;
   case 194:
-    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
     PB_RulesEffect(0);
-    Timer = ActivateTimer(5000, State+1, PB_RulesDisplay);
+    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
     break;
   case 195:
     Timer = 0;
