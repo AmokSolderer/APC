@@ -41,7 +41,7 @@ Typical examples for the use of PinMameExceptions are:
 
 The picture below shows an APC prototype in my Pinbot.
 
-![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
+![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/APC_Pinbot.JPG)
 
 To see the APC in an early stage you might want take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
 

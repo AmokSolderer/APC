@@ -44,3 +44,5 @@ This frame is for the later System11 games with an interconnect board. It consis
 ![SD slot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/FrameSys11c.JPG)
 
 ![SD slot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/APC_Rollergames.JPG)
+
+The STL files for printing can be found [here](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Hardware/InstallationFrames/System11c_stl.zip)

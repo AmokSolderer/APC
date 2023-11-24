@@ -70,7 +70,7 @@ For some System11 games you'll need to extend some cables to make them fit to th
 
 For later games featuring auxiliary power and interconnect boards there is no way to prevent this. For a System11c machine like Rollergames you have to extend the cables to the power connector 1J17, the lamp strobe connector 1J7 and one of the solenoid drivers 1J19. For the flipper drivers (second part of 1J19) it's enough to cut one cable tie. The result looks like this:
 
-![APC_Rollergames](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Rollergames.JPG)
+![APC_Rollergames](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/APC_Rollergames.JPG)
 
 # Ready for testing
 
