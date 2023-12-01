@@ -336,6 +336,7 @@ void BK_AttractNumCycle(byte Step) {
   Timer0 = ActivateTimer(3000, Step, BK_AttractNumCycle);}  // come back for the next 'page'
 
 void BK_AttractDisplayCycle(byte Step) {
+  static byte Count = 0;
   static byte Timer0 = 0;
   static byte Timer1 = 0;
   static byte Timer2 = 0;
@@ -360,15 +361,33 @@ void BK_AttractDisplayCycle(byte Step) {
     RemoveBlinkLamp(6);
     return;
   case 1:                                             // attract mode title 'page'
-    WriteUpper2("  THE         ");
-    Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
-    Timer3 = ActivateTimer(900, 7, BK_AttractDisplayCycle);
-    WriteLower2(" BLACK KNIGHT ");
-    Timer2 = ActivateTimer(1400, 6, BK_AttractDisplayCycle);
-    if (NoPlayers) {                                  // if there were no games before skip the next step
-      Step++;}
+    if (Count == 2) {
+      if (APC_settings[Volume]) {                     // system set to digital volume control?
+        analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+      else {
+        digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
+      Count++;
+      Step = 0;
+      Timer0 = 0;
+      ShowLampPatterns(0);                            // stop lamp animations
+      BK_AttractDisplayCycle(0);                      // stop display animations
+      for (byte i=0; i< 8; i++) {
+        LampColumns[i] = 0;}
+      LampPattern = LampColumns;
+      BK_RulesDisplay(1);
+      Count = 0;
+      return;}
     else {
-      Step = 3;}
+      Count++;
+      WriteUpper2("  THE         ");
+      Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
+      Timer3 = ActivateTimer(900, 7, BK_AttractDisplayCycle);
+      WriteLower2(" BLACK KNIGHT ");
+      Timer2 = ActivateTimer(1400, 6, BK_AttractDisplayCycle);
+      if (NoPlayers) {                                  // if there were no games before skip the next step
+        Step++;}
+      else {
+        Step = 3;}}
     break;
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
@@ -2141,6 +2160,7 @@ void BK_RulesDisplay(byte State) {
     Timer = ActivateTimer(300, State+1, BK_RulesDisplay);
     break;
   case 11:
+    digitalWrite(VolumePin,HIGH);                     // mute sound
     WriteUpper("  DROP TARGETS");
     WriteLower("              ");
     for (byte i=0; i<4; i++) {
@@ -2164,7 +2184,8 @@ void BK_RulesDisplay(byte State) {
     break;
   case 14:
     WriteUpper(" MAGNA  SAVE  ");
-    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 12
+    *(DisplayUpper+13*2) = 128 | *(DisplayUpper+13*2);
+    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
     AddBlinkLamp(9, 100);
     AddBlinkLamp(10, 100);
     for (byte i=0; i<3; i++) {
@@ -2181,8 +2202,8 @@ void BK_RulesDisplay(byte State) {
   case 16:
     WriteUpper("  ALL   UPPER ");
     for (byte i=0; i<3; i++) {
-      AddBlinkLamp(25+i, 100);
-      AddBlinkLamp(29+i, 100);}
+      AddBlinkLamp(33+i, 100);
+      AddBlinkLamp(37+i, 100);}
     RemoveBlinkLamp(9);
     RemoveBlinkLamp(10);
     Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
@@ -2191,10 +2212,10 @@ void BK_RulesDisplay(byte State) {
     WriteUpper("  OR    LOWER ");
     WriteLower(" ARROWS       ");
     for (byte i=0; i<3; i++) {
-      AddBlinkLamp(33+i, 100);
-      AddBlinkLamp(37+i, 100);
-      RemoveBlinkLamp(25+i);
-      RemoveBlinkLamp(29+i);}
+      AddBlinkLamp(25+i, 100);
+      AddBlinkLamp(29+i, 100);
+      RemoveBlinkLamp(33+i);
+      RemoveBlinkLamp(37+i);}
     Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
     break;
   case 18:
@@ -2204,12 +2225,13 @@ void BK_RulesDisplay(byte State) {
     break;
   case 19:
     WriteUpper(" EXTRA   BALL ");
+    *(DisplayUpper+14*2) = 128 | *(DisplayUpper+14*2);
     *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
     AddBlinkLamp(22, 100);
     AddBlinkLamp(41, 100);
     for (byte i=0; i<3; i++) {
-      RemoveBlinkLamp(33+i);
-      RemoveBlinkLamp(37+i);}
+      RemoveBlinkLamp(25+i);
+      RemoveBlinkLamp(29+i);}
     Timer = ActivateTimer(2700, State+1, BK_RulesDisplay);
     break;
   case 20:
@@ -2231,13 +2253,19 @@ void BK_RulesDisplay(byte State) {
     break;
   case 23:
     WriteUpper("  AND 3 BALLS ");
+    RemoveBlinkLamp(24);
     Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
     break;
   case 24:
     WriteUpper("FOR 3X  SCORE ");
+    *(DisplayUpper+14*2) = 128 | *(DisplayUpper+14*2);
     *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
     AddBlinkLamp(32, 100);
     RemoveBlinkLamp(28);
+    BK_LockChaseLight(0);
+    TurnOffLamp(21);
+    TurnOffLamp(40);
+    TurnOffLamp(42);
     Timer = ActivateTimer(2700, State+1, BK_RulesDisplay);
     break;
   case 25:
@@ -2262,36 +2290,51 @@ void BK_RulesDisplay(byte State) {
     Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
     break;
   case 29:
-    WriteUpper(" LITES        ");
-    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    WriteUpper(" LITES JACKPOT");
+    *(DisplayUpper+15*2) = 128 | *(DisplayUpper+15*2);
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    Timer = ActivateTimer(2700, State+1, BK_RulesDisplay);
     break;
   case 30:
-  case 32:
-  case 34:
-  case 36:
-  case 38:
-    WriteUpper("JACKPOT       ");
-    RemoveBlinkLamp(24);
-    BK_LockChaseLight(1);
-    Timer = ActivateTimer(500, State+1, BK_RulesDisplay);
+    Timer = ActivateTimer(800, State+1, BK_RulesDisplay);
+    BK_RulesEffect(0);
     break;
   case 31:
+    WriteUpper(" SHOOT  LOCK  ");
+    RemoveBlinkLamp(24);
+    BK_LockChaseLight(1);
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
   case 33:
   case 35:
   case 37:
   case 39:
+    WriteUpper("  FOR         ");
+    Timer = ActivateTimer(500, State+1, BK_RulesDisplay);
+    break;
+  case 32:
+  case 34:
+  case 36:
+  case 38:
+  case 40:
+    WriteUpper("  FOR         ");
     DisplayScore(2, game_settings[BK_MultiballJackpot]*500000);
     Timer = ActivateTimer(500, State+1, BK_RulesDisplay);
     break;
-  case 40:
+  case 41:
+    *(DisplayUpper+15*2) = 128 | *(DisplayUpper+15*2);
     *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
     Timer = ActivateTimer(2700, State+1, BK_RulesDisplay);
     break;
-  case 41:
+  case 42:
     Timer = ActivateTimer(800, State+1, BK_RulesDisplay);
+    BK_LockChaseLight(0);
+    TurnOffLamp(21);
+    TurnOffLamp(40);
+    TurnOffLamp(42);
     BK_RulesEffect(0);
     break;
-  case 42:
+  case 43:
     Timer = 0;
     ReleaseSolenoid(11);
     BK_AttractMode();

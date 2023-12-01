@@ -410,7 +410,7 @@ void PB_AttractDisplayCycle(byte Step) {
     AddScrollUpper(100);
     return;
   case 1:                                             // attract mode title 'page'
-    if (Count == 5) {
+    if (Count == 20) {
       Count++;
       Step = 0;
       //RemoveBlinkLamp(1);                             // stop the blinking of the game over lamp
@@ -419,9 +419,9 @@ void PB_AttractDisplayCycle(byte Step) {
       LampReturn = PB_RestoreLamps;
       WriteUpper(" NOW I SEE YOU  ");                 // erase display
       WriteLower("                ");
-      PlaySound(55, "0_b0.snd");                      // 'now I see you'
-      Timer3 = ActivateTimer(3000, 10, PB_AttractDisplayCycle);}
-    else if (Count == 10) {
+      PlaySound(55, "0_b0.snd");}                      // 'now I see you'
+      //Timer3 = ActivateTimer(3000, 10, PB_AttractDisplayCycle);}
+    else if (Count == 40) {
       Timer0 = 0;
       Count++;
       Step = 0;
@@ -590,12 +590,6 @@ void PB_AttractModeSW(byte Select) {
       ActivateSolenoid(0, 24);}
     break;
   case 8:                                             // high score reset
-    LampReturn = PB_RestoreLamps;
-    ShowLampPatterns(0);                            // stop lamp animations
-    PB_AttractDisplayCycle(0);                      // stop display animations
-    for (byte i=0; i< 8; i++) {
-      LampColumns[i] = 0;}
-    LampPattern = LampColumns;
     digitalWrite(Blanking, LOW);                      // invoke the blanking
     break;
   case 16:                                            // outhole
