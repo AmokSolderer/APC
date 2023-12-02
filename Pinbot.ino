@@ -412,11 +412,7 @@ void PB_AttractDisplayCycle(byte Step) {
   case 1:                                             // attract mode title 'page'
     if (Count == 20) {
       Count++;
-      Step = 0;
-      //RemoveBlinkLamp(1);                             // stop the blinking of the game over lamp
-      //ShowLampPatterns(0);                            // stop lamp animations
-      LampPattern = NoLamps;
-      LampReturn = PB_RestoreLamps;
+      Step = 1;
       WriteUpper(" NOW I SEE YOU  ");                 // erase display
       WriteLower("                ");
       PlaySound(55, "0_b0.snd");}                      // 'now I see you'
@@ -424,7 +420,7 @@ void PB_AttractDisplayCycle(byte Step) {
     else if (Count == 40) {
       Timer0 = 0;
       Count++;
-      Step = 0;
+      Step = 1;
       LampReturn = PB_RestoreLamps;
       ShowLampPatterns(0);                            // stop lamp animations
       PB_AttractDisplayCycle(0);                      // stop display animations
@@ -3111,6 +3107,7 @@ void PB_RulesDisplay(byte State) {
     if (Timer) {
       KillTimer(Timer);}
     Timer = 0;
+    StopAllBlinkLamps();
     ReleaseSolenoid(12);
     ReleaseSolenoid(14);
     break;

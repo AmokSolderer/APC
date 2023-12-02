@@ -2129,6 +2129,7 @@ void BK_RulesDisplay(byte State) {
     if (Timer) {
       KillTimer(Timer);}
     Timer = 0;
+    StopAllBlinkLamps();
     ReleaseSolenoid(11);
     break;
   case 1:
