@@ -2123,18 +2123,13 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the blinking of La
       ErrorHandler(8,0,LampNo);}}}                    // show error 8
 
 void StopAllBlinkLamps() {                            // stop the blinking of all lamps
-  byte a = 0;
-  byte b = 0;
   byte x = 0;
   byte y = 0;
-  while (a < BlinkTimers) {                           // search all active blink timers
-    b = 0;
+  while (BlinkTimers) {                               // search all active blink timers
     y = 0;
     if (BlinkTimer[x]) {                              // blink timer in use found?
-      a++;                                            // increase the number of active blink timers found
-      while (b < BlinkingNo[x]) {                     // check the list of lamps controlled by this timer
+      while (BlinkingNo[x]) {                         // check the list of lamps controlled by this timer
         if (BlinkingLamps[x][y]) {                    // active lamp found?
-          b++;                                        // increase the number of active lamps found for this blink timer
           TurnOffLamp(BlinkingLamps[x][y]);           // turn it off
           BlinkingLamps[x][y] = 0;                    // delete it from the list
           BlinkingNo[x]--;                            // decrease the number of lamps controlled by this timer
