@@ -410,6 +410,7 @@ void PB_AttractDisplayCycle(byte Step) {
     if (Timer3) {
       KillTimer(Timer3);
       Timer3 = 0;}
+    Count = 0;
     ScrollUpper(100);                                 // stop scrolling
     ScrollLower(100);
     AddScrollUpper(100);
@@ -552,6 +553,7 @@ void PB_AttractModeSW(byte Select) {
       PB_AttractDisplayCycle(0);                      // stop display animations
       PB_RulesDisplay(0);
       PB_RuleLampEffects(0);
+      MusicVolume = 0;
       Switch_Pressed = AddPlayerSW;
       for (byte i=0; i< 8; i++) {
         LampColumns[i] = 0;}
@@ -2740,6 +2742,7 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
     StopPlayingMusic();
     PlaySound(53, "0_2c.snd");
     AppByte = Balls;
+    StopAllBlinkLamps();
     ActivateTimer(200, 0, PB_CountBonus);}}
 
 void PB_BlinkPlanet(byte State) {                     // blink planets during bonus count
