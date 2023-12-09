@@ -345,6 +345,10 @@ const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
                                    15,0b10000,0b01000,0b01000,0b00100,0b00100,
                                    15,0b10000,0b10000,0b10000,0b10000,0b10000,0};
 
+const byte PB_Characters[180] = {12,18,30,18,18,28,18,28,19,28,14,16,16,16,14,28,18,18,18,28,30,16,28,16,30,30,16,28,16,16,14,16,22,18,14,18,18,30,18,18,4,4,4,4,4,14,2,2,10,4,18,20,24,20,18, // a,b,c,d,e,f,g,h,i,j,k
+                                 8,8,8,8,14,17,27,21,17,17,17,25,21,19,17,12,18,18,18,12,28,18,28,16,16,12,18,18,22,12,28,18,28,20,18,14,16,12,2,28,14,4,4,4,4,18,18,18,18,12,17,17,10,10,4, // l,m,n,o,p,q,r,s,t,u,v
+                                 17,17,21,21,10,17,10,4,10,17,17,10,4,4,4,31,2,4,8,31,12,18,18,18,12,4,12,4,4,14,12,18,4,8,30,12,2,12,2,12,10,18,30,2,2,28,16,28,2,12,12,16,28,18,12,30,2,4,8,8,12,18,12,18,12,12,18,14,2,12}; // w,x,y,z,0,1,2,3,4,5,6,7,8,9
+
 struct GameDef PB_GameDefinition = {
     PB_setList,                                       // GameSettingsList
     (byte*)PB_defaults,                               // GameDefaultsPointer
@@ -2859,7 +2863,7 @@ void PB_BallEnd2() {
     TurnOffLamp(51);
     if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
       Switch_Pressed = DummyProcess;                  // Switches do nothing
-      PB_Congrats(0);}
+      PB_Congrats(1);}
     else {
       if ((PB_EjectMode[Player] == 4) || (PB_EjectMode[Player] == 9)) { // eject hole mode maxed out?
         PB_EjectMode[Player] = 0;}                    // reset it for the next ball
@@ -2885,26 +2889,41 @@ void PB_BallEnd3(byte Balls) {
       PB_PlayAfterGameSequence(1);                    // start end of game animation
       GameDefinition.AttractMode();}}}
 
-void PB_Congrats(byte Dummy) {                        // show congratulations
-  UNUSED(Dummy);
-  LampPattern = NoLamps;
-  ActC_BankSol(1);
-  //AfterMusic = PB_EnterInitials2;                     // TODO fix congrats
-  PlayMusic(50, "1_06.snd");
-  QueueNextMusic("1_06L.snd");                        // queue looping part as next music to be played}
-  ActivateSolenoid(0, 11);
-  ActivateSolenoid(0, 12);
-  PB_LampSweepActive = 2;
-  PB_LampSweep(4);
-  WriteUpper("              ");
-  WriteLower("              ");
-  DisplayScore(3, Points[Player]);
-  DisplayScore(4, Points[Player]);
-  WriteUpper2(" GREAT        ");
-  ActivateTimer(50, 0, ScrollUpper);
-  ActivateTimer(1400, 1, PB_ScrollCongrats);
-  //ActivateTimer(3000, 1, PB_ScrollCongrats2);
-  ActivateTimer(5000, Player, PB_Congrats2);}
+void PB_Congrats(byte State) {                        // show congratulations
+  static byte Timer = 0;
+  switch(State) {
+  case 0:
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    break;
+  case 1:
+    for (byte i=0; i< 8; i++) {
+      LampColumns[i] = 0;}
+    LampPattern = LampColumns;
+    ActC_BankSol(1);
+    //AfterMusic = PB_EnterInitials2;                 // TODO fix congrats
+    PlayMusic(50, "1_06.snd");
+    QueueNextMusic("1_06L.snd");                      // queue looping part as next music to be played}
+    ActivateSolenoid(0, 11);
+    ActivateSolenoid(0, 12);
+    PB_LampSweepActive = 2;
+    PB_LampSweep(4);
+    WriteUpper("              ");
+    WriteLower("              ");
+    DisplayScore(3, Points[Player]);
+    DisplayScore(4, Points[Player]);
+    WriteUpper2(" GREAT        ");
+    ActivateTimer(50, 0, ScrollUpper);
+    ActivateTimer(1400, 1, PB_ScrollCongrats);
+    //ActivateTimer(3000, 1, PB_ScrollCongrats2);
+    ActivateTimer(5000, Player, PB_Congrats2);
+    Timer = ActivateTimer(3000, 2, PB_Congrats);
+    break;
+  case 2:
+    PlayFlashSequence((byte*) PB_BB_FlasherCycle);
+    Timer = ActivateTimer(3000, 2, PB_Congrats);
+    break;}}
 
 void PB_ScrollCongrats(byte Dummy) {
   UNUSED(Dummy);
@@ -2948,7 +2967,7 @@ void PB_EnterInitials(byte Switch) {
       if (APC_settings[Volume]) {
         ByteBuffer3 = APC_settings[Volume];
         FadeOutMusic(100);
-        ActivateTimer(1000, 0, PB_EnterInitials2);}
+        ActivateTimer(1000, 0, PB_EnterInitials2);}   // TODO fix
       else {
         StopPlayingMusic();}}
     else {
@@ -2983,16 +3002,26 @@ void PB_BlinkInitial(byte State) {                    // blink actual character
   if (State) {
     *(DisplayUpper+20+4*ByteBuffer) = 0;              // show a blank
     *(DisplayUpper+21+4*ByteBuffer) = 0;
+    PB_ClearChest();
     State = 0;}
   else {
     for (byte i=0; i<3; i++) {
       *(DisplayUpper+20+4*i) = DispPattern1[(EnterIni[i]-32)*2];
       *(DisplayUpper+21+4*i) = DispPattern1[(EnterIni[i]-32)*2+1];}// restore the characters
+    for (byte x=0; x<5; x++) {                        // for all rows
+      byte Mask = 16;                                 // mask to access the stored lamps for this player
+      for (byte y=0; y<5; y++) {                      // for all columns
+        if (PB_Characters[(EnterIni[ByteBuffer]-65)*5+x] & Mask) {
+          TurnOnLamp(28+x+8*y);}
+        else {
+          TurnOffLamp(28+x+8*y);}
+        Mask = Mask>>1;}}
     State = 1;}
   ByteBuffer2 = ActivateTimer(100+State*2000, State, PB_BlinkInitial);}  // and come back
 
 void PB_EnterInitials2(byte Dummy) {
   UNUSED(Dummy);
+  PB_Congrats(0);
   if (ByteBuffer > 2) {
     ByteBuffer2 = HandleHighScores(Points[Player]);
     WriteUpper2(" HIGH   SCORE ");
