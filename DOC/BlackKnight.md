@@ -48,7 +48,7 @@ The same needs to be done for the High Score table feature. In this case the nam
 | 7 | Restore Default | - | - | - | No setting - restores the default settings |
 | 8 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
-Check the [settings page](https://github.com/AmokSolderer/APC/blob/V00.31/DOC/Settings.md#using-the-settings-menu) if you're not sure how to use these game settings.
+Check the [settings page](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#using-the-settings-menu) if you're not sure how to use these game settings.
 ## Things to do
 
 * The Jackpot still needs some sound effects.

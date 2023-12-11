@@ -201,7 +201,7 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 
 8. APC games - Complete games running natively on the APC or games that run in PinMame but have been changed  
 8.1. [Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) - Complete game code with some additional features  
-8.2. [Pin Bot](https://github.com/AmokSolderer/APC/blob/master/DOC/Pinbot.md) - Complete game code with some additional features  
+8.2. [Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/Pinbot.md) - Complete game code with some additional features  
 8.3. [Comet](https://github.com/AmokSolderer/APC/blob/master/DOC/Comet.md) - Some extensions to the original game code running in PinMame
 
 9. Videos - For the generation Youtube  
