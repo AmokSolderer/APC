@@ -1,12 +1,12 @@
-# The APC Black Knight
+# The APC Pinbot
 
 This page is about the Pinbot.ino game SW which is part of the APC SW. Note that you have to have the Pinbot sound files for this game to work.  
 
-![APC Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/Pinbot.JPG)
+![APC Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/Pinbot.JPG)
 
 This is a view inside the backbox.
 
-![APC open BK](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
+![APC open PB](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
 
 I'm using an APC 2 prototype board for this. As I'm running the code natively on the Arduino I don't need Lisy/PinMame and therefore no Raspberry Pi.
 
