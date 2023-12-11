@@ -20,7 +20,7 @@ I'm using an APC 2 prototype board for this. As I'm running the code natively on
 Switching the 'Multiball' game setting to '3 ball' (and adding a third ball) switches to a different ruleset.  
 Like the original Pinbot, this one will also explain it's rules if you keep it waiting a while in Attract Mode. Depending on the 'Multiball' settings it will explain the normal Pinbot rules (2 ball) or the new 3 ball rules.
 
-The rules for the 3 ball mode are shown [here](
+The rules for the 3 ball mode are shown [here](https://youtu.be/IGrUnbhkijU).
 
 ## How to set up this game
 
@@ -32,21 +32,25 @@ If you want to use the 3 ball Multiball you have to add a third ball apparently.
 
 | Number | Text  | Item Nr | Item Text | Default | Comment |
 |--|--|--|--|--|--|
-| 0 | Drop TG time | - | - | No | Bool setting - see features description |
-| 1 | Replay Score | 0 | 1000000 | X | Set 1 million as replay score |
-| 1 |  | 1 | 1500000 | - | Set 1.5 million as replay score |
-| 1 |  | 2 | 2000000 | - | Set 2 million as replay score |
-| 1 |  | 3 | 2500000 | - | Set 2.5 million as replay score |
-| 2 | Multiball Jackpot | 0 | Off | X | Turn the multiball jackpot off |
-| 2 |  | 1 | 500000 | - | Set 500K as multiball jackpot |
-| 2 |  | 2 | 750000 | - | Set 750K as multiball jackpot |
-| 2 |  | 3 | 1000000 | - | Set 1 million as multiball jackpot |
-| 3 | Multiball volume | - | - | 0 | Numerical setting - range 0 - 30 / can be used to increase the volume during multiball. Does only work when the digital volume control of the APC is used and not the old volume pot |
-| 4 | High Score volume | - | - | 0 | Numerical setting - range 0 - 30 / can be used to increase the volume during high score entry. Does only work when the digital volume control of the APC is used and not the old volume pot |
-| 5 | Ball eject strength  | - | - | 30 | Numerical setting - range 0 - 30 / activation time of the ball ramp thrower (solenoid 6) in ms. Adjust this to avoid that the ball is bouncing back into the trunk
-| 6 | Reset High | - | - | - | No setting - resets the high scores for this game |
-| 7 | Restore Default | - | - | - | No setting - restores the default settings |
-| 8 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 0 | Drop TG Time | - | - | 15 | Down time of the drop targets |
+| 1 | Reach Planet | 0 | Pluto | - | Planet to reach for Extra Ball |
+| 1 | | 1 | Neptune | - |  |
+| 1 | | 2 | Uranus | - |  |
+| 1 | | 3 | Saturn | - |  |
+| 1 | | 4 | Jupiter | - |  |
+| 1 | | 5 | Mars | - |  |
+| 1 | | 6 | Earth | X |  |
+| 1 | | 7 | Venus | - |  |
+| 1 | | 8 | Mercury | - |  |
+| 2 | Energy Timer | - | - | 15 | Time to collect energy |
+| 3 | Multiball | 0 | 2 Ball | - | 2 ball multiball (Normal Pinbot) gameplay - see features description|
+| 3 | | 1 | 3 Ball | - | 3 ball multiball gameplay |
+| 4 | Ball Saver | - | - | No | Bool setting - see features description |
+| 5 | Eject Strength | - | - | 30 | Strength of the outhole kicker (debug option)|
+| 6 | Hold Time | - | - | 10 | Time to hold balls in locks during 3 ball multiball |
+| 7 | Reset High | - | - | - | No setting - resets the high scores for this game |
+| 8 | Restore Default | - | - | - | No setting - restores the default settings |
+| 9 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 Check the [settings page](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#using-the-settings-menu) if you're not sure how to use these game settings.
 

@@ -94,7 +94,7 @@ The second board is a [driver for 8 additional solenoids](https://github.com/Amo
 
 I use [special alphanumerical displays](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) in my Black Knight which can also be found in the HW section as well as an LED replacement for the original System7 numerical displays.
 
-## Current Status (October 2023)
+## Current Status (December 2023)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md#cable-extensions)
 
