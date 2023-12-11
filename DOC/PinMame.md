@@ -9,11 +9,11 @@ At the moment the list of available sound packages is still quite short, but we 
 
 |System|Game| Sound Files |Comments|
 |--|--|--|--|
-|3|Disco Fever| available on request| |
+|3|Disco Fever| available on request| PinMameExceptions might still need some finetuning |
 |4|Flash| available on request| |
 |6|Firepower| Ask Matiou in the Pinside forum | PinMameExceptions also done by Matiou |
-|6|Alien Poker| available on request| |
-|7|Barracora| available on request| |
+|6|Alien Poker| available on request | PinMameExceptions might still need some finetuning |
+|7|Barracora| available on request | PinMameExceptions might still need some finetuning |
 |7|Black Knight| available on request| |
 |7|Jungle Lord| available on request| Works great. Sound samples are also good. |
 |7|Pharaoh| Ask Grangeomatic in the Pinside forum| PinMameExceptions also done by Grangeomatic |
@@ -35,8 +35,8 @@ The fact that you're reading this probably means that your machine is not yet su
 
 Click on the generation of your game to get to the corresponding how-to page:
 
-[System 3 - 7 sound how-to](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_3_7.md)
+[System 3 - 7 sound how-to](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_3_7.md)
 
-[System 9 sound how-to](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_9.md)
+[System 9 sound how-to](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_9.md)
 
-[System 11 sound how-to](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md)
+[System 11 sound how-to](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_11.md)

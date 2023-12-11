@@ -1,11 +1,11 @@
 # APC News and Changelog
 
-## TDB
+## December 2023
 
 ### New SW Version V1.00
 
-* Exception rules for System 3 Disco Fever have been added. [Sound files for Disco Fever are also available](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMame.md)
-* Exception rules for System 6 Alien Poker have been added. [Sound files for Alien Poker are also available](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMame.md)
+* Exception rules for System 3 Disco Fever have been added. [Sound files for Disco Fever are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+* Exception rules for System 6 Alien Poker have been added. [Sound files for Alien Poker are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
 * Bugfix -> if a sound/music file was invoked immediately after another, the first one was dropped regardless of the priority.
 * Bugfix -> Controlling the original audio boards of System 3 - 6 games has been fixed.
 * Support for single ball games added to BaseCode
@@ -16,7 +16,7 @@
 
 ### Misc
 
-* Page for [installation frames](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Frames.md) started. These make it easier to mount an APC in your backbox.
+* Page for [installation frames](https://github.com/AmokSolderer/APC/blob/master/DOC/Frames.md) started. These make it easier to mount an APC in your backbox.
 
 * PinMame Sound how-tos added to make it more clear what to do to let the APC play the original sounds
 

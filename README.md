@@ -41,7 +41,7 @@ Typical examples for the use of PinMameExceptions are:
 
 The picture below shows an APC prototype in my Pinbot.
 
-![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/APC_Pinbot.JPG)
+![Pic Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/APC_Pinbot.JPG)
 
 To see the APC in an early stage you might want take a look at my [Black Knight game video](https://youtu.be/N5ipyHBKzgs)
 
@@ -84,7 +84,7 @@ The first board is an LED expansion board to control WS2812 based LED-Strips wit
 
 The following picture shows the APC in a Comet with the LED Expansion board connected to the hardware extensions interface.
 
-![APC Comet LED](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PICS/CometLED.jpg)
+![APC Comet LED](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/CometLED.jpg)
 
 A short video with this setup can be found here : 
 
@@ -102,8 +102,8 @@ The PinMame support is still under development and even if a generation is basic
 
 | Williams System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
-|3| Yes | Yes | Yes|When PinMame is used, some solenoid activation times need to be increase by a [PinMameException](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameExceptions.md#fixing-the-drop-targets-of-system-3-&-4-games)|
-|4| Yes | Yes | Yes|When PinMame is used, some solenoid activation times need to be increase by a [PinMameException](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameExceptions.md#fixing-the-drop-targets-of-system-3-&-4-games)|
+|3| Yes | Yes | Yes|When PinMame is used, some solenoid activation times need to be increase by a [PinMameException](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md#fixing-the-drop-targets-of-system-3-&-4-games)|
+|4| Yes | Yes | Yes|When PinMame is used, some solenoid activation times need to be increase by a [PinMameException](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md#fixing-the-drop-targets-of-system-3-&-4-games)|
 |6| Yes | Yes | Yes |  |
 |7| Yes | Yes | Yes | Needs two additional wires |
 |9| Yes | Yes | Yes |  |
@@ -176,11 +176,11 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 
 4. Running PinMame  
 4.1. [Lisy Homepage](https://lisy.dev/apc.html) - Location of the Lisy SW download and more  
-4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMame.md) - shows whether your game is supported and what to do if not  
-4.3. [PinMame System 3 - 7 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_3_7.md) - How to enable the sound of System 3 - 7 games  
-4.4. [PinMame System 9 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_9.md) - How to enable the sound of System 9 games  
-4.5. [PinMame System 11 Sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameSound_11.md) - How to enable the sound of System 11 games  
-4.6. [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMameExceptions.md) - change your game, but let PinMame do the main work  
+4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows whether your game is supported and what to do if not  
+4.3. [PinMame System 3 - 7 Sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_3_7.md) - How to enable the sound of System 3 - 7 games  
+4.4. [PinMame System 9 Sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_9.md) - How to enable the sound of System 9 games  
+4.5. [PinMame System 11 Sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_11.md) - How to enable the sound of System 11 games  
+4.6. [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md) - change your game, but let PinMame do the main work  
 4.7. [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) - list of the PinMame game numbers  
 4.8. [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) - updating Lisy and using the debug mode  
 4.9. [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
@@ -193,7 +193,7 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 6.1. [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  
 6.2. [APC solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) - to control additional features  
 6.3. [System 7 alphanumeric display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) - to have alphanumerical displays in a pre System 11 machine  
-6.4. [Installation frames](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/Frames.md) - to mount the APC in your backbox  
+6.4. [Installation frames](https://github.com/AmokSolderer/APC/blob/master/DOC/Frames.md) - to mount the APC in your backbox  
 
 7. Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
 7.1. [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7_Display) - an LED replacement display for System 7, purely numerical  

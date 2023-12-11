@@ -1,6 +1,6 @@
 # PinMameExceptions
 
-PinMameExceptions are a simple but powerful tool to change the behaviour of your game even though it is controlled by PinMame. Some exceptions are inevitable to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame sound howto](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/PinMame.md) page.
+PinMameExceptions are a simple but powerful tool to change the behaviour of your game even though it is controlled by PinMame. Some exceptions are inevitable to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page.
 
 In this section we'll focus on exceptions that change a game. This can be by just fixing flaws in the original game SW or adding new features.
 

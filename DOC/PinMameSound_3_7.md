@@ -38,7 +38,7 @@ The big advantage of the downloaded files is that they usually don't need any pr
 
 ## Audio file conversion
 
-Put all renamed WAV files in one folder and execute the [AudioSaveFolder.pl](https://github.com/AmokSolderer/APC/blob/V01.00/DOC/UsefulSWtools.md) tool.  
+Put all renamed WAV files in one folder and execute the [AudioSaveFolder.pl](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md) tool.  
 The resulting .snd files must be copied to the APC SD card. Please format your card before with a special SD card formatting tool from the SD Association (sdcard.org) to improve the card's access times.
 
 If you start your game now you should already hear most of the sounds, but everything out of the ordinary like sound series and so on won't work correctly. We need to tell the APC about these special sound sommands and how to deal with them. 
