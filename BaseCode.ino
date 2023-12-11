@@ -301,7 +301,8 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
       Settings_Enter();}
     break;
   case 3:                                             // start game
-    if (BC_CountBallsInTrunk() == game_settings[BCset_InstalledBalls] || (BC_CountBallsInTrunk() == game_settings[BCset_InstalledBalls]-1 && QuerySwitch(game_settings[BCset_PlungerLaneSwitch]))) { // Ball missing?
+    if ((game_settings[BCset_InstalledBalls == 1] && QuerySwitch(game_settings[BCset_OutholeSwitch])) ||  // single ball game
+        BC_CountBallsInTrunk() == game_settings[BCset_InstalledBalls] || (BC_CountBallsInTrunk() == game_settings[BCset_InstalledBalls]-1 && QuerySwitch(game_settings[BCset_PlungerLaneSwitch]))) { // Ball missing?
       Switch_Pressed = DummyProcess;                  // Switches do nothing
       ShowLampPatterns(0);                            // stop lamp animations
       BC_AttractDisplayCycle(0);                      // stop display animations
@@ -326,7 +327,7 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
       for (i=1; i < 5; i++) {
         LockedBalls[i] = 0;
         Points[i] = 0;}
-      BC_NewBall(game_settings[BCset_InstalledBalls]); // release a new ball (3 expected balls in the trunk)
+      BC_NewBall(game_settings[BCset_InstalledBalls]); // release a new ball
       ActivateSolenoid(0, 23);                        // enable flipper fingers
       ActivateSolenoid(0, 24);}}}
 
@@ -338,9 +339,10 @@ void BC_AddPlayer() {
 
 void BC_CheckForLockedBalls(byte Event) {             // check if balls are locked and release them
   UNUSED(Event);
-  if (QuerySwitch(game_settings[BCset_OutholeSwitch])) {                     // for the outhole
-    ActA_BankSol(game_settings[BCset_OutholeKicker]);}
-}                                                     // add the locks of your game here
+  if (game_settings[BCset_InstalledBalls] > 1) {      // single ball game -> no ball through ramp
+    if (QuerySwitch(game_settings[BCset_OutholeSwitch])) {  // for the outhole
+      ActA_BankSol(game_settings[BCset_OutholeKicker]);}
+  }}                                                     // add the locks of your game here
 
 void BC_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
   ShowAllPoints(0);
@@ -458,10 +460,6 @@ void BC_GameMain(byte Event) {                        // game switch events
   case 2:                                             // ball roll tilt
   case 7:                                             // slam tilt
     break;
-  case 46:                                            // playfield tilt
-    WriteUpper(" TILT  WARNING  ");
-    ActivateTimer(3000, 0, ShowAllPoints);
-    break;
   case 3:                                             // credit button
     BC_AddPlayer();
     break;
@@ -475,8 +473,11 @@ void BC_ClearOuthole(byte Event) {
   if (QuerySwitch(game_settings[BCset_OutholeSwitch])) { // outhole switch still active?
     if (!BlockOuthole && !C_BankActive) {             // outhole blocked?
       BlockOuthole = true;                            // block outhole until this ball has been processed
-      ActivateSolenoid(30, game_settings[BCset_OutholeKicker]); // put ball in trunk
-      ActivateTimer(2000, 0, BC_BallEnd);}
+      if (game_settings[BCset_InstalledBalls] == 1) { // single ball game -> no ball through ramp
+        BC_BallEnd(0);}
+      else {
+        ActivateSolenoid(30, game_settings[BCset_OutholeKicker]); // put ball in trunk
+        ActivateTimer(2000, 0, BC_BallEnd);}}
     else {
       ActivateTimer(2000, 0, BC_ClearOuthole);}}}     // come back in 2s if outhole is blocked
 
@@ -486,53 +487,57 @@ void BC_HandleLock(byte Balls) {
 
 void BC_BallEnd(byte Event) {
   byte BallsInTrunk = BC_CountBallsInTrunk();
-  if ((BallsInTrunk == 5)||(BallsInTrunk < game_settings[BCset_InstalledBalls]+1-Multiballs-InLock)) {
-    InLock = 0;
-//    if (Multiballs == 1) {
-//      for (i=0; i<3; i++) {                           // Count your locked balls here
-//        if (Switch[41+i]) {
-//          InLock++;}}}
-    WriteLower(" BALL   ERROR   ");
-    if (QuerySwitch(game_settings[BCset_OutholeSwitch])) { // ball still in outhole?
-      ActA_BankSol(game_settings[BCset_OutholeKicker]); // make the coil a bit stronger
-      ActivateTimer(2000, Event, BC_BallEnd);}        // and come back in 2s
-    else {
-      if (Event < 11) {                               // have I been here already?
-        Event++;
-        ActivateTimer(1000, Event, BC_BallEnd);}      // if not try again in 1s
-      else {                                          // ball may be still in outhole
-        BlockOuthole = false;
-        Event = 0;
-        BC_ClearOuthole(0);}}}
+  if (game_settings[BCset_InstalledBalls] == 1) {     // single ball game -> no ball through ramp
+    BlinkScore(0);                                    // stop score blinking
+    BC_BallEnd2(1);}                                  // add bonus count here and start BallEnd2 afterwards
   else {
-    switch (Multiballs) {
-    case 3:                                           // goto 2 ball multiball
-      Multiballs = 2;
-      if (BallsInTrunk != 1) {                        // not 1 ball in trunk
-        ActivateTimer(1000, 0, BC_BallEnd);}          // check again later
+    if ((BallsInTrunk == 5)||(BallsInTrunk < game_settings[BCset_InstalledBalls]+1-Multiballs-InLock)) {
+      InLock = 0;
+      //    if (Multiballs == 1) {
+      //      for (i=0; i<3; i++) {                           // Count your locked balls here
+      //        if (Switch[41+i]) {
+      //          InLock++;}}}
+      WriteLower(" BALL   ERROR   ");
+      if (QuerySwitch(game_settings[BCset_OutholeSwitch])) { // ball still in outhole?
+        ActA_BankSol(game_settings[BCset_OutholeKicker]); // make the coil a bit stronger
+        ActivateTimer(2000, Event, BC_BallEnd);}      // and come back in 2s
       else {
-        BlockOuthole = false;}                        // remove outhole block
-      break;
-    case 2:                                           // end multiball
-      Multiballs = 1;
-      if (BallsInTrunk == game_settings[BCset_InstalledBalls]) { // all balls in trunk?
-        ActivateTimer(1000, 0, BC_BallEnd);}
-      else {
-        BlockOuthole = false;}                        // remove outhole block
-      break;
-    case 1:                                           // end of ball
-      if (BallsInTrunk + InLock != game_settings[BCset_InstalledBalls]) {
-        WriteUpper(" COUNT  ERROR   ");
-        InLock = 0;
-//        for (i=0; i<3; i++) {                       // check how many balls are on the ball ramp
-//          if (Switch[41+i]) {
-//            InLock++;}}
-        ActivateTimer(1000, 0, BC_BallEnd);}
-      else {
-        LockedBalls[Player] = 0;
-        BlinkScore(0);                                // stop score blinking
-        BC_BallEnd2(BallsInTrunk);                    // add bonus count here and start BallEnd2 afterwards
-      }}}}
+        if (Event < 11) {                             // have I been here already?
+          Event++;
+          ActivateTimer(1000, Event, BC_BallEnd);}    // if not try again in 1s
+        else {                                        // ball may be still in outhole
+          BlockOuthole = false;
+          Event = 0;
+          BC_ClearOuthole(0);}}}
+    else {
+      switch (Multiballs) {
+      case 3:                                         // goto 2 ball multiball
+        Multiballs = 2;
+        if (BallsInTrunk != 1) {                      // not 1 ball in trunk
+          ActivateTimer(1000, 0, BC_BallEnd);}        // check again later
+        else {
+          BlockOuthole = false;}                      // remove outhole block
+        break;
+      case 2:                                         // end multiball
+        Multiballs = 1;
+        if (BallsInTrunk == game_settings[BCset_InstalledBalls]) { // all balls in trunk?
+          ActivateTimer(1000, 0, BC_BallEnd);}
+        else {
+          BlockOuthole = false;}                      // remove outhole block
+        break;
+      case 1:                                         // end of ball
+        if (BallsInTrunk + InLock != game_settings[BCset_InstalledBalls]) {
+          WriteUpper(" COUNT  ERROR   ");
+          InLock = 0;
+          //        for (i=0; i<3; i++) {                       // check how many balls are on the ball ramp
+          //          if (Switch[41+i]) {
+          //            InLock++;}}
+          ActivateTimer(1000, 0, BC_BallEnd);}
+        else {
+          LockedBalls[Player] = 0;
+          BlinkScore(0);                              // stop score blinking
+          BC_BallEnd2(BallsInTrunk);                  // add bonus count here and start BallEnd2 afterwards
+        }}}}}
 
 void BC_BallEnd2(byte Balls) {
   if (BallWatchdogTimer) {

@@ -17,7 +17,7 @@ SdFat SD;
 #define AllData 510
 #define HwExtStackPosMax 20                           // size of the HwExtBuffer
 
-const char APC_Version[6] = "00.31";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "01.00";                  // Current APC version - includes the other INO files also
 
 void HandleBoolSetting(bool change);
 void HandleTextSetting(bool change);
@@ -26,6 +26,8 @@ void HandleNumSetting(bool change);
 void HandleVolumeSetting(bool change);
 void RestoreDefaults(bool change);
 void ExitSettings(bool change);
+void watchdogSetup(void){ }
+
 byte (*PinMameException)(byte, byte);
 
 const byte AlphaUpper[128] = {0,0,0,0,0,0,0,0,107,21,0,0,0,0,0,0,0,0,0,0,64,191,64,21,0,0,64,4,0,0,0,40, // Blank $ * + - / for upper row alphanumeric displays
@@ -102,7 +104,6 @@ unsigned int BlinkPeriod[65];                         // blink period for this t
 byte BlinkingLamps[65][65];                           // [BlinkTimer] used by these [lamps]
 byte SolMax = 24;                                     // maximum number of solenoids
 bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
-byte SolLatch = 0;                                    // Indicates which solenoid latches must be updated
 byte SolRecycleTime[22];                              // recycle time for each solenoid
 byte SolRecycleTimers[22];                            // stores the numbers of the recycle timers for each solenoid
 bool C_BankActive = false;                            // A/C relay currently doing C bank?
@@ -312,6 +313,7 @@ void setup() {
   TC2->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;             // IDR = interrupt disable register
   NVIC_EnableIRQ(TC7_IRQn);                           // enable interrupt
   delay(1000);
+  watchdogEnable(2000);                               // set watchdog to 2s
   DispPattern1 = AlphaUpper;                          // use character definitions for alphanumeric displays
   DispPattern2 = AlphaLower;
   DispRow1 = DisplayUpper;                            // use the standard display buffer
@@ -436,6 +438,7 @@ void EnterAttractMode(byte Event) {                   // Enter the attract mode 
 
 void TC7_Handler() {                                  // interrupt routine - runs every ms
   TC_GetStatus(TC2, 1);                               // clear status
+  watchdogReset();                                    // reset system watchdog
   static byte SwDrv = 0;                              // switch driver being accessed at the moment
   static byte DispCol = 0;                            // display column being illuminated at the moment
   static byte LampCol = 0;                            // lamp column being illuminated at the moment
@@ -575,22 +578,18 @@ void TC7_Handler() {                                  // interrupt routine - run
 
   if (SolChange) {                                    // is there a solenoid state to be changed?
     REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
-    if (SolLatch & 1) {
-      c = SolBuffer[0];
-      REG_PIOC_SODR = c<<1;
-      REG_PIOC_SODR = 16777216;}                      // select first latch
-    if (SolLatch & 2) {
-      REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
-      c = SolBuffer[1];
-      REG_PIOC_SODR = c<<1;
-      REG_PIOC_SODR = 8388608;}                       // select second latch
-    if (SolLatch & 4) {
-      REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
-      c = SolBuffer[2];
-      REG_PIOC_SODR = c<<1;
-      REG_PIOC_SODR = 4194304;}                       // select third latch
-    SolLatch = 0;
-    SolChange = false;}                               // reset flag
+    c = SolBuffer[0];
+    REG_PIOC_SODR = c<<1;
+    REG_PIOC_SODR = 16777216;                         // select first latch
+    REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
+    c = SolBuffer[1];
+    REG_PIOC_SODR = c<<1;
+    REG_PIOC_SODR = 8388608;                          // select second latch
+    REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
+    c = SolBuffer[2];
+    REG_PIOC_SODR = c<<1;
+    REG_PIOC_SODR = 4194304;}                         // select third latch
+
 
   REG_PIOC_CODR = AllSelects - HwExtSels + AllData;   // clear all select signals and the data bus
 
@@ -1572,20 +1571,17 @@ void ShowMessage(byte Seconds) {                      // switch to the second di
 
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
   if ((Solenoid < 23 && !SolRecycleTimers[Solenoid-1]) || (Solenoid < 25 && Solenoid > 22)) { // consider recycling time for A bank solenoids only
-    SolChange = false;                                // block IRQ solenoid handling
+    SolChange = false;                                  // block IRQ solenoid handling
     if (Solenoid > 8) {                               // does the solenoid not belong to the first latch?
       if (Solenoid < 17) {                            // does it belong to the second latch?
-        SolBuffer[1] |= 1<<(Solenoid-9);              // latch counts from 0
-        SolLatch |= 2;}                               // select second latch
+        SolBuffer[1] |= 1<<(Solenoid-9);}             // latch counts from 0
       else {
-        SolBuffer[2] |= 1<<(Solenoid-17);
-        SolLatch |= 4;}}                              // select third latch
+        SolBuffer[2] |= 1<<(Solenoid-17);}}
     else {
-      SolBuffer[0] |= 1<<(Solenoid-1);
-      SolLatch |= 1;}                                 // select first latch
+      SolBuffer[0] |= 1<<(Solenoid-1);}
     if (!Duration) {
       Duration = *(GameDefinition.SolTimes+Solenoid-1);} // if no duration is specified use the solenoid specific default
-    if (Duration) {                                   // duration = 0 means solenoid is permanently on
+    if (Duration) {                                     // duration = 0 means solenoid is permanently on
       ActivateTimer(Duration, Solenoid, ReleaseSolenoid);} // otherwise use a timer to turn it off again
     SolChange = true;}}
 
@@ -1606,19 +1602,16 @@ void ReleaseSolenoid(byte Solenoid) {
   SolChange = false;                                  // block IRQ solenoid handling
   if (Solenoid > 8) {                                 // does the solenoid not belong to the first latch?
     if (Solenoid < 17) {                              // does it belong to the second latch?
-      SolBuffer[1] &= 255-(1<<(Solenoid-9));          // latch counts from 0
-      SolLatch |= 2;}                                 // select second latch
+      SolBuffer[1] &= 255-(1<<(Solenoid-9));}         // latch counts from 0
     else {
-      SolBuffer[2] &= 255-(1<<(Solenoid-17));
-      SolLatch |= 4;}}                                // select third latch
+      SolBuffer[2] &= 255-(1<<(Solenoid-17));}}
   else {
-    SolBuffer[0] &= 255-(1<<(Solenoid-1));
-    SolLatch |= 1;}                                   // select first latch
+    SolBuffer[0] &= 255-(1<<(Solenoid-1));}
   SolChange = true;                                   // remove IRQ block
   if (Solenoid < 23 && SolRecycleTime[Solenoid-1]) {  // is a recycling time specified?
     SolRecycleTimers[Solenoid-1] = ActivateTimer((unsigned int) SolRecycleTime[Solenoid-1], Solenoid, ReleaseSolBlock);}} // start the release timer
 
-void ReleaseSolBlock(byte Coil) {                 // release the coil block when the recycling time is over
+void ReleaseSolBlock(byte Coil) {                     // release the coil block when the recycling time is over
   SolRecycleTimers[Coil-1] = 0;}
 
 bool QuerySolenoid(byte Solenoid) {                   // determine the current state of a solenoid
@@ -2100,7 +2093,7 @@ void AddBlinkLamp(byte Lamp, unsigned int Period) {
       BlinkTimers++;                                  // increase the number of blink timers
       BlinkTimer[x] = ActivateTimer(Period, x, BlinkLamps);}}} // start a timer and store it's number
 
-void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blinking
+void RemoveBlinkLamp(byte LampNo) {                   // stop the blinking of LampNo
   byte a = 0;
   byte b = 0;
   byte x = 0;
@@ -2110,7 +2103,7 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
     y = 0;
     if (BlinkTimer[x]) {                              // blink timer in use found?
       a++;                                            // increase the number of active blink timers found
-      while (b < BlinkingNo[x]){                      // check the list of lamps controlled by this timer
+      while (b < BlinkingNo[x]) {                     // check the list of lamps controlled by this timer
         if (BlinkingLamps[x][y]) {                    // active lamp found?
           b++;                                        // increase the number of active lamps found for this blink timer
           if (BlinkingLamps[x][y] == LampNo) {        // is it the lamp to be removed?
@@ -2128,6 +2121,28 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
     x++;                                              // increase the counter for the list of active blink timers
     if (x > 64) {                                     // max 64 blink timers possible (starting from 1)
       ErrorHandler(8,0,LampNo);}}}                    // show error 8
+
+void StopAllBlinkLamps() {                            // stop the blinking of all lamps
+  byte x = 0;
+  byte y = 0;
+  while (BlinkTimers) {                               // search all active blink timers
+    y = 0;
+    if (BlinkTimer[x]) {                              // blink timer in use found?
+      while (BlinkingNo[x]) {                         // check the list of lamps controlled by this timer
+        if (BlinkingLamps[x][y]) {                    // active lamp found?
+          TurnOffLamp(BlinkingLamps[x][y]);           // turn it off
+          BlinkingLamps[x][y] = 0;                    // delete it from the list
+          BlinkingNo[x]--;                            // decrease the number of lamps controlled by this timer
+          if (!BlinkingNo[x]) {                       // = 0?
+            KillTimer(BlinkTimer[x]);                 // kill the timer
+            BlinkTimer[x] = 0;                        // delete it from the list
+            BlinkTimers--;}}                          // decrease the number of blink timers
+        y++;                                          // increase the counter for the list of this blink timer
+        if (y > 64) {                                 // max 64 lamps existing (starting from 1)
+          ErrorHandler(12,BlinkTimer[x],0);}}}        // show error 7
+    x++;                                              // increase the counter for the list of active blink timers
+    if (x > 64) {                                     // max 64 blink timers possible (starting from 1)
+      ErrorHandler(13,0,0);}}}                        // show error 8
 
 void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3) {
   WriteUpper2("ERROR           ");                    // Show Error Message
@@ -2237,7 +2252,9 @@ void PlayMusic(byte Priority, const char* Filename) {
     if ((Priority > 99 && Priority > MusicPriority) || (Priority < 100 && Priority >= MusicPriority)) {
       MusicFile.close();                              // close the previous file
       StartMusic = 0;                                 // cancel the startup
-      MBP = 0;}}                                      // and neglect its data
+      MBP = 0;}                                       // and neglect its data
+    else {
+      return;}}
   if (!PlayingMusic) {                                // no music in play at the moment?
     MusicFile = SD.open(Filename);                    // open file
     if (!MusicFile) {
@@ -2334,7 +2351,9 @@ void PlaySound(byte Priority, const char* Filename) {
     if ((Priority > 99 && Priority > SoundPriority) || (Priority < 100 && Priority >= SoundPriority)) {
       SoundFile.close();
       StartSound = 0;
-      SBP = 0;}}
+      SBP = 0;}
+    else {
+      return;}}
   if (!PlayingSound) {                                // no sound in play at the moment?
     SoundFile = SD.open(Filename);                    // open file
     if (!SoundFile) {

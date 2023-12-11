@@ -336,6 +336,7 @@ void BK_AttractNumCycle(byte Step) {
   Timer0 = ActivateTimer(3000, Step, BK_AttractNumCycle);}  // come back for the next 'page'
 
 void BK_AttractDisplayCycle(byte Step) {
+  static byte Count = 0;
   static byte Timer0 = 0;
   static byte Timer1 = 0;
   static byte Timer2 = 0;
@@ -360,15 +361,33 @@ void BK_AttractDisplayCycle(byte Step) {
     RemoveBlinkLamp(6);
     return;
   case 1:                                             // attract mode title 'page'
-    WriteUpper2("  THE         ");
-    Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
-    Timer3 = ActivateTimer(900, 7, BK_AttractDisplayCycle);
-    WriteLower2(" BLACK KNIGHT ");
-    Timer2 = ActivateTimer(1400, 6, BK_AttractDisplayCycle);
-    if (NoPlayers) {                                  // if there were no games before skip the next step
-      Step++;}
+    if (Count == 2) {
+      if (APC_settings[Volume]) {                     // system set to digital volume control?
+        analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+      else {
+        digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
+      Count++;
+      Step = 0;
+      Timer0 = 0;
+      ShowLampPatterns(0);                            // stop lamp animations
+      BK_AttractDisplayCycle(0);                      // stop display animations
+      for (byte i=0; i< 8; i++) {
+        LampColumns[i] = 0;}
+      LampPattern = LampColumns;
+      BK_RulesDisplay(1);
+      Count = 0;
+      return;}
     else {
-      Step = 3;}
+      Count++;
+      WriteUpper2("  THE         ");
+      Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
+      Timer3 = ActivateTimer(900, 7, BK_AttractDisplayCycle);
+      WriteLower2(" BLACK KNIGHT ");
+      Timer2 = ActivateTimer(1400, 6, BK_AttractDisplayCycle);
+      if (NoPlayers) {                                  // if there were no games before skip the next step
+        Step++;}
+      else {
+        Step = 3;}}
     break;
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
@@ -448,10 +467,11 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
     RemoveBlinkLamp(6);                               // stop blinking of Highest Score lamp
     StrobeLights(0);
     ShowLampPatterns(0);                              // stop lamp animations
-    if (APC_settings[0]) {                          // check display setting
-      BK_AttractNumCycle(0);}                       // stop Sys7 standard animation
-    else {                                          // it's the 4Alpha + Credit display
-      BK_AttractDisplayCycle(0);}                   // stop animation
+    if (APC_settings[0]) {                            // check display setting
+      BK_AttractNumCycle(0);}                         // stop Sys7 standard animation
+    else {                                            // it's the 4Alpha + Credit display
+      BK_AttractDisplayCycle(0);}                     // stop animation
+    BK_RulesDisplay(0);
     BK_TestMode_Enter();
     break;
   case 3:                                             // start game
@@ -468,6 +488,7 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
         BK_AttractNumCycle(0);}                       // stop Sys7 standard animation
       else {                                          // it's the 4Alpha + Credit display
         BK_AttractDisplayCycle(0);}                   // stop animation
+      BK_RulesDisplay(0);
       if (APC_settings[Volume]) {                     // system set to digital volume control?
         analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
       else {
@@ -934,12 +955,15 @@ void BK_GameMain(byte Event) {                        // game switch events
       else {
         if (Multiballs > 1) {                         // multiball running?
           if (game_settings[BK_MultiballJackpot]) {
-            BK_Jackpot(2);}
-          BK_GiveMultiballs(1);}                      // eject ball with some ado
+            BK_Jackpot(2);
+            ActivateTimer(2000, 8, DelaySolenoid);
+            break;}
+          else {
+            BK_GiveMultiballs(1);}}                      // eject ball with some ado
         else {
           StopPlayingMusic();}
-          PlaySound(50, "0_31.snd");
-          ActivateTimer(1000, 8, DelaySolenoid);}}   // eject ball
+        PlaySound(50, "0_31.snd");
+        ActivateTimer(1000, 8, DelaySolenoid);}}   // eject ball
     break;
   case 25:
   case 26:                                            // lower left drop targets
@@ -1769,6 +1793,7 @@ void BK_Jackpot(byte State) {
       KillTimer(Timer);
       Timer = 0;}
     PrevState = 0;
+    AfterSound = BK_PlayBgMusic;
     break;
   case 1:                                             // light lower eject hole
     if (!PrevState) {
@@ -2080,6 +2105,241 @@ void BK_HandleVolumeSetting(bool change) {
     if (!change) {
       PlayMusic(50, "BK_M01.snd");}
     analogWrite(VolumePin,255-APC_settings[Volume]-SettingsPointer[AppByte]);}}  // adjust PWM to volume setting
+
+void BK_RulesEffect(byte State) {
+  const byte Pattern[22] = {4,0,4,8,12,9,12,11,44,11,108,11,124,43,125,59,125,187,127,187,127,191};
+  for (byte i=0; i<15; i++) {
+    if (i == 7) {
+      continue;}
+    if (!(*(DisplayUpper+2+2*i)) && !(*(DisplayUpper+3+2*i))) {
+      continue;}
+    if (State < 11) {
+      *(DisplayUpper+2+2*i) = *(DisplayUpper+2+2*i) | Pattern[2*State];
+      *(DisplayUpper+3+2*i) = *(DisplayUpper+3+2*i) | Pattern[2*State+1];}
+    else {
+      *(DisplayUpper+2+2*i) = *(DisplayUpper+2+2*i) & (255 - Pattern[2*(State-11)]);
+      *(DisplayUpper+3+2*i) = *(DisplayUpper+3+2*i) & (255 - Pattern[2*(State-11)+1]);}}
+  if (State < 22) {
+    ActivateTimer(30, State+1, BK_RulesEffect);}}
+
+void BK_RulesDisplay(byte State) {
+  static byte Timer = 0;
+  switch(State) {
+  case 0:
+    if (Timer) {
+      KillTimer(Timer);}
+    Timer = 0;
+    StopAllBlinkLamps();
+    ReleaseSolenoid(11);
+    break;
+  case 1:
+    if (Timer) {
+      return;}
+    ActivateSolenoid(0, 11);
+    /* no break */
+  case 3:
+  case 5:
+  case 7:
+    WriteUpper(" BLACK KNIGHT ");
+    WriteLower("RULES--       ");
+    PlaySound(50, "0_6f.snd");
+    Timer = ActivateTimer(300, State+1, BK_RulesDisplay);
+    break;
+  case 9:
+    WriteUpper(" BLACK KNIGHT ");
+    WriteLower("RULES--       ");
+    PlaySound(50, "0_6f.snd");
+    Timer = ActivateTimer(2000, State+1, BK_RulesDisplay);
+    break;
+  case 2:
+  case 4:
+  case 6:
+  case 8:
+  case 10:
+    WriteUpper("              ");
+    WriteLower("              ");
+    Timer = ActivateTimer(300, State+1, BK_RulesDisplay);
+    break;
+  case 11:
+    digitalWrite(VolumePin,HIGH);                     // mute sound
+    WriteUpper("  DROP TARGETS");
+    WriteLower("              ");
+    for (byte i=0; i<4; i++) {
+      AddBlinkLamp(17+i, 100);}
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 12:
+    WriteUpper("  LITE        ");
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 13:
+    WriteUpper(" ARROWS  AND  ");
+    for (byte i=0; i<3; i++) {
+      AddBlinkLamp(25+i, 100);
+      AddBlinkLamp(29+i, 100);
+      AddBlinkLamp(33+i, 100);
+      AddBlinkLamp(37+i, 100);}
+    for (byte i=0; i<4; i++) {
+      RemoveBlinkLamp(17+i);}
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 14:
+    WriteUpper(" MAGNA  SAVE  ");
+    *(DisplayUpper+13*2) = 128 | *(DisplayUpper+13*2);
+    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
+    AddBlinkLamp(9, 100);
+    AddBlinkLamp(10, 100);
+    for (byte i=0; i<3; i++) {
+      RemoveBlinkLamp(25+i);
+      RemoveBlinkLamp(29+i);
+      RemoveBlinkLamp(33+i);
+      RemoveBlinkLamp(37+i);}
+    Timer = ActivateTimer(2700, State+1, BK_RulesDisplay);
+    break;
+  case 15:
+    Timer = ActivateTimer(800, State+1, BK_RulesDisplay);
+    BK_RulesEffect(0);
+    break;
+  case 16:
+    WriteUpper("  ALL   UPPER ");
+    for (byte i=0; i<3; i++) {
+      AddBlinkLamp(33+i, 100);
+      AddBlinkLamp(37+i, 100);}
+    RemoveBlinkLamp(9);
+    RemoveBlinkLamp(10);
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 17:
+    WriteUpper("  OR    LOWER ");
+    WriteLower(" ARROWS       ");
+    for (byte i=0; i<3; i++) {
+      AddBlinkLamp(25+i, 100);
+      AddBlinkLamp(29+i, 100);
+      RemoveBlinkLamp(33+i);
+      RemoveBlinkLamp(37+i);}
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 18:
+    WriteUpper("  LITE        ");
+    WriteLower("              ");
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 19:
+    WriteUpper(" EXTRA   BALL ");
+    *(DisplayUpper+14*2) = 128 | *(DisplayUpper+14*2);
+    *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
+    AddBlinkLamp(22, 100);
+    AddBlinkLamp(41, 100);
+    for (byte i=0; i<3; i++) {
+      RemoveBlinkLamp(25+i);
+      RemoveBlinkLamp(29+i);}
+    Timer = ActivateTimer(2700, State+1, BK_RulesDisplay);
+    break;
+  case 20:
+    Timer = ActivateTimer(800, State+1, BK_RulesDisplay);
+    BK_RulesEffect(0);
+    break;
+  case 21:
+    WriteUpper(" LOCK 2 BALLS ");
+    AddBlinkLamp(24, 100);
+    RemoveBlinkLamp(22);
+    RemoveBlinkLamp(41);
+    BK_LockChaseLight(1);
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 22:
+    WriteUpper("  FOR  DOUBLE ");
+    AddBlinkLamp(28, 100);
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 23:
+    WriteUpper("  AND 3 BALLS ");
+    RemoveBlinkLamp(24);
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 24:
+    WriteUpper("FOR 3X  SCORE ");
+    *(DisplayUpper+14*2) = 128 | *(DisplayUpper+14*2);
+    *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
+    AddBlinkLamp(32, 100);
+    RemoveBlinkLamp(28);
+    BK_LockChaseLight(0);
+    TurnOffLamp(21);
+    TurnOffLamp(40);
+    TurnOffLamp(42);
+    Timer = ActivateTimer(2700, State+1, BK_RulesDisplay);
+    break;
+  case 25:
+    if (game_settings[BK_MultiballJackpot]) {
+      Timer = ActivateTimer(800, State+1, BK_RulesDisplay);}
+    else {
+      Timer = ActivateTimer(800, 42, BK_RulesDisplay);}
+    BK_RulesEffect(0);
+    break;
+  case 26:
+    WriteUpper(" DURING       ");
+    RemoveBlinkLamp(32);
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 27:
+    WriteUpper("  MULTIBALL   ");
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 28:
+    WriteUpper(" EJECT  HOLE  ");
+    AddBlinkLamp(24, 100);
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 29:
+    WriteUpper(" LITES JACKPOT");
+    *(DisplayUpper+15*2) = 128 | *(DisplayUpper+15*2);
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    Timer = ActivateTimer(2700, State+1, BK_RulesDisplay);
+    break;
+  case 30:
+    Timer = ActivateTimer(800, State+1, BK_RulesDisplay);
+    BK_RulesEffect(0);
+    break;
+  case 31:
+    WriteUpper(" SHOOT  LOCK  ");
+    RemoveBlinkLamp(24);
+    BK_LockChaseLight(1);
+    Timer = ActivateTimer(2500, State+1, BK_RulesDisplay);
+    break;
+  case 33:
+  case 35:
+  case 37:
+  case 39:
+    WriteUpper("  FOR         ");
+    Timer = ActivateTimer(500, State+1, BK_RulesDisplay);
+    break;
+  case 32:
+  case 34:
+  case 36:
+  case 38:
+  case 40:
+    WriteUpper("  FOR         ");
+    DisplayScore(2, game_settings[BK_MultiballJackpot]*500000);
+    Timer = ActivateTimer(500, State+1, BK_RulesDisplay);
+    break;
+  case 41:
+    *(DisplayUpper+15*2) = 128 | *(DisplayUpper+15*2);
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    Timer = ActivateTimer(2700, State+1, BK_RulesDisplay);
+    break;
+  case 42:
+    Timer = ActivateTimer(800, State+1, BK_RulesDisplay);
+    BK_LockChaseLight(0);
+    TurnOffLamp(21);
+    TurnOffLamp(40);
+    TurnOffLamp(42);
+    BK_RulesEffect(0);
+    break;
+  case 43:
+    Timer = 0;
+    ReleaseSolenoid(11);
+    BK_AttractMode();
+    break;}}
 
 // Test mode
 

@@ -22,6 +22,8 @@ To get there press the Advance button while running the Base Code, then enter th
 You have to get the required values from the manual of your pinball machine. Alas, the names of the switches and solenoids have changed over the years.  
 The default values are valid for a System11c Rollergames and I have added the corresponding manual pages below to make it easier for you to identify the right parts.
 
+For single ball games set the 'Installed Balls' setting to 1. The shooter lane feeder should be set to your Outhole Kicker solenoid.
+
 ![RollergamesSwitches](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/RG_Sw.JPG)
 
 ![RollergamesSolenoids](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/RG_Sol.JPG)

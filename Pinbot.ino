@@ -6,7 +6,6 @@ bool PB_DropWait = false;                             // ignore drop target swit
 bool PB_DropRamp = false;                             // ramp needs to be dropped when possible
 bool PB_EnergyActive = false;                         // score energy active?
 bool PB_SkillShot = false;                            // is the skill shot active?
-bool PB_EjectIgnore = false;                          // ignore the hole switch while the ball is in the hole
 bool PB_IgnoreLock = false;                           // ignore the lock switches to cope with switch bouncing
 bool PB_SpecialLit = false;                           // is the special lit?
 byte PB_BallSave = 0;                                 // prevent immediate outlane drains 0=inactive 1=active 2=triggered
@@ -26,6 +25,7 @@ byte PB_EjectMode[5];                                 // current mode of the eje
 byte PB_EnergyValue[5];                               // energy value for current player (value = byte*2000)
 byte PB_LampsToLight = 2;                             // number of lamps to light when chest is hit
 byte *PB_ChestPatterns;                               // pointer to the current chest lamp pattern
+byte PB_MballState = 1;                               // status variable for the 3 ball multiball feature
 
 const unsigned int PB_SolTimes[32] = {50,30,30,70,50,200,30,30,0,0,0,0,0,0,150,150,50,0,50,50,50,50,0,0,50,150,150,150,150,150,150,100}; // Activation times for solenoids (last 8 are C bank)
 const byte PB_BallSearchCoils[10] = {3,4,5,17,19,22,6,20,21,0}; // coils to fire when the ball watchdog timer runs out
@@ -34,7 +34,7 @@ const byte PB_MultiballSeq[69] = {16,5,15,5,26,5,29,10,26,5,15,5,16,10,15,5,26,5
 const byte PB_ScoreEnergySeq[7] = {31,10,31,10,31,10,0};
 const byte PB_LeftBBinserts[5] = {28, 20, 28, 20, 0};
 const byte PB_RightBBinserts[5] = {27, 20, 27, 20, 0};
-const byte PB_BB_FlasherCycle[17] = {32, 6, 30, 2, 31, 8, 29, 8, 26, 8, 15, 8, 16, 3, 9, 1, 0};
+const byte PB_BB_FlasherCycle[15] = {32, 6, 30, 2, 31, 8, 29, 8, 26, 8, 15, 8, 16, 3, 0};
 const byte PB_Ball_Locked[5] = {26,30,26,30,0};
 const byte PB_SkillShotFail[25] = {26,10,15,40,26,10,15,40,26,10,15,40,26,10,15,40,26,10,15,40,26,10,15,40,0};
 const byte PB_MultiplierSeq[83] = {27,2,29,6,26,7,27,6,15,5,16,8,27,5,29,8,30,5,26,1,31,11,28,1,15,6,31,3,16,3,28,8,27,1,29,9,26,5,27,4,15,4,31,7,16,3,31,7,26,1,29,10,32,1,15,11,30,1,16,4,31,3,29,8,28,6,26,5,31,7,15,1,16,11,29,10,31,2,15,6,16,4,0};
@@ -44,9 +44,10 @@ const byte PB_ExBallLamps[4] = {49, 50, 58, 57};
 const byte PB_ACselectRelay = 14;                     // solenoid number of the A/C select relay
 const char PB_TestSounds[10][15] = {{"1_01L.snd"},{"1_02.snd"},{"1_02L.snd"},{"1_03L.snd"},{"1_04.snd"},{"1_04L.snd"},{"1_05.snd"},{"1_06.snd"},{"1_06L.snd"},0};
 const char PB_TxTMballs[2][17] = {{"        2 BALL  "},{"        3 BALL  "}};
+const char PB_PlanetTxt[9][17] = {{"       PLUTO    "},{"       NEPTUNE  "},{"       URANUS   "},{"       SATURN   "},{"       JUPITER  "},{"       MARS     "},{"       EARTH    "},{"       VENUS    "},{"       MERCURY  "}};
 
 const struct SettingTopic PB_setList[11] = {{"DROP TG TIME  ",HandleNumSetting,0,3,30},
-    {" REACH PLANET ",HandleNumSetting,0,1,9},
+    {" REACH PLANET ",HandleTextSetting,&PB_PlanetTxt[0][0],0,8},
     {" ENERGY TIMER ",HandleNumSetting,0,1,90},
     {"  BALL  SAVER ",HandleBoolSetting,0,0,0},
     {"  MULTIBALL   ",HandleTextSetting,&PB_TxTMballs[0][0],0,1},
@@ -344,6 +345,11 @@ const byte PB_WalkingLines[199] = {15,0b01000,0b01000,0b01000,0b01000,0b01000,
                                    15,0b10000,0b01000,0b01000,0b00100,0b00100,
                                    15,0b10000,0b10000,0b10000,0b10000,0b10000,0};
 
+const byte PB_Characters[185] = {0,0,0,0,0,12,18,18,18,12,4,12,4,4,14,12,18,4,8,30,12,2,12,2,12,10,18,30,2,2,28,16,28,2,12,12,16,28,18,12,30,2,4,8,8,12,18,12,18,12,12,18,14,2,12, // Blank,0,1,2,3,4,5,6,7,8,9
+                                 12,18,30,18,18,28,18,28,18,28,14,16,16,16,14,28,18,18,18,28,30,16,28,16,30,30,16,28,16,16,14,16,22,18,14,18,18,30,18,18,4,4,4,4,4,14,2,2,10,4,18,20,24,20,18, // a,b,c,d,e,f,g,h,i,j,k
+                                 8,8,8,8,14,17,27,21,17,17,17,25,21,19,17,12,18,18,18,12,28,18,28,16,16,12,18,18,22,12,28,18,28,20,18,14,16,12,2,28,14,4,4,4,4,18,18,18,18,12,17,17,10,10,4, // l,m,n,o,p,q,r,s,t,u,v
+                                 17,17,21,21,10,17,10,4,10,17,17,10,4,4,4,31,2,4,8,31}; // w,x,y,z
+
 struct GameDef PB_GameDefinition = {
     PB_setList,                                       // GameSettingsList
     (byte*)PB_defaults,                               // GameDefaultsPointer
@@ -357,12 +363,24 @@ void PB_init() {
     Serial.begin(115200);}
   SolRecycleTime[20-1] = 200;                         // set recycle time for both slingshots
   SolRecycleTime[21-1] = 200;
-  digitalWrite(VolumePin,HIGH);                       // set volume to zero
   ACselectRelay = PB_ACselectRelay;                   // assign the number of the A/C select relay
   GameDefinition = PB_GameDefinition;}                // read the game specific settings and highscores
 
 void PB_AttractMode() {
+  InLock = 0;
+  if (QuerySwitch(25)) {                              // count locked balls
+    InLock++;}
+  if (QuerySwitch(26)) {
+    InLock++;}
+  if (QuerySwitch(38)) {                              // and check the eject hole
+    InLock++;}
+  if (QuerySwitch(16)) {                              // ball in the outhole?
+    ActA_BankSol(1);}
   AfterMusic = 0;
+  if (APC_settings[Volume]) {                         // system set to digital volume control?
+    analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+  else {
+    digitalWrite(VolumePin,HIGH);}                    // turn off the digital volume control
   DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
   Switch_Pressed = PB_AttractModeSW;
@@ -373,6 +391,7 @@ void PB_AttractMode() {
   PB_AttractDisplayCycle(1);}
 
 void PB_AttractDisplayCycle(byte Step) {
+  static byte Count = 0;
   static byte Timer0 = 0;
   static byte Timer1 = 0;
   static byte Timer2 = 0;
@@ -391,20 +410,43 @@ void PB_AttractDisplayCycle(byte Step) {
     if (Timer3) {
       KillTimer(Timer3);
       Timer3 = 0;}
+    Count = 0;
     ScrollUpper(100);                                 // stop scrolling
     ScrollLower(100);
     AddScrollUpper(100);
     return;
   case 1:                                             // attract mode title 'page'
-    WriteUpper2("THE APC         ");
-    Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
-    Timer3 = ActivateTimer(2000, 7, PB_AttractDisplayCycle);
-    WriteLower2("                ");
-    Timer2 = ActivateTimer(1400, 6, PB_AttractDisplayCycle);
-    if (NoPlayers) {                                  // if there were no games before skip the next step
-      Step++;}
+    if (Count == 20) {
+      Count++;
+      Step = 1;
+      WriteUpper(" NOW I SEE YOU  ");                 // erase display
+      WriteLower("                ");
+      PlaySound(55, "0_b0.snd");}                      // 'now I see you'
+      //Timer3 = ActivateTimer(3000, 10, PB_AttractDisplayCycle);}
+    else if (Count == 40) {
+      Timer0 = 0;
+      Count++;
+      Step = 1;
+      LampReturn = PB_RestoreLamps;
+      ShowLampPatterns(0);                            // stop lamp animations
+      PB_AttractDisplayCycle(0);                      // stop display animations
+      for (byte i=0; i< 8; i++) {
+        LampColumns[i] = 0;}
+      LampPattern = LampColumns;
+      PB_RulesDisplay(1);
+      Count = 0;
+      return;}
     else {
-      Step = 3;}
+      Count++;
+      WriteUpper2("THE APC         ");
+      Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
+      Timer3 = ActivateTimer(2000, 7, PB_AttractDisplayCycle);
+      WriteLower2("                ");
+      Timer2 = ActivateTimer(1400, 6, PB_AttractDisplayCycle);
+      if (NoPlayers) {                                // if there were no games before skip the next step
+        Step++;}
+      else {
+        Step = 3;}}
     break;
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
@@ -455,7 +497,13 @@ void PB_AttractDisplayCycle(byte Step) {
     Timer3 = 0;
     WriteUpper2("PINBOT        ");
     AddScrollUpper(0);
-    return;}
+    return;
+  case 10:
+    AddBlinkLamp(1, 150);                             // blink Game Over lamp
+    LampReturn = PB_AttractLampCycle;
+    PB_AttractLampCycle(1);
+    PB_AttractDisplayCycle(1);
+    break;}
   PB_CheckForLockedBalls(0);                          // check for a ball in the outhole
   Timer0 = ActivateTimer(4000, Step, PB_AttractDisplayCycle);}  // come back for the next 'page'
 
@@ -497,64 +545,70 @@ void PB_ShowMessage(byte Seconds) {                   // switch to the second di
 void PB_AttractModeSW(byte Select) {
   switch(Select) {
   case 3:                                             // credit button
-    RemoveBlinkLamp(1);                               // stop the blinking of the game over lamp
-    PB_PlayAfterGameSequence(0);                      // stop end of game animation
-    LampReturn = PB_RestoreLamps;
-    ShowLampPatterns(0);                              // stop lamp animations
-    PB_AttractDisplayCycle(0);                        // stop display animations
-    if (APC_settings[Volume]) {                       // system set to digital volume control?
-      analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-    else {
-      digitalWrite(VolumePin,HIGH);}                  // turn off the digital volume control
-    Switch_Pressed = AddPlayerSW;
-    for (byte i=0; i< 8; i++) {
-      LampColumns[i] = 0;}
-    LampPattern = LampColumns;
-    TurnOnLamp(3);                                    // turn on Ball in Play lamp
-    NoPlayers = 0;
-    WriteUpper("              ");
-    WriteLower("              ");
-    Ball = 1;
-    PB_AddPlayer();
-    for (byte i=1;i<5;i++) {                          // for all players
-      PB_Chest_Status[i] = 0;                         // reset the number of number of visor openings
-      PB_ResetPlayersChestLamps(i);                   // reset the chest lamps
-      PB_EnergyValue[i] = 25;                         // reset the energy value to 50K
-      PB_ExBallsLit[i] = 0;                           // reset the lit extra balls
-      PB_EjectMode[i] = 0;                            // reset the mode of the eject hole
-      PB_LitChestLamps[Player-1] = 0;                 // reset the number of lit chest lamps
-      PB_Planet[i] = 0;}                              // reset reached planets
-    InLock = 0;
-    Player = 1;
-    ExBalls = 0;
-    Multiballs = 1;
-    Bonus = 1;
-    BonusMultiplier = 1;
-    if (QuerySwitch(49) || QuerySwitch(50) || QuerySwitch(51)) {      // any drop target down?
-      ActA_BankSol(4);}                               // reset it
-    if (!QuerySwitch(44)) {                           // ramp in up state?
-      ActA_BankSol(6);}                               // put it down
-    ActivateSolenoid(0, 12);                          // turn off playfield GI
-    PB_ChestMode = 20;                                // just play a chest pattern
-    PB_ChestPatterns = (byte*)PB_GameStartPat;        // set chest lamps pattern
-    PB_ChestLightHandler(100);                        // start player
-    ActivateTimer(2400, 0, PB_GameStart) ;            // release a new ball (2 expected balls in the trunk)
-    PlaySound(55, "0_ad.snd");                        // 'Pinbot circuits activated'
-    ActivateSolenoid(0, 23);                          // enable flipper fingers
-    ActivateSolenoid(0, 24);
+    if (!InLock) {                                    // only if all balls have been cleared out
+      RemoveBlinkLamp(1);                             // stop the blinking of the game over lamp
+      PB_PlayAfterGameSequence(0);                    // stop end of game animation
+      LampReturn = PB_RestoreLamps;
+      ShowLampPatterns(0);                            // stop lamp animations
+      PB_AttractDisplayCycle(0);                      // stop display animations
+      PB_RulesDisplay(0);
+      PB_RuleLampEffects(0);
+      MusicVolume = 0;
+      Switch_Pressed = AddPlayerSW;
+      for (byte i=0; i< 8; i++) {
+        LampColumns[i] = 0;}
+      LampPattern = LampColumns;
+      TurnOnLamp(3);                                  // turn on Ball in Play lamp
+      NoPlayers = 0;
+      WriteUpper("              ");
+      WriteLower("              ");
+      Ball = 1;
+      PB_AddPlayer();
+      for (byte i=1;i<5;i++) {                        // for all players
+        PB_Chest_Status[i] = 0;                       // reset the number of number of visor openings
+        PB_ResetPlayersChestLamps(i);                 // reset the chest lamps
+        PB_EnergyValue[i] = 25;                       // reset the energy value to 50K
+        PB_ExBallsLit[i] = 0;                         // reset the lit extra balls
+        PB_EjectMode[i] = 0;                          // reset the mode of the eject hole
+        PB_LitChestLamps[Player-1] = 0;               // reset the number of lit chest lamps
+        PB_Planet[i] = 0;}                            // reset reached planets
+      InLock = 0;
+      Player = 1;
+      ExBalls = 0;
+      Multiballs = 1;
+      PB_MballState = 1;
+      Bonus = 1;
+      BonusMultiplier = 1;
+      if (QuerySwitch(49) || QuerySwitch(50) || QuerySwitch(51)) {      // any drop target down?
+        ActA_BankSol(4);}                             // reset it
+      if (!QuerySwitch(44)) {                         // ramp in up state?
+        ActA_BankSol(6);}                             // put it down
+      ActivateSolenoid(0, 12);                        // turn off playfield GI
+      PB_ChestMode = 20;                              // just play a chest pattern
+      PB_ChestPatterns = (byte*)PB_GameStartPat;      // set chest lamps pattern
+      PB_ChestLightHandler(100);                      // start player
+      ActivateTimer(2400, 0, PB_GameStart) ;          // release a new ball (2 expected balls in the trunk)
+      PlaySound(55, "0_ad.snd");                      // 'Pinbot circuits activated'
+      ActivateSolenoid(0, 23);                        // enable flipper fingers
+      ActivateSolenoid(0, 24);}
     break;
   case 8:                                             // high score reset
     digitalWrite(Blanking, LOW);                      // invoke the blanking
     break;
+  case 16:                                            // outhole
+    if (!BlockOuthole) {
+      BlockOuthole = true;                            // block outhole until this ball has been processed
+      ActivateTimer(200, 100, PB_AttractModeSW);}     // check again in 200ms
+    break;
   case 46:
     if (PB_CloseVisorFlag) {
-      PlaySound(52, "0_f3.snd");
+      //PlaySound(52, "0_f3.snd");
       PB_CloseVisorFlag = false;
       ReleaseSolenoid(13);}
     break;
   case 47:
     if (PB_OpenVisorFlag) {
-      PlaySound(52, "0_f3.snd");
+      //PlaySound(52, "0_f3.snd");
       PB_OpenVisorFlag = false;
       ReleaseSolenoid(13);}
     break;
@@ -575,7 +629,17 @@ void PB_AttractModeSW(byte Select) {
     else {
       Settings_Enter();}
     break;
-  }}
+  case 100:                                           // push ball in trunk
+    if (QuerySwitch(16)) {                            // outhole switch still active?
+      if (QuerySwitch(17) && QuerySwitch(18)) {       // all balls found? - only possible in 3Mball mode
+        InLock = 0;}
+      ActA_BankSol(1);                                // use outhole kicker
+      ActivateTimer(1000, 100, PB_AttractModeSW);}    // check again in 500ms
+    else {
+      if (!game_settings[PB_Multiballs] && QuerySwitch(17) && QuerySwitch(18)) { // all balls found in 2Mball mode
+        InLock = 0;}                                  // stop blocking new games
+      BlockOuthole = false;}
+    break;}}
 
 void PB_GameStart(byte Dummy) {
   UNUSED(Dummy);
@@ -588,8 +652,6 @@ void AddPlayerSW(byte Switch) {
 
 void PB_CheckForLockedBalls(byte Dummy) {             // check if balls are locked and release them
   UNUSED(Dummy);
-  if (QuerySwitch(16)) {                              // for the outhole
-    ActA_BankSol(1);}
   if (QuerySwitch(38)) {                              // for the single eject hole
     ActA_BankSol(3);}
   if (QuerySwitch(25) || QuerySwitch(26)) {           // for the eyes
@@ -615,20 +677,24 @@ void PB_AddPlayer() {
 
 void PB_NewBall(byte Balls) {                         // release ball (Balls = expected balls on ramp)
   ShowAllPoints(0);
+  if (game_settings[PB_Multiballs]) {                 // 3 ball multiball selected?
+    PB_SolarValue = 0;                                // reset jackpot
+    PB_SkillMultiplier = 1;}
+  else {                                              // 2 ball multiball selected
+    if (Balls < 10) {                                 // is it an extra ball?
+      PB_SkillMultiplier = 0;}                        // no extra ball -> reset skill shot multiplier
+    else {                                            // it's an extra ball
+      Balls -= 10;}}                                  // restore balls value
   PlayMusic(50, "1_94.snd");                          // play non looping part of music track
   QueueNextMusic("1_94L.snd");                        // queue looping part as next music to be played}
   Bonus = 1;
   BonusMultiplier = 1;                                // reset bonus multiplier
   for (byte i=0; i<4; i++) {                          // turn off the corresponding lamps
     TurnOffLamp(9+i);}
-  if (Balls < 10) {                                   // is it an extra ball?
-    PB_SkillMultiplier = 0;}                          // no extra ball -> reset skill shot multiplier
-  else {                                              // it's an extra ball
-    Balls -= 10;}                                     // restore balls value
   *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
   BlinkScore(1);                                      // turn on score blinking
   PB_ClearChest();                                    // turn off chest lamps
-  if ((PB_Chest_Status[Player] > 100)) {              // > 100 means visor has to be open
+  if (PB_Chest_Status[Player] > 100 && PB_MballState != 3) {  // > 100 means visor has to be open
     PB_Chest_Status[Player] = PB_Chest_Status[Player] - 100; // use it as a counter for opened visors
     PB_LampsToLight = 1;
     PB_ChestMode = 0;                                 // indicate an open visor
@@ -662,17 +728,11 @@ void PB_NewBall(byte Balls) {                         // release ball (Balls = e
       TurnOnLamp(PB_ExBallLamps[i]);}
     else {
       TurnOffLamp(PB_ExBallLamps[i]);}}
-  if (PB_EjectMode[Player] < 5) {
-    for (byte i=0; i<PB_EjectMode[Player]; i++) {
-      TurnOnLamp(13+i);}}
-  else {
-    for (byte i=0; i<(PB_EjectMode[Player]-5); i++) {
-      TurnOnLamp(13+i);}
-    AddBlinkLamp(PB_EjectMode[Player]+8, 100);}
+  PB_HandleEjectHole(10);                             // restore eject hole lamps
   PB_DropBlinkLamp = 41;
   PB_CycleDropLights(1);                              // start the blinking drop target lights
-  if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {  // target planet not reached yet?
-    AddBlinkLamp(18+game_settings[PB_ReachPlanet],100);}    // let target planet blink
+  if (PB_Planet[Player] < game_settings[PB_ReachPlanet]+1) {  // target planet not reached yet?
+    AddBlinkLamp(19+game_settings[PB_ReachPlanet],100);}    // let target planet blink
   byte Planets = PB_Planet[Player];
   if (Planets > 10) {                                 // sun already reached?
     Planets = Planets - 10;}
@@ -721,6 +781,10 @@ void PB_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 20) {                                 // shooter lane switch released?
     Switch_Released = DummyProcess;
     PlaySound(53, "1_95.snd");
+    if (PB_MballState == 4) {                         // 3 ball multiball running?
+      Multiballs = 3;                                 // resume multiball
+      AddBlinkLamp(35, 100);                          // start blinking of solar energy ramp
+      PB_ShooterLaneWarning(0);}                      // turn off shooter lane warning
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}}
 
@@ -812,7 +876,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         case 22:
           c = 20;
           PlayFlashSequence((byte*) PB_SkillShotFail);
-          PlaySound(53, "1_91.snd");
+          PlaySound(54, "1_91.snd");
           break;
         case 23:                                      // 100K hole hit
           c = 100;
@@ -826,7 +890,7 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         case 24:
           c = 5;
           PlayFlashSequence((byte*) PB_SkillShotFail);
-          PlaySound(51, "1_91.snd");
+          PlaySound(53, "1_91.snd");
           break;}
         if (!PB_ChestMode) {                          // visor is open
           if (InLock) {
@@ -848,6 +912,35 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
         ShowPoints(Player);}}
     BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
   PB_GameMain(Switch);}                               // process current switch
+
+void PB_ShooterLaneWarning(byte State) {
+  static byte Timer = 0;
+  switch (State) {
+  case 0:                                             // stop shooter lane warning
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    break;
+  case 1:                                             // activate shooter lane warning
+    if (QuerySwitch(20)) {                            // ball still in shooter lane?
+      Multiballs = 2;                                 // stop jackpot as long as ball is in the shooter lane
+      WriteUpper2(" LAUNCH BALL  ");
+      WriteLower2("              ");
+      ShowMessage(1);
+      PlaySound(55, "0_6b.snd");                      // warning sound
+      Switch_Released = PB_CheckShooterLaneSwitch;    // set mode to register when ball is shot
+      Timer = ActivateTimer(1500, 2, PB_ShooterLaneWarning);}
+    else {
+      PB_SkillShot = false;}
+    break;
+  case 2:                                             // every second
+    Timer = 0;                                        // this case is called by timer
+    if (QuerySwitch(20)) {                            // ball still in shooter lane?
+      WriteUpper2(" LAUNCH BALL  ");
+      WriteLower2("              ");
+      ShowMessage(1);
+      PlaySound(55, "0_6b.snd");                      // warning sound
+      Timer = ActivateTimer(1500, 2, PB_ShooterLaneWarning);}}}
 
 void PB_BallReleaseCheck(byte Switch) {               // handle switches during ball release
   if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
@@ -900,45 +993,83 @@ byte PB_CountBallsInTrunk() {
       Balls++;}}
   return Balls;}
 
+byte PB_SearchBallCycle(byte Counter) {
+  WriteUpper("  BALL  SEARCH");
+  ActivateSolenoid(0, PB_BallSearchCoils[Counter]);   // fire coil to get ball free
+  if (PB_BallSearchCoils[Counter] == 5) {             // ramp raise?
+    PB_DropRamp = true;}                              // set flag to drop ramp
+  if (PB_BallSearchCoils[Counter] == 6) {             // ramp down?
+    PB_DropRamp = false;}                             // clear flag to drop ramp
+  Counter++;
+  if (Counter == 9) {                                 // all coils fired?
+    Counter = 0;}                                     // start again
+  if (QuerySwitch(46) && !QuerySolenoid(13)) {        // visor closed and motor not active?
+    ActivateSolenoid(0, 13);                          // open it enough to deactivate switch 46
+    ActivateTimer(2000, 0, PB_CloseVisor);}           // and prepare to close it again
+  return(Counter);}
+
 void PB_SearchBall(byte Counter) {                    // ball watchdog timer has run out
+  Serial.print("SearchBall Mballs = ");
+  Serial.println(PB_MballState);
   BallWatchdogTimer = 0;
   if (!QuerySwitch(10) && !QuerySwitch(11) && !QuerySwitch(20)) { // if ball is waiting to be launched or any flipper finger up
     if (QuerySwitch(16)) {                            // ball in outhole?
       BlockOuthole = false;
       ActivateTimer(1000, 0, PB_ClearOuthole);}
+    else if (QuerySwitch(38)) {                       // ball in eject hole?
+      PB_HandleEjectHole(3);}                         // release it
     else {
       byte c = PB_CountBallsInTrunk();                // recount all balls
       if (c == 5) {                                   // balls have not settled yet
         WriteUpper("  BALL  STUCK ");
         BallWatchdogTimer = ActivateTimer(1000, 0, PB_SearchBall);} // and try again in 1s
       else {
-        if (c == 2) {                                 // found 2 balls in trunk?
-          if (BlockOuthole) {                         // is the outhole blocked
-            PB_BallEnd(0);}                           // then it was probably a ball loss gone wrong
+        if (game_settings[PB_Multiballs]) {           // 3 ball multiball selected?
+          switch (PB_MballState) {
+          case 1:                                     // one ball in play
+            Counter = PB_SearchBallCycle(Counter);              // fire coils to search ball
+            BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);
+            break;
+          case 2:                                     // one ball in lock
+          case 6:
+            PB_CountBallsInLock();
+            if (InLock != 1) {                        // number of locked balls not as expected
+              PB_HandleLock(0);}                      // and call it
+            else {
+              Counter = PB_SearchBallCycle(Counter);            // fire coils to search ball
+              BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}
+            break;
+          case 3:                                     // two balls in lock
+            PB_CountBallsInLock();
+            if (InLock != 2) {                        // number of locked balls not as expected
+              PB_HandleLock(0);}                      // and call it
+            else if (c > 0) {                         // unexpected ball in trunk
+              PB_BallEnd(c);}
+            else {
+              Counter = PB_SearchBallCycle(Counter);            // fire coils to search ball
+              BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}
+            break;
+          default:
+            Counter = PB_SearchBallCycle(Counter);              // fire coils to search ball
+            BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);
+            break;}}
+        else {                                        // 2 ball multiball selected
+          if (c == 2) {                               // found 2 balls in trunk?
+            if (BlockOuthole) {                       // is the outhole blocked
+              PB_BallEnd(0);}                         // then it was probably a ball loss gone wrong
+            else {
+              ActivateTimer(1000, 2, PB_NewBall);}}   // otherwise try it with a new ball
           else {
-            ActivateTimer(1000, 2, PB_NewBall);}}     // otherwise try it with a new ball
-        else {
-          byte c2 = 0;
-          for (byte i=0; i<2; i++) {                  // count balls in lock
-            if (QuerySwitch(25+i)) {
-              c2++;}}
-          if (c2 > InLock) {                          // more locked balls found than expected?
-            PB_HandleLock(0);                         // lock them
-            BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
-          else {
-            WriteUpper("  BALL  SEARCH");
-            ActivateSolenoid(0, PB_BallSearchCoils[Counter]); // fire coil to get ball free
-            if (PB_BallSearchCoils[Counter] == 5) {   // ramp raise?
-              PB_DropRamp = true;}                    // set flag to drop ramp
-            if (PB_BallSearchCoils[Counter] == 6) {   // ramp down?
-              PB_DropRamp = false;}                   // clear flag to drop ramp
-            Counter++;
-            if (Counter == 9) {                       // all coils fired?
-              Counter = 0;}                           // start again
-            if (QuerySwitch(46) && !QuerySolenoid(13)) {  // visor closed and motor not active?
-              ActivateSolenoid(0, 13);                // open it enough to deactivate switch 46
-              ActivateTimer(2000, 0, PB_CloseVisor);} // and prepare to close it again
-            BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}}}}} // come again in 1s if no switch is activated
+            byte c2 = 0;
+            for (byte i=0; i<2; i++) {                // count balls in lock
+              if (QuerySwitch(25+i)) {
+                c2++;}}
+            if (c2 > InLock) {                        // more locked balls found than expected?
+              PB_HandleLock(0);                       // lock them
+              BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}
+            else {
+              Counter = PB_SearchBallCycle(Counter);            // fire coils to search ball
+              BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}}}}}} // come again in 1s if no switch is activated
   else {
     BallWatchdogTimer = ActivateTimer(30000, 0, PB_SearchBall);}}
 
@@ -954,58 +1085,132 @@ void PB_CloseVisor(byte State) {
   else {
     PB_CloseVisorFlag = true;}}                       // set flag to stop visor motor when closed
 
+void PB_CountBallsInLock() {
+  InLock = 0;
+  for (byte i=0; i<2; i++) {                  // check how many balls are in the eyes
+    if (QuerySwitch(25+i)) {
+      InLock++;}}}
+
 void PB_ClearOuthole(byte State) {
   static byte Trunk;
-  switch (State) {
-  case 0:                                             // inital call
-    if (QuerySwitch(16)) {
-      if (!BlockOuthole) {                            // outhole switch still active?
-        BlockOuthole = true;                          // block outhole until this ball has been processed
+  if (game_settings[PB_Multiballs]) {                 // 3 ball multiball selected?
+    switch (State) {
+    case 0:                                           // inital call
+      if (QuerySwitch(16)) {                          // outhole switch still active?
         Trunk = PB_CountBallsInTrunk();
-        if ((!game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 1 - InLock) || (Multiballs == 2 && Trunk == 0))) || (game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 2 - InLock) || (Multiballs == 2 && Trunk == 0)))) {  // ball count OK?
-          ActivateTimer(10, 5, PB_ClearOuthole);}
-        else {                                        // ball count not OK
-          InLock = 0;
+        switch (PB_MballState) {
+        case 1:                                       // one ball in play
+          if (Trunk == 2) {                           // 2 balls expected to be in trunk
+            ActivateTimer(10, 5, PB_ClearOuthole);}   // proceed to next state
+          else {                                      // wrong ball count
+            ActivateTimer(1000, 1, PB_ClearOuthole);}
+          break;
+        case 2:                                       // one ball in lock
+        case 5:                                       // two balls in game but none in lock
+        case 6:                                       // one ball in lock after multiball
+          if (Trunk == 1) {                           // 1 ball expected to be in trunk
+            ActivateTimer(10, 5, PB_ClearOuthole);}   // proceed to next state
+          else {                                      // wrong ball count
+            ActivateTimer(1000, 1, PB_ClearOuthole);}
+          break;
+        case 3:                                       // two balls in lock
+        case 4:                                       // 3 ball multiball
+          if (!Trunk) {                               // 0 balls expected to be in trunk
+            ActivateTimer(10, 5, PB_ClearOuthole);}   // proceed to next state
+          else {                                      // wrong ball count
+            ActivateTimer(1000, 1, PB_ClearOuthole);}
+          break;}}
+      else {                                          // outhole free
+        BlockOuthole = false;}
+      break;
+    case 1:                                           // trunk count doesn't match
+      Trunk = PB_CountBallsInTrunk();
+      PB_CountBallsInLock();
+      switch (PB_MballState) {
+      case 1:                                         // one ball in play
+        if (Trunk == 2) {                             // 2 balls expected to be in trunk
+          ActivateTimer(10, 5, PB_ClearOuthole);}     // proceed to next state
+        else {                                        // wrong ball count
+          if (!InLock) {
+            PB_MballState = 5;
+            ActivateTimer(10, 0, PB_ClearOuthole);}
+          else if (InLock == 1) {
+            PB_MballState = 6;
+            ActivateTimer(10, 0, PB_ClearOuthole);}
+          else {
+            PB_MballState = 3;
+            ActivateTimer(10, 0, PB_ClearOuthole);}}
+        break;
+      case 2:                                         // one ball in lock
+      case 5:                                         // 2 balls still in game
+      case 6:                                         // one ball re-locked
+        if (Trunk == 1) {                             // 1 ball expected to be in trunk
+          ActivateTimer(10, 5, PB_ClearOuthole);}     // proceed to next state
+        else if (Trunk == 2){                         // ball may have jumped through outhole
+          if (!QuerySwitch(16)) {                     // no ball in outhole?
+            ActivateTimer(1000, 10, PB_ClearOuthole);}  // then it's confirmed
+          else {
+            PB_MballState = 1;
+            ActivateTimer(10, 0, PB_ClearOuthole);}}
+        break;
+      case 3:                                         // 2 balls in lock
+      case 4:                                         // 3 ball multiball
+        if (!Trunk) {                                 // trunk is supposed to be empty
+          ActivateTimer(10, 5, PB_ClearOuthole);}     // proceed to next state
+        else if (Trunk == 1){                         // ball may have jumped through outhole
+          if (!QuerySwitch(16)) {                     // no ball in outhole?
+            ActivateTimer(1000, 10, PB_ClearOuthole);}}}  // then it's confirmed
+      break;
+    case 5:                                           // ball count OK, put ball in trunk
+      if (!C_BankActive) {
+        ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
+        ActivateTimer(1000, 10, PB_ClearOuthole);}
+      else {
+        ActivateTimer(1000, 5, PB_ClearOuthole);}     // try again
+      break;
+    case 10:                                          // ball was kicked in outhole
+      if (QuerySwitch(16)) {                          // ball still in outhole?
+        if (PB_MballState == 4 || PB_MballState == 5) { // probably a double drain
+          PB_BallEnd(1);                              // call ball end twice
+          BlockOuthole = true;}                       // block outhole again
+        ActA_BankSol(1);                              // make the coil a bit stronger
+        ActivateTimer(2000, 10, PB_ClearOuthole);}    // and come back in 2s
+      else {
+        PB_BallEnd(Trunk+1);}}}
+  else {                                              // 2 ball multiball selected
+    switch (State) {
+    case 0:
+      if (QuerySwitch(16)) {                          // outhole switch still active?
+        if (!C_BankActive) {                          // correct solenoid bank active?
+          ActivateSolenoid(30, 1);                    // put ball in trunk
+          ActivateTimer(2000, 1, PB_ClearOuthole);}   // come back to check
+        else {
+          ActivateTimer(500, 0, PB_ClearOuthole);}}   // wait for A-bank to be active
+      else {                                          // outhole free
+        BlockOuthole = false;}
+      break;
+    case 1:                                           // check if ball is in trunk
+    case 2:
+    case 3:
+      Trunk = PB_CountBallsInTrunk();
+      if ((Trunk == 5)||(Trunk < 3-Multiballs-InLock)) {  // something's wrong in the trunk
+        InLock = 0;
+        if (Multiballs == 1) {
           for (byte i=0; i<2; i++) {                  // check how many balls are in the eyes
             if (QuerySwitch(25+i)) {
-              InLock++;}}
-          ActivateTimer(1000, 1, PB_ClearOuthole);}}  // if not try again in 1s
-      else {                                          // outhole still blocked
-        ActivateTimer(2000, 0, PB_ClearOuthole);}}    // try again
-    else {                                            // outhole free
-      BlockOuthole = false;}
-    break;
-  case 1:                                             // trunk count doesn't match
-    Trunk = PB_CountBallsInTrunk();
-    InLock = 0;
-    if ((!game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 1 - InLock) || (Multiballs == 2 && Trunk == 0))) || (game_settings[PB_Multiballs] && ((Multiballs == 1 && Trunk == 2 - InLock) || (Multiballs == 2 && Trunk == 0)))) {  // ball count OK?
-      ActivateTimer(10, 5, PB_ClearOuthole);}         // proceed
-    else {                                            // ball count not OK
-      for (byte i=0; i<2; i++) {                      // check how many balls are in the eyes
-        if (QuerySwitch(25+i)) {
-          InLock++;}}}
-    ActivateTimer(2000, 5, PB_ClearOuthole);          // and try again
-    break;
-  case 5:
-    if (!C_BankActive) {
-      ActivateSolenoid(game_settings[PB_BallEjectStrength], 1); // put ball in trunk
-      ActivateTimer(1000, 10, PB_ClearOuthole);}
-    else {
-      ActivateTimer(1000, 5, PB_ClearOuthole);}       // try again
-    break;
-  case 10:                                            // ball was kicked in outhole
-    if (QuerySwitch(16)) {                            // ball still in outhole?
-      if ((!game_settings[PB_Multiballs] && Trunk == 0) || (game_settings[PB_Multiballs] && Trunk < 2)) {  // assume that 2 balls have been in the outhole
-        Trunk++;}
-      ActA_BankSol(1);                                // make the coil a bit stronger
-      ActivateTimer(2000, 10, PB_ClearOuthole);}      // and come back in 2s
-    else {
-      PB_BallEnd(Trunk+1);}}}
-
-void PB_MultiballThunder2(byte Dummy) {
-  UNUSED(Dummy);
-  PlayMusic(50, "1_04.snd");                          // play non looping part of music track
-  QueueNextMusic("1_04L.snd");}                       // queue looping part as next music to be played
+              InLock++;}}}
+        WriteLower(" BALL   ERROR ");
+        if (QuerySwitch(16)) {                        // ball still in outhole?
+          ActA_BankSol(1);                            // make the coil a bit stronger
+          ActivateTimer(2000, 1, PB_ClearOuthole);}   // and come back in 2s
+        else {
+          State++;
+          ActivateTimer(1000, State, PB_ClearOuthole);}}   // if not try again in 1s
+      else {
+        ActivateTimer(100, Trunk, PB_BallEnd);}
+      break;
+    case 4:                                           // ball count still wrong but proceeding anyway
+      ActivateTimer(100, Trunk, PB_BallEnd);}}}
 
 void PB_MultiballThunder(byte State) {
   if (State < 8) {
@@ -1015,10 +1220,16 @@ void PB_MultiballThunder(byte State) {
   else if (State < 9) {
     MusicVolume = 0;
     PlaySound(54, "0_fb.snd");
-    ActivateTimer(3300, 0, PB_MultiballThunder2);
-    ActivateTimer(6000, 9, PB_MultiballThunder);}
+    ActivateTimer(3300, 9, PB_MultiballThunder);
+    ActivateTimer(6000, 10, PB_MultiballThunder);}
+  else if (State < 10) {
+    PlayMusic(50, "1_04.snd");                        // play non looping part of music track
+    QueueNextMusic("1_04L.snd");}                     // queue looping part as next music to be played
   else {
-    StopPlayingSound();}}
+    if (Multiballs == 3 && PB_SolarValue == 1000) {   // 1M jackpot in 3 ball multiball mode?
+      PlaySound(58, "0_af.snd");}                     // 'million activated'
+    else {
+      StopPlayingSound();}}}
 
 void PB_RampThunder(byte State) {                     // State = 0 -> Stop
   static byte Timer = 0;
@@ -1200,12 +1411,7 @@ void PB_GameMain(byte Switch) {
       TurnOffLamp(58);
       PB_ExBallsLit[Player]--;
       PB_GiveExBall();}
-    if (PB_EjectMode[Player] < 5) {
-      if (PB_EjectMode[Player] == 4) {
-        AddBlinkLamp(15, 100);}
-      else {
-        AddBlinkLamp(PB_EjectMode[Player]+13, 100);}
-      PB_EjectMode[Player] = PB_EjectMode[Player] + 5;}
+    PB_HandleEjectHole(11);                           // proceed to next eject hole state
     break;
   case 15:                                            // right outlane
     PlaySound(51, "1_a5.snd");
@@ -1222,7 +1428,9 @@ void PB_GameMain(byte Switch) {
         PB_GiveExBall();}}
     break;
   case 16:                                            // outhole
-    ActivateTimer(200, 0, PB_ClearOuthole);           // check again in 200ms
+    if (!BlockOuthole) {
+      BlockOuthole = true;                            // block outhole until this ball has been processed
+      ActivateTimer(200, 0, PB_ClearOuthole);}        // check again in 200ms
     break;
   case 19:                                            // advance planet
     if (PB_SpecialLit) {                              // special lit?
@@ -1252,7 +1460,10 @@ void PB_GameMain(byte Switch) {
           PlaySound(55, "0_af.snd");                  // "Million activated"
           PlayFlashSequence((byte*) PB_OpenVisorSeq);}}
       else {
-        PB_SkillMultiplier = 1;}
+        PB_SkillMultiplier = 1;
+        if (PB_MballState == 4) {                     // 3 ball multiball running?
+          RemoveBlinkLamp(35);                        // solar energy lamp
+          ActivateTimer(200, 1, PB_ShooterLaneWarning);}} // turn on shooter lane warning
       PB_SkillShot = true;}                           // the first shot is a skill shot
     break;
   case 25:                                            // left eye
@@ -1300,67 +1511,31 @@ void PB_GameMain(byte Switch) {
       PB_SetChestLamps(Switch-28);}                   // add the lamps for the hit row / column in PB_ChestLamp
     break;
   case 38:                                            // eject hole
-    if (!PB_EjectIgnore) {
-      PB_EjectIgnore = true;
-      PB_AddBonus(1);
-      Serial.print("EjLock = ");
-      Serial.println(InLock);
-      Serial.print("EjBalls = ");
-      Serial.println(Multiballs);
-      if (Multiballs == 3) {                          // 3 ball multiball running?
-        ActivateTimer(game_settings[PB_MballHoldTime]*1000, 3, PB_ClearEjectHole);}
-      else {
-        if (game_settings[PB_Multiballs] && Multiballs == 1) { // 3 ball multiball mode?
-          PlaySound(55, "0_ae.snd");                  // 'shoot for solar value'
-          Multiballs = 3;
-          ActivateTimer(1000, 3, PB_ClearEjectHole);
-          ActivateTimer(2400, 0, PB_Multiball);       // call after sound
-          break;}
-        if (PB_EjectMode[Player] < 5) {               // eject hole not lit
-          PlaySound(51, "1_a3.snd");
-          if (LampPattern == LampColumns) {           // only if no other lamp effect is running
-            PatPointer = PB_EjectHole;                // set the pointer to the lamp pattern
-            FlowRepeat = 1;                           // set the repetitions
-            ActivateTimer(1700, 0, PB_EnergyRestoreLamps) ;  // call this when the lamp pattern has run out
-            ShowLampPatterns(1);}                     // play the lamp pattern
-          Points[Player] += 10000;
-          ShowPoints(Player);
-          ActivateTimer(1000, 3, PB_ClearEjectHole);}
-        else {
-          ActivateTimer(400, 7, PB_PlayEjectHoleSounds);
-          if (PB_EjectMode[Player] == 9) {
-            RemoveBlinkLamp(15);
-            TurnOnLamp(15);
-            PB_EjectMode[Player] = 4;
-            Points[Player] += Multiballs * 75000;}
-          else {
-            RemoveBlinkLamp(PB_EjectMode[Player] + 8);
-            TurnOnLamp(PB_EjectMode[Player] + 8);
-            PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
-            Points[Player] += Multiballs * (PB_EjectMode[Player] - 4) * 25000;
-            ShowPoints(Player);
-            PB_EjectMode[Player] = PB_EjectMode[Player] - 4;
-            if (PB_EjectMode[Player] == 4) {
-              PB_AddExBall();}}
-          ActivateTimer(1000, 3, PB_ClearEjectHole);}}}
+      PB_HandleEjectHole(1);
     break;
   case 39:                                            // solar ramp exit
     uint16_t Buffer;
     PB_AddBonus(1);
     RampSound = false;
     MusicVolume = 3;                                  // reduce music volume
-    if (PB_SolarValueTimer) {                         // solar ramp lit
-      PB_MultiballThunder(0);                         // play sound effects
-      KillTimer(PB_SolarValueTimer);
-      PB_SolarValueTimer = 0;
-      RemoveBlinkLamp(35);                            // solar energy lamp
-      Points[Player] += PB_SolarValue * 1000;
-      ShowPoints(Player);
-      ActivateTimer(2000,1,PB_EyeBlink);
-      Buffer = PB_SolarValue;
-      PB_SolarValue = 100;
+    if (Multiballs == 3 || PB_SolarValueTimer) {      // solar ramp lit
+      if (game_settings[PB_Multiballs]) {             // 3 ball multiball mode?
+        if (PB_SolarValue < 1000) {                   // jackpot < 1M?
+          PB_SolarValue += 200;}                      // add 200K
+        Buffer = PB_SolarValue;}
+      else {                                          // 2 ball multiball mode?
+        if (PB_SolarValueTimer) {
+          KillTimer(PB_SolarValueTimer);
+          PB_SolarValueTimer = 0;
+          RemoveBlinkLamp(35);}                       // solar energy lamp
+        ActivateTimer(2000,1,PB_EyeBlink);
+        Buffer = PB_SolarValue;
+        PB_SolarValue = 100;
+        PB_ClearOutLock(0);}
       PlayFlashSequence((byte*) PB_OpenVisorSeq);
-      PB_ClearOutLock(0);}
+      PB_MultiballThunder(0);                         // play sound effects
+      Points[Player] += PB_SolarValue * 1000;
+      ShowPoints(Player);}
     else {                                            // solar ramp not lit
       PlaySound(51, "1_a9.snd");
       Points[Player] += 1000;
@@ -1547,10 +1722,6 @@ void PB_AddBonus(byte BonusToAdd) {
       ShowNumber(15, Bonus*1000);
       DispRow1 = DisplayUpper2;}
     ShowMessage(2);}}
-
-void PB_ClearEjectHole(byte Solenoid) {               // activate solenoid after delay time
-  PB_EjectIgnore = false;
-  ActA_BankSol(Solenoid);}
 
 void PB_StartChestPattern(byte Dummy) {
   UNUSED(Dummy);
@@ -1775,39 +1946,47 @@ void PB_HandleLock(byte State) {
     ActivateTimer(200, 1, PB_HandleLock);}            // and come back to recheck
   else {                                              // number of locked balls as expected
     if (InLock) {                                     // locked ball found?
-      Serial.print("InLock = ");
-      Serial.println(InLock);
-      Serial.print("Mballs = ");
-      Serial.println(Multiballs);
-      if (PB_ChestMode) {                             // visor is supposed to be closed
-        PB_ClearOutLock(1);}                          // remove balls from lock
-      else {
-        if (game_settings[PB_Multiballs]) {           // 3 ball multiball mode?
-          if (InLock == 1) {                          // 1 ball in lock
-            if (Multiballs == 1) {
-              if (QuerySwitch(17) && QuerySwitch(18)) { // still two balls in the trunk?
-                ActivateSolenoid(0, 12);              // turn off playfield GI
-                PB_EyeBlink(0);                       // stop eye blinking
-                PlayFlashSequence((byte*) PB_Ball_Locked);
-                PlayMusic(52, "1_80.snd");
-                ActivateTimer(1000, 1, PB_2ndLock);
-                PB_GiveBall(2);}}
-            else if (Multiballs == 3) {
-              ActivateTimer(game_settings[PB_MballHoldTime]*1000, 0, PB_ClearOutLock);}}
-          else {                                      // 2 balls in lock
-            if (Multiballs < 3) {
-              if (QuerySwitch(17)) {                  // still one ball in the trunk?
-                MusicVolume = 3;                      // reduce music volume
-                ActivateSolenoid(0, 12);              // turn off playfield GI
-                PB_EyeBlink(0);                       // stop eye blinking
-                                    // TODO close visor
-                PlayFlashSequence((byte*) PB_Ball_Locked);
-                ActivateTimer(1000, 2, PB_2ndLock);
-                PlaySound(55, "0_b0.snd");            // 'now I see you'
-                PB_GiveBall(1);}}
-            else {
-              ActivateTimer(game_settings[PB_MballHoldTime]*1000, 0, PB_ClearOutLock);}}}
-        else {                                        // 2ball multiball mode
+      if (game_settings[PB_Multiballs]) {             // 3 ball multiball mode?
+        switch (PB_MballState) {
+        case 1:                                       // one ball locked
+          if (InLock == 1) {
+            ActivateSolenoid(0, 12);                  // turn off playfield GI
+            PB_EyeBlink(0);                           // stop eye blinking
+            PlayFlashSequence((byte*) PB_Ball_Locked);
+            PlayMusic(52, "1_80.snd");
+            ActivateTimer(1000, 1, PB_2ndLock);       // 'partial link up'
+            PB_GiveBall(2);
+            PB_MballState = 2;}
+          else {                                      // not the correct amount of balls in lock
+            if (InLock) {                             // two balls in lock
+              PB_MballState = 2;
+              ActivateTimer(200, 1, PB_HandleLock);}}
+          break;
+        case 2:                                       // second ball locked
+        case 6:                                       // second ball re-locked
+          //PB_EyeFlash(1);
+          if (InLock == 2) {                          // correct number of balls in lock?
+            MusicVolume = 3;
+            PB_HandleEjectHole(15);                   // start eject hole animation
+            PlaySound(55, "0_b0.snd");                // 'now I see you'
+            ActivateTimer(2400, 25, RestoreMusicVolume);  // restore music volume after sound has been played
+            ActivateTimer(2000, 0, PB_CloseVisor);    // close visor
+            ActivateSolenoid(0, 13);                  // start visor motor
+            PB_GiveBall(1);
+            PB_MballState = 3;}
+          break;
+        case 4:                                       // 3 ball multiball
+          ActivateTimer(game_settings[PB_MballHoldTime]*1000, 0, PB_ClearOutLock);
+          break;
+        case 5:                                       // still two balls in game
+          PB_MballState = 6;
+          if (InLock == 2) {                          // second ball also locked?
+            ActivateTimer(200, 1, PB_HandleLock);}
+          break;}}
+      else {                                          // 2ball multiball mode
+        if (PB_ChestMode) {                           // visor is supposed to be closed
+          PB_ClearOutLock(1);}                        // remove balls from lock
+        else {
           if (InLock == 1) {
             if (Multiballs > 1) {                     // multiball already running?
               MusicVolume = 4;                        // reduce music volume
@@ -1850,6 +2029,128 @@ void PB_HandleLock(byte State) {
                 ActivateTimer(200, 1, PB_HandleLock);} // come back to recheck after ball eject
               PB_ClearOutLock(1);}}}}}}}              // eject 1 ball and close visor
 
+void PB_HandleEjectHole(byte State) {
+  static bool EjectIgnore = false;
+  static byte MBallAnimation = 0;
+  static byte Timer = 0;
+  const byte AniPattern[7] = {0b1000, 0b1001, 0b1011, 0b0111, 0b0110, 0b0100,0};
+  switch (State) {
+  case 1:                                             // initial call
+    if (!EjectIgnore) {                               // hole not locked?
+      EjectIgnore = true;                             // lock it
+      ActivateTimer(200, 2, PB_HandleEjectHole);}
+    break;
+  case 2:                                             // ball has settled
+    if (QuerySwitch(38)) {                            // is it still in the hole?
+      PB_AddBonus(1);
+      if (PB_MballState == 4) {                       // 3 ball multiball running?
+        ActivateTimer(game_settings[PB_MballHoldTime]*1000, 3, PB_HandleEjectHole);}
+      else {
+        if (PB_MballState == 3) {                     // 3 ball multiball to start?
+          PlaySound(55, "0_ae.snd");                  // 'shoot for solar value'
+          Multiballs = 3;                             // set score multiplier
+          PB_MballState = 4;
+          AddBlinkLamp(35, 100);                      // start blinking of solar energy ramp
+          PB_HandleEnergy(0);                         // turn off energy and lower ramp
+          ActivateTimer(1000, 3, PB_HandleEjectHole);
+          PB_ClearOutLock(0);
+          ActivateTimer(2400, 0, PB_Multiball);}      // call after sound
+        else {                                        // no 3 ball multiball to start
+          if (PB_EjectMode[Player] < 5) {             // eject hole not lit
+            PlaySound(51, "1_a3.snd");
+            if (LampPattern == LampColumns) {         // only if no other lamp effect is running
+              PatPointer = PB_EjectHole;              // set the pointer to the lamp pattern
+              FlowRepeat = 1;                         // set the repetitions
+              ActivateTimer(1700, 0, PB_EnergyRestoreLamps) ;  // call this when the lamp pattern has run out
+              ShowLampPatterns(1);}                   // play the lamp pattern
+            Points[Player] += 10000;
+            ShowPoints(Player);
+            ActivateTimer(1000, 3, PB_HandleEjectHole);}
+          else {                                      // eject hole lit
+            ActivateTimer(400, 7, PB_PlayEjectHoleSounds);
+            if (PB_EjectMode[Player] == 9) {
+              RemoveBlinkLamp(15);
+              TurnOnLamp(15);
+              PB_EjectMode[Player] = 4;
+              Points[Player] += Multiballs * 75000;}
+            else {
+              RemoveBlinkLamp(PB_EjectMode[Player] + 8);
+              TurnOnLamp(PB_EjectMode[Player] + 8);
+              PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
+              Points[Player] += Multiballs * (PB_EjectMode[Player] - 4) * 25000;
+              ShowPoints(Player);
+              PB_EjectMode[Player] = PB_EjectMode[Player] - 4;
+              if (PB_EjectMode[Player] == 4) {
+                PB_AddExBall();}}
+            ActivateTimer(1000, 3, PB_HandleEjectHole);}}}}
+    else {
+      EjectIgnore = false;}
+    break;
+  case 3:
+    ActA_BankSol(3);                                  // eject ball
+    ActivateTimer(200, 4, PB_HandleEjectHole);
+    break;
+  case 4:                                             // check whether ball is gone
+    if (QuerySwitch(38)) {
+      ActivateTimer(100, 3, PB_HandleEjectHole);}
+    else {
+      EjectIgnore = false;}
+    break;
+  case 10:                                            // restore eject hole lamps
+    if (PB_EjectMode[Player] < 5) {
+      for (byte i=0; i<PB_EjectMode[Player]; i++) {
+        TurnOnLamp(13+i);}}
+    else {
+      for (byte i=0; i<(PB_EjectMode[Player]-5); i++) {
+        TurnOnLamp(13+i);}
+      AddBlinkLamp(PB_EjectMode[Player]+8, 100);}
+    break;
+  case 11:                                            // proceed to next eject hole state
+    if (!MBallAnimation) {                            // no multiball animation running
+      if (PB_EjectMode[Player] < 5) {
+        if (PB_EjectMode[Player] == 4) {
+          AddBlinkLamp(15, 100);}
+        else {
+          AddBlinkLamp(PB_EjectMode[Player]+13, 100);}
+        PB_EjectMode[Player] = PB_EjectMode[Player] + 5;}}
+    break;
+  case 15:                                            // switch to 3 ball multiball animation
+    if (!MBallAnimation && !Timer) {                  // multiball animation already running?
+      if (PB_EjectMode[Player] > 4) {                 // any blinking eject mode lamps?
+        if (PB_EjectMode[Player] == 9) {              // turn them off
+          RemoveBlinkLamp(15);}
+        else {
+          RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
+      MBallAnimation = 1;
+      ActivateTimer(10, 20, PB_HandleEjectHole);}     // start animation
+    break;
+  case 16:                                            // end animation
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    MBallAnimation = 0;
+    TurnOffLamp(13);
+    TurnOffLamp(14);
+    TurnOffLamp(15);
+    TurnOffLamp(16);
+    ActivateTimer(10, 10, PB_HandleEjectHole);        // restore eject hole lamps
+    break;
+  case 20:                                            // play animation
+    byte Buff = AniPattern[MBallAnimation-1];
+    for (byte i=0; i<4; i++) {
+      if (Buff & 1) {
+        TurnOnLamp(13+i);}
+      else {
+        TurnOffLamp(13+i);}
+      Buff = Buff>>1;}
+    if (MBallAnimation < 7) {
+      MBallAnimation++;
+      Timer = ActivateTimer(120, 20, PB_HandleEjectHole);}
+    else {
+      MBallAnimation = 1;
+      Timer = ActivateTimer(900, 20, PB_HandleEjectHole);}
+    break;}}
+
 void PB_Multiball_RestoreLamps(byte Dummy) {
   UNUSED(Dummy);
   PB_EyeBlink(1);
@@ -1857,9 +2158,19 @@ void PB_Multiball_RestoreLamps(byte Dummy) {
   LampPattern = LampColumns;}
 
 void PB_MballDisplay(byte Step) {
-  const byte PB_2MballDispUpper[78] = {17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during multiball
+  const byte PB_2MballDispUpper[78] = {17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during 2 ball multiball
   const byte PB_2MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,96,0,98,0,106,0,122,0,90,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  const byte PB_3MballDispUpper[78] = {3,0,67,4,71,4,79,4,78,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,0,67,4,71,4,79,4,78,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during 3 ball multiball
+  const byte PB_3MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,160,0,162,0,170,0,186,0,154,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   static byte Timer = 0;
+  byte *PB_MballDispUpper;
+  byte *PB_MballDispLower;
+  if (Multiballs == 3) {
+    PB_MballDispUpper = (byte* ) PB_3MballDispUpper;
+    PB_MballDispLower = (byte* ) PB_3MballDispLower;}
+  else {
+    PB_MballDispUpper = (byte* ) PB_2MballDispUpper;
+    PB_MballDispLower = (byte* ) PB_2MballDispLower;}
   if (!Step) {
     if (Timer) {
       KillTimer(Timer);
@@ -1868,16 +2179,16 @@ void PB_MballDisplay(byte Step) {
     Step--;
     if (Player != 1) {
       for (byte y=0;y<14;y++) {
-        *(DisplayUpper+y+2) = PB_2MballDispUpper[2*Step+y];}}
+        *(DisplayUpper+y+2) = PB_MballDispUpper[2*Step+y];}}
     if (Player != 2) {
       for (byte y=0;y<14;y++) {
-        *(DisplayUpper+y+18) = PB_2MballDispUpper[2*Step+y+18];}}
+        *(DisplayUpper+y+18) = PB_MballDispUpper[2*Step+y+18];}}
     if (Player != 3) {
       for (byte y=0;y<14;y++) {
-        *(DisplayLower+y+2) = PB_2MballDispLower[2*Step+y];}}
+        *(DisplayLower+y+2) = PB_MballDispLower[2*Step+y];}}
     if (Player != 4) {
       for (byte y=0;y<14;y++) {
-        *(DisplayLower+y+18) = PB_2MballDispLower[2*Step+y+18];}}
+        *(DisplayLower+y+18) = PB_MballDispLower[2*Step+y+18];}}
     if (!Step) {
       Step = 24;}
     Timer = ActivateTimer(50, Step, PB_MballDisplay);}}
@@ -1940,26 +2251,35 @@ void PB_ReopenVisor(byte Dummy) {                     // reopen visor if solar v
   if (Multiballs == 2) {
     PB_EyeBlink(1);}
   PB_SolarValueTimer = 0;
-  RemoveBlinkLamp(35);
+  RemoveBlinkLamp(35);                                // solar energy lamp
   PB_ClearOutLock(0);}
 
-void PB_ClearOutLock(byte CloseVisor) {
+void PB_ClearOutLock(byte State) {                    // CloseVisor = 0 -> eject 1 ball / CloseVisor = 1 -> Visor will be closed / = 2 -> clear out both balls but don't close visor
+  static byte Timer = 0;
+  if (State < 3) {                                    // inital call?
+    if (Timer) {
+      KillTimer(Timer);}
+    State += 3;}
   if (QuerySolenoid(13)) {                            // visor motor on?
-    ActivateTimer(1100, CloseVisor, PB_ClearOutLock);} // come back later
+    ActivateTimer(1100, State, PB_ClearOutLock);}     // come back later
   else {
     if (QuerySwitch(47)) {                            // visor is open
       if (QuerySwitch(25)) {                          // left eye?
-        ActA_BankSol(7);}                             // eject it
+        ActA_BankSol(7);                              // eject it
+        if (QuerySwitch(26) && State == 5) {          // 2nd ball shall be ejected also
+          ActivateTimer(1000, 3, PB_ClearOutLock);}
+        else if (State == 4) {                        // closed visor requested?
+          ActivateTimer(1000, 1, PB_CloseVisor);}}
       else {
         if (QuerySwitch(26)) {                        // right eye
-          ActA_BankSol(8);}}                          // eject it
-      if (CloseVisor) {                               // closed visor requested?
-        ActivateTimer(1000, 1, PB_CloseVisor);}}      // set close flag
-    else {
+          ActA_BankSol(8);}                           // eject it
+        if (State == 4) {                             // closed visor requested?
+          ActivateTimer(1000, 1, PB_CloseVisor);}}}   // set close flag
+    else if (QuerySwitch(25) || QuerySwitch(26)) {    // open visor if there's still a ball in lock
       ActivateTimer(1000, 0, PB_OpenVisor);
       PlaySound(52, "0_f1.snd");                      // moving visor sound
       ActivateSolenoid(0, 13);                        // activate visor motor
-      ActivateTimer(2000, CloseVisor, PB_ClearOutLock);}}}
+      ActivateTimer(2000, State, PB_ClearOutLock);}}}
 
 void PB_DropTargetReset(byte Counter) {
   PlaySound(52, "0_9b.snd");
@@ -1976,8 +2296,8 @@ void PB_EnergyReset(byte Counter) {
   if (Counter) {
     ActivateTimer(110, Counter, PB_EnergyReset);}
   else {
-    PB_EnergyActive = false;                        // energy value off
-    PB_DropRamp = true;}}                           // ramp needs to be dropped
+    PB_EnergyActive = false;                          // energy value off
+    PB_DropRamp = true;}}                             // ramp needs to be dropped
 
 void PB_TurnOffLamp(byte Lamp) {
   TurnOffLamp(Lamp);}
@@ -2030,7 +2350,7 @@ void PB_HandleDropTargets(byte Target) {
       PB_AdvancePlanet(1);}
     else {
       if (!PB_DropTimer) {                            // first target hit
-        if (Target-8 == PB_DropBlinkLamp) {           // blinking target hit?
+        if (Target-8 == PB_DropBlinkLamp && PB_MballState != 4) { // blinking target hit?
           //MusicVolume = 4;                            // reduce music volume
           PlaySound(51, "0_71.snd");
           ActivateTimer(1000, 0, PB_RaiseRamp);       // raise ramp in 1s
@@ -2088,10 +2408,10 @@ void PB_AdvancePlanet(byte State) {
   byte Planets = PB_Planet[Player];
   switch (State) {
   case 0:                                             // to be called by AfterSound
-    RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);
+    RemoveBlinkLamp(19+game_settings[PB_ReachPlanet]);
     RemoveBlinkLamp(51);                              // stop blinking of special lamp
     if (PB_Planet[Player] && PB_Planet[Player] != 10 && PB_Planet[Player] != 20) { // planets lit?
-      TurnOnLamp(18+game_settings[PB_ReachPlanet]);}
+      TurnOnLamp(19+game_settings[PB_ReachPlanet]);}
     PB_GiveExBall();
     RestoreMusicVolume(25);
     break;
@@ -2100,7 +2420,7 @@ void PB_AdvancePlanet(byte State) {
     if (PB_Planet[Player] > 20) {                     // sun already reached for the 2nd time?
       PB_Planet[Player] = 11;}                        // set it back to the sun
     Planets = PB_Planet[Player];
-    if (PB_Planet[Player] == game_settings[PB_ReachPlanet]) { //  blinking planet reached?
+    if (PB_Planet[Player] == game_settings[PB_ReachPlanet]+1) { //  blinking planet reached?
       MusicVolume = 4;                                // reduce music volume
       PlayFlashSequence((byte*) PB_OpenVisorSeq);     // play flasher sequence
       ActC_BankSol(1);                                // use knocker
@@ -2126,7 +2446,7 @@ void PB_AdvancePlanet(byte State) {
       QueueNextSound("0_e1_000.snd");
       ActivateTimer(500, 2, PB_AdvancePlanet);
       ActivateTimer(4050, 21, PB_AdvancePlanet);      // reset AfterSound
-      RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);} // stop blinking
+      RemoveBlinkLamp(19+game_settings[PB_ReachPlanet]);} // stop blinking
     break;
   case 2:                                             // first step of advance planet
     if (Planets > 10) {                               // sun already reached?
@@ -2140,8 +2460,8 @@ void PB_AdvancePlanet(byte State) {
       ActivateTimer(1000, 20, PB_AdvancePlanet);}
     break;
   case 20:                                            // animation reached planet
-    if (PB_Planet[Player] < game_settings[PB_ReachPlanet]) {
-      AddBlinkLamp(18+game_settings[PB_ReachPlanet], 100);}
+    if (PB_Planet[Player] < game_settings[PB_ReachPlanet]+1) {
+      AddBlinkLamp(19+game_settings[PB_ReachPlanet], 100);}
     if (Planets > 10) {                               // sun already reached?
       Planets = Planets - 10;}
     RemoveBlinkLamp(18 + Planets);
@@ -2306,8 +2626,7 @@ void PB_PlayAfterGameSequence(byte State) {
       PlayMusic(50, "1_80.snd");
       Timer = ActivateTimer(6000, State+1, PB_PlayAfterGameSequence);}
     else {
-      Timer = 0;
-      digitalWrite(VolumePin,HIGH);}}                 // set volume to zero
+      Timer = 0;}}
   else {
     if (!State) {
       if (Timer) {
@@ -2317,77 +2636,114 @@ void PB_PlayAfterGameSequence(byte State) {
       ReleaseAllSolenoids();}}}
 
 void PB_BallEnd(byte Balls) {                         // ball has been kicked into trunk
-  PB_EyeBlink(0);
-  if (Multiballs == 2) {                            // multiball running?
-    if (PB_SolarValueTimer) {                       // solar value jackpot active?
-      KillTimer(PB_SolarValueTimer);
-      PB_SolarValueTimer = 0;
-      RemoveBlinkLamp(35);}                         // solar energy lamp
-    Multiballs = 1;                                 // turn it off
-    PB_MballDisplay(0);                             // stop display animation
-    PB_ShowMessage(255);                            // release message block
-    WriteUpper("              ");
-    WriteLower("              ");
-    ShowPoints(Player);
-    PB_LampSweepActive = 0;                         // turn off backbox lamp sweep
-    ReleaseSolenoid(11);                            // turn backbox GI back on
-    if (APC_settings[Volume]) {
-      analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
-    PlayMusic(50, "1_0a.snd");                      // play multiball end theme
-    QueueNextMusic("1_02L.snd");                    // track is looping so queue it also
-    if (Balls == 2) {                               // 2 balls detected in the trunk
-      Balls = PB_CountBallsInTrunk();               // count again
-      ActivateTimer(1000, Balls, PB_BallEnd);}      // come back and check again
-    else {
-      PB_ClearOutLock(1);                           // clear out lock and close visor
-      InLock = 0;
-      PB_ChestLightHandler(0);                      // stop chest animation
-      PB_ChestMode = 1;
-      PB_ClearChest();                              // turn off chest lamps
-      PB_ChestLightHandler(100);                    // restart chest animation
-      ActivateTimer(3000, 10, PB_Multiball);        // return to main music theme
-      BlockOuthole = false;}}                       // remove outhole block
-  else {                                            // no multiball running
-    LockedBalls[Player] = 0;
-    PB_HandleDropTargets(100);                      // turn off drop target blinking
-    PB_HandleEnergy(0);                             // turn off energy lamp and sounds
-    if (!QuerySwitch(44)) {                         // ramp in up state?
-      ActA_BankSol(6);}                             // drop ramp
-    BlinkScore(0);                                  // stop score blinking
-    PB_CycleDropLights(0);                          // stop the blinking drop target lights
-    PB_ChestLightHandler(0);                        // stop chest animation
-    for (byte i=0; i<5; i++) {                      // turn off blinking row / column
-      RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
-    PB_ClearChest();                                // turn off chest lamps
-    if (!PB_ChestMode) {
-      PB_Chest_Status[Player] = PB_Chest_Status[Player] + 100;} // indicate that the visor has been open
-    else {                                          // visor is closed
-      if (PB_ChestMode < 11 && PB_LitChestLamps[Player-1]) {  // player already has lit chest lamps
-        PB_LitChestLamps[Player-1] += 100;}}        // indicate that the chest lamps have been lit, but the visor is still closed
-    RemoveBlinkLamp(18+game_settings[PB_ReachPlanet]);
-    if (BallWatchdogTimer) {
-      KillTimer(BallWatchdogTimer);
-      BallWatchdogTimer = 0;}
-    if (PB_EjectMode[Player] > 4) {                 // any blinking eject mode lamps?
-      if (PB_EjectMode[Player] == 9) {              // turn them off
-        RemoveBlinkLamp(15);}
-      else {
-        RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
-    for (byte i=0; i<4; i++) {                      // turn off all eject mode lamps
-      TurnOffLamp(13+i);}
-    if (PB_BallSave == 2) {                         // ball saver has been triggered
-      BlockOuthole = false;                         // remove outhole block
-      ActivateTimer(2000, 0, PB_AfterExBallRelease);
-      ActivateTimer(1000, Balls, PB_NewBall);}
-    else {                                          // no ball saver
+  if (game_settings[PB_Multiballs]) {                 // 3 ball multiball selected?
+    switch (PB_MballState) {
+    case 4:                                           // 3 ball multiball running
+      RemoveBlinkLamp(35);                            // solar energy lamp
+      Multiballs = 1;                                 // reset score multiplier
+      PB_MballDisplay(0);                             // stop display animation
+      PB_SolarValue = 0;                              // reset jackpot
+      PB_MballState = 5;                              // indicate a ball loss
+      PB_MballDisplay(0);                             // stop display animation
+      PB_ShooterLaneWarning(0);                       // turn off shooter lane warning
+      PB_ShowMessage(255);                            // release message block
       WriteUpper("              ");
       WriteLower("              ");
-      WriteUpper2(" BONUS        ");
-      ShowNumber(15, Bonus*1000);
-      StopPlayingMusic();
-      PlaySound(53, "0_2c.snd");
-      AppByte = Balls;
-      ActivateTimer(200, 0, PB_CountBonus);}}}
+      ShowPoints(Player);
+      PB_LampSweepActive = 0;                         // turn off backbox lamp sweep
+      PB_HandleEjectHole(16);                         // stop eject hole animation
+      ReleaseSolenoid(11);                            // turn backbox GI back on
+      if (QuerySwitch(38)) {                          // ball in eject hole?
+        ActivateTimer(1000, 3, PB_HandleEjectHole);}  // clear eject hole
+      BlockOuthole = false;                           // remove outhole block
+      PB_ClearOutLock(2);                             // clear out locks but don't close visor
+      InLock = 0;
+      return;
+    case 5:                                           // 2 balls in game after multiball
+    case 6:                                           // 1 ball in lock after multiball
+      PB_ClearOutLock(1);                             // clear out lock and close visor
+      InLock = 0;
+      PB_ChestLightHandler(0);                        // stop chest animation
+      PB_ChestMode = 1;
+      PB_ClearChest();                                // turn off chest lamps
+      PB_ChestLightHandler(100);                      // restart chest animation
+      ActivateTimer(3000, 10, PB_Multiball);
+      PB_MballState = 1;
+      BlockOuthole = false;                           // remove outhole block
+      return;}}
+  else {                                              // not in 3 ball multiball mode
+    PB_EyeBlink(0);
+    if (Multiballs == 2) {                            // multiball running?
+      if (PB_SolarValueTimer) {                       // solar value jackpot active?
+        KillTimer(PB_SolarValueTimer);
+        PB_SolarValueTimer = 0;
+        RemoveBlinkLamp(35);}                         // solar energy lamp
+      Multiballs = 1;                                 // turn it off
+      PB_MballDisplay(0);                             // stop display animation
+      PB_ShowMessage(255);                            // release message block
+      WriteUpper("              ");
+      WriteLower("              ");
+      ShowPoints(Player);
+      PB_LampSweepActive = 0;                         // turn off backbox lamp sweep
+      ReleaseSolenoid(11);                            // turn backbox GI back on
+      if (APC_settings[Volume]) {
+        analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
+      PlayMusic(50, "1_0a.snd");                      // play multiball end theme
+      QueueNextMusic("1_02L.snd");                    // track is looping so queue it also
+      if (Balls == 2) {                               // all balls detected in the trunk
+        Balls = PB_CountBallsInTrunk();               // count again
+        ActivateTimer(1000, Balls, PB_BallEnd);}      // come back and check again
+      else {
+        PB_ClearOutLock(1);                           // clear out lock and close visor
+        InLock = 0;
+        PB_ChestLightHandler(0);                      // stop chest animation
+        PB_ChestMode = 1;
+        PB_ClearChest();                              // turn off chest lamps
+        PB_ChestLightHandler(100);                    // restart chest animation
+        ActivateTimer(3000, 10, PB_Multiball);        // return to main music theme
+        BlockOuthole = false;}                        // remove outhole block
+      return;}}
+  LockedBalls[Player] = 0;
+  PB_HandleDropTargets(100);                          // turn off drop target blinking
+  PB_HandleEnergy(0);                                 // turn off energy lamp and sounds
+  if (!QuerySwitch(44)) {                             // ramp in up state?
+    ActA_BankSol(6);}                                 // drop ramp
+  BlinkScore(0);                                      // stop score blinking
+  PB_CycleDropLights(0);                              // stop the blinking drop target lights
+  PB_ChestLightHandler(0);                            // stop chest animation
+  for (byte i=0; i<5; i++) {                          // turn off blinking row / column
+    RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
+  PB_ClearChest();                                    // turn off chest lamps
+  if (!PB_ChestMode) {
+    PB_Chest_Status[Player] = PB_Chest_Status[Player] + 100;} // indicate that the visor has been open
+  else {                                              // visor is closed
+    if (PB_ChestMode < 11 && PB_LitChestLamps[Player-1]) {  // player already has lit chest lamps
+      PB_LitChestLamps[Player-1] += 100;}}            // indicate that the chest lamps have been lit, but the visor is still closed
+  RemoveBlinkLamp(19+game_settings[PB_ReachPlanet]);
+  if (BallWatchdogTimer) {
+    KillTimer(BallWatchdogTimer);
+    BallWatchdogTimer = 0;}
+  if (PB_EjectMode[Player] > 4) {                     // any blinking eject mode lamps?
+    if (PB_EjectMode[Player] == 9) {                  // turn them off
+      RemoveBlinkLamp(15);}
+    else {
+      RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
+  for (byte i=0; i<4; i++) {                      // turn off all eject mode lamps
+    TurnOffLamp(13+i);}
+  if (PB_BallSave == 2) {                         // ball saver has been triggered
+    BlockOuthole = false;                         // remove outhole block
+    ActivateTimer(2000, 0, PB_AfterExBallRelease);
+    ActivateTimer(1000, Balls, PB_NewBall);}
+  else {                                          // no ball saver
+    WriteUpper("              ");
+    WriteLower("              ");
+    WriteUpper2(" BONUS        ");
+    ShowNumber(15, Bonus*1000);
+    StopPlayingMusic();
+    PlaySound(53, "0_2c.snd");
+    AppByte = Balls;
+    StopAllBlinkLamps();
+    ActivateTimer(200, 0, PB_CountBonus);}}
 
 void PB_BlinkPlanet(byte State) {                     // blink planets during bonus count
   static byte Counter = 0;
@@ -2412,7 +2768,6 @@ void PB_BlinkPlanet(byte State) {                     // blink planets during bo
 void PB_CountBonus(byte State) {
   static uint32_t TotalBonus;
   const byte Pattern[11] = {5,3,13,14,4,2,12,15,6,10,11};
-  const char PlanetTxt[9][15] = {{"       PLUTO  "},{"       NEPTUNE"},{"       URANUS "},{"       SATURN "},{"       JUPITER"},{"       MARS   "},{"       EARTH  "},{"       VENUS  "},{"       MERCURY"}};
   if (State < 11) {                                   // show bonus
     *(DisplayUpper+2*Pattern[State]) = *(DisplayUpper2+2*Pattern[State]);
     *(DisplayUpper+2*Pattern[State]+1) = *(DisplayUpper2+2*Pattern[State]+1);
@@ -2486,7 +2841,7 @@ void PB_CountBonus(byte State) {
     PlaySound(53, "0_65.snd");
     PB_BlinkPlanet(State-11);
     Points[Player] += 20000;                          // add points for each planet
-    WriteUpper((char*)PlanetTxt[State - 30]);         // show planet names
+    WriteUpper((char*)PB_PlanetTxt[State - 30]);         // show planet names
     ShowPoints(Player);
     byte Planets = PB_Planet[Player];
     if (Planets > 10) {                               // sun already reached?
@@ -2512,7 +2867,7 @@ void PB_BallEnd2() {
     TurnOffLamp(51);
     if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
       Switch_Pressed = DummyProcess;                  // Switches do nothing
-      PB_Congrats(0);}
+      PB_Congrats(1);}
     else {
       if ((PB_EjectMode[Player] == 4) || (PB_EjectMode[Player] == 9)) { // eject hole mode maxed out?
         PB_EjectMode[Player] = 0;}                    // reset it for the next ball
@@ -2529,33 +2884,50 @@ void PB_BallEnd3(byte Balls) {
       Ball++;
       ActivateTimer(100, Balls, PB_NewBall);}
     else {                                            // game end
+      PB_EyeBlink(0);
       ReleaseSolenoid(23);                            // disable flipper fingers
       ReleaseSolenoid(24);
       LampPattern = NoLamps;                          // Turn off all lamps
       TurnOffLamp(3);                                 // turn off Ball in Play lamp
+      PB_HandleEjectHole(16);                         // stop eject hole animation
       PB_PlayAfterGameSequence(1);                    // start end of game animation
       GameDefinition.AttractMode();}}}
 
-void PB_Congrats(byte Dummy) {                        // show congratulations
-  UNUSED(Dummy);
-  LampPattern = NoLamps;
-  ActC_BankSol(1);
-  //AfterMusic = PB_EnterInitials2;                     // TODO fix congrats
-  PlayMusic(50, "1_06.snd");
-  QueueNextMusic("1_06L.snd");                        // queue looping part as next music to be played}
-  ActivateSolenoid(0, 11);
-  ActivateSolenoid(0, 12);
-  PB_LampSweepActive = 2;
-  PB_LampSweep(4);
-  WriteUpper("              ");
-  WriteLower("              ");
-  DisplayScore(3, Points[Player]);
-  DisplayScore(4, Points[Player]);
-  WriteUpper2(" GREAT        ");
-  ActivateTimer(50, 0, ScrollUpper);
-  ActivateTimer(1400, 1, PB_ScrollCongrats);
-  //ActivateTimer(3000, 1, PB_ScrollCongrats2);
-  ActivateTimer(5000, Player, PB_Congrats2);}
+void PB_Congrats(byte State) {                        // show congratulations
+  static byte Timer = 0;
+  switch(State) {
+  case 0:
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    break;
+  case 1:
+    for (byte i=0; i< 8; i++) {
+      LampColumns[i] = 0;}
+    LampPattern = LampColumns;
+    ActC_BankSol(1);
+    //AfterMusic = PB_EnterInitials2;                 // TODO fix congrats
+    PlayMusic(50, "1_06.snd");
+    QueueNextMusic("1_06L.snd");                      // queue looping part as next music to be played}
+    ActivateSolenoid(0, 11);
+    ActivateSolenoid(0, 12);
+    PB_LampSweepActive = 2;
+    PB_LampSweep(4);
+    WriteUpper("              ");
+    WriteLower("              ");
+    DisplayScore(3, Points[Player]);
+    DisplayScore(4, Points[Player]);
+    WriteUpper2(" GREAT        ");
+    ActivateTimer(50, 0, ScrollUpper);
+    ActivateTimer(1400, 1, PB_ScrollCongrats);
+    //ActivateTimer(3000, 1, PB_ScrollCongrats2);
+    ActivateTimer(5000, Player, PB_Congrats2);
+    Timer = ActivateTimer(3000, 2, PB_Congrats);
+    break;
+  case 2:
+    PlayFlashSequence((byte*) PB_BB_FlasherCycle);
+    Timer = ActivateTimer(3000, 2, PB_Congrats);
+    break;}}
 
 void PB_ScrollCongrats(byte Dummy) {
   UNUSED(Dummy);
@@ -2596,12 +2968,8 @@ void PB_EnterInitials(byte Switch) {
     KillTimer(ByteBuffer2);
     ByteBuffer++;
     if (ByteBuffer > 2) {
-      if (APC_settings[Volume]) {
-        ByteBuffer3 = APC_settings[Volume];
-        FadeOutMusic(100);
-        ActivateTimer(1000, 0, PB_EnterInitials2);}
-      else {
-        StopPlayingMusic();}}
+      FadeOutMusic(100);
+      ActivateTimer(1000, 0, PB_EnterInitials2);}
     else {
       PB_BlinkInitial(1);}
     break;
@@ -2634,18 +3002,33 @@ void PB_BlinkInitial(byte State) {                    // blink actual character
   if (State) {
     *(DisplayUpper+20+4*ByteBuffer) = 0;              // show a blank
     *(DisplayUpper+21+4*ByteBuffer) = 0;
+    PB_ClearChest();
     State = 0;}
   else {
+    byte Buffer = 0;
     for (byte i=0; i<3; i++) {
       *(DisplayUpper+20+4*i) = DispPattern1[(EnterIni[i]-32)*2];
       *(DisplayUpper+21+4*i) = DispPattern1[(EnterIni[i]-32)*2+1];}// restore the characters
+    if (EnterIni[ByteBuffer] == 32) {                 // It's a blank
+      Buffer = 0;}
+    else if (EnterIni[ByteBuffer] < 65) {             // It's a number
+      Buffer = EnterIni[ByteBuffer] - 47;}
+    else {                                            // It's a letter
+      Buffer = EnterIni[ByteBuffer] - 54;}
+    for (byte x=0; x<5; x++) {                        // for all chest rows
+      byte Mask = 16;                                 // mask to access the stored lamps for this player
+      for (byte y=0; y<5; y++) {                      // for all columns
+        if (PB_Characters[Buffer*5+x] & Mask) {
+          TurnOnLamp(28+x+8*y);}
+        else {
+          TurnOffLamp(28+x+8*y);}
+        Mask = Mask>>1;}}
     State = 1;}
   ByteBuffer2 = ActivateTimer(100+State*2000, State, PB_BlinkInitial);}  // and come back
 
 void PB_EnterInitials2(byte Dummy) {
   UNUSED(Dummy);
-  if (APC_settings[Volume]) {
-    analogWrite(VolumePin, 255);}
+  PB_Congrats(0);
   if (ByteBuffer > 2) {
     ByteBuffer2 = HandleHighScores(Points[Player]);
     WriteUpper2(" HIGH   SCORE ");
@@ -2676,6 +3059,648 @@ void PB_ResetHighScores(bool change) {                // delete the high scores 
       WriteLower(" SCORES NO SD ");}}
   else {
     WriteLower(" SCORES       ");}}
+
+void PB_RulesEffect(byte State) {
+  const byte Pattern[22] = {4,0,4,8,12,9,12,11,44,11,108,11,124,43,125,59,125,187,127,187,127,191};
+  for (byte i=0; i<15; i++) {
+    if (i == 7) {
+      continue;}
+    if (!(*(DisplayUpper+2+2*i)) && !(*(DisplayUpper+3+2*i))) {
+      continue;}
+    if (State < 11) {
+      *(DisplayUpper+2+2*i) = *(DisplayUpper+2+2*i) | Pattern[2*State];
+      *(DisplayUpper+3+2*i) = *(DisplayUpper+3+2*i) | Pattern[2*State+1];}
+    else {
+      *(DisplayUpper+2+2*i) = *(DisplayUpper+2+2*i) & (255 - Pattern[2*(State-11)]);
+      *(DisplayUpper+3+2*i) = *(DisplayUpper+3+2*i) & (255 - Pattern[2*(State-11)+1]);}}
+  if (State < 22) {
+    ActivateTimer(30, State+1, PB_RulesEffect);}}
+
+void PB_RuleLampEffects(byte State) {
+  static byte Timer = 0;
+  switch(State) {
+  case 0:
+    if (Timer) {
+      KillTimer(Timer);}
+    Timer = 0;
+    PB_ClearChest();
+    ReleaseSolenoid(7);
+    ReleaseSolenoid(8);
+    break;
+  case 1:
+    if (Timer) {
+      return;}
+    TurnOnLamp(60);
+    /* no break */
+  case 2:
+    for (byte i=0; i<4;i++) {
+      TurnOnLamp(28+8*i);
+      TurnOffLamp(61+i);}
+    Timer = ActivateTimer(200, 3, PB_RuleLampEffects);
+    break;
+  case 3:
+    for (byte i=0; i<4;i++) {
+      TurnOffLamp(28+8*i);
+      TurnOnLamp(61+i);}
+    Timer = ActivateTimer(200, 2, PB_RuleLampEffects);
+    break;
+  case 5:
+    if (Timer) {
+      return;}
+    /* no break */
+  case 6:
+    ActivateSolenoid(0, 7);
+    ActivateSolenoid(0, 8);
+    Timer = ActivateTimer(300, 7, PB_RuleLampEffects);
+    break;
+  case 7:
+    ReleaseSolenoid(7);
+    ReleaseSolenoid(8);
+    Timer = ActivateTimer(300, 6, PB_RuleLampEffects);
+    break;
+  case 10:
+    if (Timer) {
+      return;}
+    TurnOnLamp(28);
+    Timer = ActivateTimer(100, 11, PB_RuleLampEffects);
+    break;
+  case 36:
+    Timer = 0;
+    break;
+  default:
+    byte Lamp = State - 10;
+    byte Lamp2 = Lamp % 5;
+    Lamp = Lamp / 5;
+    TurnOnLamp(28 + Lamp2 + Lamp * 8);
+    Timer = ActivateTimer(100, State+1, PB_RuleLampEffects);
+    break;}}
+
+void PB_RulesDisplay(byte State) {
+  static byte Timer = 0;
+  switch(State) {
+  case 0:
+    PB_RuleLampEffects(0);
+    if (Timer) {
+      KillTimer(Timer);}
+    Timer = 0;
+    StopAllBlinkLamps();
+    ReleaseSolenoid(12);
+    ReleaseSolenoid(14);
+    break;
+  case 1:
+    if (Timer) {
+      return;}
+    ActivateSolenoid(0, 14);
+    ActivateSolenoid(0, 12);
+    /* no break */
+  case 3:
+  case 5:
+  case 7:
+    WriteUpper("PINBOT RULES--");
+    WriteLower("              ");
+    PlaySound(50, "0_6f.snd");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 9:
+    WriteUpper("PINBOT RULES--");
+    WriteLower("              ");
+    PlaySound(50, "0_6f.snd");
+    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    break;
+  case 2:
+  case 4:
+  case 6:
+  case 8:
+  case 10:
+    WriteUpper("              ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 11:
+    WriteUpper("PLUNGER MAKES ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 12:
+    WriteUpper("              ");
+    if (game_settings[PB_Multiballs]) {
+      Timer = ActivateTimer(300, 150, PB_RulesDisplay);}
+    else {
+      Timer = ActivateTimer(300, State+1, PB_RulesDisplay);}
+    break;
+  case 13:
+    WriteUpper("VORTEX   1X   ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 14:
+    WriteUpper("VORTEX   2X   ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 15:
+    WriteUpper("VORTEX   3X   ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 16:
+    WriteUpper("VORTEX   4X   ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 17:
+    WriteUpper("VORTEX   5X   ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 18:
+    WriteUpper("VORTEX   6X   ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 19:
+    WriteUpper("VORTEX   7X   ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 20:
+    WriteUpper("VORTEX   8X   ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 21:
+    WriteUpper("VORTEX   9X   ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 22:
+    WriteUpper("VORTEX   10X  ");
+    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 23:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 24:
+  case 26:
+  case 28:
+  case 30:
+  case 32:
+    WriteUpper("        WHEN  ");
+    DisplayScore(1, 1000000);
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 25:
+  case 27:
+  case 29:
+  case 31:
+    WriteUpper("        WHEN  ");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 33:
+    WriteUpper("VORTEX AT 10X ");
+    *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 34:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 35:
+    WriteUpper("ADVANCEPLANETS");
+    for (byte i=19; i<28; i++) {
+      AddBlinkLamp(i, 100);}
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 36:
+    WriteUpper("  BY 3  BANK  ");
+    for (byte i=41; i<44; i++) {
+      AddBlinkLamp(i, 100);}
+    for (byte i=19; i<28; i++) {
+      RemoveBlinkLamp(i);
+      TurnOnLamp(i);}
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 37:
+    WriteUpper(" OR BY TARGET ");
+    *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
+    AddBlinkLamp(18, 100);
+    for (byte i=41; i<44; i++) {
+      RemoveBlinkLamp(i);
+      TurnOnLamp(i);}
+    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    break;
+  case 38:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 39:
+    {char Planet[15] = " REACH        ";
+    for (byte i=7; i<15; i++) {
+      Planet[i] = PB_PlanetTxt[game_settings[PB_ReachPlanet]][i];}
+    WriteUpper((char*) Planet);}
+    AddBlinkLamp(19+game_settings[PB_ReachPlanet], 100);
+    RemoveBlinkLamp(18);
+    TurnOnLamp(18);
+    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    break;
+  case 40:
+    WriteUpper("  FOR  SPECIAL");
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    break;
+  case 41:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    RemoveBlinkLamp(19+game_settings[PB_ReachPlanet]);
+    for (byte i=19; i<28; i++) {
+      TurnOffLamp(i);}
+    PB_RulesEffect(0);
+    break;
+  case 42:
+    WriteUpper(" REACH THE SUN");
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 43:
+  case 44:
+  case 45:
+  case 46:
+  case 47:
+  case 48:
+  case 49:
+  case 50:
+  case 51:
+    TurnOnLamp(State-24);
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 52:
+    ActivateSolenoid(150, 8);
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 53:
+    WriteUpper("TO LITESPECIAL");
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    AddBlinkLamp(51, 100);
+    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    break;
+  case 54:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 55:
+  case 56:
+  case 57:
+  case 58:
+  case 59:
+  case 60:
+  case 61:
+  case 62:
+    WriteUpper("  JET  BUMPERS");
+    RemoveBlinkLamp(51);
+    for (byte i=19;i<28;i++) {
+      TurnOffLamp(i);}
+    for (byte i=41; i<44; i++) {
+      TurnOffLamp(i);}
+    TurnOffLamp(18);
+    ActivateSolenoid(150, 6);
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 63:
+  case 64:
+  case 65:
+  case 66:
+  case 67:
+  case 68:
+  case 69:
+  case 70:
+    WriteUpper("  ADD   ENERGY");
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    ActivateSolenoid(150, 6);
+    Timer = ActivateTimer(300, State+1, PB_RulesDisplay);
+    break;
+  case 71:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 72:
+    WriteUpper(" RAISE   RAMP ");
+    TurnOffLamp(18);
+    for (byte i=41; i<44; i++) {
+      AddBlinkLamp(i, 100);}
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 73:
+    WriteUpper("   TO    LITE ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 74:
+    WriteUpper(" SCORE  ENERGY");
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    AddBlinkLamp(34, 100);
+    for (byte i=41; i<44; i++) {
+      RemoveBlinkLamp(i);}
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 75:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 76:
+    WriteUpper("  RAMP  GIVES ");
+    AddBlinkLamp(35, 100);
+    RemoveBlinkLamp(34);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 77:
+    WriteUpper(" BONUS  MULT  ");
+    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
+    for (byte i=9; i<13; i++) {
+      AddBlinkLamp(i, 100);}
+    RemoveBlinkLamp(35);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 78:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 79:
+    WriteUpper(" HIT   5 BANKS");
+    for (byte i=9; i<13; i++) {
+      RemoveBlinkLamp(i);}
+    PB_RuleLampEffects(1);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 80:
+    WriteUpper("  TO          ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 81:
+    WriteUpper(" OPEN   VISOR ");
+    *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
+    PB_RuleLampEffects(0);
+    PB_RuleLampEffects(10);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 82:
+    ActivateSolenoid(0, 10);
+    ActivateSolenoid(0, 18);
+    Timer = ActivateTimer(2000, 0, PB_OpenVisor);
+    ActivateSolenoid(0, 13);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 83:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 84:
+    WriteUpper("FILLING  CHEST");
+    PB_ClearChest();
+    PB_RuleLampEffects(10);
+    Timer = ActivateTimer(3000, State+1, PB_RulesDisplay);
+    break;
+  case 85:
+    WriteUpper(" AGAIN        ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 86:
+    WriteUpper(" LITES EX BALL");
+    AddBlinkLamp(49, 100);
+    AddBlinkLamp(50, 100);
+    AddBlinkLamp(57, 100);
+    AddBlinkLamp(58, 100);
+    *(DisplayUpper+10*2+1) = 64 | *(DisplayUpper+10*2+1); // add a dot in column 9
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    Timer = ActivateTimer(2200, State+1, PB_RulesDisplay);
+    break;
+  case 87:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 88:
+    WriteUpper(" LOCK   BALLS ");
+    RemoveBlinkLamp(49);
+    RemoveBlinkLamp(50);
+    RemoveBlinkLamp(57);
+    RemoveBlinkLamp(58);
+    PB_EyeBlink(1);
+    if (game_settings[PB_Multiballs]) {
+      Timer = ActivateTimer(2500, 160, PB_RulesDisplay);}
+    else {
+      Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);}
+    break;
+  case 89:
+    WriteUpper("  FOR         ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 90:
+    WriteUpper("DOUBLE  SCORE ");
+    *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1); // add a dot in column 13
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 91:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 92:
+    WriteUpper(" DURING       ");
+    PB_EyeBlink(0);
+    ActivateSolenoid(0, 10);
+    ActivateSolenoid(0, 18);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 93:
+    WriteUpper(" MULTI  BALL  ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 94:
+    WriteUpper(" LOCK  1 BALL ");
+    PB_EyeFlash(1);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 95:
+    WriteUpper("   TO   START ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 96:
+    WriteUpper(" SOLAR ECLIPSE");
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    PB_EyeFlash(0);
+    PB_EyeFlash(1);
+    AddBlinkLamp(35, 100);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 97:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 98:
+    WriteUpper(" GO UP   RAMP ");
+    PB_EyeFlash(0);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 99:
+    WriteUpper("   TO  COLLECT");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 100:
+    WriteUpper(" SOLAR  SCORE ");
+    WriteLower("   OF         ");
+    DisplayScore(4, 100000);
+    RemoveBlinkLamp(35);
+    Timer = ActivateTimer(2000, 0, PB_CloseVisor);
+    ActivateSolenoid(0, 13);
+    Timer = ActivateTimer(5000, State+1, PB_RulesDisplay);
+    break;
+  case 101:
+    Timer = 0;
+    ReleaseSolenoid(12);
+    ReleaseSolenoid(14);
+    PB_AttractMode();
+    break;
+  case 150:
+    DisplayScore(2, 100000);
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 151:
+    Timer = ActivateTimer(800, 35, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 160:
+    WriteUpper("   TO   LITE  ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 161:
+    WriteUpper(" THIRD  LOCK  ");
+    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
+    PB_EyeBlink(0);
+    PB_HandleEjectHole(15);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 162:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 163:
+    WriteUpper("  LOCK  BALL  ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 164:
+    WriteUpper("  TO    START ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 165:
+    WriteUpper(" MULTI  BALL  ");
+    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 166:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 167:
+    WriteUpper(" DURING       ");
+    PB_ClearChest();
+    PB_HandleEjectHole(16);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 168:
+    WriteUpper(" MULTI  BALL  ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 169:
+    WriteUpper(" SHOOT RAMP   ");
+    AddBlinkLamp(35, 100);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 170:
+    WriteUpper("  FOR         ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 171:
+  case 172:
+  case 173:
+  case 174:
+  case 175:
+    WriteUpper("JACKPOT       ");
+    DisplayScore(2, 200000 * (State - 170));
+    Timer = ActivateTimer(500, State+1, PB_RulesDisplay);
+    break;
+  case 176:
+  case 178:
+  case 180:
+  case 182:
+    WriteUpper("JACKPOT       ");
+    Timer = ActivateTimer(500, State+1, PB_RulesDisplay);
+    break;
+  case 177:
+  case 179:
+  case 181:
+    WriteUpper("JACKPOT       ");
+    DisplayScore(2, 1000000);
+    Timer = ActivateTimer(500, State+1, PB_RulesDisplay);
+    break;
+  case 183:
+    WriteUpper("JACKPOT       ");
+    RemoveBlinkLamp(35);
+    DisplayScore(2, 1000000);
+    *(DisplayUpper+15*2+1) = 64 | *(DisplayUpper+15*2+1); // add a dot in column 14
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 184:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_RulesEffect(0);
+    break;
+  case 185:
+    WriteUpper(" LOCKS        ");
+    PB_EyeFlash(1);
+    PB_HandleEjectHole(15);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 186:
+    WriteUpper("  HOLD  BALLS ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 187:
+    {char Time[15] = "  FOR       S ";
+    Time[11] = 48 + game_settings[PB_MballHoldTime] % 10;
+    if (game_settings[PB_MballHoldTime] > 9) {
+      Time[10] = 48 + game_settings[PB_MballHoldTime] / 10;}
+    WriteUpper((char*) Time);
+    *(DisplayUpper+14*2+1) = 64 | *(DisplayUpper+14*2+1);} // add a dot in column 13
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 188:
+    Timer = ActivateTimer(800, State+1, PB_RulesDisplay);
+    PB_EyeFlash(0);
+    PB_HandleEjectHole(16);
+    PB_RulesEffect(0);
+    break;
+  case 189:
+    WriteUpper(" IF ONE BALL  ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 190:
+    WriteUpper(" DRAINS       ");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 191:
+    WriteUpper("RE-LOCK2 BALLS");
+    PB_EyeBlink(1);
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 192:
+    WriteUpper("  TO   RE-LITE");
+    Timer = ActivateTimer(2500, State+1, PB_RulesDisplay);
+    break;
+  case 193:
+    WriteUpper(" THIRD  LOCK  ");
+    *(DisplayUpper+13*2+1) = 64 | *(DisplayUpper+13*2+1); // add a dot in column 12
+    PB_EyeBlink(0);
+    PB_HandleEjectHole(15);
+    Timer = ActivateTimer(2700, State+1, PB_RulesDisplay);
+    break;
+  case 194:
+    PB_RulesEffect(0);
+    Timer = ActivateTimer(2000, State+1, PB_RulesDisplay);
+    break;
+  case 195:
+    Timer = 0;
+    PB_HandleEjectHole(16);
+    ReleaseSolenoid(12);
+    ReleaseSolenoid(14);
+    PB_AttractMode();
+    break;}}
+
 
 void PB_Testmode(byte Select) {
   Switch_Pressed = PB_Testmode;
@@ -2804,10 +3829,6 @@ void PB_Testmode(byte Select) {
               case 3:
                 if (!AppByte2) {                      // first sound?
                   WriteUpper("PLAYING MUSIC ");
-                  if (APC_settings[Volume]) {         // system set to digital volume control?
-                    analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-                  else {
-                    digitalWrite(VolumePin,HIGH);}    // turn off the digital volume control
                   *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte2+1) % 10)]; // show the actual sound number
                   *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte2+1) % 10)];
                   *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
@@ -2820,7 +3841,6 @@ void PB_Testmode(byte Select) {
                 break;
               case 72:
                 AfterMusic = 0;
-                digitalWrite(VolumePin,HIGH);         // turn off the digital volume control
                 StopPlayingMusic();
                 if (AppByte2) {
                   AppByte2 = 0;}

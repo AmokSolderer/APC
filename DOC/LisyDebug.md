@@ -2,6 +2,8 @@
 
 This page covers just the APC relevant basics. In some cases it might be necessary to read the corresponding chapters in the [Lisy manual](https://lisy.dev/documentation.html).
 
+Note that the following debug features are only available while using the normal Lisy version. Lisy Embedded does not include these features.
+
 The basic mode of Lisy is selected by the Lisy_Jumpers P12 which are depicted below.
 
 ![Lisy Jumper](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/LisyJumper.png)
