@@ -2093,7 +2093,7 @@ void AddBlinkLamp(byte Lamp, unsigned int Period) {
       BlinkTimers++;                                  // increase the number of blink timers
       BlinkTimer[x] = ActivateTimer(Period, x, BlinkLamps);}}} // start a timer and store it's number
 
-void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blinking
+void RemoveBlinkLamp(byte LampNo) {                   // stop the blinking of LampNo
   byte a = 0;
   byte b = 0;
   byte x = 0;
@@ -2103,7 +2103,7 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
     y = 0;
     if (BlinkTimer[x]) {                              // blink timer in use found?
       a++;                                            // increase the number of active blink timers found
-      while (b < BlinkingNo[x]){                      // check the list of lamps controlled by this timer
+      while (b < BlinkingNo[x]) {                     // check the list of lamps controlled by this timer
         if (BlinkingLamps[x][y]) {                    // active lamp found?
           b++;                                        // increase the number of active lamps found for this blink timer
           if (BlinkingLamps[x][y] == LampNo) {        // is it the lamp to be removed?
@@ -2121,6 +2121,28 @@ void RemoveBlinkLamp(byte LampNo) {                   // stop the lamp from blin
     x++;                                              // increase the counter for the list of active blink timers
     if (x > 64) {                                     // max 64 blink timers possible (starting from 1)
       ErrorHandler(8,0,LampNo);}}}                    // show error 8
+
+void StopAllBlinkLamps() {                            // stop the blinking of all lamps
+  byte x = 0;
+  byte y = 0;
+  while (BlinkTimers) {                               // search all active blink timers
+    y = 0;
+    if (BlinkTimer[x]) {                              // blink timer in use found?
+      while (BlinkingNo[x]) {                         // check the list of lamps controlled by this timer
+        if (BlinkingLamps[x][y]) {                    // active lamp found?
+          TurnOffLamp(BlinkingLamps[x][y]);           // turn it off
+          BlinkingLamps[x][y] = 0;                    // delete it from the list
+          BlinkingNo[x]--;                            // decrease the number of lamps controlled by this timer
+          if (!BlinkingNo[x]) {                       // = 0?
+            KillTimer(BlinkTimer[x]);                 // kill the timer
+            BlinkTimer[x] = 0;                        // delete it from the list
+            BlinkTimers--;}}                          // decrease the number of blink timers
+        y++;                                          // increase the counter for the list of this blink timer
+        if (y > 64) {                                 // max 64 lamps existing (starting from 1)
+          ErrorHandler(12,BlinkTimer[x],0);}}}        // show error 7
+    x++;                                              // increase the counter for the list of active blink timers
+    if (x > 64) {                                     // max 64 blink timers possible (starting from 1)
+      ErrorHandler(13,0,0);}}}                        // show error 8
 
 void ErrorHandler(unsigned int Error, unsigned int Number2, unsigned int Number3) {
   WriteUpper2("ERROR           ");                    // Show Error Message

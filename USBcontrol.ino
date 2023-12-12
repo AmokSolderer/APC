@@ -1053,6 +1053,8 @@ void USB_SerialCommand() {
       game_settings[USB_SerialBuffer[1]] = USB_SerialBuffer[2];}
     else {                                            // APC settings selected
       APC_settings[USB_SerialBuffer[1]] = USB_SerialBuffer[2];}
+    break;
+  case 66:                                            // init system to apply changed settings
     Init_System2(1);
     break;
   case 80:                                            // send command to HW_ext interface

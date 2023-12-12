@@ -51,7 +51,7 @@ To see the APC in an early stage you might want take a look at my [Black Knight 
 
 You can use [Lisy](https://lisy.dev/apc.html) to run PinMame on an APC board. This spares you the effort to do any game Software as you can run the old ROM code.
 For System 3 - 7 machines the APC can be used with the old original soundboards. That means in this case it's a plug & play solution.
-You might want the APC to generate the audio anyway, either because you don't have an audio board, you want to do your own sounds or you have a System 9 or 11 game. In this case then it's going to require some work to set up your game with PinMame. Take a look at the [PinMame Sound page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) to see what I mean.
+You might want the APC to generate the audio anyway, either because you don't have an audio board, you want to do your own sounds or you have a System 9 or 11 game. In this case it's going to require some work to set up your game with PinMame. Take a look at the [PinMame Sound page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) to see what I mean.
 
 With PinMame running for your game you can use the [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md) functionality of the APC to change the rules of your game even though it's running under PinMame control.  
 Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see an example. The corresponding code can be found in PinMameExceptions.ino in the AmokPrivate branch on Github.  
@@ -94,7 +94,7 @@ The second board is a [driver for 8 additional solenoids](https://github.com/Amo
 
 I use [special alphanumerical displays](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) in my Black Knight which can also be found in the HW section as well as an LED replacement for the original System7 numerical displays.
 
-## Current Status (March 2023)
+## Current Status (December 2023)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md#cable-extensions)
 
@@ -102,14 +102,14 @@ The PinMame support is still under development and even if a generation is basic
 
 | Williams System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
-|3| Not yet | Not yet | Yes|  |
-|4| Yes | Not yet | Yes|  |
+|3| Yes | Yes | Yes|When PinMame is used, some solenoid activation times need to be increase by a [PinMameException](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md#fixing-the-drop-targets-of-system-3-&-4-games)|
+|4| Yes | Yes | Yes|When PinMame is used, some solenoid activation times need to be increase by a [PinMameException](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md#fixing-the-drop-targets-of-system-3-&-4-games)|
 |6| Yes | Yes | Yes |  |
 |7| Yes | Yes | Yes | Needs two additional wires |
 |9| Yes | Yes | Yes |  |
 |11| Yes | Yes | Yes |  |
 |11a| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
-|11b| Not yet | Not yet | Yes |  |
+|11b| Not yet | Yes | Yes |  |
 |11c| Yes | Yes | Yes | The wires of three connectors must be extended |
 
 The following Data East MPUs are almost identical to their counterparts from Williams but DE used 2.1 audio boards. Check the [known issues](https://github.com/AmokSolderer/APC#known-issues) for details
@@ -151,7 +151,7 @@ Feedback is very important for me, because if there is none I must assume that n
 
 ## How to get startet?
 
-I'm sorry, but I'm not going to sell any boards. Check whether anyone in the above mentioned forums has a spare board for sale. If this fails you can still order populated board in China.  
+I'm sorry, but I'm not going to sell any boards. Check whether anyone in the above mentioned forums has a spare board for sale. If this fails you can still order populated boards from China.  
 If you're interested in using an APC, then be sure to follow the instructions given in the first part of the documentation listet below. They will guide you through the process of getting and setting up an APC board.
 
 ## Documentation contents
@@ -176,22 +176,24 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 
 4. Running PinMame  
 4.1. [Lisy Homepage](https://lisy.dev/apc.html) - Location of the Lisy SW download and more  
-4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows the current status of the APC and Lisy running PinMame  
-4.3. [PinMame Sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md) - If your game is not yet supported, you can learn here how to change that  
-4.4. [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md) - change your game, but let PinMame do the main work  
-4.5. [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) - list of the PinMame game numbers  
-4.6. [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) - updating Lisy and using the debug mode  
-4.7. [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
+4.2. [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) - shows whether your game is supported and what to do if not  
+4.3. [PinMame System 3 - 7 Sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_3_7.md) - How to enable the sound of System 3 - 7 games  
+4.4. [PinMame System 9 Sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_9.md) - How to enable the sound of System 9 games  
+4.5. [PinMame System 11 Sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_11.md) - How to enable the sound of System 11 games  
+4.6. [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md) - change your game, but let PinMame do the main work  
+4.7. [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) - list of the PinMame game numbers  
+4.8. [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) - updating Lisy and using the debug mode  
+4.9. [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
 
 5. Using MPF  
 5.1. [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw) - see my first humble MPF steps in this video  
 5.2. [MPF setup](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/MPF) - my MPF test config files
-5.3. Lisy runs MPF
 
-6. Additional APC hardware - boards that might come in handy with the APC  
+6. Additional APC hardware - boards and other stuff that might come in handy with the APC  
 6.1. [APC LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) - a board to control WS2812 based LED strips with the APC  
 6.2. [APC solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) - to control additional features  
 6.3. [System 7 alphanumeric display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) - to have alphanumerical displays in a pre System 11 machine  
+6.4. [Installation frames](https://github.com/AmokSolderer/APC/blob/master/DOC/Frames.md) - to mount the APC in your backbox  
 
 7. Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
 7.1. [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7_Display) - an LED replacement display for System 7, purely numerical  
@@ -199,7 +201,7 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 
 8. APC games - Complete games running natively on the APC or games that run in PinMame but have been changed  
 8.1. [Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) - Complete game code with some additional features  
-8.2. [Pin Bot](https://github.com/AmokSolderer/APC/blob/master/DOC/Pinbot.md) - Complete game code with some additional features  
+8.2. [Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/Pinbot.md) - Complete game code with some additional features  
 8.3. [Comet](https://github.com/AmokSolderer/APC/blob/master/DOC/Comet.md) - Some extensions to the original game code running in PinMame
 
 9. Videos - For the generation Youtube  

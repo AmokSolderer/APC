@@ -1,14 +1,24 @@
 # APC News and Changelog
 
-## TDB
+## December 2023
 
 ### New SW Version V1.00
 
+* Exception rules for System 3 Disco Fever have been added. [Sound files for Disco Fever are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+* Exception rules for System 6 Alien Poker have been added. [Sound files for Alien Poker are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
 * Bugfix -> if a sound/music file was invoked immediately after another, the first one was dropped regardless of the priority.
 * Bugfix -> Controlling the original audio boards of System 3 - 6 games has been fixed.
 * Support for single ball games added to BaseCode
 * Solenoid latches are updated every ms instead of on request which will revoke any accidental state change of solenoids. This can happen in heavily distorted environments when the distortion spikes are strong enough to trigger the latches. Distortion levels like these usually mean that something is wrong in your machine, e.g. a broken free-wheeling diode can cause this.
 * System watchdog implemented. If the timer interrupt controlling the HW should not occur for 2s the system will restart.
+* System 3 game adjustments implemented. You can now use the settings system of the APC to do the adjustments of System 3 games.
+* New command StopAllBlinkLamps() implemented
+
+### Misc
+
+* Page for [installation frames](https://github.com/AmokSolderer/APC/blob/master/DOC/Frames.md) started. These make it easier to mount an APC in your backbox.
+
+* PinMame Sound how-tos added to make it more clear what to do to let the APC play the original sounds
 
 ## March 2023
 

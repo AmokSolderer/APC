@@ -33,10 +33,18 @@ Games with a credit display show 00 for System Settings and 01 for Game Settings
 
 For pre Sys11 displays all text settings are represented by their item number as shown in the tables. For example, if a pre Sys11 display is selected and the credit display shows 00 01 you have selected the System Settings and the 'Active Game' setting is currently being shown. An early System11 display (upper display row alphanumerical and lower row numerical) will still try to show the name of the currently selected game as a text which is not perfect, but good enough. A pre System11 display will show the item number instead and if there is a 3 stated in the player 4 display then you're in Remote Control mode.
 
-### Using PinMame settings
+## Using PinMame settings
 
-While you're running PinMame you can adjust the original Williams settings as usual with one exception:  
+While you're running PinMame you can adjust the original Williams System 4 - 11 adjustments as usual with one exception:  
 You must not keep Advance pressed for more than 1 second with Up/Down in up position as this will trigger the APC settings. If you want to browse the Williams Settings quickly, just do it backwards with Up/Down in down position.
+
+### System 3 game adjustments
+
+Doing game adjustments on a System 3 game is done with DIP switches. The procedure is quite cumbersome and error prone which is why we're using the APC's settings menu instead.  
+The following description works only for System 3 games being controlled by Lisy/PinMame, for all other generations the adjustment process hasn't changed from the original.
+
+Keep the Advance switch pressed for more than one second with the Up/Down switch in up position. This will end PinMame and enter the settings menu of the APC. The content of the 18 System 3 adjustments is now stored in the 'Game Settings' 46 to 63 as shown in the table below (Game Settings in Remote Control mode).  
+Enter the game settings and do your changes. When you're done, just select menu entry 65 (Exit Settings) and press the start button. After a few seconds PinMame will restart with the new settings applied.
 
 ## System Settings
 
