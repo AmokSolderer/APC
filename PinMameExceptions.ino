@@ -369,9 +369,9 @@ byte EX_JungleLord(byte Type, byte Command){
     else if (Command == 42){                          // sound command 0x2a - background sound - sound series
       SoundSeries[1] = 0;                             // reset the multiball start sound
       if (SoundSeries[0] < 29)                        // BG sound has 29 pitches
-        SoundSeries[0]++;                             // every call of this sound proceeds with the next tune
+        SoundSeries[0]++;                             // every call of this sound proceeds with the next pitch
       char FileName[13] = "0_2a_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current tune
+      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current pitch
       FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
       for (byte i=0; i<12; i++) {                     // store the name of this sound
         USB_RepeatSound[i] = FileName[i];}
@@ -384,11 +384,11 @@ byte EX_JungleLord(byte Type, byte Command){
       StopPlayingSound();}
     else if (Command == 45){                          // sound command 0x2d - multiball start - sound series
       if (SoundSeries[1] < 31)                        // this sound has 31 pitches
-        SoundSeries[1]++;                             // every call of this sound proceeds with next tune
+        SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
       else
         SoundSeries[1] = 1;                           // start all over again
       char FileName[13] = "0_2d_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current tune
+      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
       FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
       PlaySound(51, (char*) FileName);}               // play the sound
     else {                                            // standard sound
@@ -555,9 +555,9 @@ byte EX_Pharaoh(byte Type, byte Command){             // thanks to Grangeomatic 
       StopPlayingSound();}
     else if (Command == 45) {                         // sound command 0x2d - background sound - sound series
       if (SoundSeries < 31)                           // sound series has 31 different pitches
-        SoundSeries++;                                // switch to the next tune when sound command is called again
+        SoundSeries++;                                // switch to the next pitch when sound command is called again
       char FileName[13] = "0_2d_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries % 10);          // change the 7th character of filename according to current tune
+      FileName[7] = 48 + (SoundSeries % 10);          // change the 7th character of filename according to current pitch
       FileName[6] = 48 + (SoundSeries % 100) / 10;    // the same with the 6th character
       for (byte i=0; i<12; i++) {                     // store filename to be repeated
         USB_RepeatSound[i] = FileName[i];}
@@ -599,9 +599,9 @@ byte EX_Barracora(byte Type, byte Command){
       StopPlayingSound();}
     else if (Command == 45){                          // sound command 0x2d - sound series
       if (SoundSeries[0] < 32) {                      // this sound has 32 pitches
-        SoundSeries[0]++;}                            // every call of this sound proceeds with next tune
+        SoundSeries[0]++;}                            // every call of this sound proceeds with next pitch
       char FileName[13] = "0_2d_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current tune
+      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current pitch
       FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
       for (byte i=0; i<12; i++) {                     // prepare the filename
         USB_RepeatSound[i] = FileName[i];}
