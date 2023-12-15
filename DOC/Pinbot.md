@@ -26,9 +26,9 @@ The rules for the 3 ball mode are shown [here](https://youtu.be/IGrUnbhkijU).
 
 You need to have the audio files for this game. [Contact me](https://github.com/AmokSolderer/APC/tree/master#feedback) to get the corresponding sound file package.  
 
-If you want to use the 3 ball Multiball you have to add a third ball apparently. Don't forget to remove it when you switch back to 3 ball mode.
+If you want to use the 3 ball Multiball you have to add a third ball apparently. Don't forget to remove it when you switch back to 2 ball mode.
 
-## BK Game Settings
+## Pinbot Game Settings
 
 | Number | Text  | Item Nr | Item Text | Default | Comment |
 |--|--|--|--|--|--|
