@@ -1,5 +1,10 @@
 # If things don't work
 
+## APC doesn't boot
+
+On some System 9 and 11 machines the APC doesn't boot sometimes. Usually it is enough to powercycle your machine to make it work.  
+If it happens frequently then you could swap C14 from a 10µF to a 22µF capacitor.
+
 ## Sound stuttering
 
 If your sound has unregular lags and stutters sometimes then it's most probably an issue with your SD card.

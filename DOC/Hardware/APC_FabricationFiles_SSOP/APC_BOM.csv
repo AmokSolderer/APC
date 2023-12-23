@@ -1,6 +1,6 @@
 Comment,Designator,Footprint,JLCPCB Part #（optional）
 2.2u,"C1,C6",Capacitors_SMD:C_0603,C23630
-10u,C14,Capacitors_SMD:C_0805,C15850
+22u,C14,Capacitors_SMD:C_0805,C782176
 100n,"C25,C4,C28,C15,C22,C26,C23,C27,C19,C12,C10,C20,C29",Capacitors_SMD:C_0603,C14663
 680p,"C3,C7",Capacitors_SMD:C_0603,C1630
 68n,"C31,C30,C24,C21,C18,C17,C16,C13",Capacitors_SMD:C_0603,C31658
