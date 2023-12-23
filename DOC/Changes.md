@@ -2,6 +2,10 @@
 
 ## December 2023
 
+### HW
+
+* C14 has been increased from 10µF to 22µF as some System11 machines had [startup issues](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md)
+
 ### New SW Version V1.00
 
 * General improvements for the Pinbot and Black Knight code added. Main feature is the new 3 ball multiball mode for [Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/Pinbot.md)
