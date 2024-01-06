@@ -737,6 +737,7 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_SpaceStation(byte Type, byte Command){
+  static byte LastMusic;
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (!Command){                                    // sound command 0x00 - stop sound
@@ -756,46 +757,83 @@ byte EX_SpaceStation(byte Type, byte Command){
   case SoundCommandCh2:                               // sound commands for channel 2
     if (!Command) {                                   // sound command 0x00 - stop music
       AfterMusic = 0;
+      LastMusic = Command;                            // store number of last music track
+      RestoreMusicVolume(100);
       StopPlayingMusic();}
-    else if (Command == 127) {                        // sound command 0x7f - stop sound
-      AfterSound = 0;
-      StopPlayingSound();}
+    else if (Command == 66) { }                       // ignore sound command 0x42
     else if (Command == 85) { }                       // ignore sound command 0x55
-    else if (Command > 95 && Command < 100) {         // music volume command 0x6X
+    else if (Command > 95 && Command < 104) {         // music volume command 0x6X
       MusicVolume = Command - 96;}
-    else if (Command == 144) { }                      // ignore unknown sound command 0x90
     else if (Command == 170) { }                      // ignore unknown sound command 0xaa
     else if (Command == 255) { }                      // ignore unknown sound command 0xff
     else if (Command == 1) {                          // music track 1
+      LastMusic = Command;                            // store number of last music track
       PlayMusic(50, "1_01L.snd");                     // play music track
       QueueNextMusic("1_01L.snd");}                   // track is looping so queue it also
     else if (Command == 2) {                          // music track 2
+      LastMusic = Command;                            // store number of last music track
       PlayMusic(50, "1_02.snd");                      // play non looping part of music track
       QueueNextMusic("1_02L.snd");}                   // queue looping part as next music to be played
     else if (Command == 3) {                          // music track 3
+      LastMusic = Command;                            // store number of last music track
       PlayMusic(50, "1_03L.snd");                     // play music track
       QueueNextMusic("1_03L.snd");}                   // track is looping so queue it also
     else if (Command == 4) {                          // music track 4
+      LastMusic = Command;                            // store number of last music track
       PlayMusic(50, "1_04.snd");                      // play non looping part of music track
       QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
     else if (Command == 5) {                          // music track 5
+      LastMusic = Command;                            // store number of last music track
       AfterMusic = 0;                                 // no looping part
       PlayMusic(50, "1_05.snd");}                     // play music track
     else if (Command == 6) {                          // music track 6
+      LastMusic = Command;                            // store number of last music track
       PlayMusic(50, "1_06.snd");                      // play non looping part of music track
       QueueNextMusic("1_06L.snd");}                   // queue looping part as next music to be played
     else if (Command == 7) {                          // music track 7
+      LastMusic = Command;                            // store number of last music track
       AfterMusic = 0;                                 // no looping part
       PlayMusic(50, "1_07.snd");}                     // play music track
     else if (Command == 11) {                         // music track 0x0b
+      LastMusic = Command;                            // store number of last music track
       AfterMusic = 0;                                 // no looping part
       PlayMusic(50, "1_0b.snd");}                     // play music track
     else if (Command == 12) {                         // music track 0x0c
+      LastMusic = Command;                            // store number of last music track
       AfterMusic = 0;                                 // no looping part
       PlayMusic(50, "1_0c.snd");}                     // play music track
     else if (Command == 13) {                         // music track 0x0d
+      LastMusic = Command;                            // store number of last music track
       PlayMusic(50, "1_0d.snd");                      // play non looping part of music track
       QueueNextMusic("1_0dL.snd");}                   // queue looping part as next music to be played
+    else if (Command == 64) {                         // music ending 0x40
+      if (LastMusic != 64) {                          // avoid double play
+        LastMusic = Command;                          // store number of last music track
+        AfterMusic = 0;                               // disable looping
+        PlayMusic(50, "1_40.snd");}}                  // play ending
+    else if (Command == 65) {                         // music ending 0x41
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_01.snd");                      // play non looping part of music track
+      QueueNextMusic("1_01L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 66) {                         // music command 0x42
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_03.snd");                      // play non looping part of music track
+      QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 67) {                         // music ending 0x43
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_04.snd");                      // play non looping part of music track
+      QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 130) {
+      if (LastMusic) {                                // dont play it when no music is being played
+        PlaySound(50, "1_82.snd");}
+      else {
+        return(0);}}
+    else if (Command == 149) {                        // sound 0x95
+      PlayMusic(50, "1_95.snd");}                     // play on music channel
+    else if (Command == 158) {                        // sound 0x9e
+      PlayMusic(50, "1_9e.snd");}                     // play on music channel
+    else if (Command == 165) {                        // sound 0xa5
+      PlayMusic(50, "1_a5.snd");}                     // play on music channel
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
@@ -805,6 +843,10 @@ byte EX_SpaceStation(byte Type, byte Command){
         else {
           PlaySound(50, (char*) FileName);}}}         // play on the sound channel
     return(0);                                        // return number not relevant for sounds
+  case SolenoidActCommand:
+    if (Command == 13 || Command == 17) {             // protect kickbacks from over turn on
+      ActivatePrioTimer(50, Command, ReleaseSolenoid);}
+    return(0);
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 

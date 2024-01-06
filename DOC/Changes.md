@@ -1,5 +1,11 @@
 # APC News and Changelog
 
+## TBD
+
+### New SW Version V1.01
+
+* Exception rules for System 11b Space Station have been added. [Sound files for Space Station are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+
 ## December 2023
 
 ### HW

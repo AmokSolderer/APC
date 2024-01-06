@@ -109,7 +109,7 @@ The PinMame support is still under development and even if a generation is basic
 |9| Yes | Yes | Yes |  |
 |11| Yes | Yes | Yes |  |
 |11a| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
-|11b| Not yet | Yes | Yes |  |
+|11b| Yes | Yes | Yes | Some cable ties have to be cut and the wiring harness opened a bit |
 |11c| Yes | Yes | Yes | The wires of three connectors must be extended |
 
 The following Data East MPUs are almost identical to their counterparts from Williams but DE used 2.1 audio boards. Check the [known issues](https://github.com/AmokSolderer/APC#known-issues) for details

@@ -20,6 +20,7 @@ At the moment the list of available sound packages is still quite short, but we 
 |9|Comet|available on request| Works great. Sound samples are also good. |
 |11a|Pinbot| available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW.|
 |11a|F-14 Tomcat| Ask Snux in the Pinside forum | PinMameExceptions also done by Snux |
+|11b|Space Station| available on request| |
 |11c|Rollergames| available on request| There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. The issue doesn't seem to affect the Windows version of PinMame. Please contact me if you have any idea what the root cause might be. |
 
 # What needs to be done
