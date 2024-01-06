@@ -684,8 +684,11 @@ void TC7_Handler() {                                  // interrupt routine - run
       if (PlayingSound) {                             // playing music and sound
         Buffer16b = (uint16_t *) g_Sound.next;        // get address of the next DAC buffer part to be filled
         if (MusicVolume) {                            // reduce the music volume?
+          uint16_t Offset = 1024;
+          for (i=0; i<MusicVolume-1; i++) {
+            Offset = Offset + 512>>i;}
           for (i=0; i<64; i++) {
-            *Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume;  // write channel 1
+            *Buffer16b = (*(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume) + Offset;  // write channel 1
             Buffer16b++;
             *Buffer16b = *(SoundBuffer+SoundIRpos*128+2*i) | 4096;  // write channel 2
             Buffer16b++;}}
@@ -726,8 +729,11 @@ void TC7_Handler() {                                  // interrupt routine - run
       else {                                          // playing music only
         Buffer16b = (uint16_t *) g_Sound.next;        // same as above but music only
         if (MusicVolume) {                            // reduce the music volume?
+          uint16_t Offset = 1024;
+          for (i=0; i<MusicVolume-1; i++) {
+            Offset = Offset + 512>>i;}
           for (i=0; i<64; i++) {
-            *Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume;
+            *Buffer16b = (*(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume) + Offset;
             Buffer16b++;
             *Buffer16b = 6144;                        // 2048 | 4096
             Buffer16b++;}}
