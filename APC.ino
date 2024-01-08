@@ -686,7 +686,7 @@ void TC7_Handler() {                                  // interrupt routine - run
         if (MusicVolume) {                            // reduce the music volume?
           uint16_t Offset = 1024;
           for (i=0; i<MusicVolume-1; i++) {
-            Offset = Offset + 512>>i;}
+            Offset = Offset + (512>>i);}
           for (i=0; i<64; i++) {
             *Buffer16b = (*(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume) + Offset;  // write channel 1
             Buffer16b++;
@@ -731,7 +731,7 @@ void TC7_Handler() {                                  // interrupt routine - run
         if (MusicVolume) {                            // reduce the music volume?
           uint16_t Offset = 1024;
           for (i=0; i<MusicVolume-1; i++) {
-            Offset = Offset + 512>>i;}
+            Offset = Offset + (512>>i);}
           for (i=0; i<64; i++) {
             *Buffer16b = (*(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume) + Offset;
             Buffer16b++;
