@@ -801,7 +801,7 @@ byte EX_SpaceStation(byte Type, byte Command){
     else if (Command == 12) {                         // music track 0x0c
       LastMusic = Command;                            // store number of last music track
       AfterMusic = 0;                                 // no looping part
-      PlayMusic(50, "1_0c.snd");}                     // play music track
+      PlaySound(60, "mball.snd");}                    // play multiball intro and block everything else
     else if (Command == 13) {                         // music track 0x0d
       LastMusic = Command;                            // store number of last music track
       PlayMusic(50, "1_0d.snd");                      // play non looping part of music track
@@ -828,6 +828,8 @@ byte EX_SpaceStation(byte Type, byte Command){
         PlaySound(50, "1_82.snd");}
       else {
         return(0);}}
+    else if (Command == 144) {                        // sound 0x90
+      PlaySound(49, "1_90.snd");}                     // play with lower prio
     else if (Command == 149) {                        // sound 0x95
       PlayMusic(50, "1_95.snd");}                     // play on music channel
     else if (Command == 158) {                        // sound 0x9e
@@ -844,8 +846,10 @@ byte EX_SpaceStation(byte Type, byte Command){
           PlaySound(50, (char*) FileName);}}}         // play on the sound channel
     return(0);                                        // return number not relevant for sounds
   case SolenoidActCommand:
-    if (Command == 13 || Command == 17) {             // protect kickbacks from over turn on
-      ActivatePrioTimer(50, Command, ReleaseSolenoid);}
+    if (!QuerySolenoid(12) && (Command == 3 || Command == 4 || Command == 6)) { // protect hig power solenoids from over turn on
+      ActivatePrioTimer(40, Command, ReleaseSolenoid);}
+    else if (Command == 8 || Command == 13 || Command == 17) {
+      ActivatePrioTimer(40, Command, ReleaseSolenoid);}
     return(0);
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
