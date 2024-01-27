@@ -1079,8 +1079,12 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
         if (game_settings[PB_Multiballs]) {           // 3 ball multiball selected?
           switch (PB_MballState) {
           case 1:                                     // one ball in play
-            Counter = PB_SearchBallCycle(Counter);              // fire coils to search ball
-            BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);
+            PB_CountBallsInLock();
+            if (InLock) {                             // number of locked balls not as expected
+              PB_HandleLock(0);}                      // and call it
+            else {
+              Counter = PB_SearchBallCycle(Counter);  // fire coils to search ball
+              BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}
             break;
           case 2:                                     // one ball in lock
           case 6:
