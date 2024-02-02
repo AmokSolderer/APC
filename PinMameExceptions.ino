@@ -839,14 +839,10 @@ byte EX_SpaceStation(byte Type, byte Command){
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
-        if (Command < 128) {                          // play only music on the music channel
-          AfterMusic = 0;                             // stop looping music
-          PlayMusic(50, (char*) FileName);}           // play on the music channel
-        else {
-          PlaySound(50, (char*) FileName);}}}         // play on the sound channel
+        PlaySound(50, (char*) FileName);}}            // play on the sound channel
     return(0);                                        // return number not relevant for sounds
   case SolenoidActCommand:
-    if (!QuerySolenoid(12) && (Command == 3 || Command == 4 || Command == 6)) { // protect hig power solenoids from over turn on
+    if (!QuerySolenoid(12) && (Command == 3 || Command == 4 || Command == 6)) { // protect high power solenoids from over turn on
       ActivatePrioTimer(40, Command, ReleaseSolenoid);}
     else if (Command == 8 || Command == 13 || Command == 17) {
       ActivatePrioTimer(40, Command, ReleaseSolenoid);}
