@@ -2703,9 +2703,7 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       PB_MballDisplay(0);                             // stop display animation
       PB_ShooterLaneWarning(0);                       // turn off shooter lane warning
       PB_ShowMessage(255);                            // release message block
-      WriteUpper("              ");
-      WriteLower("              ");
-      ShowPoints(Player);
+      ShowAllPoints(0);
       PB_LampSweepActive = 0;                         // turn off backbox lamp sweep
       PB_HandleEjectHole(16);                         // stop eject hole animation
       ReleaseSolenoid(11);                            // turn backbox GI back on
@@ -2737,9 +2735,7 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       Multiballs = 1;                                 // turn it off
       PB_MballDisplay(0);                             // stop display animation
       PB_ShowMessage(255);                            // release message block
-      WriteUpper("              ");
-      WriteLower("              ");
-      ShowPoints(Player);
+      ShowAllPoints(0);
       PB_LampSweepActive = 0;                         // turn off backbox lamp sweep
       ReleaseSolenoid(11);                            // turn backbox GI back on
       if (APC_settings[Volume]) {
