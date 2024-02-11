@@ -2767,7 +2767,8 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
     RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
   PB_ClearChest();                                    // turn off chest lamps
   if (!PB_ChestMode) {
-    PB_Chest_Status[Player] = PB_Chest_Status[Player] + 100;} // indicate that the visor has been open
+    if (PB_Chest_Status[Player] < 100) {
+      PB_Chest_Status[Player] = PB_Chest_Status[Player] + 100;}} // indicate that the visor has been open
   else {                                              // visor is closed
     if (PB_ChestMode < 11 && PB_LitChestLamps[Player-1]) {  // player already has lit chest lamps
       PB_LitChestLamps[Player-1] += 100;}}            // indicate that the chest lamps have been lit, but the visor is still closed
