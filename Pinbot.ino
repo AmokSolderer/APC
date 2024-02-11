@@ -946,13 +946,13 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
           break;}
         if (!PB_ChestMode) {                          // visor is open
           if (InLock) {
-            PlayMusic(51, "1_03L.snd");               // play 2nd lock music track
+            PlayMusic(50, "1_03L.snd");               // play 2nd lock music track
             QueueNextMusic("1_03L.snd");}
           else {
-            PlayMusic(51, "1_02.snd");                // play open visor theme
+            PlayMusic(50, "1_02.snd");                // play open visor theme
             QueueNextMusic("1_02L.snd");}}
         else {                                        // visor is not open
-          PlayMusic(51, "1_01L.snd");                 // play main theme
+          PlayMusic(50, "1_01L.snd");                 // play main theme
           QueueNextMusic("1_01L.snd");}               // track is looping so queue it also
         if (PB_SkillMultiplier < 10 && c!= 100) {     // no special display effect needed
           WriteUpper2(" VORTEX   X   ");
@@ -2009,7 +2009,7 @@ void PB_HandleLock(byte State) {
             ActivateSolenoid(0, 12);                  // turn off playfield GI
             PB_EyeBlink(0);                           // stop eye blinking
             PlayFlashSequence((byte*) PB_Ball_Locked);
-            PlayMusic(52, "1_80.snd");
+            PlayMusic(50, "1_80.snd");
             ActivateTimer(1000, 1, PB_2ndLock);       // 'partial link up'
             PB_GiveBall(2);
             PB_MballState = 2;}
@@ -2036,6 +2036,8 @@ void PB_HandleLock(byte State) {
           break;
         case 5:                                       // still two balls in game
           PB_MballState = 6;
+          PlayMusic(50, "1_03L.snd");                     // play 2nd lock music track
+          QueueNextMusic("1_03L.snd");
           if (InLock == 2) {                          // second ball also locked?
             ActivateTimer(200, 1, PB_HandleLock);}
           break;}}
@@ -2106,6 +2108,7 @@ void PB_HandleEjectHole(byte State) {
           PlaySound(55, "0_ae.snd");                  // 'shoot for solar value'
           Multiballs = 3;                             // set score multiplier
           PB_MballState = 4;
+          PlayMusic(50, "1_05.snd");
           AddBlinkLamp(35, 100);                      // start blinking of solar energy ramp
           PB_HandleEnergy(0);                         // turn off energy and lower ramp
           ActivateTimer(1000, 3, PB_HandleEjectHole);
@@ -2269,7 +2272,8 @@ void PB_Multiball(byte State) {                       // state machine for sound
     PlayFlashSequence((byte*) PB_MultiballSeq);
     break;
   case 1:
-    PlayMusic(50, "1_04.snd");
+    if (!game_settings[PB_Multiballs]) {              // not in 3 ball multiball mode?
+      PlayMusic(50, "1_04.snd");}
     QueueNextMusic("1_04L.snd");                      // queue looping part as next music to be played
     PlaySound(52, "1_80.snd");
     ActivateTimer(1000, 2, PB_Multiball);
@@ -2704,6 +2708,8 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       PB_ShooterLaneWarning(0);                       // turn off shooter lane warning
       PB_ShowMessage(255);                            // release message block
       ShowAllPoints(0);
+      PlayMusic(50, "1_0a.snd");                      // play multiball end theme
+      QueueNextMusic("1_02L.snd");                    // track is looping so queue it also
       PB_LampSweepActive = 0;                         // turn off backbox lamp sweep
       PB_HandleEjectHole(16);                         // stop eject hole animation
       ReleaseSolenoid(11);                            // turn backbox GI back on
