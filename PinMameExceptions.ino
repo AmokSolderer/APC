@@ -784,8 +784,8 @@ byte EX_SpaceStation(byte Type, byte Command){
       QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
     else if (Command == 5) {                          // music track 5
       LastMusic = Command;                            // store number of last music track
-      AfterMusic = 0;                                 // no looping part
-      PlayMusic(50, "1_05.snd");}                     // play music track
+      PlayMusic(50, "1_05.snd");                      // play music track
+      QueueNextMusic("1_05L.snd");}                   // queue looping part as next music to be played
     else if (Command == 6) {                          // music track 6
       LastMusic = Command;                            // store number of last music track
       PlayMusic(50, "1_06.snd");                      // play non looping part of music track

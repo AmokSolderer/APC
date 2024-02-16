@@ -1086,7 +1086,7 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
     ShowMessage(3);
     PlaySound(50, "0_6f.snd");
     ActA_BankSol(2);                              // release ball
-    ActivateTimer(2000, Counter+1, PB_SearchBall);
+    BallWatchdogTimer = ActivateTimer(2000, Counter+1, PB_SearchBall);
     break;
   case 21:
     PlaySound(50, "0_6f.snd");
