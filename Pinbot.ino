@@ -913,7 +913,7 @@ void PB_DisplayHooray(byte State) {
       RestoreMusicVolume(25);}}}
 
 void PB_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
-  if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)&&(Switch != 48)&&(Switch != 52)&&(Switch != 53)) { // playfield switch activated?
+  if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 20)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)&&(Switch != 48)&&(Switch != 52)&&(Switch != 53)) { // playfield switch activated?
     PB_RampThunder(0);                                // stop thunder noise
     if (BallWatchdogTimer) {
       KillTimer(BallWatchdogTimer);}                  // stop watchdog
@@ -1046,7 +1046,9 @@ byte PB_CountBallsInTrunk() {
   return Balls;}
 
 byte PB_SearchBallCycle(byte Counter) {
-  WriteUpper("  BALL  SEARCH");
+  WriteUpper2("  BALL  SEARCH");
+  WriteLower2("              ");
+  ShowMessage(2);
   ActivateSolenoid(0, PB_BallSearchCoils[Counter]);   // fire coil to get ball free
   if (PB_BallSearchCoils[Counter] == 5) {             // ramp raise?
     PB_DropRamp = true;}                              // set flag to drop ramp
@@ -1070,7 +1072,7 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
         WriteUpper2("WAITING  FOR  ");
         WriteLower2("         BALL ");
         ShowMessage(5);
-        PlaySound(50, "0_6f.snd");
+        PlaySound(51, "0_6f.snd");
         Counter = 20;
         break;
       default:                                        // in all other cases just rerun ball search cycle
@@ -1084,20 +1086,21 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
     WriteUpper2(" DO NOT LAUNCH");
     WriteLower2("         BALL ");
     ShowMessage(3);
-    PlaySound(50, "0_6f.snd");
+    PlaySound(51, "0_6f.snd");
     ActA_BankSol(2);                              // release ball
     BallWatchdogTimer = ActivateTimer(2000, Counter+1, PB_SearchBall);
     break;
   case 21:
-    PlaySound(50, "0_6f.snd");
+    PlaySound(51, "0_6f.snd");
     if (PB_CountBallsInTrunk() == 2) {
       WriteUpper2("  BALL DRAINED");
       WriteLower2("              ");
       ShowMessage(2);
       ActivateTimer(2000, 2, PB_BallEnd);}
     else {
-      WriteUpper("  BALL MISSING");
-      WriteLower("              ");}
+      WriteUpper2("  BALL MISSING");
+      WriteLower2("              ");
+      ShowMessage(5);}
     break;
   default:                                            // initial call and ball search
     if (!QuerySwitch(10) && !QuerySwitch(11) && !QuerySwitch(20)) { // if ball is waiting to be launched or any flipper finger up
@@ -2356,14 +2359,15 @@ void PB_ClearOutLock(byte State) {                    // CloseVisor = 0 -> eject
     if (Timer) {
       KillTimer(Timer);}
     State += 3;}
+  Timer = 0;
   if (QuerySolenoid(13)) {                            // visor motor on?
-    ActivateTimer(1100, State, PB_ClearOutLock);}     // come back later
+    Timer = ActivateTimer(1100, State, PB_ClearOutLock);}     // come back later
   else {
     if (QuerySwitch(47)) {                            // visor is open
       if (QuerySwitch(25)) {                          // left eye?
         ActA_BankSol(7);                              // eject it
         if (QuerySwitch(26) && State == 5) {          // 2nd ball shall be ejected also
-          ActivateTimer(1000, 3, PB_ClearOutLock);}
+          Timer = ActivateTimer(1000, 3, PB_ClearOutLock);}
         else if (State == 4) {                        // closed visor requested?
           ActivateTimer(1000, 1, PB_CloseVisor);}}
       else {
@@ -2375,7 +2379,7 @@ void PB_ClearOutLock(byte State) {                    // CloseVisor = 0 -> eject
       ActivateTimer(1000, 0, PB_OpenVisor);
       PlaySound(52, "0_f1.snd");                      // moving visor sound
       ActivateSolenoid(0, 13);                        // activate visor motor
-      ActivateTimer(2000, State, PB_ClearOutLock);}}}
+      Timer = ActivateTimer(2000, State, PB_ClearOutLock);}}}
 
 void PB_DropTargetReset(byte Counter) {
   PlaySound(52, "0_9b.snd");
