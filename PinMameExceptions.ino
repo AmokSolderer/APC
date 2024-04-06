@@ -703,8 +703,8 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
   case SoundCommandCh2:                               // sound commands for channel 2
     if (!Command) {                                   // sound command 0x00 - stop music
       AfterMusic = 0;
-      StopPlayingMusic();
-      MusicVolume=0; }                                // reset music volume in case it was made quieter earlier
+      RestoreMusicVolume(100);                        // reset music volume in case it was made quieter earlier
+      StopPlayingMusic();}
     else if (Command == 127) {                        // sound command 0x7f - stop sound
       AfterSound = 0;
       StopPlayingSound();}
@@ -719,11 +719,19 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
       PlayMusic(50, "1_01.snd");                      // play music track
       QueueNextMusic("1_01.snd");}                    // track is looping so queue it also
     else if (Command == 2) {                          // music track 2
-      PlayMusic(50, "1_02.snd");                      // play non looping part of music track
-      QueueNextMusic("1_02.snd");}                    // queue looping part as next music to be played
+      PlayMusic(50, "1_01.snd");                      // play non looping part of music track
+      QueueNextMusic("1_01.snd");}                    // queue looping part as next music to be played
+    else if (Command == 3) {                          // music track 3
+      PlayMusic(50, "1_03.snd");                      // play non looping part of music track
+      QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 4) {                          // music track 2
+      PlayMusic(50, "1_04L.snd");}                    // play non looping part of music track
     else if (Command == 6) {                          // music track 6
       PlayMusic(50, "1_06.snd");                      // play non looping part of music track
-      QueueNextMusic("1_06L.snd");}                   // queue looping part as next music to be played
+      QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 7) {                          // music track 7
+      PlayMusic(50, "1_07.snd");                      // play non looping part of music track
+      QueueNextMusic("1_07L.snd");}                   // queue looping part as next music to be played
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
