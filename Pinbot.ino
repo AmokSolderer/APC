@@ -966,33 +966,34 @@ void PB_ResetBallWatchdog(byte Switch) {              // handle switches during 
   PB_GameMain(Switch);}                               // process current switch
 
 void PB_ShooterLaneWarning(byte State) {
-  static byte Timer = 0;
-  switch (State) {
-  case 0:                                             // stop shooter lane warning
-    if (Timer) {
-      KillTimer(Timer);
-      Timer = 0;}
-    break;
-  case 1:                                             // activate shooter lane warning
-    if (QuerySwitch(20)) {                            // ball still in shooter lane?
-      Multiballs = 2;                                 // stop jackpot as long as ball is in the shooter lane
-      WriteUpper2(" LAUNCH BALL  ");
-      WriteLower2("              ");
-      ShowMessage(1);
-      PlaySound(55, "0_6b.snd");                      // warning sound
-      Switch_Released = PB_CheckShooterLaneSwitch;    // set mode to register when ball is shot
-      Timer = ActivateTimer(1500, 2, PB_ShooterLaneWarning);}
-    else {
-      PB_SkillShot = false;}
-    break;
-  case 2:                                             // every second
-    Timer = 0;                                        // this case is called by timer
-    if (QuerySwitch(20)) {                            // ball still in shooter lane?
-      WriteUpper2(" LAUNCH BALL  ");
-      WriteLower2("              ");
-      ShowMessage(1);
-      PlaySound(55, "0_6b.snd");                      // warning sound
-      Timer = ActivateTimer(1500, 2, PB_ShooterLaneWarning);}}}
+	static byte Timer = 0;
+	switch (State) {
+	case 0:                                             // stop shooter lane warning
+		if (Timer) {
+			KillTimer(Timer);
+			Timer = 0;}
+		break;
+	case 1:                                             // activate shooter lane warning
+		if (!Timer) {																			// don't activate twice
+			if (QuerySwitch(20)) {                          // ball still in shooter lane?
+				Multiballs = 2;                               // stop jackpot as long as ball is in the shooter lane
+				WriteUpper2(" LAUNCH BALL  ");
+				WriteLower2("              ");
+				ShowMessage(1);
+				PlaySound(55, "0_6b.snd");                    // warning sound
+				Switch_Released = PB_CheckShooterLaneSwitch;  // set mode to register when ball is shot
+				Timer = ActivateTimer(1500, 2, PB_ShooterLaneWarning);}
+			else {
+				PB_SkillShot = false;}}
+		break;
+	case 2:                                             // every second
+		Timer = 0;                                        // this case is called by timer
+		if (QuerySwitch(20)) {                            // ball still in shooter lane?
+			WriteUpper2(" LAUNCH BALL  ");
+			WriteLower2("              ");
+			ShowMessage(1);
+			PlaySound(55, "0_6b.snd");                      // warning sound
+			Timer = ActivateTimer(1500, 2, PB_ShooterLaneWarning);}}}
 
 void PB_BallReleaseCheck(byte Switch) {               // handle switches during ball release
   if ((Switch > 11)&&(Switch != 17)&&(Switch != 18)&&(Switch != 19)&&(Switch != 44)&&(Switch != 46)&&(Switch != 47)) { // playfield switch activated?
@@ -1327,22 +1328,25 @@ void PB_MultiballThunder(byte State) {
       StopPlayingSound();}}}
 
 void PB_RampThunder(byte State) {                     // State = 0 -> Stop
-  static byte Timer = 0;
-  switch (State) {
-  case 0:
-    if (Timer) {
-      RestoreMusicVolume(25);
-      KillTimer(Timer);
-      Timer = 0;}                                     // @suppress("No break at end of case")
-    break;
-  case 8:                                             // play thunder 7 times
-    RestoreMusicVolume(25);
-    Timer = 0;
-    break;
-  default:
-    PlaySound(51, "0_d7.snd");
-    Timer = ActivateTimer(1500, State+1, PB_RampThunder);
-    break;}}
+	static byte Timer = 0;
+	switch (State) {
+	case 0:
+		if (Timer) {
+			RestoreMusicVolume(25);
+			KillTimer(Timer);
+			Timer = 0;}
+		break;
+	case 8:                                             // play thunder 7 times
+		RestoreMusicVolume(25);
+		Timer = 0;
+		break;
+	case 1:																							// initial call
+		if (Timer) {
+			KillTimer(Timer);} 															// @suppress("No break at end of case")
+	default:
+		PlaySound(51, "0_d7.snd");
+		Timer = ActivateTimer(1500, State+1, PB_RampThunder);
+		break;}}
 
 void PB_PlayEjectHoleSounds(byte Number) {
   PlaySound(51, "1_83.snd");
@@ -2220,7 +2224,7 @@ void PB_HandleEjectHole(byte State) {
         else {
           RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
       MBallAnimation = 1;
-      ActivateTimer(10, 20, PB_HandleEjectHole);}     // start animation
+      Timer = ActivateTimer(10, 20, PB_HandleEjectHole);} // start animation
     break;
   case 16:                                            // end animation
     if (Timer) {
