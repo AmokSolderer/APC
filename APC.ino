@@ -68,7 +68,7 @@ byte ByteBuffer3 = 0;                                 // general purpose buffer
 byte i = 0;                                           // general purpose counter
 byte x = 0;                                           // general purpose counter
 bool SDfound = false;                                 // SD card present?
-byte SwitchStack = 0;                                 // determines which switch events stack is active
+volatile byte SwitchStack = 0;                        // determines which switch events stack is active
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
 byte SwEvents[2];                                     // contains the number of pending switch events in each stack
 uint32_t SwitchRows[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the status of all switch rows
@@ -103,7 +103,7 @@ byte BlinkingNo[65];                                  // number of lamps using t
 unsigned int BlinkPeriod[65];                         // blink period for this timer
 byte BlinkingLamps[65][65];                           // [BlinkTimer] used by these [lamps]
 byte SolMax = 24;                                     // maximum number of solenoids
-bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
+volatile bool SolChange = false;                      // Indicates that the state of a solenoid has to be changed
 byte SolRecycleTime[22];                              // recycle time for each solenoid
 byte SolRecycleTimers[22];                            // stores the numbers of the recycle timers for each solenoid
 bool C_BankActive = false;                            // A/C relay currently doing C bank?
@@ -114,16 +114,16 @@ byte NextSolSlot = 0;                                 // next free slot in SolWa
 byte SettingsRepeatTimer = 0;                         // number of the timer of the key repeat function in the settings function
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte CheckReleaseTimer = 0;                           // number of the timer for the ball release check
-bool BlockPrioTimers = false;                         // blocks the prio timer interrupt while timer properties are being changed
+volatile bool BlockPrioTimers = false;                // blocks the prio timer interrupt while timer properties are being changed
 byte ActivePrioTimers = 0;                            // Number of active prio timers
 unsigned int PrioTimerValue[9];                       // Timer value
 byte PrioTimerArgument[9];
 void (*PrioTimerEvent[9])(byte);                      // pointers to the procedures to be executed on the prio timer event
 
-bool BlockTimers = false;                             // blocks the timer interrupt while timer properties are being changed
+volatile bool BlockTimers = false;                    // blocks the timer interrupt while timer properties are being changed
 byte ActiveTimers = 0;                                // Number of active timers
 unsigned int TimerValue[64];                          // Timer values
-byte TimerStack = 0;                                  // determines which timer events stack is active
+volatile byte TimerStack = 0;                         // determines which timer events stack is active
 byte RunOutTimers[2][30];                             // two stacks of timers with pending events
 byte TimerEvents[2];                                  // contains the number of pending timer events in each stack
 byte TimerArgument[64];
