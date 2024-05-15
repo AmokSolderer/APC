@@ -2805,7 +2805,6 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
         ActivateTimer(3000, 10, PB_Multiball);        // return to main music theme
         BlockOuthole = false;}                        // remove outhole block
       return;}}
-  LockedBalls[Player] = 0;
   PB_HandleDropTargets(100);                          // turn off drop target blinking
   PB_HandleEnergy(0);                                 // turn off energy lamp and sounds
   if (!QuerySwitch(44)) {                             // ramp in up state?
