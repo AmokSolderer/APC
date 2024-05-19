@@ -11,6 +11,7 @@ At the moment the list of available sound packages is still quite short, but we 
 |--|--|--|--|
 |3|Disco Fever| available on request| PinMameExceptions might still need some finetuning |
 |4|Flash| available on request| |
+|6|Time Warp| available on request | PinMameExceptions might still need some finetuning |
 |6|Firepower| Ask Matiou in the Pinside forum | PinMameExceptions also done by Matiou |
 |6|Alien Poker| available on request | PinMameExceptions might still need some finetuning |
 |7|Barracora| available on request | PinMameExceptions might still need some finetuning |

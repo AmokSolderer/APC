@@ -196,6 +196,33 @@ byte EX_Flash(byte Type, byte Command){
   default:
     return(0);}}
 
+byte EX_TimeWarp(byte Type, byte Command){
+  static byte SoundSeries;                            // buffer to handle pre system11 sound series
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (Command == 31) { }                            // ignore sound command 0x1f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
+    else if (Command == 12) {                         // sound command 0x0c - stop sound
+      AfterSound = 0;
+      SoundSeries = 0;                                // Reset BG sound
+      StopPlayingSound();}
+    else if (Command == 14) {                         // sound command 0x0e - background sound - sound series
+      if (SoundSeries < 25 )                          // this sound has 31 pitches
+        SoundSeries++;                                // every call of this sound proceeds with next pitch
+      char FileName[13] = "0_0e_000.snd";
+      FileName[7] = 48 + (SoundSeries % 10);          // change the 7th character of filename according to current pitch
+      FileName[6] = 48 + (SoundSeries % 100) / 10;    // the same with the 6th character
+      for (byte i=0; i<12; i++) {                     // prepare the filename
+        USB_RepeatSound[i] = FileName[i];}
+      QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
+      PlaySound(51, (char*) FileName);}
+    else {                                            // standard sound
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}
+    return(0);                                        // return number not relevant for sounds
+  default:
+    return(0);}}
+
 byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for sending me this code
   static byte SoundSeries[5] = {0, 0, 0, 0, 0};       // buffer to handle pre system11 sound series
   static byte PlayingMultiballSound = 0;
@@ -1037,6 +1064,9 @@ void EX_Init(byte GameNumber) {
   case 6:                                             // Flash
     SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
     PinMameException = EX_Flash;                      // use exception rules for Flash
+    break;
+  case 10:                                            // Time Warp
+    PinMameException = EX_TimeWarp;                   // use exception rules for Time Warp
     break;
   case 16:                                            // Firepower
     PinMameException = EX_Firepower;                  // use exception rules for Firepower
