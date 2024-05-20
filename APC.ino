@@ -66,7 +66,7 @@ byte ByteBuffer = 0;                                  // general purpose buffer
 byte ByteBuffer2 = 0;                                 // general purpose buffer
 byte ByteBuffer3 = 0;                                 // general purpose buffer
 byte i = 0;                                           // general purpose counter
-byte x = 0;                                           // general purpose counter
+byte IRQerror = 0;                                    // general purpose counter
 bool SDfound = false;                                 // SD card present?
 volatile byte SwitchStack = 0;                        // determines which switch events stack is active
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
@@ -543,12 +543,12 @@ void TC7_Handler() {                                  // interrupt routine - run
         if (!PrioTimerValue[x]) {                     // Timer run out?
           void (*TimerBuffer)(byte) = PrioTimerEvent[x];
           if (!TimerBuffer) {
-            ErrorHandler(40,0,x);}
+            IRQerror = 40;}
           else {
             PrioTimerEvent[x] = 0;
             TimerBuffer(PrioTimerArgument[x]);}       // execute timer procedure
           if (!ActivePrioTimers) {
-            ErrorHandler(41,x,0);}
+            IRQerror = 41;}
           else {
             ActivePrioTimers--;}}}                    // reduce number of active timers
       x++;}}                                          // increase timer counter
@@ -569,7 +569,7 @@ void TC7_Handler() {                                  // interrupt routine - run
           RunOutTimers[TimerStack][c] = x;
           TimerEvents[TimerStack]++;                  // increase the number of pending timer events
           if (!ActiveTimers) {                        // number of active timers already 0?
-            ErrorHandler(9,x,0);}                     // that's wrong
+            IRQerror = 9;}                            // that's wrong
           else {
             ActiveTimers--;}}}                        // reduce number of active timers
       x++;}}                                          // increase timer counter
@@ -792,6 +792,9 @@ void TC7_Handler() {                                  // interrupt routine - run
 void loop() {
   byte c = 0;                                         // initialize counter
   byte i = 0;
+  if (IRQerror) {
+    ErrorHandler(IRQerror,0,0);
+    IRQerror = 0;}
   if (SwEvents[SwitchStack]) {                        // switch event pending?
     SwitchStack = 1-SwitchStack;                      // switch to the other stack to avoid a conflict with the interrupt
     while (SwEvents[1-SwitchStack]) {                 // as long as there are switch events to process
