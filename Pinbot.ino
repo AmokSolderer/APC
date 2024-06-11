@@ -746,7 +746,7 @@ void PB_NewBall(byte Balls) {                         // release ball (Balls = e
   *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];     // show current ball in left credit
   BlinkScore(1);                                      // turn on score blinking
   PB_ClearChest();                                    // turn off chest lamps
-  if (PB_Chest_Status[Player] > 100 && PB_MballState != 3) {  // > 100 means visor has to be open
+  if (PB_Chest_Status[Player] > 100) {  							// > 100 means visor has to be open
     PB_Chest_Status[Player] = PB_Chest_Status[Player] - 100; // use it as a counter for opened visors
     PB_LampsToLight = 1;
     PB_ChestMode = 0;                                 // indicate an open visor
@@ -2131,127 +2131,128 @@ void PB_HandleLock(byte State) {
               PB_ClearOutLock(1);}}}}}}}              // eject 1 ball and close visor
 
 void PB_HandleEjectHole(byte State) {
-  static bool EjectIgnore = false;
-  static byte MBallAnimation = 0;
-  static byte Timer = 0;
-  const byte AniPattern[7] = {0b1000, 0b1001, 0b1011, 0b0111, 0b0110, 0b0100,0};
-  switch (State) {
-  case 1:                                             // initial call
-    if (!EjectIgnore) {                               // hole not locked?
-      EjectIgnore = true;                             // lock it
-      ActivateTimer(200, 2, PB_HandleEjectHole);}
-    break;
-  case 2:                                             // ball has settled
-    if (QuerySwitch(38)) {                            // is it still in the hole?
-      PB_AddBonus(1);
-      if (PB_MballState == 4) {                       // 3 ball multiball running?
-        ActivateTimer(game_settings[PB_MballHoldTime]*1000, 3, PB_HandleEjectHole);}
-      else {
-        if (PB_MballState == 3) {                     // 3 ball multiball to start?
-          PlaySound(55, "0_ae.snd");                  // 'shoot for solar value'
-          Multiballs = 3;                             // set score multiplier
-          PB_MballState = 4;
-          PlayMusic(50, "1_05.snd");
-          AddBlinkLamp(35, 100);                      // start blinking of solar energy ramp
-          PB_HandleEnergy(0);                         // turn off energy and lower ramp
-          ActivateTimer(1000, 3, PB_HandleEjectHole);
-          PB_ClearOutLock(0);
-          ActivateTimer(2400, 0, PB_Multiball);}      // call after sound
-        else {                                        // no 3 ball multiball to start
-          if (PB_EjectMode[Player] < 5) {             // eject hole not lit
-            PlaySound(51, "1_a3.snd");
-            if (LampPattern == LampColumns) {         // only if no other lamp effect is running
-              PatPointer = PB_EjectHole;              // set the pointer to the lamp pattern
-              FlowRepeat = 1;                         // set the repetitions
-              ActivateTimer(1700, 0, PB_EnergyRestoreLamps) ;  // call this when the lamp pattern has run out
-              ShowLampPatterns(1);}                   // play the lamp pattern
-            Points[Player] += 10000;
-            ShowPoints(Player);
-            ActivateTimer(1000, 3, PB_HandleEjectHole);}
-          else {                                      // eject hole lit
-            ActivateTimer(400, 7, PB_PlayEjectHoleSounds);
-            if (PB_EjectMode[Player] == 9) {
-              RemoveBlinkLamp(15);
-              TurnOnLamp(15);
-              PB_EjectMode[Player] = 4;
-              Points[Player] += Multiballs * 75000;}
-            else {
-              RemoveBlinkLamp(PB_EjectMode[Player] + 8);
-              TurnOnLamp(PB_EjectMode[Player] + 8);
-              PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
-              Points[Player] += Multiballs * (PB_EjectMode[Player] - 4) * 25000;
-              ShowPoints(Player);
-              PB_EjectMode[Player] = PB_EjectMode[Player] - 4;
-              if (PB_EjectMode[Player] == 4) {
-                PB_AddExBall();}}
-            ActivateTimer(1000, 3, PB_HandleEjectHole);}}}}
-    else {
-      EjectIgnore = false;}
-    break;
-  case 3:
-    ActA_BankSol(3);                                  // eject ball
-    ActivateTimer(200, 4, PB_HandleEjectHole);
-    break;
-  case 4:                                             // check whether ball is gone
-    if (QuerySwitch(38)) {
-      ActivateTimer(100, 3, PB_HandleEjectHole);}
-    else {
-      EjectIgnore = false;}
-    break;
-  case 10:                                            // restore eject hole lamps
-    if (PB_EjectMode[Player] < 5) {
-      for (byte i=0; i<PB_EjectMode[Player]; i++) {
-        TurnOnLamp(13+i);}}
-    else {
-      for (byte i=0; i<(PB_EjectMode[Player]-5); i++) {
-        TurnOnLamp(13+i);}
-      AddBlinkLamp(PB_EjectMode[Player]+8, 100);}
-    break;
-  case 11:                                            // proceed to next eject hole state
-    if (!MBallAnimation) {                            // no multiball animation running
-      if (PB_EjectMode[Player] < 5) {
-        if (PB_EjectMode[Player] == 4) {
-          AddBlinkLamp(15, 100);}
-        else {
-          AddBlinkLamp(PB_EjectMode[Player]+13, 100);}
-        PB_EjectMode[Player] = PB_EjectMode[Player] + 5;}}
-    break;
-  case 15:                                            // switch to 3 ball multiball animation
-    if (!MBallAnimation && !Timer) {                  // multiball animation already running?
-      if (PB_EjectMode[Player] > 4) {                 // any blinking eject mode lamps?
-        if (PB_EjectMode[Player] == 9) {              // turn them off
-          RemoveBlinkLamp(15);}
-        else {
-          RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
-      MBallAnimation = 1;
-      Timer = ActivateTimer(10, 20, PB_HandleEjectHole);} // start animation
-    break;
-  case 16:                                            // end animation
-    if (Timer) {
-      KillTimer(Timer);
-      Timer = 0;}
-    MBallAnimation = 0;
-    TurnOffLamp(13);
-    TurnOffLamp(14);
-    TurnOffLamp(15);
-    TurnOffLamp(16);
-    ActivateTimer(10, 10, PB_HandleEjectHole);        // restore eject hole lamps
-    break;
-  case 20:                                            // play animation
-    byte Buff = AniPattern[MBallAnimation-1];
-    for (byte i=0; i<4; i++) {
-      if (Buff & 1) {
-        TurnOnLamp(13+i);}
-      else {
-        TurnOffLamp(13+i);}
-      Buff = Buff>>1;}
-    if (MBallAnimation < 7) {
-      MBallAnimation++;
-      Timer = ActivateTimer(120, 20, PB_HandleEjectHole);}
-    else {
-      MBallAnimation = 1;
-      Timer = ActivateTimer(900, 20, PB_HandleEjectHole);}
-    break;}}
+	static bool EjectIgnore = false;
+	static byte MBallAnimation = 0;
+	static byte Timer = 0;
+	const byte AniPattern[7] = {0b1000, 0b1001, 0b1011, 0b0111, 0b0110, 0b0100,0};
+	switch (State) {
+	case 1:                                             // initial call
+		if (!EjectIgnore) {                               // hole not locked?
+			EjectIgnore = true;                             // lock it
+			ActivateTimer(200, 2, PB_HandleEjectHole);}
+		break;
+	case 2:                                             // ball has settled
+		if (QuerySwitch(38)) {                            // is it still in the hole?
+			PB_AddBonus(1);
+			if (PB_MballState == 4) {                       // 3 ball multiball running?
+				ActivateTimer(game_settings[PB_MballHoldTime]*1000, 3, PB_HandleEjectHole);}
+			else {
+				if (PB_MballState == 3) {                     // 3 ball multiball to start?
+					PlaySound(55, "0_ae.snd");                  // 'shoot for solar value'
+					Multiballs = 3;                             // set score multiplier
+					PB_MballState = 4;
+					PlayMusic(50, "1_05.snd");
+					AddBlinkLamp(35, 100);                      // start blinking of solar energy ramp
+					PB_HandleEnergy(0);                         // turn off energy and lower ramp
+					ActivateTimer(1000, 3, PB_HandleEjectHole);
+					PB_ClearOutLock(0);
+					ActivateTimer(2400, 0, PB_Multiball);}      // call after sound
+				else {                                        // no 3 ball multiball to start
+					if (PB_EjectMode[Player] < 5) {             // eject hole not lit
+						PlaySound(51, "1_a3.snd");
+						if (LampPattern == LampColumns) {         // only if no other lamp effect is running
+							PatPointer = PB_EjectHole;              // set the pointer to the lamp pattern
+							FlowRepeat = 1;                         // set the repetitions
+							ActivateTimer(1700, 0, PB_EnergyRestoreLamps) ;  // call this when the lamp pattern has run out
+							ShowLampPatterns(1);}                   // play the lamp pattern
+						Points[Player] += 10000;
+						ShowPoints(Player);
+						ActivateTimer(1000, 3, PB_HandleEjectHole);}
+					else {                                      // eject hole lit
+						ActivateTimer(400, 7, PB_PlayEjectHoleSounds);
+						if (PB_EjectMode[Player] == 9) {
+							RemoveBlinkLamp(15);
+							TurnOnLamp(15);
+							PB_EjectMode[Player] = 4;
+							Points[Player] += Multiballs * 75000;}
+						else {
+							RemoveBlinkLamp(PB_EjectMode[Player] + 8);
+							TurnOnLamp(PB_EjectMode[Player] + 8);
+							PlayFlashSequence((byte*) PB_OpenVisorSeq); // play flasher sequence
+							Points[Player] += Multiballs * (PB_EjectMode[Player] - 4) * 25000;
+							ShowPoints(Player);
+							PB_EjectMode[Player] = PB_EjectMode[Player] - 4;
+							if (PB_EjectMode[Player] == 4) {
+								PB_AddExBall();}}
+						ActivateTimer(1000, 3, PB_HandleEjectHole);}}}}
+		else {
+			EjectIgnore = false;}
+		break;
+	case 3:
+		ActA_BankSol(3);                                  // eject ball
+		ActivateTimer(200, 4, PB_HandleEjectHole);
+		break;
+	case 4:                                             // check whether ball is gone
+		if (QuerySwitch(38)) {
+			ActivateTimer(100, 3, PB_HandleEjectHole);}
+		else {
+			EjectIgnore = false;}
+		break;
+	case 10:                                            // restore eject hole lamps
+		if (!MBallAnimation) {                            // no multiball animation running
+			if (PB_EjectMode[Player] < 5) {
+				for (byte i=0; i<PB_EjectMode[Player]; i++) {
+					TurnOnLamp(13+i);}}
+			else {
+				for (byte i=0; i<(PB_EjectMode[Player]-5); i++) {
+					TurnOnLamp(13+i);}
+				AddBlinkLamp(PB_EjectMode[Player]+8, 100);}}
+		break;
+	case 11:                                            // proceed to next eject hole state
+		if (!MBallAnimation) {                            // no multiball animation running
+			if (PB_EjectMode[Player] < 5) {
+				if (PB_EjectMode[Player] == 4) {
+					AddBlinkLamp(15, 100);}
+				else {
+					AddBlinkLamp(PB_EjectMode[Player]+13, 100);}
+				PB_EjectMode[Player] = PB_EjectMode[Player] + 5;}}
+		break;
+	case 15:                                            // switch to 3 ball multiball animation
+		if (!MBallAnimation && !Timer) {                  // multiball animation already running?
+			if (PB_EjectMode[Player] > 4) {                 // any blinking eject mode lamps?
+				if (PB_EjectMode[Player] == 9) {              // turn them off
+					RemoveBlinkLamp(15);}
+				else {
+					RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
+			MBallAnimation = 1;
+			Timer = ActivateTimer(10, 20, PB_HandleEjectHole);} // start animation
+		break;
+	case 16:                                            // end animation
+		if (Timer) {
+			KillTimer(Timer);
+			Timer = 0;}
+		MBallAnimation = 0;
+		TurnOffLamp(13);
+		TurnOffLamp(14);
+		TurnOffLamp(15);
+		TurnOffLamp(16);
+		ActivateTimer(10, 10, PB_HandleEjectHole);        // restore eject hole lamps
+		break;
+	case 20:                                            // play animation
+		byte Buff = AniPattern[MBallAnimation-1];
+		for (byte i=0; i<4; i++) {
+			if (Buff & 1) {
+				TurnOnLamp(13+i);}
+			else {
+				TurnOffLamp(13+i);}
+			Buff = Buff>>1;}
+		if (MBallAnimation < 7) {
+			MBallAnimation++;
+			Timer = ActivateTimer(120, 20, PB_HandleEjectHole);}
+		else {
+			MBallAnimation = 1;
+			Timer = ActivateTimer(900, 20, PB_HandleEjectHole);}
+		break;}}
 
 void PB_Multiball_RestoreLamps(byte Dummy) {
   UNUSED(Dummy);
@@ -2815,8 +2816,8 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
   for (byte i=0; i<5; i++) {                          // turn off blinking row / column
     RemoveBlinkLamp(PB_ChestRows[PB_ChestMode][i]);}
   PB_ClearChest();                                    // turn off chest lamps
-  if (!PB_ChestMode) {
-    if (PB_Chest_Status[Player] < 100) {
+  if (!PB_ChestMode) {																// is the visor open?
+    if (PB_Chest_Status[Player] < 100 && PB_MballState != 3) {
       PB_Chest_Status[Player] = PB_Chest_Status[Player] + 100;}} // indicate that the visor has been open
   else {                                              // visor is closed
     if (PB_ChestMode < 11 && PB_LitChestLamps[Player-1]) {  // player already has lit chest lamps
@@ -2830,13 +2831,13 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       RemoveBlinkLamp(15);}
     else {
       RemoveBlinkLamp(PB_EjectMode[Player] + 8);}}
-  for (byte i=0; i<4; i++) {                      // turn off all eject mode lamps
+  for (byte i=0; i<4; i++) {       		 	              // turn off all eject mode lamps
     TurnOffLamp(13+i);}
-  if (PB_BallSave == 2) {                         // ball saver has been triggered
-    BlockOuthole = false;                         // remove outhole block
+  if (PB_BallSave == 2) {               		          // ball saver has been triggered
+    BlockOuthole = false;                   		      // remove outhole block
     ActivateTimer(2000, 0, PB_AfterExBallRelease);
     ActivateTimer(1000, Balls, PB_NewBall);}
-  else {                                          // no ball saver
+  else {                                        		  // no ball saver
     WriteUpper("              ");
     WriteLower("              ");
     WriteUpper2(" BONUS        ");
