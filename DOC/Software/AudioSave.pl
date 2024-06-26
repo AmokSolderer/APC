@@ -8,7 +8,7 @@ $size = 0;
 
 open(FH, "< Data.wav");
 binmode(FH);
-open(FOUT, "> Data.bin");
+open(FOUT, "> Data.snd");
 binmode(FOUT);
 
 do {                                        # search for the 'data' keyword

@@ -21,7 +21,7 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 #define USB_PinMameGame 3                             // number of the game to be run in PinMame
 #define USB_LisyDebug 4                               // selected debug mode
 
-const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,       // game default settings
+const byte USB_defaults[64] = {0,0,0,255,0,0,0,0,       // game default settings
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,

@@ -1,5 +1,17 @@
 # APC News and Changelog
 
+## TBD
+
+### HW
+
+* The package of the 74HCT273 ICs has been changed back to SOIC-20. They were TSSOP previously as the SOIC version was not available for some time
+
+### New SW Version V1.01
+
+* Bugfix -> Heavy use of timers could lead to system crashes
+* Exception rules for System 11b Space Station have been added. [Sound files for Space Station are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+* Exception rules for System 6 Time Warp have been added. [Sound files for Time Warp are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+
 ## December 2023
 
 ### HW
@@ -22,7 +34,6 @@
 ### Misc
 
 * Page for [installation frames](https://github.com/AmokSolderer/APC/blob/master/DOC/Frames.md) started. These make it easier to mount an APC in your backbox.
-
 * PinMame Sound how-tos added to make it more clear what to do to let the APC play the original sounds
 
 ## March 2023
@@ -30,9 +41,7 @@
 ### New HW Version V3.1
 
 * The packages of the LEDs have been changed to SMD.
-
 * The fabrication files have been updated to let JLCPCB populate most of the non-SMD components also.
-
 * An SMD adapter for SD cards has been added (P14).
 
 ![SD slot](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/SDonBoard.JPG)
@@ -43,7 +52,6 @@ The old connector for the self made adapter (P8) is still there, so you can deci
 
 * The ActivateSolenoid and ReleaseSolenoid commands can now handle recycle times for the 22 A-bank solenoids. Hence, you can prevent your slingshots from machine gunning without having to bend the switches.  
 Check the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) to learn how to use it.
-
 * The Pinbot and [Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) game SW has been improved
 
 ### Misc
@@ -55,7 +63,6 @@ Check the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC
 ### New SW Version V0.30
 
 * Fixed a serious bug in USBcontrol. Depending on your settings this could lead to an Error 11 (or worse) at the end of a PinMame game when the flipper fingers are being disabled.
-
 * Bugfix in USBcontrol. Serial debug (USB) interface can now be used when the 'Connection type' is set to 'OnBoard' and the debug mode in the 'System Settings' is set to on.
 
 ## July 2022
@@ -63,38 +70,24 @@ Check the [APC SW reference](https://github.com/AmokSolderer/APC/blob/master/DOC
 ### New SW Version V0.23
 
 * Bugfix in the AfterMusic(Sound) handling. When the StopPlayingMusic(Sound) command was immediately followed by PlayMusic(Sound) then the first AfterMusic(Sound) event was skipped.
-
 * The types of AfterSound and AfterMusic have been changed from void (*)() to void (*)(byte). The Music/Sound routines call them with the argument = 0 when the Music/Sound file has run out.  
 The purpose of this is to enable state machines that are initially called from the Music/Sound routines with the argument = 0 and can then recall themself after each step with the argument being set accordingly.
-
 * The maximum number of effects that can be handled by the PlayFlashSequence command has been increased from 64 to 256.
-
 * The StrobeLights() command has been reworked to make it more comfortable. You don't have to care about the StrobeLightsTimer any more. Just call Strobelights(Time) with Time > 2 to start lamp flickering with a period of (Time * 10ms). Call Strobelights(0) to turn off the flicker.
-
 * Support for 2x16 character displays with additional numerical displays has been added.
-
 * SW support for the [LED_expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) has been upgraded. One change is that you can now install additional LEDs. Therefore the new system setting 'No of LEDs' has been added as [setting 8](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#system-settings). This might require resetting the system settings to the defaults, but it adds a lot of fun as you can see in [my Comet video](https://youtu.be/kLWVUdhSwfo).
-
 * Exception rules for System 11 F-14 Tomcat have been added. Sound files for F-14 are also available (Thanks to Snux)
-
 * A new setting 'none' has been added to the 'Backbox Lamps' setting in the system settings. This is for the ShowLampPatterns command to know which lamps not to include in lamp animations.
-
 * The ShowLampPatterns command has been changed to support also games without any controlled lamps in the backbox. For this the Pattern array in LampPat has been changed from 7 to 8 entries. If your a game has the first column of lamps in the backbox you have to select 'column1' in the 'Backbox Lamps' seeting and add a zero after the duration. For games with the last row of lamps in the backbox change the setting to 'column8' and add a zero at the end of the pattern part of LampPat.
-
 * Data East 2x16 displays are now supported. Therefore the entry 'Data East 2x16' has been added to the 'Display Type' setting in the system settings. As a side effect the numerical only displays move up one setting. Hence, if you have a System 3 - 9 type of display you have to re-adjust your display setting.
-
 * Exception rules for System 9 Comet have been added. Sound files for Comet are also available
 
 ### Misc
 
 * Due to the recent problems with the availability of the 74HCT273 at JLCPCB, I have split up the fabrication files section into two parts, one with the 74HCT273 in an [SOIC package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SOIC) and one with a [SSOP package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SSOP). Both folders contain all the required data to build a board, just the package of the 74HCT273 is different.
-
 * The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
-
 * My [APC Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) game code has been updated.
-
 * My Pinbot code has also improved a lot, but I don't have an own section for it yet.
-
 * A new [Known issues](https://github.com/AmokSolderer/APC#known-issues) section has been added to point out problems and limits of the APC.
 
 ## July 2021
@@ -109,23 +102,16 @@ That means you should try to get these ICs before you order any boards.
 ### New SW Version V0.22
 
 * A new exception handling system has been implemented. This makes it easier to program machine specific changes while using PinMame. Take a look at the [PinMame How-to](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) page for details
-
 * Exception rules for System 7 Pharaoh have been added. Sound files for Pharaoh are also available (Thanks to Grangeomatic)
-
 * Exception rules for System 6 Firepower have been added. Sound files for Firepower are also available (Thanks to Matiou)
-
 * Support for 6 digit numerical displays (System3 - 6) has been added
-
 * Support for System 3 - 6 sound boards as well as System 11 audio boards has been added
-
 * The Pinbot exceptions have been changed to handle the looping music scores correctly
-
 * Exception rules for Rollergames have been added, but there seems to be a problem with PinMame sending erroneous music commands. This happens only during a game, the music test works perfectly. This issue is still unsolved, so any help is welcome.
 
 ### Misc
 
 * There's a new section [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) in case you encounter a problem
-
 * The 74HCT273 ICs from Nexperia have run out of stock at JLCPCB quite some time ago and they don't seem to reorder them. Therefore the type of this IC has been changed to the Texas Instruments part.
 
 ## January 2021
@@ -147,25 +133,19 @@ APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJ
 ### New HW Version V3.0
 
 * The Lisy_Mini board is no longer needed to run Lisy (for PinMame or MPF) as the Raspberry Pi has been added to the APC board itself. Note that the 'Connect Type' setting must be set to 'On Board' for the on board Pi to work. This has been done to still be able to ignore the on board Pi and control the APC from the USB port if needed.
-
 * The Hardware Extensions Interface has been upgraded to have 5V logic level also at the select pins. Furthermore the data lines can now be latched which makes it possible to control System7 audio boards without having to use additional HW.
-
 * The board has been reworked to use SMD ICs where possible and move all components to the top side. This makes it possible to populate the board at the board manufacturers. All necessary fabrication files can be found in the [fabrication files folder](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_FabricationFiles).
 
 ### New SW Version V0.20
 
 * Display blanking for the various display types is now handled by SW which makes jumper JP1 and the resistor arrays RR2 - RR5 obsolete. This does also work for APC 2.x boards.
-
 * The functionality of pre System11 sound boards has been modelled. This make it easier to use the PinMame sound of System 3 - 9 machines. For Systems 3 - 7 it is also possible to use the original audio boards.
-
 * Support for System7 displays has been added.
-
 * USBcontrol mode has been renamed to Remote Control Mode as the APC 3 can also be controlled by the on board Pi.
 
 ### Misc
 
 * Sound files for Black Knight and Jungle Lord are available on request. They can be used with PinMame or as a basis for own games.
-
 * A summary of the [Documentation contents](https://github.com/AmokSolderer/APC/tree/master#documentation-contents) has been added at the end of the main page to provide a better overview about the documentation.
 
 ## April 2020

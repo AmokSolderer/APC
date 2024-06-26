@@ -17,7 +17,7 @@ SdFat SD;
 #define AllData 510
 #define HwExtStackPosMax 20                           // size of the HwExtBuffer
 
-const char APC_Version[6] = "01.00";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "01.01";                  // Current APC version - includes the other INO files also
 
 void HandleBoolSetting(bool change);
 void HandleTextSetting(bool change);
@@ -66,9 +66,9 @@ byte ByteBuffer = 0;                                  // general purpose buffer
 byte ByteBuffer2 = 0;                                 // general purpose buffer
 byte ByteBuffer3 = 0;                                 // general purpose buffer
 byte i = 0;                                           // general purpose counter
-byte x = 0;                                           // general purpose counter
+byte IRQerror = 0;                                    // general purpose counter
 bool SDfound = false;                                 // SD card present?
-byte SwitchStack = 0;                                 // determines which switch events stack is active
+volatile byte SwitchStack = 0;                        // determines which switch events stack is active
 byte ChangedSw[2][30];                                // two stacks of switches with pending events
 byte SwEvents[2];                                     // contains the number of pending switch events in each stack
 uint32_t SwitchRows[10] = {29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756,29425756};// stores the status of all switch rows
@@ -103,7 +103,7 @@ byte BlinkingNo[65];                                  // number of lamps using t
 unsigned int BlinkPeriod[65];                         // blink period for this timer
 byte BlinkingLamps[65][65];                           // [BlinkTimer] used by these [lamps]
 byte SolMax = 24;                                     // maximum number of solenoids
-bool SolChange = false;                               // Indicates that the state of a solenoid has to be changed
+volatile bool SolChange = false;                      // Indicates that the state of a solenoid has to be changed
 byte SolRecycleTime[22];                              // recycle time for each solenoid
 byte SolRecycleTimers[22];                            // stores the numbers of the recycle timers for each solenoid
 bool C_BankActive = false;                            // A/C relay currently doing C bank?
@@ -114,16 +114,16 @@ byte NextSolSlot = 0;                                 // next free slot in SolWa
 byte SettingsRepeatTimer = 0;                         // number of the timer of the key repeat function in the settings function
 byte BallWatchdogTimer = 0;                           // number of the ball watchdog timer
 byte CheckReleaseTimer = 0;                           // number of the timer for the ball release check
-bool BlockPrioTimers = false;                         // blocks the prio timer interrupt while timer properties are being changed
+volatile bool BlockPrioTimers = false;                // blocks the prio timer interrupt while timer properties are being changed
 byte ActivePrioTimers = 0;                            // Number of active prio timers
 unsigned int PrioTimerValue[9];                       // Timer value
 byte PrioTimerArgument[9];
 void (*PrioTimerEvent[9])(byte);                      // pointers to the procedures to be executed on the prio timer event
 
-bool BlockTimers = false;                             // blocks the timer interrupt while timer properties are being changed
+volatile bool BlockTimers = false;                    // blocks the timer interrupt while timer properties are being changed
 byte ActiveTimers = 0;                                // Number of active timers
 unsigned int TimerValue[64];                          // Timer values
-byte TimerStack = 0;                                  // determines which timer events stack is active
+volatile byte TimerStack = 0;                         // determines which timer events stack is active
 byte RunOutTimers[2][30];                             // two stacks of timers with pending events
 byte TimerEvents[2];                                  // contains the number of pending timer events in each stack
 byte TimerArgument[64];
@@ -543,12 +543,12 @@ void TC7_Handler() {                                  // interrupt routine - run
         if (!PrioTimerValue[x]) {                     // Timer run out?
           void (*TimerBuffer)(byte) = PrioTimerEvent[x];
           if (!TimerBuffer) {
-            ErrorHandler(40,0,x);}
+            IRQerror = 40;}
           else {
             PrioTimerEvent[x] = 0;
             TimerBuffer(PrioTimerArgument[x]);}       // execute timer procedure
           if (!ActivePrioTimers) {
-            ErrorHandler(41,x,0);}
+            IRQerror = 41;}
           else {
             ActivePrioTimers--;}}}                    // reduce number of active timers
       x++;}}                                          // increase timer counter
@@ -569,7 +569,7 @@ void TC7_Handler() {                                  // interrupt routine - run
           RunOutTimers[TimerStack][c] = x;
           TimerEvents[TimerStack]++;                  // increase the number of pending timer events
           if (!ActiveTimers) {                        // number of active timers already 0?
-            ErrorHandler(9,x,0);}                     // that's wrong
+            IRQerror = 9;}                            // that's wrong
           else {
             ActiveTimers--;}}}                        // reduce number of active timers
       x++;}}                                          // increase timer counter
@@ -684,8 +684,11 @@ void TC7_Handler() {                                  // interrupt routine - run
       if (PlayingSound) {                             // playing music and sound
         Buffer16b = (uint16_t *) g_Sound.next;        // get address of the next DAC buffer part to be filled
         if (MusicVolume) {                            // reduce the music volume?
+          uint16_t Offset = 1024;
+          for (i=0; i<MusicVolume-1; i++) {
+            Offset = Offset + (512>>i);}
           for (i=0; i<64; i++) {
-            *Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume;  // write channel 1
+            *Buffer16b = (*(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume) + Offset;  // write channel 1
             Buffer16b++;
             *Buffer16b = *(SoundBuffer+SoundIRpos*128+2*i) | 4096;  // write channel 2
             Buffer16b++;}}
@@ -726,8 +729,11 @@ void TC7_Handler() {                                  // interrupt routine - run
       else {                                          // playing music only
         Buffer16b = (uint16_t *) g_Sound.next;        // same as above but music only
         if (MusicVolume) {                            // reduce the music volume?
+          uint16_t Offset = 1024;
+          for (i=0; i<MusicVolume-1; i++) {
+            Offset = Offset + (512>>i);}
           for (i=0; i<64; i++) {
-            *Buffer16b = *(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume;
+            *Buffer16b = (*(MusicBuffer+MusicIRpos*128+2*i) >> MusicVolume) + Offset;
             Buffer16b++;
             *Buffer16b = 6144;                        // 2048 | 4096
             Buffer16b++;}}
@@ -786,6 +792,9 @@ void TC7_Handler() {                                  // interrupt routine - run
 void loop() {
   byte c = 0;                                         // initialize counter
   byte i = 0;
+  if (IRQerror) {
+    ErrorHandler(IRQerror,0,0);
+    IRQerror = 0;}
   if (SwEvents[SwitchStack]) {                        // switch event pending?
     SwitchStack = 1-SwitchStack;                      // switch to the other stack to avoid a conflict with the interrupt
     while (SwEvents[1-SwitchStack]) {                 // as long as there are switch events to process

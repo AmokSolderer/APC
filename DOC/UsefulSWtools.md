@@ -6,10 +6,10 @@ All thess scripts can be executed with a perl interpreter, e.g. for windows avai
 ## Audio data converter 
 
 [AudioSave.pl](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/AudioSave.pl) is a data converter that must be used to convert WAV files to a format that can directly be handled by the Arduino. The sampling rate of this WAV file has to be 44.1KHz.  
-The tool looks for a 16bit WAV mono file named Data.wav and generates a file Data.bin from it. Basically it skips the header and converts the 16bit signed values of the WAV file to 12bit unsigned for the DAC of the DUE.  
+The tool looks for a 16bit WAV mono file named Data.wav and generates a file Data.snd from it. Basically it skips the header and converts the 16bit signed values of the WAV file to 12bit unsigned for the DAC of the DUE.  
 I recommend to use tools like Audacity to generate the mono WAV, but the tool can also be used to convert stereo files. For this you just have to uncomment the two `read(FH, $buf1, 1);` lines which makes the tool skip every second value. The drawback is that this will not generate a real mono file but just throw away one channel.
 
-Rename Data.BIN and put it on the SD Card. Use only capital letters for the filename, because only then the pinball display is able to show it correctly in case an error message is shown.
+Rename Data.snd and put it on the SD Card. Use only capital letters for the filename, because only then the pinball display is able to show it correctly in case an error message is shown.
 
 There's also an [AudioSaveFolder.pl](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/AudioSaveFolder.pl) version of this tool available (thanks to Mokopin). This tool converts all .wav files in the current folder to .snd files automatically.
 
