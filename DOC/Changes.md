@@ -11,6 +11,7 @@
 * Bugfix -> Heavy use of timers could lead to system crashes
 * Exception rules for System 11b Space Station have been added. [Sound files for Space Station are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
 * Exception rules for System 6 Time Warp have been added. [Sound files for Time Warp are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+* Implementation of the new 3 ball multiball mode for [Pinbot](https://github.com/AmokSolderer/APC/blob/master/DOC/Pinbot.md) is complete
 
 ## December 2023
 
