@@ -361,7 +361,7 @@ void BK_AttractDisplayCycle(byte Step) {
     RemoveBlinkLamp(6);
     return;
   case 1:                                             // attract mode title 'page'
-    if (Count == 2) {
+    if (Count == 40 && !APC_settings[DisplayType]) {  // only for alphanumeriscal displays
       if (APC_settings[Volume]) {                     // system set to digital volume control?
         analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
       else {
