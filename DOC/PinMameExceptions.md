@@ -4,9 +4,9 @@ PinMameExceptions are a simple but powerful tool to change the behaviour of your
 
 In this section we'll focus on exceptions that change a game. This can be by just fixing flaws in the original game SW or adding new features.
 
-## Fixing the drop targets of System 3 & 4 games
+## Fixing the drop targets of pre System 7 games
 
-PinMame has a timing issue with System 3 & 4 games. For some reason the activation times of some solenoids is too short to trigger them correctly. This is especially problematic with drop targets because they won't reset any more.  
+PinMame has a timing issue with System 3,4 and 6 games. For some reason the activation times of some solenoids is too short to trigger them correctly. This is especially problematic with drop targets because they won't reset any more.  
 Even though it's a PinMame issue we decided to fix this in PinMameExceptions which means you have to do it if your machines shows this problem.
 
 Let's use the System 3 Disco Fever as an example. In this machine solenoid 2 is for resetting the drop targets.  

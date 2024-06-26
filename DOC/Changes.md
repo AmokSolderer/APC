@@ -1,6 +1,6 @@
 # APC News and Changelog
 
-## TBD
+## June 2024
 
 ### HW
 
