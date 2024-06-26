@@ -17,7 +17,7 @@ At the moment the list of available sound packages is still quite short, but we 
 |7|Barracora| available on request | PinMameExceptions might still need some finetuning |
 |7|Black Knight| available on request| |
 |7|Jungle Lord| available on request| |
-|7|Pharaoh| Ask Grangeomatic in the Pinside forum| PinMameExceptions also done by Grangeomatic |
+|7|Pharaoh| available on request| PinMameExceptions done by Grangeomatic |
 |9|Comet|available on request| |
 |11a|Pinbot| available on request| |
 |11a|F-14 Tomcat| available on request thanks to Snux | PinMameExceptions also done by Snux |

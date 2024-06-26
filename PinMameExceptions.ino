@@ -433,7 +433,7 @@ byte EX_Pharaoh(byte Type, byte Command){             // thanks to Grangeomatic 
       SoundSeries = 0;                                // Reset BG sound
       StopPlayingSound();}
     else if (Command == 45) {                         // sound command 0x2d - background sound - sound series
-      if (SoundSeries < 31)                           // sound series has 31 different pitches
+      if (SoundSeries < 32)                           // sound series has 32 different pitches
         SoundSeries++;                                // switch to the next pitch when sound command is called again
       char FileName[13] = "0_2d_000.snd";             // generate base filename
       FileName[7] = 48 + (SoundSeries % 10);          // change the 7th character of filename according to current pitch
