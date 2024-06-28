@@ -633,6 +633,66 @@ byte EX_Comet(byte Type, byte Command) {
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
+byte EX_HighSpeed(byte Type, byte Command) {          // Exceptions for High Speed (Williams 1986, System 11)
+  //Add a Ball Save
+  //TODO : manage the Kickback : Command 31 (left outlane) can be activate but kickback will return the ball
+  //TODO : manage the Extra Ball that already managed by the real machine
+  static byte EX_HighSpeed_BlindPinmame = 0;          // hide switches from PinMame while active (0 or 1)
+  static byte EX_HighSpeed_Timer = 0;
+  static bool IgnoreOuthole = false;                  // to ignore the outhole switch while the ball is being kicked out
+  switch(Type){
+  case SwitchActCommand:                              // activated switches (SwitchActCommand 2, SolenoidActCommand 4)
+    if (EX_HighSpeed_BlindPinmame) {                  // hide switches from PinMame
+      if (Command == 10 || Command == 11 || Command == 12 || Command == 31 || Command == 32)  // We hide the switches of the outlanes and trunk
+        return(1);                                    // hide these switches from PinMame
+      if (Command == 9 && !IgnoreOuthole) {           // Outhole switch : the ball is in the outhole. (See switch matrix for the command number).
+        if (EX_HighSpeed_Timer) {                     // timer still running?
+          KillTimer(EX_HighSpeed_Timer);              // stop it
+          EX_HighSpeed_Timer = 0;}
+        IgnoreOuthole = true;                         // ignore switch bouncing when the ball is kicked out
+        ActivateSolenoid(40, 1);                      // kick ball into plunger lane (solenoid 1 outhole)
+        if (QueryLamp(3))                             // Extra Ball lamp lit?
+          EX_HighSpeed_BlindPinmame = 2;              // remember the state of the Extra Ball lamp
+        else
+          EX_HighSpeed_BlindPinmame = 1;
+        AddBlinkLamp(3, 150);                         // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
+        ActivateTimer(1000, 1, EX_HighSpeed2);
+        return(1);}}                                  // hide this switch from PinMame
+    else {                                            // normal mode
+      if (Command == 36) {                            // Check if the ball is in the plunger lane (switch 36 Ball shooter)
+        if (EX_HighSpeed_Timer) {                     // Activate the timer
+          KillTimer(EX_HighSpeed_Timer);
+          EX_HighSpeed_Timer = 0;}
+        EX_HighSpeed_Timer = ActivateTimer(20000, 0, EX_HighSpeed2);}} //20 seconds delay
+    return(0);                                        // report switch to PinMame
+  case 50:                                            // Stop the timer of Shoot Again after 20 seconds
+    if (EX_HighSpeed_Timer) {
+      KillTimer(EX_HighSpeed_Timer);
+      EX_HighSpeed_Timer = 0;}
+    EX_HighSpeed_BlindPinmame = 0;
+    return(1);
+  case 51:                                            // timer after ball has been kicked to trunk run out
+    if (QuerySwitch(12))                              // at least 1 ball in the trunk?
+      ActivateSolenoid(30, 2);                        // kick ball into shooter lane
+    else
+      ActivateTimer(1000, 1, EX_HighSpeed2);          // come back in 1s
+    IgnoreOuthole = false;
+    RemoveBlinkLamp(3);                               // stop blinking the extra ball lamps
+    if (EX_HighSpeed_BlindPinmame == 2)               // restore the state of the Extra Ball lamps
+      TurnOnLamp(3);                                  // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
+    else
+      TurnOffLamp(3);
+    EX_HighSpeed_BlindPinmame = 0;                    // and don't fool PinMame any longer
+    return(1);
+  default:
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
+
+void EX_HighSpeed2(byte Selector) {                   // to be called by timer from EX_HighSpeed
+  if (Selector)
+    EX_HighSpeed(51, 0);
+  else
+    EX_HighSpeed(50, 0);}                             //We return Type number 50 because it does not exist in the known types
+
 byte EX_Pinbot(byte Type, byte Command){
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
@@ -1104,6 +1164,9 @@ void EX_Init(byte GameNumber) {
     break;
   case 39:                                            // Comet
     PinMameException = EX_Comet;                      // use exception rules for Comet
+    break;
+  case 40:                                            // High Speed
+    PinMameException = EX_HighSpeed;                  // use exception rules for High Speed
     break;
   case 43:                                            // Pinbot
     PinMameException = EX_Pinbot;                     // use exception rules for Pinbot
