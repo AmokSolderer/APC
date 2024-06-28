@@ -205,7 +205,7 @@ byte EX_TimeWarp(byte Type, byte Command){
 			AfterSound = 0;
 			SoundSeries = 0;                                // Reset BG sound
 			StopPlayingSound();}
-		else if (Command == 14) {                         // sound command 0x0e - background sound - sound series
+		else if (Command == 13) {                         // sound command 0x0d - increase pitch of background sound
 			if (SoundSeries < 25 )                          // this sound has 31 pitches
 				SoundSeries++;                                // every call of this sound proceeds with next pitch
 			char FileName[13] = "0_0e_000.snd";
@@ -215,6 +215,10 @@ byte EX_TimeWarp(byte Type, byte Command){
 				USB_RepeatSound[i] = FileName[i];}
 			QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
 			PlaySound(51, (char*) FileName);}
+    else if (Command == 14) {                         // sound command 0x0e - background sound - sound series
+      SoundSeries = 1;
+      PlaySound(51, "0_0e_001.snd");                  // play BG sound
+      QueueNextSound("0_0e_001.snd");}                // select this sound to be repeated
 		else {                                            // standard sound
 			char FileName[9] = "0_00.snd";                  // handle standard sound
 			if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
