@@ -18,20 +18,20 @@ Note that the menus have changed since these videos have been made. So use them 
 
 ## Using the settings menu
 
-To enter the APC settings you have to press the Advance button at the coin door. If you're in Remote Control mode you have to keep it pressed for more than 1s.
+To enter the APC settings you have to press the Advance button at the coin door with the Up/Down switch in 'up' position. If you're in Remote Control mode you have to keep it pressed for more than 1s.
 
-In settings mode use Advance to select the setting and the Game Start button to change it's value. If the Up/Down button is in down position then you're moving backwards.
-
-If an SD card is present the settings are stored when you choose 'Exit Settings'.
-
-The APC settings are splitted in two parts.
+After that you have to select whether you want to enter the system or game settings.
 
 * The System Settings are valid for all selected active games
-* The Game Settings are game specific. They change depending on which 'Active Game' is selected in the System Settings.
+* The Game Settings are game specific. They change depending on which 'Active Game' is selected in the System Settings. This is not identical to the game you might want to run in PinMame, but you have to set your 'Active Game' to [Remote Control mode](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md#pinmame) in order to run PinMame.
 
 Games with a credit display show 00 for System Settings and 01 for Game Settings in the left two digits. The number of the setting currently being shown appears in the right two digits of the credit display. This is important for pre System11 displays as they can show only numbers and no menu text. 
 
 For pre Sys11 displays all text settings are represented by their item number as shown in the tables. For example, if a pre Sys11 display is selected and the credit display shows 00 01 you have selected the System Settings and the 'Active Game' setting is currently being shown. An early System11 display (upper display row alphanumerical and lower row numerical) will still try to show the name of the currently selected game as a text which is not perfect, but good enough. A pre System11 display will show the item number instead and if there is a 3 stated in the player 4 display then you're in Remote Control mode.
+
+In settings mode use Advance to select the setting and the Game Start button to change it's value. If the Up/Down button is in down position then you're moving backwards.
+
+If an SD card is present the settings are stored when you choose 'Exit Settings'.
 
 ## Using PinMame settings
 
@@ -85,6 +85,8 @@ Enter the game settings and do your changes. When you're done, just select menu 
 | 13 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## Game Settings in Remote Control mode
+
+These game settings are only visible if 'Remote Control' is selected as the 'Active Game' in the 'System Settings'.
 
 | Number | Text  | Item Nr | Item Text | Default | Comment |
 |--|--|--|--|--|--|
