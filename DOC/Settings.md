@@ -23,7 +23,7 @@ To enter the APC settings you have to press the Advance button at the coin door 
 After that you have to select whether you want to enter the system or game settings.
 
 * The System Settings are valid for all selected active games
-* The Game Settings are game specific. They change depending on which 'Active Game' is selected in the System Settings.
+* The Game Settings are game specific. They change depending on which 'Active Game' is selected in the System Settings. This is not identical to the game you might want to run in PinMame, but you have to set your 'Active Game' to [Remote Control mode](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md#pinmame) in order to run PinMame.
 
 Games with a credit display show 00 for System Settings and 01 for Game Settings in the left two digits. The number of the setting currently being shown appears in the right two digits of the credit display. This is important for pre System11 displays as they can show only numbers and no menu text. 
 
@@ -85,6 +85,8 @@ Enter the game settings and do your changes. When you're done, just select menu 
 | 13 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## Game Settings in Remote Control mode
+
+These game settings are only visible if 'Remote Control' is selected as the 'Active Game' in the 'System Settings'.
 
 | Number | Text  | Item Nr | Item Text | Default | Comment |
 |--|--|--|--|--|--|
