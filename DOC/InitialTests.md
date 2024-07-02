@@ -66,6 +66,8 @@ The APC offers a digital volume setting which let's you adjust the volume in the
 
 ## Using the Test Mode
 
+The following description is about the test mode of the Base Code. That means you have to have 'Base Code' selected in the 'Active Game' setting of the '[System Settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#system-settings)' to perform this test.
+
 Press the Advance button with Up/Down being in the down position to enter the test mode of the Base Code.  
 The name of the current test is shown in the Display. For numerical displays the number of the test is shown in the Player 1 display. You can enter the test by pressing the game start button or proceed to the next test by pressing Advance again. The display, coil and single lamp tests are cycling automatically, the corresponding number is shown in the Player 4 display. This cycling can be stopped by the Up/Down button being in Down position.  
 The following table shows the avaiable tests and their number which is shown for numerical displays.
@@ -78,6 +80,8 @@ The following table shows the avaiable tests and their number which is shown for
 | 4 | Single Lamp |
 | 5 | All Lamps |
 | 6 | Music Test |
+
+Note that the switch test also shows numbers for the special solenoid switches (65 - 70). However, these switches are special and not part of the switch matrix.
 
 ## Next steps
 
