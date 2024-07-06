@@ -7,7 +7,7 @@ In this section we'll focus on exceptions that change a game. This can be just t
 
 ## How it works
 
-PinMame controls the APC by sending commands over the serial interface. Each of these commands triggers the APC SW to fullfill a specific task, e.g. turning on a lamp, report the latest activated switch and so on. Normally the APC does exactly what it has been told to do, but you can program game specific exceptions which are collected in the file PinMameExceptions.ino.  
+PinMame controls the APC by sending commands over the serial interface. Each of these commands triggers the APC SW to fullfill a specific task, e.g. turning on a lamp, report the latest activated switch and so on. Normally the APC does exactly what it has been told to do, but you can use the [APC SW framework](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) to program game specific exceptions which are collected in the file PinMameExceptions.ino.  
 
 ### Adding exceptions for your machine
 
@@ -19,9 +19,9 @@ First of all we need to generate a Disco Fever specific code section to handle a
 
 in PinMameExceptions.ino you could use as a start. So let's create a copy of this and rename it to
 
-    byte EX_Disco Fever(byte Type, byte Command)
+    byte EX_DiscoFever(byte Type, byte Command)
 
-In order for the system to use this code section, we have to add it to EX_Init which is at the ende of PinMameExceptions.ino and determines which code is used for which machine. For simplicity, the following code shows an EX_Init with only two machine entries and the default handler. In the real EX_Init the list is already much longer:
+In order for the system to use this code section, we have to add it to EX_Init which is at the end of PinMameExceptions.ino and determines which code is used for which machine. For simplicity, the following code shows an EX_Init with only two machine entries and the default handler. In the real EX_Init the list is already much longer:
 
     void EX_Init(byte GameNumber) {
       switch(GameNumber) {
@@ -34,8 +34,7 @@ In order for the system to use this code section, we have to add it to EX_Init w
       default:
         PinMameException = EX_DummyProcess;}}
     
-Each entry consists of a case statement with the [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) as an argument. You can define all kind of optionsl stuff in these case statements, but the definition of the PinMameException is mandatory as it tells the system which code to use for a specific machine.
-
+Each entry consists of a case statement with the [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) as an argument. You can define all kind of optional stuff in these case statements, but the definition of the PinMameException is mandatory as it tells the system which code to use for this machine.  
 All other games do not have an exception handler yet, so the exception pointer just points to a dummy process which provides some basic sound handling.
 
 In order to implement some exceptions for Disco Fever, we can use our new 
@@ -70,7 +69,7 @@ For example
 will turn on lamp 33 when PinMame requests lamp 32 to be turned on.  
 The argument of the return command is important as it determines whether PinMame's original request will still be executed or not. In this case return(1) means that the original request will be ignored, so lamp 33 will be turned on INSTEAD of lamp 32. With return(0) lamp 32 would be turned on additionally to lamp 33.
 
-Below are some examples starting with the Disco Fever.
+Below are some more examples starting with the Disco Fever.
 
 ## Fixing the drop targets of pre System 7 games
 
