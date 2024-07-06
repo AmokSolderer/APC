@@ -1,15 +1,82 @@
 # PinMameExceptions
 
-PinMameExceptions are a simple but powerful tool to change the behaviour of your game even though it is controlled by PinMame. Some exceptions are inevitable to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page.
+The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. To enable this for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.
+You can manipulate sound, lamp, switch, display and solenoid commands. Some exceptions are inevitable to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page.
 
-In this section we'll focus on exceptions that change a game. This can be by just fixing flaws in the original game SW or adding new features.
+In this section we'll focus on exceptions that change a game. This can be just to fix flaws in the original game SW (or PinMame) or add new features.
+
+## How it works
+
+PinMame controls the APC by sending commands over the serial interface. Each of these commands triggers the APC SW to fullfill a specific task, e.g. turning on a lamp, report the latest activated switch and so on. Normally the APC does exactly what it has been told to do, but you can use the [APC SW framework](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) to program game specific exceptions which are collected in the file PinMameExceptions.ino.  
+
+### Adding exceptions for your machine
+
+Let's use the System 3 Disco Fever as an example how to use exception handling in practice:
+
+First of all we need to generate a Disco Fever specific code section to handle all the required exceptions. There's a template named
+
+    byte EX_Blank(byte Type, byte Command)
+
+in PinMameExceptions.ino you could use as a start. So let's create a copy of this and rename it to
+
+    byte EX_DiscoFever(byte Type, byte Command)
+
+In order for the system to use this code section, we have to add it to EX_Init which is at the end of PinMameExceptions.ino and determines which code is used for which machine. For simplicity, the following code shows an EX_Init with only two machine entries and the default handler. In the real EX_Init the list is already much longer:
+
+    void EX_Init(byte GameNumber) {
+      switch(GameNumber) {
+      case 4:                                             // Disco Fever
+        PinMameException = EX_DiscoFever;                 // use exception rules for Flash
+        break;
+      case 6:                                             // Flash
+        PinMameException = EX_Flash;                      // use exception rules for Flash
+        break;
+      default:
+        PinMameException = EX_DummyProcess;}}
+    
+Each entry consists of a case statement with the [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) as an argument. You can define all kind of optional stuff in these case statements, but the definition of the PinMameException is mandatory as it tells the system which code to use for this machine.  
+All other games do not have an exception handler yet, so the exception pointer just points to a dummy process which provides some basic sound handling.
+
+In order to implement some exceptions for Disco Fever, we can use our new 
+
+    byte EX_DiscoFever(byte Type, byte Command){
+      switch(Type){
+
+The Type argument determines what kind of event should be dealt with. You can find a list of possible events at the top of PinMameExceptions.ino:
+
+    #define SoundCommandCh1 0
+    #define SoundCommandCh2 1
+    #define SwitchActCommand 2
+    #define SwitchRelCommand 3
+    #define SolenoidActCommand 4
+    #define SolenoidRelCommand 5
+    #define LampOnCommand 6
+    #define LampOffCommand 7
+    #define WriteToDisplay0 8
+    #define WriteToDisplay1 9
+    #define WriteToDisplay2 10
+    #define WriteToDisplay3 11
+    #define WriteToDisplay4 12
+
+The Command argument determines which specific lamp, solenoid, switch or sound shall be affected.  
+For example
+
+    case LampOnCommand:
+      if (Command == 32) {
+        TurnOnLamp(33);
+        return(1);}
+
+will turn on lamp 33 when PinMame requests lamp 32 to be turned on.  
+The argument of the return command is important as it determines whether PinMame's original request will still be executed or not. In this case return(1) means that the original request will be ignored, so lamp 33 will be turned on INSTEAD of lamp 32. With return(0) lamp 32 would be turned on additionally to lamp 33.
+
+Below are some more examples starting with the Disco Fever.
 
 ## Fixing the drop targets of pre System 7 games
 
 PinMame has a timing issue with System 3,4 and 6 games. For some reason the activation times of some solenoids is too short to trigger them correctly. This is especially problematic with drop targets because they won't reset any more.  
 Even though it's a PinMame issue we decided to fix this in PinMameExceptions which means you have to do it if your machines shows this problem.
 
-Let's use the System 3 Disco Fever as an example. In this machine solenoid 2 is for resetting the drop targets.  
+This section shows the necessary code for the Disco Fever. In this machine solenoid 2 is for resetting the drop targets.  
 Normally PinMame sends turn-on and off commands for the solenoids and does therefore control the activation time by itself. In order to increase the length of the activation time, we capture the turn-on command from PinMame and activate the solenoid for a time of our choosing, in this case 80ms.
 
     case SolenoidActCommand:
