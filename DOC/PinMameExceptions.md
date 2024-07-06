@@ -1,7 +1,7 @@
 # PinMameExceptions
 
 The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. To enable this for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.
-You can manipulate sound, lamp, switch, display and solenoid commands. Some exceptions are inevitable to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page.
+You can manipulate sound, lamp, switch, display and solenoid commands. Some exceptions are mandatory to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page.
 
 In this section we'll focus on exceptions that change a game. This can be just to fix flaws in the original game SW (or PinMame) or add new features.
 
