@@ -22,6 +22,9 @@ byte EX_EjectSolenoid;                                // eject coil for improved
 byte EX_IgnoreOuthole = 0;                            // to ignore the outhole switch while the ball is being kicked out
 byte EX_BallSaveActive = 0;                           // hide switches from PinMame while active
 byte EX_BallSaveTimer = 0;                            // Timer used by the ball saver
+bool EX_BallSaveMonitor = false;											// monitor AC relay while ball saver is operating the coils
+bool EX_BallSaveBlock = false;												// block AC relay and lower solenoids while ball saver is operating the coils
+bool EX_BallSaveACstate;															// store the state of the AC relay while ball saver is operating the coils
 
 void EX_BallRelease(byte State) {                     // repeat ball eject in case the ball got stuck
   static byte Timer;                                  // stores the timer number
@@ -849,175 +852,212 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_SpaceStation(byte Type, byte Command){
-  static byte LastMusic;
-  switch(Type){
-  case SoundCommandCh1:                               // sound commands for channel 1
-    if (!Command){                                    // sound command 0x00 - stop sound
-      AfterSound = 0;
-      StopPlayingSound();}
-    else if (Command == 52) { }                       // ignore sound command 0x34
-    else if (Command == 170) { }                      // ignore sound command 0xaa
-    else if (Command == 255) { }                      // ignore sound command 0xff
-    else {                                            // proceed with standard sound handling
-      char FileName[9] = "0_00.snd";                  // handle standard sound
-      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-        if (Command < 128) {                          // play speech with a higher priority
-          PlaySound(50, (char*) FileName);}
-        else {
-          PlaySound(51, (char*) FileName);}}}
-    return(0);                                        // return number not relevant for sounds
-  case SoundCommandCh2:                               // sound commands for channel 2
-    if (!Command) {                                   // sound command 0x00 - stop music
-      AfterMusic = 0;
-      LastMusic = Command;                            // store number of last music track
-      RestoreMusicVolume(100);
-      StopPlayingMusic();}
-    else if (Command == 66) { }                       // ignore sound command 0x42
-    else if (Command == 85) { }                       // ignore sound command 0x55
-    else if (Command > 95 && Command < 104) {         // music volume command 0x6X
-      MusicVolume = Command - 96;}
-    else if (Command == 170) { }                      // ignore unknown sound command 0xaa
-    else if (Command == 255) { }                      // ignore unknown sound command 0xff
-    else if (Command == 1) {                          // music track 1
-      LastMusic = Command;                            // store number of last music track
-      PlayMusic(50, "1_01L.snd");                     // play music track
-      QueueNextMusic("1_01L.snd");}                   // track is looping so queue it also
-    else if (Command == 2) {                          // music track 2
-      LastMusic = Command;                            // store number of last music track
-      PlayMusic(50, "1_02.snd");                      // play non looping part of music track
-      QueueNextMusic("1_02L.snd");}                   // queue looping part as next music to be played
-    else if (Command == 3) {                          // music track 3
-      LastMusic = Command;                            // store number of last music track
-      PlayMusic(50, "1_03L.snd");                     // play music track
-      QueueNextMusic("1_03L.snd");}                   // track is looping so queue it also
-    else if (Command == 4) {                          // music track 4
-      LastMusic = Command;                            // store number of last music track
-      PlayMusic(50, "1_04.snd");                      // play non looping part of music track
-      QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
-    else if (Command == 5) {                          // music track 5
-      LastMusic = Command;                            // store number of last music track
-      PlayMusic(50, "1_05.snd");                      // play music track
-      QueueNextMusic("1_05L.snd");}                   // queue looping part as next music to be played
-    else if (Command == 6) {                          // music track 6
-      LastMusic = Command;                            // store number of last music track
-      PlayMusic(50, "1_06.snd");                      // play non looping part of music track
-      QueueNextMusic("1_06L.snd");}                   // queue looping part as next music to be played
-    else if (Command == 7) {                          // music track 7
-      LastMusic = Command;                            // store number of last music track
-      AfterMusic = 0;                                 // no looping part
-      PlayMusic(50, "1_07.snd");}                     // play music track
-    else if (Command == 11) {                         // music track 0x0b
-      LastMusic = Command;                            // store number of last music track
-      AfterMusic = 0;                                 // no looping part
-      PlayMusic(50, "1_0b.snd");}                     // play music track
-    else if (Command == 12) {                         // music track 0x0c
-      LastMusic = Command;                            // store number of last music track
-      AfterMusic = 0;                                 // no looping part
-      PlaySound(60, "mball.snd");}                    // play multiball intro and block everything else
-    else if (Command == 13) {                         // music track 0x0d
-      LastMusic = Command;                            // store number of last music track
-      PlayMusic(50, "1_0d.snd");                      // play non looping part of music track
-      QueueNextMusic("1_0dL.snd");}                   // queue looping part as next music to be played
-    else if (Command == 64) {                         // music ending 0x40
-      if (LastMusic != 64) {                          // avoid double play
-        LastMusic = Command;                          // store number of last music track
-        AfterMusic = 0;                               // disable looping
-        PlayMusic(50, "1_40.snd");}}                  // play ending
-    else if (Command == 65) {                         // music ending 0x41
-      LastMusic = Command;                            // store number of last music track
-      PlayMusic(50, "1_01.snd");                      // play non looping part of music track
-      QueueNextMusic("1_01L.snd");}                   // queue looping part as next music to be played
-    else if (Command == 66) {                         // music command 0x42
-      LastMusic = Command;                            // store number of last music track
-      PlayMusic(50, "1_03.snd");                      // play non looping part of music track
-      QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
-    else if (Command == 67) {                         // music ending 0x43
-      LastMusic = Command;                            // store number of last music track
-      PlayMusic(50, "1_04.snd");                      // play non looping part of music track
-      QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
-    else if (Command == 130) {
-      if (LastMusic) {                                // dont play it when no music is being played
-        PlaySound(50, "1_82.snd");}
-      else {
-        return(0);}}
-    else if (Command == 144) {                        // sound 0x90
-      PlaySound(49, "1_90.snd");}                     // play with lower prio
-    else if (Command == 149) {                        // sound 0x95
-      PlayMusic(50, "1_95.snd");}                     // play on music channel
-    else if (Command == 158) {                        // sound 0x9e
-      PlayMusic(50, "1_9e.snd");}                     // play on music channel
-    else if (Command == 165) {                        // sound 0xa5
-      PlayMusic(50, "1_a5.snd");}                     // play on music channel
-    else {
-      char FileName[9] = "1_00.snd";                  // handle standard sound
-      if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
-        PlaySound(50, (char*) FileName);}}            // play on the sound channel
-    return(0);                                        // return number not relevant for sounds
-  case SwitchActCommand:                              // activated switches
-    if (EX_BallSaveActive) {                          // hide switches from PinMame
-      if (Command == 11 || Command == 12 || Command == 13 || Command == 17 || Command == 32) { // We hide the switches of the outlanes and trunk
-        return(1);}                                   // hide these switches from PinMame
-      if (Command == 10) {                            // Outhole switch : the ball is in the outhole.
-        if (!EX_IgnoreOuthole) {
-          if (EX_BallSaveTimer) {                     // timer still running?
-            KillTimer(EX_BallSaveTimer);              // stop it
-            EX_BallSaveTimer = 0;}
-          EX_IgnoreOuthole = true;                    // ignore switch bouncing when the ball is kicked out
-          ActivateSolenoid(40, 1);                    // kick ball into plunger lane (solenoid 1 outhole)
-          ActivateTimer(1000, 1, EX_SpaceStation2);}
-        return(1);}}                                  // hide this switch from PinMame
-    else {                                            // normal mode
-      if (Command == 43 && game_settings[USB_BallSave]) { // Check if the ball is in the plunger lane and ball saver is active
-        if (EX_BallSaveTimer) {                       // Activate the timer
-          KillTimer(EX_BallSaveTimer);}
-        if (QueryLamp(42)) {                          // Extra Ball lamp lit?
-          EX_BallSaveActive = 2;}                     // remember the state of the Extra Ball lamp
-        else {
-          EX_BallSaveActive = 1;}
-        AddBlinkLamp(42, 150);                        // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
-        EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 0, EX_SpaceStation2);}}
-    return(0);                                        // report switch to PinMame
-  case SwitchRelCommand:                              // released switches
-    if (EX_BallSaveActive) {                          // hide switches from PinMame
-      if (Command == 10 || Command == 11 || Command == 12 || Command == 13 || Command == 17 || Command == 32) { // We hide the switches of the outlanes and trunk
-        return(1);}}                                  // hide these switches from PinMame
-    return(0);
-  case SolenoidActCommand:
-    if (!QuerySolenoid(12) && (Command == 3 || Command == 4 || Command == 6)) { // protect high power solenoids from over turn on
-      ActivatePrioTimer(40, Command, ReleaseSolenoid);}
-    else if (Command == 8 || Command == 13 || Command == 17) {
-      ActivatePrioTimer(40, Command, ReleaseSolenoid);}
-    return(0);
-  case 50:                                            // Stop the timer of Shoot Again after 20 seconds
-    EX_BallSaveTimer = 0;
-    RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
-    if (EX_BallSaveActive == 2) {                     // restore the state of the Extra Ball lamps
-      TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-    else {
-      TurnOffLamp(42);}
-    EX_BallSaveActive = 0;
-    return(1);
-  case 51:                                            // timer after ball has been kicked to trunk run out
-    if (QuerySwitch(11)) {                            // at least 1 ball in the trunk?
-      ActivateSolenoid(30, 2);}                       // kick ball into shooter lane
-    else {
-      ActivateTimer(1000, 1, EX_SpaceStation2);}      // come back in 1s
-    EX_IgnoreOuthole = false;
-    RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
-    if (EX_BallSaveActive == 2) {                     // restore the state of the Extra Ball lamps
-      TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-    else {
-      TurnOffLamp(42);}
-    EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
-    return(1);
-  default:                                            // use default treatment for undefined types
-    return(0);}}                                      // no exception rule found for this type so proceed as normal
+	static byte LastMusic;
+	switch(Type){
+	case SoundCommandCh1:                               // sound commands for channel 1
+		if (!Command){                                    // sound command 0x00 - stop sound
+			AfterSound = 0;
+			StopPlayingSound();}
+		else if (Command == 52) { }                       // ignore sound command 0x34
+		else if (Command == 170) { }                      // ignore sound command 0xaa
+		else if (Command == 255) { }                      // ignore sound command 0xff
+		else {                                            // proceed with standard sound handling
+			char FileName[9] = "0_00.snd";                  // handle standard sound
+			if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+				if (Command < 128) {                          // play speech with a higher priority
+					PlaySound(50, (char*) FileName);}
+				else {
+					PlaySound(51, (char*) FileName);}}}
+		return(0);                                        // return number not relevant for sounds
+	case SoundCommandCh2:                               // sound commands for channel 2
+		if (!Command) {                                   // sound command 0x00 - stop music
+			AfterMusic = 0;
+			LastMusic = Command;                            // store number of last music track
+			RestoreMusicVolume(100);
+			StopPlayingMusic();}
+		else if (Command == 66) { }                       // ignore sound command 0x42
+		else if (Command == 85) { }                       // ignore sound command 0x55
+		else if (Command > 95 && Command < 104) {         // music volume command 0x6X
+			MusicVolume = Command - 96;}
+		else if (Command == 170) { }                      // ignore unknown sound command 0xaa
+		else if (Command == 255) { }                      // ignore unknown sound command 0xff
+		else if (Command == 1) {                          // music track 1
+			LastMusic = Command;                            // store number of last music track
+			PlayMusic(50, "1_01L.snd");                     // play music track
+			QueueNextMusic("1_01L.snd");}                   // track is looping so queue it also
+		else if (Command == 2) {                          // music track 2
+			LastMusic = Command;                            // store number of last music track
+			PlayMusic(50, "1_02.snd");                      // play non looping part of music track
+			QueueNextMusic("1_02L.snd");}                   // queue looping part as next music to be played
+		else if (Command == 3) {                          // music track 3
+			LastMusic = Command;                            // store number of last music track
+			PlayMusic(50, "1_03L.snd");                     // play music track
+			QueueNextMusic("1_03L.snd");}                   // track is looping so queue it also
+		else if (Command == 4) {                          // music track 4
+			LastMusic = Command;                            // store number of last music track
+			PlayMusic(50, "1_04.snd");                      // play non looping part of music track
+			QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
+		else if (Command == 5) {                          // music track 5
+			LastMusic = Command;                            // store number of last music track
+			PlayMusic(50, "1_05.snd");                      // play music track
+			QueueNextMusic("1_05L.snd");}                   // queue looping part as next music to be played
+		else if (Command == 6) {                          // music track 6
+			LastMusic = Command;                            // store number of last music track
+			PlayMusic(50, "1_06.snd");                      // play non looping part of music track
+			QueueNextMusic("1_06L.snd");}                   // queue looping part as next music to be played
+		else if (Command == 7) {                          // music track 7
+			LastMusic = Command;                            // store number of last music track
+			AfterMusic = 0;                                 // no looping part
+			PlayMusic(50, "1_07.snd");}                     // play music track
+		else if (Command == 11) {                         // music track 0x0b
+			LastMusic = Command;                            // store number of last music track
+			AfterMusic = 0;                                 // no looping part
+			PlayMusic(50, "1_0b.snd");}                     // play music track
+		else if (Command == 12) {                         // music track 0x0c
+			LastMusic = Command;                            // store number of last music track
+			AfterMusic = 0;                                 // no looping part
+			PlaySound(60, "mball.snd");}                    // play multiball intro and block everything else
+		else if (Command == 13) {                         // music track 0x0d
+			LastMusic = Command;                            // store number of last music track
+			PlayMusic(50, "1_0d.snd");                      // play non looping part of music track
+			QueueNextMusic("1_0dL.snd");}                   // queue looping part as next music to be played
+		else if (Command == 64) {                         // music ending 0x40
+			if (LastMusic != 64) {                          // avoid double play
+				LastMusic = Command;                          // store number of last music track
+				AfterMusic = 0;                               // disable looping
+				PlayMusic(50, "1_40.snd");}}                  // play ending
+		else if (Command == 65) {                         // music ending 0x41
+			LastMusic = Command;                            // store number of last music track
+			PlayMusic(50, "1_01.snd");                      // play non looping part of music track
+			QueueNextMusic("1_01L.snd");}                   // queue looping part as next music to be played
+		else if (Command == 66) {                         // music command 0x42
+			LastMusic = Command;                            // store number of last music track
+			PlayMusic(50, "1_03.snd");                      // play non looping part of music track
+			QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
+		else if (Command == 67) {                         // music ending 0x43
+			LastMusic = Command;                            // store number of last music track
+			PlayMusic(50, "1_04.snd");                      // play non looping part of music track
+			QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
+		else if (Command == 130) {
+			if (LastMusic) {                                // dont play it when no music is being played
+				PlaySound(50, "1_82.snd");}
+			else {
+				return(0);}}
+		else if (Command == 144) {                        // sound 0x90
+			PlaySound(49, "1_90.snd");}                     // play with lower prio
+		else if (Command == 149) {                        // sound 0x95
+			PlayMusic(50, "1_95.snd");}                     // play on music channel
+		else if (Command == 158) {                        // sound 0x9e
+			PlayMusic(50, "1_9e.snd");}                     // play on music channel
+		else if (Command == 165) {                        // sound 0xa5
+			PlayMusic(50, "1_a5.snd");}                     // play on music channel
+		else {
+			char FileName[9] = "1_00.snd";                  // handle standard sound
+			if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+				PlaySound(50, (char*) FileName);}}            // play on the sound channel
+		return(0);                                        // return number not relevant for sounds
+	case SwitchActCommand:                              // activated switches
+		if (EX_BallSaveActive) {                          // hide switches from PinMame
+			if (Command == 11 || Command == 13 || Command == 17 || Command == 32) { // We hide the switches of the outlanes and trunk
+				return(1);}                                   // hide these switches from PinMame
+			else if (Command == 12 || EX_BallSaveBlock) {		// AC relay
+				EX_BallSaveACstate = true;
+				return(1);}
+			else if (Command == 10) {                       // Outhole switch : the ball is in the outhole.
+				if (!EX_IgnoreOuthole) {
+					if (EX_BallSaveTimer) {                     // timer still running?
+						KillTimer(EX_BallSaveTimer);              // stop it
+						EX_BallSaveTimer = 0;}
+					EX_BallSaveMonitor = true;
+					EX_IgnoreOuthole = true;                    // ignore switch bouncing when the ball is kicked out
+					if (!QuerySolenoid(12)) {										// AC not active?
+						EX_BallSaveACstate = false;
+						EX_SpaceStation(46, 0);}
+					else {																			// AC needs to be switched
+						EX_BallSaveACstate = true;
+						EX_BallSaveBlock = true;
+						if (!SolBuffer[0]) {											// none of solenoids 1 - 8 active?
+							EX_SpaceStation(45, 0);}
+						else {
+							SolBuffer[0] = 0;												// quick way to release
+							ReleaseSolenoid(1);											// solenoids 1 - 8
+							ActivateTimer(40, 45, EX_SpaceStation2);}}}
+				return(1);}}                                  // hide this switch from PinMame
+		else {                                            // normal mode
+			if (Command == 43 && game_settings[USB_BallSave]) { // Check if the ball is in the plunger lane and ball saver is active
+				if (EX_BallSaveTimer) {                       // Activate the timer
+					KillTimer(EX_BallSaveTimer);}
+				if (QueryLamp(42)) {                          // Extra Ball lamp lit?
+					EX_BallSaveActive = 2;}                     // remember the state of the Extra Ball lamp
+				else {
+					EX_BallSaveActive = 1;}
+				AddBlinkLamp(42, 150);                        // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
+				EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 50, EX_SpaceStation2);}}
+		return(0);                                        // report switch to PinMame
+	case SwitchRelCommand:                              // released switches
+		if(Command == 12 && EX_BallSaveMonitor) {
+			if(!EX_BallSaveBlock) {
+				SolBuffer[0] = 0;															// quick way to release
+				ReleaseSolenoid(1);														// solenoids 1 - 8
+				EX_BallSaveBlock = true;}
+			EX_BallSaveACstate = false;
+			return(1);}                                  		// hide these switches from PinMame
+		return(0);
+	case SolenoidActCommand:
+		if (Command < 9 && EX_BallSaveBlock) {						// ball saver has switched AC relay
+			return(1);}
+		if (!QuerySolenoid(12) && (Command == 3 || Command == 4 || Command == 6)) { // protect high power solenoids from over turn on
+			ActivatePrioTimer(40, Command, ReleaseSolenoid);}
+		else if (Command == 8 || Command == 13 || Command == 17) {
+			ActivatePrioTimer(40, Command, ReleaseSolenoid);}
+		return(0);
+	case 45:																						// Turn Off AC relay
+		ReleaseSolenoid(12);
+		ActivateTimer(40, 46, EX_SpaceStation2);
+		return(1);
+	case 46:
+		ActivateSolenoid(40, 1);                    			// kick ball into plunger lane (solenoid 1 outhole)
+		ActivateTimer(1000, 47, EX_SpaceStation2);
+		return(1);
+	case 47:                                            // timer after ball has been kicked to trunk run out
+		if (QuerySwitch(11)) {                            // at least 1 ball in the trunk?
+			ActivateSolenoid(30, 2);                       	// kick ball into shooter lane
+			if (EX_BallSaveACstate) {												// correct AC state?
+				ActivateTimer(40, 49, EX_SpaceStation2);}			// end cycle
+			else {
+				ActivateTimer(40, 48, EX_SpaceStation2);}}		// switch on AC relay
+		else {
+			ActivateTimer(1000, 47, EX_SpaceStation2);}     // come back in 1s
+		return(1);
+	case 48:
+		if (EX_BallSaveACstate) {
+			ActivateSolenoid(0, 12);}												// turn on AC relay
+		ActivateTimer(40, 49, EX_SpaceStation2);
+		return(1);
+	case 49:
+		EX_IgnoreOuthole = false;
+		EX_BallSaveMonitor = false;
+		RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
+		if (EX_BallSaveActive == 2) {                     // restore the state of the Extra Ball lamps
+			TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
+		else {
+			TurnOffLamp(42);}
+		EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
+		return(1);
+	case 50:                                            // Stop the timer of Shoot Again after 20 seconds
+		EX_BallSaveTimer = 0;
+		RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
+		if (EX_BallSaveActive == 2) {                     // restore the state of the Extra Ball lamps
+			TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
+		else {
+			TurnOffLamp(42);}
+		EX_BallSaveActive = 0;
+		return(1);
+	default:                                            // use default treatment for undefined types
+		return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 void EX_SpaceStation2(byte Selector) {                // to be called by timer from EX_SpaceStation
-  if (Selector) {
-    EX_SpaceStation(51, 0);}
-  else {
-    EX_SpaceStation(50, 0);}}                         //We return Type number 50 because it does not exist in the known types
+    EX_SpaceStation(Selector, 0);}
 
 byte EX_Rollergames(byte Type, byte Command){
   static byte LastMusic;
