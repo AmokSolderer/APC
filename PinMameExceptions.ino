@@ -958,7 +958,7 @@ byte EX_SpaceStation(byte Type, byte Command){
     return(0);                                        // return number not relevant for sounds
   case SwitchActCommand:                              // activated switches
     if (EX_BallSaveActive) {                          // hide switches from PinMame
-      if (Command == 11 || Command == 13 || Command == 17 || Command == 32) { // We hide the switches of the outlanes and trunk
+      if (Command == 17 || Command == 32) { 					// We hide the switches of the outlanes and trunk
         return(1);}                                   // hide these switches from PinMame
       else if (Command == 10) {                       // Outhole switch : the ball is in the outhole.
         if (!EX_IgnoreOuthole) {
@@ -1042,6 +1042,7 @@ byte EX_SpaceStation(byte Type, byte Command){
       TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
     else {
       TurnOffLamp(42);}
+    EX_BallSaveACstate = false;												// stop fumbling with the AC relay
     EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
     return(1);
   case 50:                                            // Stop the timer of Shoot Again after 20 seconds
