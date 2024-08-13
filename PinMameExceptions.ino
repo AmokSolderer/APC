@@ -962,8 +962,11 @@ byte EX_SpaceStation(byte Type, byte Command){
 				return (1);}}
 		if (EX_BallSaveActive) {                          // hide switches from PinMame
 			if (Command == 17 || Command == 32) { 					// We hide the switches of the outlanes and trunk
+				if (Command == 17) {
+					ActivateSolenoid(40, 13);}
 				return(1);}                                   // hide these switches from PinMame
 			else if (Command == 10) {                       // Outhole switch : the ball is in the outhole.
+				AppByte = 0;																	// reset outhole kicks
 				if (!EX_IgnoreOuthole) {
 					if (EX_BallSaveTimer) {                     // timer still running?
 						KillTimer(EX_BallSaveTimer);              // stop it
@@ -972,7 +975,7 @@ byte EX_SpaceStation(byte Type, byte Command){
 					EX_IgnoreOuthole = true;                    // ignore switch bouncing when the ball is kicked out
 					if (!QuerySolenoid(12)) {										// AC not active?
 						EX_BallSaveACstate = false;
-						ActivateTimer(100, 46, EX_SpaceStation2);}
+						ActivateTimer(300, 46, EX_SpaceStation2);}
 					else {																			// AC needs to be switched
 						EX_BallSaveACstate = true;
 						if (!SolBuffer[0]) {											// none of solenoids 1 - 8 active?
@@ -1035,8 +1038,17 @@ byte EX_SpaceStation(byte Type, byte Command){
 		ActivateTimer(40, 46, EX_SpaceStation2);
 		return(1);
 	case 46:
-		ActivateSolenoid(40, 1);                    			// kick ball into plunger lane (solenoid 1 outhole)
-		ActivateTimer(1000, 47, EX_SpaceStation2);
+		if (QuerySwitch(10)) {														// ball still in outhole?
+			ActivateSolenoid(40, 1);                    		// kick ball into trunk (solenoid 1 outhole)
+			ActivateTimer(1000, 47, EX_SpaceStation2);}
+		else {																						// ball not in outhole
+			if (AppByte < 10) {															// already tried 10 times?
+				AppByte++;
+			ActivateTimer(300, 46, EX_SpaceStation2);}
+			else {																					// something's wrong
+				if (EX_BallSaveTimer) {                     	// timer still running?
+					KillTimer(EX_BallSaveTimer);}              	// stop it
+				EX_SpaceStation(50, 0);}}											// end ball saver cycle
 		return(1);
 	case 47:                                            // timer after ball has been kicked to trunk run out
 		if (QuerySwitch(11)) {                            // at least 1 ball in the trunk?

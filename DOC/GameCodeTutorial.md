@@ -20,37 +20,37 @@ Every game has its own highscore and settings file to be stored on the SD card. 
 TT_setList has to be a list of SettingTopic structures. They determine how the game settings menu of my Tutorial machine will look like and how these settings will be handled. As an example there is a 'God Mode' defined in the Base Code settings (whatever this might be, but it can't harm to have one). I leave it as it is, which makes my settings list look like this:
 
     struct SettingTopic TT_setList[5] = {{"  GOD   MODE  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
-		{" RESET  HIGH  ",TT_ResetHighScores,0,0,0},
-		{"RESTOREDEFAULT",RestoreDefaults,0,0,0},
-		{"  EXIT SETTNGS",ExitSettings,0,0,0},
-		{"",NULL,0,0,0}};
+    {" RESET  HIGH  ",TT_ResetHighScores,0,0,0},
+    {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
+    {"  EXIT SETTNGS",ExitSettings,0,0,0},
+    {"",NULL,0,0,0}};
 
 As you can only turn this mode on or off, we define it as a boolean setting (for more details on settings refer to the SelSetting command in the APC_Software_Reference). 
 The „Restore Defaults“ and „Exit Settings“ topics are probably self explaining and the last one filled with zeros is necessary to indicate the end of the list.  
 Now that we have defined the game settings menu we also need the corresponding setting values. The APC software uses an array of 64 byte to store those values:
 
-    byte game_settings[64];		// game settings to be stored on the SD
+    byte game_settings[64];   // game settings to be stored on the SD
 
 When a SD card is detected during startup and a file with the name specified above is found (TT_SET.BIN) then its content is read into the game_setting array. If a file could not be found the pointer on position 2 of the game definition (TT_defaults) is used to read the default values. These values are also used if you choose Restore Default in the game settings menu.  
 As I want to have to non-god mode as default, I can leaves the array as it is: 
 
-    const byte TT_defaults[64] = {0,0,0,0,0,0,0,0,		// game default settings
-				      0,0,0,0,0,0,0,0,
-				      0,0,0,0,0,0,0,0,
-				      0,0,0,0,0,0,0,0,
-				      0,0,0,0,0,0,0,0,
-				      0,0,0,0,0,0,0,0,
-				      0,0,0,0,0,0,0,0,
-				      0,0,0,0,0,0,0,0};
+    const byte TT_defaults[64] = {0,0,0,0,0,0,0,0,    // game default settings
+              0,0,0,0,0,0,0,0,
+              0,0,0,0,0,0,0,0,
+              0,0,0,0,0,0,0,0,
+              0,0,0,0,0,0,0,0,
+              0,0,0,0,0,0,0,0,
+              0,0,0,0,0,0,0,0,
+              0,0,0,0,0,0,0,0};
 
 The default values have to be in the same order as the elements in TT_setList.  
 If you want to know more about the settings system, please refer to the APC_setList in APC.ino, since the SettingTopic structure is also used for the system settings. That means you can find all the stuff mentioned above again in the APC.ino file with some real content and APC_ as the prefix. 
 The next topic of my game definition tells the system how to enter the game code. Since a normal game starts with the attract mode, the corresponding pointer is named TT_AttractMode. For starters I just uncomment the TT_AttractMode copied from the Base Code and change it to this:  
 
     void TT_AttractMode() {
-	  DispRow1 = DisplayUpper;
-	  DispRow2 = DisplayLower;
-	  WriteUpper("MY NEW GAME     ");}
+      DispRow1 = DisplayUpper;
+      DispRow2 = DisplayLower;
+      WriteUpper("MY NEW GAME     ");}
 
 The last topic of my new game definition is the TT_SolTimes. This is quite important as it tells the system what is the default turn on time for each solenoid in milliseconds.  
 To understand the importance of this just remember that we have different kinds of solenoids in a pinball machine and that motors, magnets and flashers are also handled by the solenoid drivers. Strictly spoken this solenoid times should be set before you even activate your solenoids for the first time because otherwise you won‘t be able to test them properly. However for the beginning you can fill all values with 30 which is not enough to really activate a motor or a magnet but at least you won‘t have any burnt coils because of the turn on times being too long.  
@@ -59,8 +59,8 @@ For my Rollergames I choose 100ms for all flashers, 999ms for motors and relays.
 Now that we have completed the game definition, we have to make the system use it. There is a subroutine named TT_init for this where TT_GameDefinition is selected.
 
     void TT_init() {
-	ACselectRelay =  TT_ACselectRelay;	// assign the number of the A/C select relay
-	GameDefinition = TT_GameDefinition;}	// read the game specific settings and highscores
+      ACselectRelay =  TT_ACselectRelay;  // assign the number of the A/C select relay
+      GameDefinition = TT_GameDefinition;}  // read the game specific settings and highscores
 
 Finally the new game code must be implemented into the APC.ino program. For this you have to locate the „Active Game“ menu entry in the APC_setList. 
 
@@ -74,27 +74,27 @@ which means that from now on Tutorial will be listed in my „Active Game“ sel
 
 The last step is to locate Init_System2 in APC.ino where the initialization routine of the selected game is called after the system has started. With my tutorial included the switch statement of my selected game looks like this:
 
-	void Init_System2(byte State) {
-	switch(APC_settings[ActiveGame]) {	// init calls for all valid games
-	case 0:
-		BC_init();
-		break;
-	case 1:
-		BK_init();
-		break;
-	case 2:
-		PB_init();
-		break;
-	case 3:
-		USB_init();
-		break;
-	case 4:
-		TT_init();
-		break;
-	default:
-		WriteUpper("NO GAMESELECTD  ");
-		while (true) {}
-	}
+    void Init_System2(byte State) {
+      switch(APC_settings[ActiveGame]) {  // init calls for all valid games
+      case 0:
+        BC_init();
+        break;
+      case 1:
+        BK_init();
+        break;
+      case 2:
+        PB_init();
+        break;
+      case 3:
+        USB_init();
+        break;
+      case 4:
+        TT_init();
+        break;
+      default:
+        WriteUpper("NO GAMESELECTD  ");
+        while (true) {}
+      }
 
 If you start this, your pinball will first complain about missing files for highscores and game settings. After that it should show „MY FIRST GAME“ in the displays and that was it. Now it's time  to add some functionality.
 
@@ -106,7 +106,7 @@ Until now we just have shown some text in the displays, so it's time to add some
 
 In order to use lamps we have to set the LampPattern pointer to an array which stores the state of all lamps. The array consists of lamp columns with each one storing the state of 8 lamps. That means we need 8 columns to store the state of all 64 lamps. If you don't want to do something fancy, you don't have to care about this, just be sure to add
 
-    LampPattern = LampColumns;		// point to the standard lamp array
+    LampPattern = LampColumns;    // point to the standard lamp array
 
 to your code. This will make your system use the standard lamp array which is used by all lamp related commands.
 
@@ -130,13 +130,13 @@ Note that all lamps having the same blinking period are blinking synchronously.
 
 With all the above added, our programm should look like this:
 
-    void TT_AttractMode() {                          // Attract Mode
-	DispRow1 = DisplayUpper;
-	DispRow2 = DisplayLower;
-	WriteUpper("MY NEW GAME     ");
-	LampPattern = LampColumns;                   // point to the standard lamp array
-	TurnOnLamp(53);
-	AddBlinkLamp(54, 250);}
+    void TT_AttractMode() {                         // Attract Mode
+      DispRow1 = DisplayUpper;
+      DispRow2 = DisplayLower;
+      WriteUpper("MY NEW GAME     ");
+      LampPattern = LampColumns;                    // point to the standard lamp array
+      TurnOnLamp(53);
+      AddBlinkLamp(54, 250);}
 
 In this example lamp 53 is turned on permanently while lamp 54 is blinking with a period of 250ms (4 times per second)
 
@@ -192,34 +192,34 @@ If your machine also has drop targets you can just change the lamp, Switch and c
 Now, let's assume we want to have timed drop targets. Most machines with timed targets have a blinking lamp nearby to indicate a certain urgency. The Rollergames has none, but I just assign this task to lamp 53. This changes my switch handler to
 
     void TT_TutorialSW(byte SwitchNo) {
-	static byte DropTimer = 0;
-	switch (SwitchNo) {
-	case 8:                                          // high score reset
-	  digitalWrite(Blanking, LOW);                   // invoke the blanking
-	  break;
-	case 49:                                         // drop targets
-	case 50:
-	case 51:
-	  if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {	// all targets down?
-	    if (DropTimer) {// timer running?
-	      KillTimer(DropTimer);                      // stop timer
-	      DropTimer = 0;                             // and indicate it
-	      RemoveBlinkLamp(53);}                      // turn off blinking lamp
-	    ActA_BankSol(6);}                            // reset drop targets
-	  else {                                         // not all targets down
-	    if (!DropTimer) {                            // timer not yet running?
-	      AddBlinkLamp(53, 500);                     // start blinking lamp
-	      DropTimer = ActivateTimer(5000, 100, TT_TutorialSW);}}	// start timer for 5s
-	  break;
-	case 100:                                        // timer has run out
-	  DropTimer = 0;                                 // indicate it
-	  RemoveBlinkLamp(53);                           // turn off blinking lamp
-	  ActA_BankSol(6);                               // reset drop targets
-	  break;}}
+      static byte DropTimer = 0;
+      switch (SwitchNo) {
+      case 8:                                          // high score reset
+        digitalWrite(Blanking, LOW);                   // invoke the blanking
+        break;
+      case 49:                                         // drop targets
+      case 50:
+      case 51:
+        if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {  // all targets down?
+          if (DropTimer) {// timer running?
+            KillTimer(DropTimer);                      // stop timer
+            DropTimer = 0;                             // and indicate it
+            RemoveBlinkLamp(53);}                      // turn off blinking lamp
+          ActA_BankSol(6);}                            // reset drop targets
+        else {                                         // not all targets down
+          if (!DropTimer) {                            // timer not yet running?
+            AddBlinkLamp(53, 500);                     // start blinking lamp
+            DropTimer = ActivateTimer(5000, 100, TT_TutorialSW);}}  // start timer for 5s
+        break;
+      case 100:                                        // timer has run out
+        DropTimer = 0;                                 // indicate it
+        RemoveBlinkLamp(53);                           // turn off blinking lamp
+        ActA_BankSol(6);                               // reset drop targets
+        break;}}
 
 In this example I'm using a timer to reset the drop targets 5 seconds after the first target has been hit. 
 
-    DropTimer = ActivateTimer(5000, 100, TT_TutorialSW);}}	// start timer for 5s
+    DropTimer = ActivateTimer(5000, 100, TT_TutorialSW);}}  // start timer for 5s
 
 In this line a timer is activated with a running time of 5000ms. After this time it will call TT_TutorialSW with an argument value of 100. When this call happens the DropTimer variable is set to 0 to indicate that no timer is running which also means that all drop targets are up. Afterwards the blinking lamp 53 is turned off and the drop target bank is reset.
 
@@ -236,22 +236,22 @@ Of course if there's no need to kill a timer you don't have to store it's number
 ## 3 A real game base
 Until now I have just explained how to control the basic hardware functions of the APC which basically should be all you need to start your own game code, but it's still a lot to do before the first ball is put into the plunger lane and drained balls are correctly handled. The BaseCode contains a basic framework with all the stuff necessary to run a game. So let's restore the original state of TT_AttractMode():
 
-    void TT_AttractMode() {                               // Attract Mode
-	DispRow1 = DisplayUpper;
-	DispRow2 = DisplayLower;
-	WriteUpper("MY NEW GAME     ");
-	LampPattern = LampColumns;                        // point to the standard lamp array
-	//TurnOnLamp(53);
-	//AddBlinkLamp(54, 250);
-        Switch_Pressed = TT_AttractModeSW;
-	//Switch_Pressed = TT_TutorialSW;
-	//Switch_Released = DummyProcess;}
-	digitalWrite(VolumePin,HIGH);                    // set volume to zero
-	LampPattern = NoLamps;
-	AppByte2 = 0;
-	LampReturn = TT_AttractLampCycle;
-	ActivateTimer(1000, 0, TT_AttractLampCycle);
-	TT_AttractDisplayCycle(0);}
+    void TT_AttractMode() {                             // Attract Mode
+      DispRow1 = DisplayUpper;
+      DispRow2 = DisplayLower;
+      WriteUpper("MY NEW GAME     ");
+      LampPattern = LampColumns;                        // point to the standard lamp array
+      //TurnOnLamp(53);
+      //AddBlinkLamp(54, 250);
+      Switch_Pressed = TT_AttractModeSW;
+      //Switch_Pressed = TT_TutorialSW;
+      //Switch_Released = DummyProcess;}
+      digitalWrite(VolumePin,HIGH);                    // set volume to zero
+      LampPattern = NoLamps;
+      AppByte2 = 0;
+      LampReturn = TT_AttractLampCycle;
+      ActivateTimer(1000, 0, TT_AttractLampCycle);
+      TT_AttractDisplayCycle(0);}
 
 The first of the new commands is muting the sound by setting the VolumePin to High state. Then all lamps are turned off by settings the LampPattern pointer to NoLamps. Next is setting the LampReturn pointer to TT_AttractLampCycle which is controlling the lamp animations by using the ShowLampPatterns command during Attract Mode and then calling this routine with a timer. 
 
@@ -266,16 +266,16 @@ The example above will light lamp 9 for 250ms before moving on to the next row. 
 
 To use ShowLampPattern, the global variable PatPointer must point to the pattern array and FlowRepeat specifies the number of repetitions to be shown. A simple program to play various sequences is shown below
 
-    void TT_AttractLampCycle(byte Event) {              // play multiple lamp pattern series
-	static byte Phase;
-	if (Event == 1) {                               // initial call?
-	  Phase = 0;}                                   // reset cycle phase
-	PatPointer = TT_AttractFlow[Phase].FlowPat;     // set the pointer to the current series
-	FlowRepeat = TT_AttractFlow[Phase].Repeat;      // set the repetitions
-	Phase++;                                        // increase counter
-	if (!TT_AttractFlow[Phase].Repeat) {            // repetitions of next series = 0?
-		Phase = 0;}                             // reset counter
-	ShowLampPatterns(1);}                           // call the player
+    void TT_AttractLampCycle(byte Event) {            // play multiple lamp pattern series
+      static byte Phase;
+      if (Event == 1) {                               // initial call?
+        Phase = 0;}                                   // reset cycle phase
+      PatPointer = TT_AttractFlow[Phase].FlowPat;     // set the pointer to the current series
+      FlowRepeat = TT_AttractFlow[Phase].Repeat;      // set the repetitions
+      Phase++;                                        // increase counter
+      if (!TT_AttractFlow[Phase].Repeat) {            // repetitions of next series = 0?
+        Phase = 0;}                             // reset counter
+      ShowLampPatterns(1);}                           // call the player
 
 Here an additional array TT_AttractFlow ist used to store the pattern sequence to be played and the number of repetitions. By setting the LampReturn pointer to TT_AttractLampCycle it is ensured that it will be called again when ShowLampPatterns has completed the sequence. Then it has has to set the required pointers to the next sequence and run ShowLampPatterns again. In order to be able to stop the lamp animations, you can either add a stop functionality to TT_AttractLampCycle or you can call ShowLampPatterns(0) with the zero being the signal for it to stop.
 
@@ -283,55 +283,55 @@ Here an additional array TT_AttractFlow ist used to store the pattern sequence t
 Usually the basic stuff being displayed during attract mode is the name of the machine, the points of the last game (if there was any) and the highscores.
 
     void TT_AttractDisplayCycle(byte Step) {
-	TT_CheckForLockedBalls(0);
-	switch (Step) {
-	case 0:
-		WriteUpper2("THE APC TUTORIAL");
-		ActivateTimer(50, 0, ScrollUpper);
-		WriteLower2("                ");
-		ActivateTimer(1000, 0, ScrollLower2);
-		if (NoPlayers) {                             // if there were no games before skip the next step
-			Step++;}
-		else {
-			Step = 2;}
-		break;
-	case 1:
-		WriteUpper2("                ");             // erase display
-		WriteLower2("                ");
-		for (i=1; i<=NoPlayers; i++) {               // display the points of all active players
-			ShowNumber(8*i-1, Points[i]);}
-		ActivateTimer(50, 0, ScrollUpper);
-		ActivateTimer(900, 0, ScrollLower2);
-		Step++;
-		break;
-	case 2:	                                             // Show highscores
-		WriteUpper2("1>              ");
-		WriteLower2("2>              ");
-		for (i=0; i<3; i++) {
-			*(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
-			*(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-			*(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
-			*(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
-		ShowNumber(15, HallOfFame.Scores[0]);
-		ShowNumber(31, HallOfFame.Scores[1]);
-		ActivateTimer(50, 0, ScrollUpper);
-		ActivateTimer(900, 0, ScrollLower2);
-		Step++;
-		break;
-	case 3:
-		WriteUpper2("3>              ");
-		WriteLower2("4>              ");
-		for (i=0; i<3; i++) {
-			*(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
-			*(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-			*(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
-			*(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
-		ShowNumber(15, HallOfFame.Scores[2]);
-		ShowNumber(31, HallOfFame.Scores[3]);
-		ActivateTimer(50, 0, ScrollUpper);
-		ActivateTimer(900, 0, ScrollLower2);
-		Step = 0;}
-	ActivateTimer(4000, Step, TT_AttractDisplayCycle);}
+      TT_CheckForLockedBalls(0);
+      switch (Step) {
+      case 0:
+        WriteUpper2("THE APC TUTORIAL");
+        ActivateTimer(50, 0, ScrollUpper);
+        WriteLower2("                ");
+        ActivateTimer(1000, 0, ScrollLower2);
+        if (NoPlayers) {                             // if there were no games before skip the next step
+          Step++;}
+        else {
+          Step = 2;}
+        break;
+      case 1:
+        WriteUpper2("                ");             // erase display
+        WriteLower2("                ");
+        for (i=1; i<=NoPlayers; i++) {               // display the points of all active players
+          ShowNumber(8*i-1, Points[i]);}
+        ActivateTimer(50, 0, ScrollUpper);
+        ActivateTimer(900, 0, ScrollLower2);
+        Step++;
+        break;
+      case 2:                                        // Show highscores
+        WriteUpper2("1>              ");
+        WriteLower2("2>              ");
+        for (i=0; i<3; i++) {
+          *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+          *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+          *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
+          *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
+        ShowNumber(15, HallOfFame.Scores[0]);
+        ShowNumber(31, HallOfFame.Scores[1]);
+        ActivateTimer(50, 0, ScrollUpper);
+        ActivateTimer(900, 0, ScrollLower2);
+        Step++;
+        break;
+      case 3:
+        WriteUpper2("3>              ");
+        WriteLower2("4>              ");
+        for (i=0; i<3; i++) {
+          *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+          *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+          *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
+          *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
+        ShowNumber(15, HallOfFame.Scores[2]);
+        ShowNumber(31, HallOfFame.Scores[3]);
+        ActivateTimer(50, 0, ScrollUpper);
+        ActivateTimer(900, 0, ScrollLower2);
+        Step = 0;}
+      ActivateTimer(4000, Step, TT_AttractDisplayCycle);}
 
 In order to start the display cycling, the The PB_AttractDisplayCycle subroutine has to be called once from the attract mode. After that it can be regarded as an own and independent process which calls itself all 4s to update the displays.  
 As the timer number is not stored this time, the only way to stop this process is to call KillAllTimers() which kills all timers and therefore stops all processes. Normally this is not the most elegant way of process handling, but as the attract mode has quite some processes running, it makes sense to stop everything and start from scratch when leaving it.
@@ -346,32 +346,32 @@ Now you know how to produce some light and display animations in the attract mod
 
 which means that this routine is being called when a switch is activated. The corresponding target routine looks like this:
 
-    void TT_AttractModeSW(byte Button) {              // Attract Mode switch behaviour
-	switch (Button) {
-	case 8:                                       // high score reset
-		digitalWrite(Blanking, LOW);          // invoke the blanking
-		break;
-	case TT_OutholeSwitch:                        // outhole
-		ActivateTimer(200, 0, TT_CheckForLockedBalls); // check again in 200ms
-		break;
-	case 72:                                      // Service Mode
-		BlinkScore(0);                        // stop score blinking
-		ShowLampPatterns(0);                  // stop lamp animations
-    KillAllTimers();
-		BallWatchdogTimer = 0;
-		CheckReleaseTimer = 0;
-    LampPattern = NoLamps;                            // Turn off all lamps
-    ReleaseAllSolenoids();
-    if (!QuerySwitch(73)) {														// Up/Down switch pressed?
-      WriteUpper("  TEST  MODE    ");
-      WriteLower("                ");
-      AppByte = 0;
-      ActivateTimer(1000, 0, TT_Testmode);}
-    else {
-      Settings_Enter();}
-		break;
-	case 3:                                       // start game
-		TT_InitGame();}}
+    void TT_AttractModeSW(byte Button) {            // Attract Mode switch behaviour
+      switch (Button) {
+      case 8:                                       // high score reset
+        digitalWrite(Blanking, LOW);                // invoke the blanking
+        break;
+      case TT_OutholeSwitch:                        // outhole
+        ActivateTimer(200, 0, TT_CheckForLockedBalls); // check again in 200ms
+        break;
+      case 72:                                      // Service Mode
+        BlinkScore(0);                              // stop score blinking
+        ShowLampPatterns(0);                        // stop lamp animations
+        KillAllTimers();
+        BallWatchdogTimer = 0;
+        CheckReleaseTimer = 0;
+        LampPattern = NoLamps;                      // Turn off all lamps
+        ReleaseAllSolenoids();
+        if (!QuerySwitch(73)) {                     // Up/Down switch pressed?
+          WriteUpper("  TEST  MODE    ");
+          WriteLower("                ");
+          AppByte = 0;
+          ActivateTimer(1000, 0, TT_Testmode);}
+        else {
+          Settings_Enter();}
+        break;
+      case 3:                                       // start game
+        TT_InitGame();}}
 
 This program only reacts to four switches. Switch 8 is the High Score Reset switch (at least for Sys7 and higher) and it activates the blanking signal when the switch is being pressed, which will turn off the displays, lights and all solenoids.
 
