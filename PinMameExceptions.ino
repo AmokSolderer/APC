@@ -376,118 +376,132 @@ byte EX_AlienPoker(byte Type, byte Command){
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_JungleLord(byte Type, byte Command){
-  static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
-  switch(Type){
-  case SoundCommandCh1:                               // sound commands for channel 1
-    if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
-    else if (Command == 38){                          // sound command 0x26 - start game
-      char FileName[13] = "0_26_000.snd";             // generate base filename
-      FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
-      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-    else if (Command == 42){                          // sound command 0x2a - background sound - sound series
-      SoundSeries[1] = 0;                             // reset the multiball start sound
-      if (SoundSeries[0] < 29)                        // BG sound has 29 pitches
-        SoundSeries[0]++;                             // every call of this sound proceeds with the next pitch
-      char FileName[13] = "0_2a_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current pitch
-      FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
-      for (byte i=0; i<12; i++) {                     // store the name of this sound
-        USB_RepeatSound[i] = FileName[i];}
-      QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
-      PlaySound(51, (char*) FileName);}               // play the sound
-    else if (Command == 44) {                         // sound command 0x2c - stop sound
-      AfterSound = 0;
-      SoundSeries[0] = 0;                             // Reset BG sound
-      SoundSeries[1] = 0;                             // reset the multiball start sound
-      StopPlayingSound();}
-    else if (Command == 45){                          // sound command 0x2d - multiball start - sound series
-      if (SoundSeries[1] < 31)                        // this sound has 31 pitches
-        SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
-      else
-        SoundSeries[1] = 1;                           // start all over again
-      char FileName[13] = "0_2d_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
-      FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
-      PlaySound(51, (char*) FileName);}               // play the sound
-    else {                                            // standard sound
-      char FileName[9] = "0_00.snd";                  // handle standard sound
-      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-        PlaySound(51, (char*) FileName);}}
-    return(0);                                        // return number not relevant for sounds
-  case SwitchActCommand:                              // activated switches
-    if (Command == 43) {                              // ball successfully ejected
-      EX_BallRelease(0);}                             // stop ball release timer
-    else if (Command == 49) {                         // right magnet button
-      if (QueryLamp(8) && QueryLamp(2)) {             // right magnet and ball in play lamp lit?
-        ActivateSolenoid(0, 22);}}                    // activate right magnet
-    else if (Command == 50) {                         // left magnet button
-      if (QueryLamp(39) && QueryLamp(2)) {            // left magnet and ball in play lamp lit?
-        ActivateSolenoid(0, 21);}}                    // activate left magnet
-    return(0);                                        // all switches are reported to PinMame
-  case SwitchRelCommand:                              // deactivated switches
-    if (Command == 49){                               // right magnet button
-      ReleaseSolenoid(22);}                           // turn off right magnet
-    else if (Command == 50) {                         // left magnet button
-      ReleaseSolenoid(21);}                           // turn off left magnet
-    return(0);                                        // all switches are reported to PinMame
-  case SolenoidActCommand:                            // activated solenoids
-    if (Command == EX_EjectSolenoid){                 // ball eject coil
-      if (QueryLamp(2)) {                             // ball in play lamp lit?
-        EX_BallRelease(1);}}                          // start ball release timer
-    return(0);                                        // solenoid will be activated
-  default:
-    return(0);}}                                      // no exception rule found for this type so proceed as normal
+	static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
+	switch(Type){
+	case SoundCommandCh1:                               // sound commands for channel 1
+		if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
+		else if (Command == 38){                          // sound command 0x26 - start game
+			char FileName[13] = "0_26_000.snd";             // generate base filename
+			FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
+			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+		else if (Command == 42){                          // sound command 0x2a - background sound - sound series
+			SoundSeries[1] = 0;                             // reset the multiball start sound
+			if (game_settings[USB_BGmusic]) {								// use MUSIC.BIN instead of BG sound
+				if (!SoundSeries[0]) {												// don't restart if next pitch is requested
+					PlayMusic(50, "MUSIC.snd");                 // play music track
+					QueueNextMusic("MUSIC.snd");								// and loop it
+					SoundSeries[0] = 1;}}
+			else {
+				if (SoundSeries[0] < 29)                      // BG sound has 29 pitches
+					SoundSeries[0]++;                           // every call of this sound proceeds with the next pitch
+				char FileName[13] = "0_2a_000.snd";           // generate base filename
+				FileName[7] = 48 + (SoundSeries[0] % 10);     // change the 7th character of filename according to current pitch
+				FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
+				for (byte i=0; i<12; i++) {                   // store the name of this sound
+					USB_RepeatSound[i] = FileName[i];}
+				QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
+				PlaySound(51, (char*) FileName);}}            // play the sound
+		else if (Command == 44) {                         // sound command 0x2c - stop sound
+			AfterSound = 0;
+			SoundSeries[0] = 0;                             // Reset BG sound
+			SoundSeries[1] = 0;                             // reset the multiball start sound
+			StopPlayingSound();
+			StopPlayingMusic();}
+		else if (Command == 45){                          // sound command 0x2d - multiball start - sound series
+			if (SoundSeries[1] < 31)                        // this sound has 31 pitches
+				SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
+			else
+				SoundSeries[1] = 1;                           // start all over again
+			char FileName[13] = "0_2d_000.snd";             // generate base filename
+			FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
+			FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
+			PlaySound(51, (char*) FileName);}               // play the sound
+		else {                                            // standard sound
+			char FileName[9] = "0_00.snd";                  // handle standard sound
+			if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+				PlaySound(51, (char*) FileName);}}
+		return(0);                                        // return number not relevant for sounds
+	case SwitchActCommand:                              // activated switches
+		if (Command == 43) {                              // ball successfully ejected
+			EX_BallRelease(0);}                             // stop ball release timer
+		else if (Command == 49) {                         // right magnet button
+			if (QueryLamp(8) && QueryLamp(2)) {             // right magnet and ball in play lamp lit?
+				ActivateSolenoid(0, 22);}}                    // activate right magnet
+		else if (Command == 50) {                         // left magnet button
+			if (QueryLamp(39) && QueryLamp(2)) {            // left magnet and ball in play lamp lit?
+				ActivateSolenoid(0, 21);}}                    // activate left magnet
+		return(0);                                        // all switches are reported to PinMame
+	case SwitchRelCommand:                              // deactivated switches
+		if (Command == 49){                               // right magnet button
+			ReleaseSolenoid(22);}                           // turn off right magnet
+		else if (Command == 50) {                         // left magnet button
+			ReleaseSolenoid(21);}                           // turn off left magnet
+		return(0);                                        // all switches are reported to PinMame
+	case SolenoidActCommand:                            // activated solenoids
+		if (Command == EX_EjectSolenoid){                 // ball eject coil
+			if (QueryLamp(2)) {                             // ball in play lamp lit?
+				EX_BallRelease(1);}}                          // start ball release timer
+		return(0);                                        // solenoid will be activated
+	default:
+		return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_Pharaoh(byte Type, byte Command){             // thanks to Grangeomatic for sending me this code
-  static byte SoundSeries;                            // buffer to handle pre system11 sound series
-  switch(Type){
-  case SoundCommandCh1:                               // sound commands for channel 1
-    if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
-    else if (Command == 37) {                         // sound command 0x25 - random speech
-      char FileName[13] = "0_25_000.snd";             // generate base filename
-      FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
-      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-    else if (Command == 42) {                         // sound command 0x2a - random speech
-      char FileName[13] = "0_2a_000.snd";             // generate base filename
-      FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
-      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-    else if (Command == 44) {                         // sound command 0x2c - stop sound
-      AfterSound = 0;                                 // disable auto restart of BG sound
-      SoundSeries = 0;                                // Reset BG sound
-      StopPlayingSound();}
-    else if (Command == 45) {                         // sound command 0x2d - background sound - sound series
-      if (SoundSeries < 32)                           // sound series has 32 different pitches
-        SoundSeries++;                                // switch to the next pitch when sound command is called again
-      char FileName[13] = "0_2d_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries % 10);          // change the 7th character of filename according to current pitch
-      FileName[6] = 48 + (SoundSeries % 100) / 10;    // the same with the 6th character
-      for (byte i=0; i<12; i++) {                     // store filename to be repeated
-        USB_RepeatSound[i] = FileName[i];}
-      QueueNextSound(USB_RepeatSound);                // set this filename to be started by PlayNextSound
-      PlaySound(51, (char*) FileName);}
-    else if (Command == 48) {                         // sound command 0x30 - random speech
-      char FileName[13] = "0_30_000.snd";             // generate base filename
-      FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
-      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-    else if (Command == 49) {                         // sound command 0x31 - random speech
-      char FileName[13] = "0_31_000.snd";             // generate base filename
-      FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
-      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-    else if (Command == 55) {                         // sound command 0x37 - random speech
-      char FileName[13] = "0_37_000.snd";             // generate base filename
-      FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
-      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-    else if (Command == 58) {                         // sound command 0x3a - random speech
-      char FileName[13] = "0_3a_000.snd";             // generate base filename
-      FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
-      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-    else {                                            // standard sound
-      char FileName[9] = "0_00.snd";                  // handle standard sound
-      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-        PlaySound(51, (char*) FileName);}}
-    return(0);                                        // return number not relevant for sounds
-  default:
-    return(0);}}                                      // no exception rule found for this type so proceed as normal
+	static byte SoundSeries;                            // buffer to handle pre system11 sound series
+	switch(Type){
+	case SoundCommandCh1:                               // sound commands for channel 1
+		if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
+		else if (Command == 37) {                         // sound command 0x25 - random speech
+			char FileName[13] = "0_25_000.snd";             // generate base filename
+			FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
+			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+		else if (Command == 42) {                         // sound command 0x2a - random speech
+			char FileName[13] = "0_2a_000.snd";             // generate base filename
+			FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
+			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+		else if (Command == 44) {                         // sound command 0x2c - stop sound
+			AfterSound = 0;                                 // disable auto restart of BG sound
+			SoundSeries = 0;                                // Reset BG sound
+			StopPlayingMusic();
+			StopPlayingSound();}
+		else if (Command == 45) {                         // sound command 0x2d - background sound - sound series
+			if (game_settings[USB_BGmusic]) {								// use MUSIC.BIN instead of BG sound
+				if (!SoundSeries) {														// don't restart if next pitch is requested
+					PlayMusic(50, "MUSIC.snd");                 // play music track
+					QueueNextMusic("MUSIC.snd");								// and loop it
+					SoundSeries = 1;}}
+			else {
+				if (SoundSeries < 32)                         // sound series has 32 different pitches
+					SoundSeries++;                              // switch to the next pitch when sound command is called again
+				char FileName[13] = "0_2d_000.snd";           // generate base filename
+				FileName[7] = 48 + (SoundSeries % 10);        // change the 7th character of filename according to current pitch
+				FileName[6] = 48 + (SoundSeries % 100) / 10;  // the same with the 6th character
+				for (byte i=0; i<12; i++) {                   // store filename to be repeated
+					USB_RepeatSound[i] = FileName[i];}
+				QueueNextSound(USB_RepeatSound);              // set this filename to be started by PlayNextSound
+				PlaySound(51, (char*) FileName);}}
+		else if (Command == 48) {                         // sound command 0x30 - random speech
+			char FileName[13] = "0_30_000.snd";             // generate base filename
+			FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
+			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+		else if (Command == 49) {                         // sound command 0x31 - random speech
+			char FileName[13] = "0_31_000.snd";             // generate base filename
+			FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
+			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+		else if (Command == 55) {                         // sound command 0x37 - random speech
+			char FileName[13] = "0_37_000.snd";             // generate base filename
+			FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
+			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+		else if (Command == 58) {                         // sound command 0x3a - random speech
+			char FileName[13] = "0_3a_000.snd";             // generate base filename
+			FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
+			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+		else {                                            // standard sound
+			char FileName[9] = "0_00.snd";                  // handle standard sound
+			if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+				PlaySound(51, (char*) FileName);}}
+		return(0);                                        // return number not relevant for sounds
+	default:
+		return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_Barracora(byte Type, byte Command){
   static byte SoundSeries[2];                         // buffer to handle pre system11 sound series

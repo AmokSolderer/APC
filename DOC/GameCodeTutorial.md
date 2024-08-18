@@ -20,10 +20,10 @@ Every game has its own highscore and settings file to be stored on the SD card. 
 TT_setList has to be a list of SettingTopic structures. They determine how the game settings menu of my Tutorial machine will look like and how these settings will be handled. As an example there is a 'God Mode' defined in the Base Code settings (whatever this might be, but it can't harm to have one). I leave it as it is, which makes my settings list look like this:
 
     struct SettingTopic TT_setList[5] = {{"  GOD   MODE  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
-    {" RESET  HIGH  ",TT_ResetHighScores,0,0,0},
-    {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
-    {"  EXIT SETTNGS",ExitSettings,0,0,0},
-    {"",NULL,0,0,0}};
+      {" RESET  HIGH  ",TT_ResetHighScores,0,0,0},
+      {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
+      {"  EXIT SETTNGS",ExitSettings,0,0,0},
+      {"",NULL,0,0,0}};
 
 As you can only turn this mode on or off, we define it as a boolean setting (for more details on settings refer to the SelSetting command in the APC_Software_Reference). 
 The „Restore Defaults“ and „Exit Settings“ topics are probably self explaining and the last one filled with zeros is necessary to indicate the end of the list.  
