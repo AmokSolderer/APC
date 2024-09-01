@@ -531,7 +531,7 @@ hardware_sound_player:
         set_volume:
             action: set_volume
             value: 0.2
-        "MUSIC.BIN":
+        "MUSIC.SND":
             track: 1
             action: play_file
             

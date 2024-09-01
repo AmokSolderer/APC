@@ -772,7 +772,7 @@ void BC_Testmode(byte Select) {
                   analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
                 AfterMusic = BC_RepeatMusic;
                 AppByte2 = 1;
-                PlayMusic(50, "MUSIC.BIN");
+                PlayMusic(50, "MUSIC.SND");
                 break;
               case 72:
                 AfterMusic = 0;
@@ -900,4 +900,4 @@ void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
 
 void BC_RepeatMusic(byte Dummy) {
   UNUSED(Dummy);
-  PlayMusic(50, "MUSIC.BIN");}
+  PlayMusic(50, "MUSIC.SND");}

@@ -1,5 +1,13 @@
 # APC News and Changelog
 
+## TBD
+
+### New SW Version V1.02
+
+* The default name of music files has been changed from MUSIC.BIN to MUSIC.SND to be consistent with the APC audio files having .SND as a suffix. That means you might have to rename the MUSIC.BIN files of your SD card to MUSIC.SND
+* A new option is available to replace the old (and sometimes annoying) BG sound of old machines by MUSIC.SND.
+* A general ball saver is available
+
 ## June 2024
 
 ### HW
