@@ -220,6 +220,42 @@ byte EX_Flash(byte Type, byte Command){
   default:
     return(0);}}
 
+byte EX_TimeWarp(byte Type, byte Command){
+	static byte SoundSeries;                            // buffer to handle pre system11 sound series
+	switch(Type){
+	case SoundCommandCh1:                               // sound commands for channel 1
+		if (Command == 31) { }                            // ignore sound command 0x1f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
+		else if (Command == 12) {                         // sound command 0x0c - stop sound
+			AfterSound = 0;
+			SoundSeries = 0;                                // Reset BG sound
+			StopPlayingSound();}
+		else if (Command == 14) {                         // sound command 0x0e - background sound - sound series
+			if (SoundSeries < 25 )                          // this sound has 31 pitches
+				SoundSeries++;                                // every call of this sound proceeds with next pitch
+			char FileName[13] = "0_0e_000.snd";
+			FileName[7] = 48 + (SoundSeries % 10);          // change the 7th character of filename according to current pitch
+			FileName[6] = 48 + (SoundSeries % 100) / 10;    // the same with the 6th character
+			for (byte i=0; i<12; i++) {                     // prepare the filename
+				USB_RepeatSound[i] = FileName[i];}
+			QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
+			PlaySound(51, (char*) FileName);}
+		else {                                            // standard sound
+			char FileName[9] = "0_00.snd";                  // handle standard sound
+			if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+				PlaySound(51, (char*) FileName);}}
+		return(0);                                        // return number not relevant for sounds
+	case SolenoidActCommand:
+		if (Command == 6) {                               // ball release
+			ActivateSolenoid(80, 6);                        // drop target reset
+			return(1);}
+		return(0);
+  case SolenoidRelCommand:
+    if (Command == 6) {               								// ignore turn-off commands for drop target solenoids
+      return(1);}                                     // ignore it
+    return(0);
+	default:
+		return(0);}}
+
 byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for sending me this code
   static byte SoundSeries[5] = {0, 0, 0, 0, 0};       // buffer to handle pre system11 sound series
   static byte PlayingMultiballSound = 0;
@@ -554,7 +590,7 @@ byte EX_Pharaoh(byte Type, byte Command){             // thanks to Grangeomatic 
       SoundSeries = 0;                                // Reset BG sound
       StopPlayingSound();}
     else if (Command == 45) {                         // sound command 0x2d - background sound - sound series
-      if (SoundSeries < 31)                           // sound series has 31 different pitches
+      if (SoundSeries < 32)                           // sound series has 32 different pitches
         SoundSeries++;                                // switch to the next pitch when sound command is called again
       char FileName[13] = "0_2d_000.snd";             // generate base filename
       FileName[7] = 48 + (SoundSeries % 10);          // change the 7th character of filename according to current pitch
@@ -1069,8 +1105,8 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
   case SoundCommandCh2:                               // sound commands for channel 2
     if (!Command) {                                   // sound command 0x00 - stop music
       AfterMusic = 0;
-      StopPlayingMusic();
-      MusicVolume=0; }                                // reset music volume in case it was made quieter earlier
+      RestoreMusicVolume(100);                        // reset music volume in case it was made quieter earlier
+      StopPlayingMusic();}
     else if (Command == 127) {                        // sound command 0x7f - stop sound
       AfterSound = 0;
       StopPlayingSound();}
@@ -1085,11 +1121,19 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
       PlayMusic(50, "1_01.snd");                      // play music track
       QueueNextMusic("1_01.snd");}                    // track is looping so queue it also
     else if (Command == 2) {                          // music track 2
-      PlayMusic(50, "1_02.snd");                      // play non looping part of music track
-      QueueNextMusic("1_02.snd");}                    // queue looping part as next music to be played
+      PlayMusic(50, "1_01.snd");                      // play non looping part of music track
+      QueueNextMusic("1_01.snd");}                    // queue looping part as next music to be played
+    else if (Command == 3) {                          // music track 3
+      PlayMusic(50, "1_03.snd");                      // play non looping part of music track
+      QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 4) {                          // music track 2
+      PlayMusic(50, "1_04L.snd");}                    // play non looping part of music track
     else if (Command == 6) {                          // music track 6
       PlayMusic(50, "1_06.snd");                      // play non looping part of music track
-      QueueNextMusic("1_06L.snd");}                   // queue looping part as next music to be played
+      QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 7) {                          // music track 7
+      PlayMusic(50, "1_07.snd");                      // play non looping part of music track
+      QueueNextMusic("1_07L.snd");}                   // queue looping part as next music to be played
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
@@ -1099,6 +1143,120 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
         else {
           PlaySound(50, (char*) FileName);}}}         // play on the sound channel
     return(0);                                        // return number not relevant for sounds
+  default:                                            // use default treatment for undefined types
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
+
+byte EX_SpaceStation(byte Type, byte Command){
+  static byte LastMusic;
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (!Command){                                    // sound command 0x00 - stop sound
+      AfterSound = 0;
+      StopPlayingSound();}
+    else if (Command == 52) { }                       // ignore sound command 0x34
+    else if (Command == 170) { }                      // ignore sound command 0xaa
+    else if (Command == 255) { }                      // ignore sound command 0xff
+    else {                                            // proceed with standard sound handling
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        if (Command < 128) {                          // play speech with a higher priority
+          PlaySound(50, (char*) FileName);}
+        else {
+          PlaySound(51, (char*) FileName);}}}
+    return(0);                                        // return number not relevant for sounds
+  case SoundCommandCh2:                               // sound commands for channel 2
+    if (!Command) {                                   // sound command 0x00 - stop music
+      AfterMusic = 0;
+      LastMusic = Command;                            // store number of last music track
+      RestoreMusicVolume(100);
+      StopPlayingMusic();}
+    else if (Command == 66) { }                       // ignore sound command 0x42
+    else if (Command == 85) { }                       // ignore sound command 0x55
+    else if (Command > 95 && Command < 104) {         // music volume command 0x6X
+      MusicVolume = Command - 96;}
+    else if (Command == 170) { }                      // ignore unknown sound command 0xaa
+    else if (Command == 255) { }                      // ignore unknown sound command 0xff
+    else if (Command == 1) {                          // music track 1
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_01L.snd");                     // play music track
+      QueueNextMusic("1_01L.snd");}                   // track is looping so queue it also
+    else if (Command == 2) {                          // music track 2
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_02.snd");                      // play non looping part of music track
+      QueueNextMusic("1_02L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 3) {                          // music track 3
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_03L.snd");                     // play music track
+      QueueNextMusic("1_03L.snd");}                   // track is looping so queue it also
+    else if (Command == 4) {                          // music track 4
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_04.snd");                      // play non looping part of music track
+      QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 5) {                          // music track 5
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_05.snd");                      // play music track
+      QueueNextMusic("1_05L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 6) {                          // music track 6
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_06.snd");                      // play non looping part of music track
+      QueueNextMusic("1_06L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 7) {                          // music track 7
+      LastMusic = Command;                            // store number of last music track
+      AfterMusic = 0;                                 // no looping part
+      PlayMusic(50, "1_07.snd");}                     // play music track
+    else if (Command == 11) {                         // music track 0x0b
+      LastMusic = Command;                            // store number of last music track
+      AfterMusic = 0;                                 // no looping part
+      PlayMusic(50, "1_0b.snd");}                     // play music track
+    else if (Command == 12) {                         // music track 0x0c
+      LastMusic = Command;                            // store number of last music track
+      AfterMusic = 0;                                 // no looping part
+      PlaySound(60, "mball.snd");}                    // play multiball intro and block everything else
+    else if (Command == 13) {                         // music track 0x0d
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_0d.snd");                      // play non looping part of music track
+      QueueNextMusic("1_0dL.snd");}                   // queue looping part as next music to be played
+    else if (Command == 64) {                         // music ending 0x40
+      if (LastMusic != 64) {                          // avoid double play
+        LastMusic = Command;                          // store number of last music track
+        AfterMusic = 0;                               // disable looping
+        PlayMusic(50, "1_40.snd");}}                  // play ending
+    else if (Command == 65) {                         // music ending 0x41
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_01.snd");                      // play non looping part of music track
+      QueueNextMusic("1_01L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 66) {                         // music command 0x42
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_03.snd");                      // play non looping part of music track
+      QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 67) {                         // music ending 0x43
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_04.snd");                      // play non looping part of music track
+      QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 130) {
+      if (LastMusic) {                                // dont play it when no music is being played
+        PlaySound(50, "1_82.snd");}
+      else {
+        return(0);}}
+    else if (Command == 144) {                        // sound 0x90
+      PlaySound(49, "1_90.snd");}                     // play with lower prio
+    else if (Command == 149) {                        // sound 0x95
+      PlayMusic(50, "1_95.snd");}                     // play on music channel
+    else if (Command == 158) {                        // sound 0x9e
+      PlayMusic(50, "1_9e.snd");}                     // play on music channel
+    else if (Command == 165) {                        // sound 0xa5
+      PlayMusic(50, "1_a5.snd");}                     // play on music channel
+    else {
+      char FileName[9] = "1_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(50, (char*) FileName);}}            // play on the sound channel
+    return(0);                                        // return number not relevant for sounds
+  case SolenoidActCommand:
+    if (!QuerySolenoid(12) && (Command == 3 || Command == 4 || Command == 6)) { // protect high power solenoids from over turn on
+      ActivatePrioTimer(40, Command, ReleaseSolenoid);}
+    else if (Command == 8 || Command == 13 || Command == 17) {
+      ActivatePrioTimer(40, Command, ReleaseSolenoid);}
+    return(0);
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
@@ -1282,6 +1440,9 @@ void EX_Init(byte GameNumber) {
     SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
     PinMameException = EX_Flash;                      // use exception rules for Flash
     break;
+  case 10:                                            // Time Warp
+    PinMameException = EX_TimeWarp;                   // use exception rules for Time Warp
+    break;
   case 16:                                            // Firepower
     PinMameException = EX_Firepower;                  // use exception rules for Firepower
     break;
@@ -1319,6 +1480,9 @@ void EX_Init(byte GameNumber) {
     break;
   case 44:                                            // F-14 Tomcat
     PinMameException = EX_F14Tomcat;                  // use exception rules for Tomcat
+    break;
+  case 48:                                            // Space Station
+    PinMameException = EX_SpaceStation;               // use exception rules for Space Station
     break;
   case 67:                                            // Rollergames
     PinMameException = EX_Rollergames;                // use exception rules for Rollergames

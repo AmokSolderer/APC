@@ -94,7 +94,7 @@ Enter the game settings and do your changes. When you're done, just select menu 
 | 1 |  | 2 | Audio | - | Audio debug mode for PinMame Sounds |
 | 2 | PinMame Sound | 0 | APC | X | PinMame sounds are played on the APC sound HW |
 | 2 | | 1 | Board | - | PinMame sounds are played on an external audio board |
-| 3 | PinMame game | - | - | 0 | Numerical setting - PinMame game number |
+| 3 | PinMame game | - | - | 0 | Numerical setting - [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) |
 | 4 | Lisy Debug | - | - | 0 | Numerical setting according to the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page |
 | 5 - 45 | Setting Unused | - | – | - | They behave like boolean settings, but they have no effect |
 | 46 | System3 Set 1 | - | - | - | Use this to change the 1st setting of system 3 games |

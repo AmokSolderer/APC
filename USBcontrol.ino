@@ -24,7 +24,7 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 //#define USB_BGmusic 9  to select an own BG music -> this option is defined in PinMameExceptions.ino
 //#define USB_CustomText 10  to select a custom text to be shown during attract mode -> this option is defined in PinMameExceptions.ino
 
-const byte USB_defaults[64] = {0,0,0,0,0,0,0,0,       // game default settings
+const byte USB_defaults[64] = {0,0,0,255,0,0,0,0,       // game default settings
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,

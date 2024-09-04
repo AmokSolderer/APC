@@ -11,15 +11,17 @@ At the moment the list of available sound packages is still quite short, but we 
 |--|--|--|--|
 |3|Disco Fever| available on request| PinMameExceptions might still need some finetuning |
 |4|Flash| available on request| |
-|6|Firepower| Ask Matiou in the Pinside forum | PinMameExceptions also done by Matiou |
+|6|Time Warp| available on request | PinMameExceptions might still need some finetuning |
+|6|Firepower| available on request thanks to Matiou | PinMameExceptions also done by Matiou |
 |6|Alien Poker| available on request | PinMameExceptions might still need some finetuning |
 |7|Barracora| available on request | PinMameExceptions might still need some finetuning |
 |7|Black Knight| available on request| |
-|7|Jungle Lord| available on request| Works great. Sound samples are also good. |
-|7|Pharaoh| Ask Grangeomatic in the Pinside forum| PinMameExceptions also done by Grangeomatic |
-|9|Comet|available on request| Works great. Sound samples are also good. |
-|11a|Pinbot| available on request| Some PinMame sounds are quite bad, e.g. visor opening and closing. May be someone can sample them from the orignal HW.|
-|11a|F-14 Tomcat| Ask Snux in the Pinside forum | PinMameExceptions also done by Snux |
+|7|Jungle Lord| available on request| |
+|7|Pharaoh| available on request| PinMameExceptions done by Grangeomatic |
+|9|Comet|available on request| |
+|11a|Pinbot| available on request| |
+|11a|F-14 Tomcat| available on request thanks to Snux | PinMameExceptions also done by Snux |
+|11b|Space Station| available on request| |
 |11c|Rollergames| available on request| There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. The issue doesn't seem to affect the Windows version of PinMame. Please contact me if you have any idea what the root cause might be. |
 
 # What needs to be done
