@@ -22,9 +22,9 @@ byte EX_EjectSolenoid;                                // eject coil for improved
 byte EX_IgnoreOuthole = 0;                            // to ignore the outhole switch while the ball is being kicked out
 bool EX_BallSaveActive = 0;                           // hide switches from PinMame while active
 byte EX_BallSaveTimer = 0;                            // Timer used by the ball saver
-bool EX_BallSaveMonitor = false;											// monitor AC relay while ball saver is operating the coils
-bool EX_BallSaveExBallLamp = false;										// PinMame state of the extra ball lamp
-bool EX_BallSaveACstate;															// store the state of the AC relay while ball saver is operating the coils
+bool EX_BallSaveMonitor = false;                      // monitor AC relay while ball saver is operating the coils
+bool EX_BallSaveExBallLamp = false;                   // PinMame state of the extra ball lamp
+bool EX_BallSaveACstate;                              // store the state of the AC relay while ball saver is operating the coils
 
 void EX_BallRelease(byte State) {                     // repeat ball eject in case the ball got stuck
   static byte Timer;                                  // stores the timer number
@@ -207,50 +207,50 @@ byte EX_Flash(byte Type, byte Command){
     return(0);}}
 
 byte EX_TimeWarp(byte Type, byte Command){
-	static byte SoundSeries;                            // buffer to handle pre system11 sound series
-	switch(Type){
-	case SoundCommandCh1:                               // sound commands for channel 1
-		if (Command == 31) { }                            // ignore sound command 0x1f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
-		else if (Command == 12) {                         // sound command 0x0c - stop sound
-			AfterSound = 0;
-			SoundSeries = 0;                                // Reset BG sound
-			StopPlayingMusic();
-			StopPlayingSound();}
-		else if (Command == 13) {                         // sound command 0x0d - increase pitch of background sound
-			if (!game_settings[USB_BGmusic]) {							// use MUSIC.SND instead of BG sound
-				if (SoundSeries < 25 )                        // this sound has 31 pitches
-					SoundSeries++;                              // every call of this sound proceeds with next pitch
-				char FileName[13] = "0_0e_000.snd";
-				FileName[7] = 48 + (SoundSeries % 10);        // change the 7th character of filename according to current pitch
-				FileName[6] = 48 + (SoundSeries % 100) / 10;  // the same with the 6th character
-				for (byte i=0; i<12; i++) {                   // prepare the filename
-					USB_RepeatSound[i] = FileName[i];}
-				QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
-				PlaySound(51, (char*) FileName);}}
-		else if (Command == 14) {                         // sound command 0x0e - background sound - sound series
-			if (game_settings[USB_BGmusic]) {								// use MUSIC.SND instead of BG sound
-				PlayMusic(50, "MUSIC.snd");                 	// play music track
-				QueueNextMusic("MUSIC.snd");}									// and loop it
-			else {
-				SoundSeries = 1;
-				PlaySound(51, "0_0e_001.snd");                // play BG sound
-				QueueNextSound("0_0e_001.snd");}}             // select this sound to be repeated
-		else {                                            // standard sound
-			char FileName[9] = "0_00.snd";                  // handle standard sound
-			if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-				PlaySound(51, (char*) FileName);}}
-		return(0);                                        // return number not relevant for sounds
-	case SolenoidActCommand:
-		if (Command == 6) {                               // ball release
-			ActivateSolenoid(80, 6);                        // drop target reset
-			return(1);}
-		return(0);
-	case SolenoidRelCommand:
-		if (Command == 6) {               								// ignore turn-off commands for drop target solenoids
-			return(1);}                                     // ignore it
-		return(0);
-	default:
-		return(0);}}
+  static byte SoundSeries;                            // buffer to handle pre system11 sound series
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (Command == 31) { }                            // ignore sound command 0x1f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
+    else if (Command == 12) {                         // sound command 0x0c - stop sound
+      AfterSound = 0;
+      SoundSeries = 0;                                // Reset BG sound
+      StopPlayingMusic();
+      StopPlayingSound();}
+    else if (Command == 13) {                         // sound command 0x0d - increase pitch of background sound
+      if (!game_settings[USB_BGmusic]) {              // use MUSIC.SND instead of BG sound
+        if (SoundSeries < 25 )                        // this sound has 31 pitches
+          SoundSeries++;                              // every call of this sound proceeds with next pitch
+        char FileName[13] = "0_0e_000.snd";
+        FileName[7] = 48 + (SoundSeries % 10);        // change the 7th character of filename according to current pitch
+        FileName[6] = 48 + (SoundSeries % 100) / 10;  // the same with the 6th character
+        for (byte i=0; i<12; i++) {                   // prepare the filename
+          USB_RepeatSound[i] = FileName[i];}
+        QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
+        PlaySound(51, (char*) FileName);}}
+    else if (Command == 14) {                         // sound command 0x0e - background sound - sound series
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        PlayMusic(50, "MUSIC.snd");                   // play music track
+        QueueNextMusic("MUSIC.snd");}                 // and loop it
+      else {
+        SoundSeries = 1;
+        PlaySound(51, "0_0e_001.snd");                // play BG sound
+        QueueNextSound("0_0e_001.snd");}}             // select this sound to be repeated
+    else {                                            // standard sound
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}
+    return(0);                                        // return number not relevant for sounds
+  case SolenoidActCommand:
+    if (Command == 6) {                               // ball release
+      ActivateSolenoid(80, 6);                        // drop target reset
+      return(1);}
+    return(0);
+  case SolenoidRelCommand:
+    if (Command == 6) {                               // ignore turn-off commands for drop target solenoids
+      return(1);}                                     // ignore it
+    return(0);
+  default:
+    return(0);}}
 
 byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for sending me this code
   static byte SoundSeries[5] = {0, 0, 0, 0, 0};       // buffer to handle pre system11 sound series
@@ -382,132 +382,132 @@ byte EX_AlienPoker(byte Type, byte Command){
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_JungleLord(byte Type, byte Command){
-	static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
-	switch(Type){
-	case SoundCommandCh1:                               // sound commands for channel 1
-		if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
-		else if (Command == 38){                          // sound command 0x26 - start game
-			char FileName[13] = "0_26_000.snd";             // generate base filename
-			FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
-			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-		else if (Command == 42){                          // sound command 0x2a - background sound - sound series
-			SoundSeries[1] = 0;                             // reset the multiball start sound
-			if (game_settings[USB_BGmusic]) {								// use MUSIC.SND instead of BG sound
-				if (!SoundSeries[0]) {												// don't restart if next pitch is requested
-					PlayMusic(50, "MUSIC.snd");                 // play music track
-					QueueNextMusic("MUSIC.snd");								// and loop it
-					SoundSeries[0] = 1;}}
-			else {
-				if (SoundSeries[0] < 29)                      // BG sound has 29 pitches
-					SoundSeries[0]++;                           // every call of this sound proceeds with the next pitch
-				char FileName[13] = "0_2a_000.snd";           // generate base filename
-				FileName[7] = 48 + (SoundSeries[0] % 10);     // change the 7th character of filename according to current pitch
-				FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
-				for (byte i=0; i<12; i++) {                   // store the name of this sound
-					USB_RepeatSound[i] = FileName[i];}
-				QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
-				PlaySound(51, (char*) FileName);}}            // play the sound
-		else if (Command == 44) {                         // sound command 0x2c - stop sound
-			AfterSound = 0;
-			SoundSeries[0] = 0;                             // Reset BG sound
-			SoundSeries[1] = 0;                             // reset the multiball start sound
-			StopPlayingSound();
-			StopPlayingMusic();}
-		else if (Command == 45){                          // sound command 0x2d - multiball start - sound series
-			if (SoundSeries[1] < 31)                        // this sound has 31 pitches
-				SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
-			else
-				SoundSeries[1] = 1;                           // start all over again
-			char FileName[13] = "0_2d_000.snd";             // generate base filename
-			FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
-			FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
-			PlaySound(51, (char*) FileName);}               // play the sound
-		else {                                            // standard sound
-			char FileName[9] = "0_00.snd";                  // handle standard sound
-			if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-				PlaySound(51, (char*) FileName);}}
-		return(0);                                        // return number not relevant for sounds
-	case SwitchActCommand:                              // activated switches
-		if (Command == 43) {                              // ball successfully ejected
-			EX_BallRelease(0);}                             // stop ball release timer
-		else if (Command == 49) {                         // right magnet button
-			if (QueryLamp(8) && QueryLamp(2)) {             // right magnet and ball in play lamp lit?
-				ActivateSolenoid(0, 22);}}                    // activate right magnet
-		else if (Command == 50) {                         // left magnet button
-			if (QueryLamp(39) && QueryLamp(2)) {            // left magnet and ball in play lamp lit?
-				ActivateSolenoid(0, 21);}}                    // activate left magnet
-		return(0);                                        // all switches are reported to PinMame
-	case SwitchRelCommand:                              // deactivated switches
-		if (Command == 49){                               // right magnet button
-			ReleaseSolenoid(22);}                           // turn off right magnet
-		else if (Command == 50) {                         // left magnet button
-			ReleaseSolenoid(21);}                           // turn off left magnet
-		return(0);                                        // all switches are reported to PinMame
-	case SolenoidActCommand:                            // activated solenoids
-		if (Command == EX_EjectSolenoid){                 // ball eject coil
-			if (QueryLamp(2)) {                             // ball in play lamp lit?
-				EX_BallRelease(1);}}                          // start ball release timer
-		return(0);                                        // solenoid will be activated
-	default:
-		return(0);}}                                      // no exception rule found for this type so proceed as normal
+  static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
+    else if (Command == 38){                          // sound command 0x26 - start game
+      char FileName[13] = "0_26_000.snd";             // generate base filename
+      FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
+      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+    else if (Command == 42){                          // sound command 0x2a - background sound - sound series
+      SoundSeries[1] = 0;                             // reset the multiball start sound
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        if (!SoundSeries[0]) {                        // don't restart if next pitch is requested
+          PlayMusic(50, "MUSIC.snd");                 // play music track
+          QueueNextMusic("MUSIC.snd");                // and loop it
+          SoundSeries[0] = 1;}}
+      else {
+        if (SoundSeries[0] < 29)                      // BG sound has 29 pitches
+          SoundSeries[0]++;                           // every call of this sound proceeds with the next pitch
+        char FileName[13] = "0_2a_000.snd";           // generate base filename
+        FileName[7] = 48 + (SoundSeries[0] % 10);     // change the 7th character of filename according to current pitch
+        FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
+        for (byte i=0; i<12; i++) {                   // store the name of this sound
+          USB_RepeatSound[i] = FileName[i];}
+        QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
+        PlaySound(51, (char*) FileName);}}            // play the sound
+    else if (Command == 44) {                         // sound command 0x2c - stop sound
+      AfterSound = 0;
+      SoundSeries[0] = 0;                             // Reset BG sound
+      SoundSeries[1] = 0;                             // reset the multiball start sound
+      StopPlayingSound();
+      StopPlayingMusic();}
+    else if (Command == 45){                          // sound command 0x2d - multiball start - sound series
+      if (SoundSeries[1] < 31)                        // this sound has 31 pitches
+        SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
+      else
+        SoundSeries[1] = 1;                           // start all over again
+      char FileName[13] = "0_2d_000.snd";             // generate base filename
+      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
+      FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
+      PlaySound(51, (char*) FileName);}               // play the sound
+    else {                                            // standard sound
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}
+    return(0);                                        // return number not relevant for sounds
+  case SwitchActCommand:                              // activated switches
+    if (Command == 43) {                              // ball successfully ejected
+      EX_BallRelease(0);}                             // stop ball release timer
+    else if (Command == 49) {                         // right magnet button
+      if (QueryLamp(8) && QueryLamp(2)) {             // right magnet and ball in play lamp lit?
+        ActivateSolenoid(0, 22);}}                    // activate right magnet
+    else if (Command == 50) {                         // left magnet button
+      if (QueryLamp(39) && QueryLamp(2)) {            // left magnet and ball in play lamp lit?
+        ActivateSolenoid(0, 21);}}                    // activate left magnet
+    return(0);                                        // all switches are reported to PinMame
+  case SwitchRelCommand:                              // deactivated switches
+    if (Command == 49){                               // right magnet button
+      ReleaseSolenoid(22);}                           // turn off right magnet
+    else if (Command == 50) {                         // left magnet button
+      ReleaseSolenoid(21);}                           // turn off left magnet
+    return(0);                                        // all switches are reported to PinMame
+  case SolenoidActCommand:                            // activated solenoids
+    if (Command == EX_EjectSolenoid){                 // ball eject coil
+      if (QueryLamp(2)) {                             // ball in play lamp lit?
+        EX_BallRelease(1);}}                          // start ball release timer
+    return(0);                                        // solenoid will be activated
+  default:
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_Pharaoh(byte Type, byte Command){             // thanks to Grangeomatic for sending me this code
-	static byte SoundSeries;                            // buffer to handle pre system11 sound series
-	switch(Type){
-	case SoundCommandCh1:                               // sound commands for channel 1
-		if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
-		else if (Command == 37) {                         // sound command 0x25 - random speech
-			char FileName[13] = "0_25_000.snd";             // generate base filename
-			FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
-			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-		else if (Command == 42) {                         // sound command 0x2a - random speech
-			char FileName[13] = "0_2a_000.snd";             // generate base filename
-			FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
-			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-		else if (Command == 44) {                         // sound command 0x2c - stop sound
-			AfterSound = 0;                                 // disable auto restart of BG sound
-			SoundSeries = 0;                                // Reset BG sound
-			StopPlayingMusic();
-			StopPlayingSound();}
-		else if (Command == 45) {                         // sound command 0x2d - background sound - sound series
-			if (game_settings[USB_BGmusic]) {								// use MUSIC.SND instead of BG sound
-				if (!SoundSeries) {														// don't restart if next pitch is requested
-					PlayMusic(50, "MUSIC.snd");                 // play music track
-					QueueNextMusic("MUSIC.snd");								// and loop it
-					SoundSeries = 1;}}
-			else {
-				if (SoundSeries < 32)                         // sound series has 32 different pitches
-					SoundSeries++;                              // switch to the next pitch when sound command is called again
-				char FileName[13] = "0_2d_000.snd";           // generate base filename
-				FileName[7] = 48 + (SoundSeries % 10);        // change the 7th character of filename according to current pitch
-				FileName[6] = 48 + (SoundSeries % 100) / 10;  // the same with the 6th character
-				for (byte i=0; i<12; i++) {                   // store filename to be repeated
-					USB_RepeatSound[i] = FileName[i];}
-				QueueNextSound(USB_RepeatSound);              // set this filename to be started by PlayNextSound
-				PlaySound(51, (char*) FileName);}}
-		else if (Command == 48) {                         // sound command 0x30 - random speech
-			char FileName[13] = "0_30_000.snd";             // generate base filename
-			FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
-			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-		else if (Command == 49) {                         // sound command 0x31 - random speech
-			char FileName[13] = "0_31_000.snd";             // generate base filename
-			FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
-			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-		else if (Command == 55) {                         // sound command 0x37 - random speech
-			char FileName[13] = "0_37_000.snd";             // generate base filename
-			FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
-			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-		else if (Command == 58) {                         // sound command 0x3a - random speech
-			char FileName[13] = "0_3a_000.snd";             // generate base filename
-			FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
-			PlaySound(52, (char*) FileName);}               // play the corresponding sound file
-		else {                                            // standard sound
-			char FileName[9] = "0_00.snd";                  // handle standard sound
-			if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-				PlaySound(51, (char*) FileName);}}
-		return(0);                                        // return number not relevant for sounds
-	default:
-		return(0);}}                                      // no exception rule found for this type so proceed as normal
+  static byte SoundSeries;                            // buffer to handle pre system11 sound series
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
+    else if (Command == 37) {                         // sound command 0x25 - random speech
+      char FileName[13] = "0_25_000.snd";             // generate base filename
+      FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
+      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+    else if (Command == 42) {                         // sound command 0x2a - random speech
+      char FileName[13] = "0_2a_000.snd";             // generate base filename
+      FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
+      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+    else if (Command == 44) {                         // sound command 0x2c - stop sound
+      AfterSound = 0;                                 // disable auto restart of BG sound
+      SoundSeries = 0;                                // Reset BG sound
+      StopPlayingMusic();
+      StopPlayingSound();}
+    else if (Command == 45) {                         // sound command 0x2d - background sound - sound series
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        if (!SoundSeries) {                           // don't restart if next pitch is requested
+          PlayMusic(50, "MUSIC.snd");                 // play music track
+          QueueNextMusic("MUSIC.snd");                // and loop it
+          SoundSeries = 1;}}
+      else {
+        if (SoundSeries < 32)                         // sound series has 32 different pitches
+          SoundSeries++;                              // switch to the next pitch when sound command is called again
+        char FileName[13] = "0_2d_000.snd";           // generate base filename
+        FileName[7] = 48 + (SoundSeries % 10);        // change the 7th character of filename according to current pitch
+        FileName[6] = 48 + (SoundSeries % 100) / 10;  // the same with the 6th character
+        for (byte i=0; i<12; i++) {                   // store filename to be repeated
+          USB_RepeatSound[i] = FileName[i];}
+        QueueNextSound(USB_RepeatSound);              // set this filename to be started by PlayNextSound
+        PlaySound(51, (char*) FileName);}}
+    else if (Command == 48) {                         // sound command 0x30 - random speech
+      char FileName[13] = "0_30_000.snd";             // generate base filename
+      FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
+      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+    else if (Command == 49) {                         // sound command 0x31 - random speech
+      char FileName[13] = "0_31_000.snd";             // generate base filename
+      FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
+      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+    else if (Command == 55) {                         // sound command 0x37 - random speech
+      char FileName[13] = "0_37_000.snd";             // generate base filename
+      FileName[7] = 48 + random(2) + 1;               // change the counter according to random number
+      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+    else if (Command == 58) {                         // sound command 0x3a - random speech
+      char FileName[13] = "0_3a_000.snd";             // generate base filename
+      FileName[7] = 48 + random(4) + 1;               // change the counter according to random number
+      PlaySound(52, (char*) FileName);}               // play the corresponding sound file
+    else {                                            // standard sound
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}
+    return(0);                                        // return number not relevant for sounds
+  default:
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_Barracora(byte Type, byte Command){
   static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
@@ -872,241 +872,241 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_SpaceStation(byte Type, byte Command){
-	static byte LastMusic;
-	switch(Type){
-	case SoundCommandCh1:                               // sound commands for channel 1
-		if (!Command){                                    // sound command 0x00 - stop sound
-			AfterSound = 0;
-			StopPlayingSound();}
-		else if (Command == 52) { }                       // ignore sound command 0x34
-		else if (Command == 170) { }                      // ignore sound command 0xaa
-		else if (Command == 255) { }                      // ignore sound command 0xff
-		else {                                            // proceed with standard sound handling
-			char FileName[9] = "0_00.snd";                  // handle standard sound
-			if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-				if (Command < 128) {                          // play speech with a higher priority
-					PlaySound(50, (char*) FileName);}
-				else {
-					PlaySound(51, (char*) FileName);}}}
-		return(0);                                        // return number not relevant for sounds
-	case SoundCommandCh2:                               // sound commands for channel 2
-		if (!Command) {                                   // sound command 0x00 - stop music
-			AfterMusic = 0;
-			LastMusic = Command;                            // store number of last music track
-			RestoreMusicVolume(100);
-			StopPlayingMusic();}
-		else if (Command == 66) { }                       // ignore sound command 0x42
-		else if (Command == 85) { }                       // ignore sound command 0x55
-		else if (Command > 95 && Command < 104) {         // music volume command 0x6X
-			MusicVolume = Command - 96;}
-		else if (Command == 170) { }                      // ignore unknown sound command 0xaa
-		else if (Command == 255) { }                      // ignore unknown sound command 0xff
-		else if (Command == 1) {                          // music track 1
-			LastMusic = Command;                            // store number of last music track
-			PlayMusic(50, "1_01L.snd");                     // play music track
-			QueueNextMusic("1_01L.snd");}                   // track is looping so queue it also
-		else if (Command == 2) {                          // music track 2
-			LastMusic = Command;                            // store number of last music track
-			PlayMusic(50, "1_02.snd");                      // play non looping part of music track
-			QueueNextMusic("1_02L.snd");}                   // queue looping part as next music to be played
-		else if (Command == 3) {                          // music track 3
-			LastMusic = Command;                            // store number of last music track
-			PlayMusic(50, "1_03L.snd");                     // play music track
-			QueueNextMusic("1_03L.snd");}                   // track is looping so queue it also
-		else if (Command == 4) {                          // music track 4
-			LastMusic = Command;                            // store number of last music track
-			PlayMusic(50, "1_04.snd");                      // play non looping part of music track
-			QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
-		else if (Command == 5) {                          // music track 5
-			LastMusic = Command;                            // store number of last music track
-			PlayMusic(50, "1_05.snd");                      // play music track
-			QueueNextMusic("1_05L.snd");}                   // queue looping part as next music to be played
-		else if (Command == 6) {                          // music track 6
-			LastMusic = Command;                            // store number of last music track
-			PlayMusic(50, "1_06.snd");                      // play non looping part of music track
-			QueueNextMusic("1_06L.snd");}                   // queue looping part as next music to be played
-		else if (Command == 7) {                          // music track 7
-			LastMusic = Command;                            // store number of last music track
-			AfterMusic = 0;                                 // no looping part
-			PlayMusic(50, "1_07.snd");}                     // play music track
-		else if (Command == 11) {                         // music track 0x0b
-			LastMusic = Command;                            // store number of last music track
-			AfterMusic = 0;                                 // no looping part
-			PlayMusic(50, "1_0b.snd");}                     // play music track
-		else if (Command == 12) {                         // music track 0x0c
-			LastMusic = Command;                            // store number of last music track
-			AfterMusic = 0;                                 // no looping part
-			PlaySound(60, "mball.snd");}                    // play multiball intro and block everything else
-		else if (Command == 13) {                         // music track 0x0d
-			LastMusic = Command;                            // store number of last music track
-			PlayMusic(50, "1_0d.snd");                      // play non looping part of music track
-			QueueNextMusic("1_0dL.snd");}                   // queue looping part as next music to be played
-		else if (Command == 64) {                         // music ending 0x40
-			if (LastMusic != 64) {                          // avoid double play
-				LastMusic = Command;                          // store number of last music track
-				AfterMusic = 0;                               // disable looping
-				PlayMusic(50, "1_40.snd");}}                  // play ending
-		else if (Command == 65) {                         // music ending 0x41
-			LastMusic = Command;                            // store number of last music track
-			PlayMusic(50, "1_01.snd");                      // play non looping part of music track
-			QueueNextMusic("1_01L.snd");}                   // queue looping part as next music to be played
-		else if (Command == 66) {                         // music command 0x42
-			LastMusic = Command;                            // store number of last music track
-			PlayMusic(50, "1_03.snd");                      // play non looping part of music track
-			QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
-		else if (Command == 67) {                         // music ending 0x43
-			LastMusic = Command;                            // store number of last music track
-			PlayMusic(50, "1_04.snd");                      // play non looping part of music track
-			QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
-		else if (Command == 130) {
-			if (LastMusic) {                                // dont play it when no music is being played
-				PlaySound(50, "1_82.snd");}
-			else {
-				return(0);}}
-		else if (Command == 144) {                        // sound 0x90
-			PlaySound(49, "1_90.snd");}                     // play with lower prio
-		else if (Command == 149) {                        // sound 0x95
-			PlayMusic(50, "1_95.snd");}                     // play on music channel
-		else if (Command == 158) {                        // sound 0x9e
-			PlayMusic(50, "1_9e.snd");}                     // play on music channel
-		else if (Command == 165) {                        // sound 0xa5
-			PlayMusic(50, "1_a5.snd");}                     // play on music channel
-		else {
-			char FileName[9] = "1_00.snd";                  // handle standard sound
-			if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
-				PlaySound(50, (char*) FileName);}}            // play on the sound channel
-		return(0);                                        // return number not relevant for sounds
-	case SwitchActCommand:                              // activated switches
-		if (EX_BallSaveMonitor) {
-			if (Command == 11 || Command == 12 || Command == 13) {
-				return (1);}}
-		if (EX_BallSaveActive) {                          // hide switches from PinMame
-			if (Command == 17 || Command == 32) { 					// We hide the switches of the outlanes and trunk
-				if (Command == 17) {
-					ActivateSolenoid(40, 13);}
-				return(1);}                                   // hide these switches from PinMame
-			else if (Command == 10) {                       // Outhole switch : the ball is in the outhole.
-				AppByte = 0;																	// reset outhole kicks
-				if (!EX_IgnoreOuthole) {
-					if (EX_BallSaveTimer) {                     // timer still running?
-						KillTimer(EX_BallSaveTimer);              // stop it
-						EX_BallSaveTimer = 0;}
-					EX_BallSaveMonitor = true;
-					EX_IgnoreOuthole = true;                    // ignore switch bouncing when the ball is kicked out
-					if (!QuerySolenoid(12)) {										// AC not active?
-						EX_BallSaveACstate = false;
-						ActivateTimer(1000, 46, EX_SpaceStation2);}
-					else {																			// AC needs to be switched
-						EX_BallSaveACstate = true;
-						if (!SolBuffer[0]) {											// none of solenoids 1 - 8 active?
-							EX_SpaceStation(45, 0);}
-						else {
-							SolBuffer[0] = 0;												// quick way to release
-							ReleaseSolenoid(1);											// solenoids 1 - 8
-							ActivateTimer(40, 45, EX_SpaceStation2);}}}
-				return(1);}}                                  // hide this switch from PinMame
-		else {                                            // normal mode
-			if (Command == 43 && game_settings[USB_BallSave] && QuerySolenoid(24)) { // Check if the ball is in the plunger lane and ball saver is active
-				if (EX_BallSaveTimer) {                       // Activate the timer
-					KillTimer(EX_BallSaveTimer);}
-				EX_BallSaveActive = true;
-				AddBlinkLamp(42, 150);                        // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
-				EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 50, EX_SpaceStation2);}}
-		return(0);                                        // report switch to PinMame
-	case SwitchRelCommand:
-		if (EX_BallSaveMonitor) {
-			if (Command == 11 || Command == 12 || Command == 13) {
-				return (1);}}
-		if (EX_BallSaveActive) {                          // hide switches from PinMame
-			if (Command == 17 || Command == 32) { 					// We hide the switches of the outlanes and trunk
-				return(1);}}                                  // hide these switches from PinMame                                 // hide these switches from PinMame
-		return(0);
-	case SolenoidActCommand:
-		if (Command == 12 && EX_BallSaveMonitor) {        // AC relay
-			EX_BallSaveACstate = true;
-			return(1);}
-		if (Command < 9 && EX_BallSaveACstate) {					// PinMame requesting the AC relay to be set
-			return(1);}                                     // ignore the solenoid command
-		if (!QuerySolenoid(12) && (Command == 3 || Command == 4 || Command == 6)) { // protect high power solenoids from over turn on
-			ActivatePrioTimer(40, Command, ReleaseSolenoid);}
-		else if (Command == 8 || Command == 13 || Command == 17) {
-			ActivatePrioTimer(40, Command, ReleaseSolenoid);}
-		return(0);
-	case SolenoidRelCommand:                            // released switches
-		if(Command == 12 && EX_BallSaveMonitor) {
-			EX_BallSaveACstate = false;
-			return(1);}                                     // hide these switches from PinMame
-		else if (Command == 25) {
-			if (EX_BallSaveTimer) {                     		// timer still running?
-				KillTimer(EX_BallSaveTimer);}              		// stop it
-			EX_SpaceStation(50, 0);}
-		return(0);
-	case LampOnCommand:
-		if (Command == 42) {
-			EX_BallSaveExBallLamp = true;
-			if (EX_BallSaveActive) {
-				return(1);}}
-		return(0);
-	case LampOffCommand:
-		if (Command == 42) {
-			EX_BallSaveExBallLamp = false;
-			if (EX_BallSaveActive) {
-				return(1);}}
-		return(0);
-	case 45:																						// Turn Off AC relay
-		ReleaseSolenoid(12);
-		ActivateTimer(1000, 46, EX_SpaceStation2);
-		return(1);
-	case 46:
-		if (QuerySwitch(10)) {														// ball still in outhole?
-			ActivateSolenoid(40, 1);                    		// kick ball into trunk (solenoid 1 outhole)
-			ActivateTimer(1000, 47, EX_SpaceStation2);}
-		else {																						// ball not in outhole
-			if (AppByte < 10) {															// already tried 10 times?
-				AppByte++;
-			ActivateTimer(300, 46, EX_SpaceStation2);}
-			else {																					// something's wrong
-				if (EX_BallSaveTimer) {                     	// timer still running?
-					KillTimer(EX_BallSaveTimer);}              	// stop it
-				EX_SpaceStation(50, 0);}}											// end ball saver cycle
-		return(1);
-	case 47:                                            // timer after ball has been kicked to trunk run out
-		if (QuerySwitch(11)) {                            // at least 1 ball in the trunk?
-			ActivateSolenoid(30, 2);                       	// kick ball into shooter lane
-			if (!EX_BallSaveACstate) {											// correct AC state?
-				ActivateTimer(40, 49, EX_SpaceStation2);}			// end cycle
-			else {
-				ActivateTimer(40, 48, EX_SpaceStation2);}}		// switch on AC relay
-		else {
-			ActivateTimer(1000, 47, EX_SpaceStation2);}     // come back in 1s
-		return(1);
-	case 48:
-		if (EX_BallSaveACstate) {
-			ActivateSolenoid(0, 12);}												// turn on AC relay
-		ActivateTimer(40, 49, EX_SpaceStation2);
-		return(1);
-	case 49:
-		EX_IgnoreOuthole = false;
-		EX_BallSaveMonitor = false;
-		RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
-		if (EX_BallSaveExBallLamp) {                     	// restore the state of the Extra Ball lamps
-			TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-		else {
-			TurnOffLamp(42);}
-		EX_BallSaveACstate = false;												// stop fumbling with the AC relay
-		EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
-		return(1);
-	case 50:                                            // Stop the timer of Shoot Again after 20 seconds
-		EX_BallSaveTimer = 0;
-		RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
-		if (EX_BallSaveExBallLamp) {                     // restore the state of the Extra Ball lamps
-			TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-		else {
-			TurnOffLamp(42);}
-		EX_BallSaveActive = 0;
-		return(1);
-	default:                                            // use default treatment for undefined types
-		return(0);}}                                      // no exception rule found for this type so proceed as normal
+  static byte LastMusic;
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (!Command){                                    // sound command 0x00 - stop sound
+      AfterSound = 0;
+      StopPlayingSound();}
+    else if (Command == 52) { }                       // ignore sound command 0x34
+    else if (Command == 170) { }                      // ignore sound command 0xaa
+    else if (Command == 255) { }                      // ignore sound command 0xff
+    else {                                            // proceed with standard sound handling
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        if (Command < 128) {                          // play speech with a higher priority
+          PlaySound(50, (char*) FileName);}
+        else {
+          PlaySound(51, (char*) FileName);}}}
+    return(0);                                        // return number not relevant for sounds
+  case SoundCommandCh2:                               // sound commands for channel 2
+    if (!Command) {                                   // sound command 0x00 - stop music
+      AfterMusic = 0;
+      LastMusic = Command;                            // store number of last music track
+      RestoreMusicVolume(100);
+      StopPlayingMusic();}
+    else if (Command == 66) { }                       // ignore sound command 0x42
+    else if (Command == 85) { }                       // ignore sound command 0x55
+    else if (Command > 95 && Command < 104) {         // music volume command 0x6X
+      MusicVolume = Command - 96;}
+    else if (Command == 170) { }                      // ignore unknown sound command 0xaa
+    else if (Command == 255) { }                      // ignore unknown sound command 0xff
+    else if (Command == 1) {                          // music track 1
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_01L.snd");                     // play music track
+      QueueNextMusic("1_01L.snd");}                   // track is looping so queue it also
+    else if (Command == 2) {                          // music track 2
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_02.snd");                      // play non looping part of music track
+      QueueNextMusic("1_02L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 3) {                          // music track 3
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_03L.snd");                     // play music track
+      QueueNextMusic("1_03L.snd");}                   // track is looping so queue it also
+    else if (Command == 4) {                          // music track 4
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_04.snd");                      // play non looping part of music track
+      QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 5) {                          // music track 5
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_05.snd");                      // play music track
+      QueueNextMusic("1_05L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 6) {                          // music track 6
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_06.snd");                      // play non looping part of music track
+      QueueNextMusic("1_06L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 7) {                          // music track 7
+      LastMusic = Command;                            // store number of last music track
+      AfterMusic = 0;                                 // no looping part
+      PlayMusic(50, "1_07.snd");}                     // play music track
+    else if (Command == 11) {                         // music track 0x0b
+      LastMusic = Command;                            // store number of last music track
+      AfterMusic = 0;                                 // no looping part
+      PlayMusic(50, "1_0b.snd");}                     // play music track
+    else if (Command == 12) {                         // music track 0x0c
+      LastMusic = Command;                            // store number of last music track
+      AfterMusic = 0;                                 // no looping part
+      PlaySound(60, "mball.snd");}                    // play multiball intro and block everything else
+    else if (Command == 13) {                         // music track 0x0d
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_0d.snd");                      // play non looping part of music track
+      QueueNextMusic("1_0dL.snd");}                   // queue looping part as next music to be played
+    else if (Command == 64) {                         // music ending 0x40
+      if (LastMusic != 64) {                          // avoid double play
+        LastMusic = Command;                          // store number of last music track
+        AfterMusic = 0;                               // disable looping
+        PlayMusic(50, "1_40.snd");}}                  // play ending
+    else if (Command == 65) {                         // music ending 0x41
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_01.snd");                      // play non looping part of music track
+      QueueNextMusic("1_01L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 66) {                         // music command 0x42
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_03.snd");                      // play non looping part of music track
+      QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 67) {                         // music ending 0x43
+      LastMusic = Command;                            // store number of last music track
+      PlayMusic(50, "1_04.snd");                      // play non looping part of music track
+      QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 130) {
+      if (LastMusic) {                                // dont play it when no music is being played
+        PlaySound(50, "1_82.snd");}
+      else {
+        return(0);}}
+    else if (Command == 144) {                        // sound 0x90
+      PlaySound(49, "1_90.snd");}                     // play with lower prio
+    else if (Command == 149) {                        // sound 0x95
+      PlayMusic(50, "1_95.snd");}                     // play on music channel
+    else if (Command == 158) {                        // sound 0x9e
+      PlayMusic(50, "1_9e.snd");}                     // play on music channel
+    else if (Command == 165) {                        // sound 0xa5
+      PlayMusic(50, "1_a5.snd");}                     // play on music channel
+    else {
+      char FileName[9] = "1_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(50, (char*) FileName);}}            // play on the sound channel
+    return(0);                                        // return number not relevant for sounds
+  case SwitchActCommand:                              // activated switches
+    if (EX_BallSaveMonitor) {
+      if (Command == 11 || Command == 12 || Command == 13) {
+        return (1);}}
+    if (EX_BallSaveActive) {                          // hide switches from PinMame
+      if (Command == 17 || Command == 32) {           // We hide the switches of the outlanes and trunk
+        if (Command == 17) {
+          ActivateSolenoid(40, 13);}
+        return(1);}                                   // hide these switches from PinMame
+      else if (Command == 10) {                       // Outhole switch : the ball is in the outhole.
+        AppByte = 0;                                  // reset outhole kicks
+        if (!EX_IgnoreOuthole) {
+          if (EX_BallSaveTimer) {                     // timer still running?
+            KillTimer(EX_BallSaveTimer);              // stop it
+            EX_BallSaveTimer = 0;}
+          EX_BallSaveMonitor = true;
+          EX_IgnoreOuthole = true;                    // ignore switch bouncing when the ball is kicked out
+          if (!QuerySolenoid(12)) {                   // AC not active?
+            EX_BallSaveACstate = false;
+            ActivateTimer(1000, 46, EX_SpaceStation2);}
+          else {                                      // AC needs to be switched
+            EX_BallSaveACstate = true;
+            if (!SolBuffer[0]) {                      // none of solenoids 1 - 8 active?
+              EX_SpaceStation(45, 0);}
+            else {
+              SolBuffer[0] = 0;                       // quick way to release
+              ReleaseSolenoid(1);                     // solenoids 1 - 8
+              ActivateTimer(40, 45, EX_SpaceStation2);}}}
+        return(1);}}                                  // hide this switch from PinMame
+    else {                                            // normal mode
+      if (Command == 43 && game_settings[USB_BallSave] && QuerySolenoid(24)) { // Check if the ball is in the plunger lane and ball saver is active
+        if (EX_BallSaveTimer) {                       // Activate the timer
+          KillTimer(EX_BallSaveTimer);}
+        EX_BallSaveActive = true;
+        AddBlinkLamp(42, 150);                        // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
+        EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 50, EX_SpaceStation2);}}
+    return(0);                                        // report switch to PinMame
+  case SwitchRelCommand:
+    if (EX_BallSaveMonitor) {
+      if (Command == 11 || Command == 12 || Command == 13) {
+        return (1);}}
+    if (EX_BallSaveActive) {                          // hide switches from PinMame
+      if (Command == 17 || Command == 32) {           // We hide the switches of the outlanes and trunk
+        return(1);}}                                  // hide these switches from PinMame                                 // hide these switches from PinMame
+    return(0);
+  case SolenoidActCommand:
+    if (Command == 12 && EX_BallSaveMonitor) {        // AC relay
+      EX_BallSaveACstate = true;
+      return(1);}
+    if (Command < 9 && EX_BallSaveACstate) {          // PinMame requesting the AC relay to be set
+      return(1);}                                     // ignore the solenoid command
+    if (!QuerySolenoid(12) && (Command == 3 || Command == 4 || Command == 6)) { // protect high power solenoids from over turn on
+      ActivatePrioTimer(40, Command, ReleaseSolenoid);}
+    else if (Command == 8 || Command == 13 || Command == 17) {
+      ActivatePrioTimer(40, Command, ReleaseSolenoid);}
+    return(0);
+  case SolenoidRelCommand:                            // released switches
+    if(Command == 12 && EX_BallSaveMonitor) {
+      EX_BallSaveACstate = false;
+      return(1);}                                     // hide these switches from PinMame
+    else if (Command == 25) {
+      if (EX_BallSaveTimer) {                         // timer still running?
+        KillTimer(EX_BallSaveTimer);}                 // stop it
+      EX_SpaceStation(50, 0);}
+    return(0);
+  case LampOnCommand:
+    if (Command == 42) {
+      EX_BallSaveExBallLamp = true;
+      if (EX_BallSaveActive) {
+        return(1);}}
+    return(0);
+  case LampOffCommand:
+    if (Command == 42) {
+      EX_BallSaveExBallLamp = false;
+      if (EX_BallSaveActive) {
+        return(1);}}
+    return(0);
+  case 45:                                            // Turn Off AC relay
+    ReleaseSolenoid(12);
+    ActivateTimer(1000, 46, EX_SpaceStation2);
+    return(1);
+  case 46:
+    if (QuerySwitch(10)) {                            // ball still in outhole?
+      ActivateSolenoid(40, 1);                        // kick ball into trunk (solenoid 1 outhole)
+      ActivateTimer(1000, 47, EX_SpaceStation2);}
+    else {                                            // ball not in outhole
+      if (AppByte < 10) {                             // already tried 10 times?
+        AppByte++;
+      ActivateTimer(300, 46, EX_SpaceStation2);}
+      else {                                          // something's wrong
+        if (EX_BallSaveTimer) {                       // timer still running?
+          KillTimer(EX_BallSaveTimer);}               // stop it
+        EX_SpaceStation(50, 0);}}                     // end ball saver cycle
+    return(1);
+  case 47:                                            // timer after ball has been kicked to trunk run out
+    if (QuerySwitch(11)) {                            // at least 1 ball in the trunk?
+      ActivateSolenoid(30, 2);                        // kick ball into shooter lane
+      if (!EX_BallSaveACstate) {                      // correct AC state?
+        ActivateTimer(40, 49, EX_SpaceStation2);}     // end cycle
+      else {
+        ActivateTimer(40, 48, EX_SpaceStation2);}}    // switch on AC relay
+    else {
+      ActivateTimer(1000, 47, EX_SpaceStation2);}     // come back in 1s
+    return(1);
+  case 48:
+    if (EX_BallSaveACstate) {
+      ActivateSolenoid(0, 12);}                       // turn on AC relay
+    ActivateTimer(40, 49, EX_SpaceStation2);
+    return(1);
+  case 49:
+    EX_IgnoreOuthole = false;
+    EX_BallSaveMonitor = false;
+    RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
+    if (EX_BallSaveExBallLamp) {                      // restore the state of the Extra Ball lamps
+      TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
+    else {
+      TurnOffLamp(42);}
+    EX_BallSaveACstate = false;                       // stop fumbling with the AC relay
+    EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
+    return(1);
+  case 50:                                            // Stop the timer of Shoot Again after 20 seconds
+    EX_BallSaveTimer = 0;
+    RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
+    if (EX_BallSaveExBallLamp) {                     // restore the state of the Extra Ball lamps
+      TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
+    else {
+      TurnOffLamp(42);}
+    EX_BallSaveActive = 0;
+    return(1);
+  default:                                            // use default treatment for undefined types
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 void EX_SpaceStation2(byte Selector) {                // to be called by timer from EX_SpaceStation
     EX_SpaceStation(Selector, 0);}
