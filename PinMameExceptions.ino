@@ -876,7 +876,7 @@ byte EX_CountBallsInTrunk() {
   for (byte i=0; i<3; i++) {
     if (QuerySwitch(11+i)) {
       Count++;}}
-  return(i);}
+  return(Count);}
 
 byte EX_SpaceStation(byte Type, byte Command){
   static byte LastMusic;
