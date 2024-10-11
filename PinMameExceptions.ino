@@ -871,8 +871,16 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
+byte EX_CountBallsInTrunk() {
+  byte Count = 0;
+  for (byte i=0; i<3; i++) {
+    if (QuerySwitch(11+i)) {
+      Count++;}}
+  return(i);}
+
 byte EX_SpaceStation(byte Type, byte Command){
   static byte LastMusic;
+  static byte BallsInTrunk;
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (!Command){                                    // sound command 0x00 - stop sound
@@ -982,7 +990,7 @@ byte EX_SpaceStation(byte Type, byte Command){
         return (1);}}
     if (EX_BallSaveActive) {                          // hide switches from PinMame
       if (Command == 17 || Command == 32) {           // We hide the switches of the outlanes and trunk
-        if (Command == 17) {
+        if (Command == 17) {                          // use the kickback if present
           ActivateSolenoid(40, 13);}
         return(1);}                                   // hide these switches from PinMame
       else if (Command == 10) {                       // Outhole switch : the ball is in the outhole.
@@ -1019,7 +1027,7 @@ byte EX_SpaceStation(byte Type, byte Command){
         return (1);}}
     if (EX_BallSaveActive) {                          // hide switches from PinMame
       if (Command == 17 || Command == 32) {           // We hide the switches of the outlanes and trunk
-        return(1);}}                                  // hide these switches from PinMame                                 // hide these switches from PinMame
+        return(1);}}                                  // hide these switches from PinMame
     return(0);
   case SolenoidActCommand:
     if (Command == 12 && EX_BallSaveMonitor) {        // AC relay
@@ -1059,33 +1067,47 @@ byte EX_SpaceStation(byte Type, byte Command){
     return(1);
   case 46:
     if (QuerySwitch(10)) {                            // ball still in outhole?
+      BallsInTrunk = EX_CountBallsInTrunk();
       ActivateSolenoid(40, 1);                        // kick ball into trunk (solenoid 1 outhole)
-      ActivateTimer(1000, 47, EX_SpaceStation2);}
+      AppByte = 0;
+      ActivateTimer(1500, 47, EX_SpaceStation2);}
     else {                                            // ball not in outhole
       if (AppByte < 10) {                             // already tried 10 times?
         AppByte++;
-      ActivateTimer(300, 46, EX_SpaceStation2);}
+        ActivateTimer(300, 46, EX_SpaceStation2);}
       else {                                          // something's wrong
         if (EX_BallSaveTimer) {                       // timer still running?
           KillTimer(EX_BallSaveTimer);}               // stop it
         EX_SpaceStation(50, 0);}}                     // end ball saver cycle
     return(1);
   case 47:                                            // timer after ball has been kicked to trunk run out
-    if (QuerySwitch(11)) {                            // at least 1 ball in the trunk?
+  {byte CountTrunk = EX_CountBallsInTrunk();
+    if (CountTrunk == BallsInTrunk + 1) {             // ball in the trunk?
       ActivateSolenoid(30, 2);                        // kick ball into shooter lane
       if (!EX_BallSaveACstate) {                      // correct AC state?
         ActivateTimer(40, 49, EX_SpaceStation2);}     // end cycle
       else {
         ActivateTimer(40, 48, EX_SpaceStation2);}}    // switch on AC relay
-    else {
-      ActivateTimer(1000, 47, EX_SpaceStation2);}     // come back in 1s
-    return(1);
-  case 48:
+    else {                                            // wrong number of balls in trunk
+      if (AppByte) {                                  // additional waiting time has already passed
+        if (CountTrunk < BallsInTrunk + 1) {          // less balls in trunk than expected
+          if (QuerySwitch(10)) {                      // ball still in outhole?
+            AppByte = 0;
+            ActivateTimer(100, 46, EX_SpaceStation2);}} // try again
+        else {                                        // more balls in trunk than expected
+          USB_SwitchHandler(11 + BallsInTrunk);       // report one drained ball to PinMame
+          BallsInTrunk++;
+          ActivateTimer(1000, 47, EX_SpaceStation2);}}  // come back to handle second ball
+      else {                                          // wait and try again
+        AppByte = 1;
+        ActivateTimer(1000, 47, EX_SpaceStation2);}}  // come back in 1s
+    return(1);}
+  case 48:                                            // fix state of AC relay
     if (EX_BallSaveACstate) {
       ActivateSolenoid(0, 12);}                       // turn on AC relay
     ActivateTimer(40, 49, EX_SpaceStation2);
     return(1);
-  case 49:
+  case 49:                                            // clean up after ball has been saved
     EX_IgnoreOuthole = false;
     EX_BallSaveMonitor = false;
     RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
@@ -1099,7 +1121,7 @@ byte EX_SpaceStation(byte Type, byte Command){
   case 50:                                            // Stop the timer of Shoot Again after 20 seconds
     EX_BallSaveTimer = 0;
     RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
-    if (EX_BallSaveExBallLamp) {                     // restore the state of the Extra Ball lamps
+    if (EX_BallSaveExBallLamp) {                      // restore the state of the Extra Ball lamps
       TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
     else {
       TurnOffLamp(42);}
@@ -1109,7 +1131,7 @@ byte EX_SpaceStation(byte Type, byte Command){
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 void EX_SpaceStation2(byte Selector) {                // to be called by timer from EX_SpaceStation
-    EX_SpaceStation(Selector, 0);}
+  EX_SpaceStation(Selector, 0);}
 
 byte EX_Rollergames(byte Type, byte Command){
   static byte LastMusic;
