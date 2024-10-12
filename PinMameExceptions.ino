@@ -16,15 +16,208 @@
 #define USB_BallSaveTime 6                            // activation time for the optional ball saver
 #define USB_BGmusic 7                                 // to select an own BG music
 
+#define SwOuthole 0                                   // number of the outhole switch
+#define SwTrunk1 1                                    // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
+#define SwTrunk2 2                                    // number of the 2nd trunk switch (active if a second ball is in the trunk)
+#define SwTrunk3 3                                    // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
+#define SwShooterLn 4                                 // number of the shooter lane feeder switch
+#define SwLeftOutlane 5                               // number of the left outlane switch
+#define SwRightOutlane 6                              // number of the right outlane switch
+#define SolACrelay 7                                  // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+#define SolLeftKickback 8                             // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+#define SolRightKickback 9                            // number of the right kickback solenoid (set to 0 if machine has no right kickback)
+#define SolOuthole 10                                 // number of the outhole kicker solenoid
+#define SolShooterLn 11                               // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
+#define LampExBall 12                                 // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+
+const byte EX_SpaceStationProperties[13] = {
+    10,                                               // number of the outhole switch
+    11,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
+    12,                                               // number of the 2nd trunk switch (active if a second ball is in the trunk)
+    13,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
+    43,                                               // number of the shooter lane feeder switch
+    17,                                               // number of the left outlane switch
+    32,                                               // number of the right outlane switch
+    12,                                               // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+    13,                                               // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+    0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
+    1,                                                // number of the outhole kicker solenoid
+    2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
+    42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+
+const byte *EX_Machine;                               // machine specific settings (optional)
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
-byte EX_IgnoreOuthole = 0;                            // to ignore the outhole switch while the ball is being kicked out
-bool EX_BallSaveActive = 0;                           // hide switches from PinMame while active
-byte EX_BallSaveTimer = 0;                            // Timer used by the ball saver
-bool EX_BallSaveMonitor = false;                      // monitor AC relay while ball saver is operating the coils
-bool EX_BallSaveExBallLamp = false;                   // PinMame state of the extra ball lamp
-bool EX_BallSaveACstate;                              // store the state of the AC relay while ball saver is operating the coils
+
+byte EX_CountBallsInTrunk() {
+  byte Count = 0;
+  for (byte i=0; i<3; i++) {
+    if (EX_Machine[SwTrunk1+i] && QuerySwitch(EX_Machine[SwTrunk1+i])) {
+      Count++;}}
+  return(Count);}
+
+byte EX_BallSaver(byte Type, byte Command){
+  static byte EX_IgnoreOuthole = 0;                   // to ignore the outhole switch while the ball is being kicked out
+  static bool EX_BallSaveActive = 0;                  // hide switches from PinMame while active
+  static byte EX_BallSaveTimer = 0;                   // Timer used by the ball saver
+  static bool EX_BallSaveMonitor = false;             // monitor AC relay while ball saver is operating the coils
+  static bool EX_BallSaveExBallLamp = false;          // PinMame state of the extra ball lamp
+  static bool EX_BallSaveACstate;                     // store the state of the AC relay while ball saver is operating the coils
+  static byte BallsInTrunk;
+  if (!game_settings[USB_BallSave]) {
+    return(0);}                                       // abort if ball saver is not enabled
+  switch(Type){
+  case SwitchActCommand:                              // activated switches
+    if (EX_BallSaveMonitor) {
+      if (Command == EX_Machine[SwTrunk1] || Command == EX_Machine[SwTrunk2] || Command == EX_Machine[SwTrunk3]) { // hide trunk switches while ball saver is active
+        return (1);}}
+    if (EX_BallSaveActive) {                          // hide switches from PinMame
+      if (Command == EX_Machine[SwLeftOutlane] || Command == EX_Machine[SwRightOutlane]) { // We hide the switches of the outlanes and trunk
+        if (EX_Machine[SolLeftKickback] && Command == EX_Machine[SwLeftOutlane]) { // use the left kickback if present
+          ActivateSolenoid(40, EX_Machine[SolLeftKickback]);}
+        else if (EX_Machine[SolRightKickback] && Command == EX_Machine[SwRightOutlane]) { // use the right kickback if present
+          ActivateSolenoid(40, EX_Machine[SolRightKickback]);}
+        return(1);}                                   // hide these switches from PinMame
+      else if (Command == EX_Machine[SwOuthole]) {    // Outhole switch : the ball is in the outhole.
+        AppByte = 0;                                  // reset outhole kicks
+        if (!EX_IgnoreOuthole) {
+          if (EX_BallSaveTimer) {                     // timer still running?
+            KillTimer(EX_BallSaveTimer);              // stop it
+            EX_BallSaveTimer = 0;}
+          EX_BallSaveMonitor = true;
+          EX_IgnoreOuthole = true;                    // ignore switch bouncing when the ball is kicked out
+          if (!EX_Machine[SolACrelay] || !QuerySolenoid(EX_Machine[SolACrelay])) { // AC present or not active?
+            EX_BallSaveACstate = false;
+            ActivateTimer(1000, 46, EX_BallSaver2);}
+          else {                                      // AC needs to be switched
+            EX_BallSaveACstate = true;
+            if (!SolBuffer[0]) {                      // none of solenoids 1 - 8 active?
+              EX_BallSaver(45, 0);}
+            else {
+              SolBuffer[0] = 0;                       // quick way to release
+              ReleaseSolenoid(1);                     // solenoids 1 - 8
+              ActivateTimer(40, 45, EX_BallSaver2);}}}
+        return(1);}}                                  // hide this switch from PinMame
+    else {                                            // normal mode
+      if (Command == EX_Machine[SwShooterLn] && QuerySolenoid(24)) { // Check if the ball is in the plunger lane and ball saver is active
+        if (EX_BallSaveTimer) {                       // Activate the timer
+          KillTimer(EX_BallSaveTimer);}
+        EX_BallSaveActive = true;
+        AddBlinkLamp(EX_Machine[LampExBall], 150);    // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
+        EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 50, EX_BallSaver2);}}
+    return(0);                                        // report switch to PinMame
+  case SwitchRelCommand:
+    if (EX_BallSaveMonitor) {
+      if (Command == EX_Machine[SwTrunk1] || Command == EX_Machine[SwTrunk2] || Command == EX_Machine[SwTrunk3]) { // hide trunk switches while ball saver is active
+        return (1);}}
+    if (EX_BallSaveActive) {                          // hide switches from PinMame
+      if (Command == EX_Machine[SwLeftOutlane] || Command == EX_Machine[SwRightOutlane]) { // We hide the switches of the outlanes and trunk
+        return(1);}}                                  // hide these switches from PinMame
+    return(0);
+  case SolenoidActCommand:
+    if (EX_Machine[SolACrelay]) {
+      if (Command == 12 && EX_BallSaveMonitor) {      // AC relay
+        EX_BallSaveACstate = true;
+        return(1);}
+      if (Command < 9 && EX_BallSaveACstate) {        // PinMame requesting the AC relay to be set
+        return(1);}}                                  // ignore the solenoid command
+    return(0);
+  case SolenoidRelCommand:                            // released switches
+    if(EX_Machine[SolACrelay] && Command == EX_Machine[SolACrelay] && EX_BallSaveMonitor) {
+      EX_BallSaveACstate = false;
+      return(1);}                                     // hide these switches from PinMame
+    else if (Command == 25) {                         // disable ball saver when game is over (flipper relay turned off)
+      if (EX_BallSaveTimer) {                         // timer still running?
+        KillTimer(EX_BallSaveTimer);}                 // stop it
+      EX_BallSaver(50, 0);}
+    return(0);
+  case LampOnCommand:
+    if (Command == EX_Machine[LampExBall]) {
+      EX_BallSaveExBallLamp = true;
+      if (EX_BallSaveActive) {
+        return(1);}}
+    return(0);
+  case LampOffCommand:
+    if (Command == EX_Machine[LampExBall]) {
+      EX_BallSaveExBallLamp = false;
+      if (EX_BallSaveActive) {
+        return(1);}}
+    return(0);
+  case 45:                                            // Turn Off AC relay
+    ReleaseSolenoid(EX_Machine[SolACrelay]);
+    ActivateTimer(1000, 46, EX_BallSaver2);
+    return(1);
+  case 46:
+    if (QuerySwitch(EX_Machine[SwOuthole])) {         // ball still in outhole?
+      if (EX_Machine[SwTrunk1]) {                     // does machine have more than one ball?
+        BallsInTrunk = EX_CountBallsInTrunk();
+        AppByte = 0;
+        ActivateTimer(1500, 47, EX_BallSaver2);}
+      else {
+        ActivateTimer(200, 49, EX_BallSaver2);}
+      ActivateSolenoid(40, EX_Machine[SolOuthole]);}  // kick ball into trunk (solenoid 1 outhole)
+    else {                                            // ball not in outhole
+      if (AppByte < 10) {                             // already tried 10 times?
+        AppByte++;
+        ActivateTimer(300, 46, EX_BallSaver2);}
+      else {                                          // something's wrong
+        if (EX_BallSaveTimer) {                       // timer still running?
+          KillTimer(EX_BallSaveTimer);}               // stop it
+        EX_BallSaver(50, 0);}}                        // end ball saver cycle
+    return(1);
+  case 47:                                            // timer after ball has been kicked to trunk run out
+  {byte CountTrunk = EX_CountBallsInTrunk();
+  if (CountTrunk == BallsInTrunk + 1) {               // ball in the trunk?
+    ActivateSolenoid(30, EX_Machine[SolShooterLn]);   // kick ball into shooter lane
+    if (!EX_BallSaveACstate) {                        // correct AC state?
+      ActivateTimer(40, 49, EX_BallSaver2);}          // end cycle
+    else {
+      ActivateTimer(40, 48, EX_BallSaver2);}}         // switch on AC relay
+  else {                                              // wrong number of balls in trunk
+    if (AppByte) {                                    // additional waiting time has already passed
+      if (CountTrunk < BallsInTrunk + 1) {            // less balls in trunk than expected
+        if (QuerySwitch(10)) {                        // ball still in outhole?
+          AppByte = 0;
+          ActivateTimer(100, 46, EX_BallSaver2);}}    // try again
+      else {                                          // more balls in trunk than expected
+        USB_SwitchHandler(EX_Machine[SwTrunk1 + BallsInTrunk]); // report one drained ball to PinMame
+        BallsInTrunk++;
+        ActivateTimer(1000, 47, EX_BallSaver2);}}     // come back to handle second ball
+    else {                                            // wait and try again
+      AppByte = 1;
+      ActivateTimer(1000, 47, EX_BallSaver2);}}       // come back in 1s
+  return(1);}
+  case 48:                                            // fix state of AC relay
+    if (EX_BallSaveACstate) {
+      ActivateSolenoid(0, EX_Machine[SolACrelay]);}   // turn on AC relay
+    ActivateTimer(40, 49, EX_BallSaver2);
+    return(1);
+  case 49:                                            // clean up after ball has been saved
+    EX_IgnoreOuthole = false;
+    EX_BallSaveMonitor = false;
+    RemoveBlinkLamp(EX_Machine[LampExBall]);          // stop blinking the extra ball lamps
+    if (EX_BallSaveExBallLamp) {                      // restore the state of the Extra Ball lamps
+      TurnOnLamp(EX_Machine[LampExBall]);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
+    else {
+      TurnOffLamp(EX_Machine[LampExBall]);}
+    EX_BallSaveACstate = false;                       // stop fumbling with the AC relay
+    EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
+    return(1);
+  case 50:                                            // Stop the timer of Shoot Again after 20 seconds
+    EX_BallSaveTimer = 0;
+    RemoveBlinkLamp(EX_Machine[LampExBall]);          // stop blinking the extra ball lamps
+    if (EX_BallSaveExBallLamp) {                      // restore the state of the Extra Ball lamps
+      TurnOnLamp(EX_Machine[LampExBall]);}            // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
+    else {
+      TurnOffLamp(EX_Machine[LampExBall]);}
+    EX_BallSaveActive = 0;
+    return(1);
+  default:                                            // use default treatment for undefined types
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
+
+void EX_BallSaver2(byte Selector) {                   // to be called by timer from EX_BallSaver
+  EX_BallSaver(Selector, 0);}
 
 void EX_BallRelease(byte State) {                     // repeat ball eject in case the ball got stuck
   static byte Timer;                                  // stores the timer number
@@ -663,56 +856,56 @@ byte EX_Comet(byte Type, byte Command) {
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_HighSpeed(byte Type, byte Command) {          // Exceptions for High Speed (Williams 1986, System 11)
-  switch(Type){
-  case SwitchActCommand:                              // activated switches
-    if (EX_BallSaveActive) {                          // hide switches from PinMame
-      if (Command == 10 || Command == 11 || Command == 12 || Command == 31 || Command == 32) { // We hide the switches of the outlanes and trunk
-        return(1);}                                   // hide these switches from PinMame
-      else if (Command == 9) {                        // Outhole switch : the ball is in the outhole.
-        if (!EX_IgnoreOuthole) {
-          if (EX_BallSaveTimer) {                     // timer still running?
-            KillTimer(EX_BallSaveTimer);              // stop it
-            EX_BallSaveTimer = 0;}
-          EX_IgnoreOuthole = true;                    // ignore switch bouncing when the ball is kicked out
-          ActivateSolenoid(40, 1);                    // kick ball into plunger lane (solenoid 1 outhole)
-          ActivateTimer(1000, 1, EX_HighSpeed2);}
-        return(1);}}                                  // hide this switch from PinMame
-    else {                                            // normal mode
-      if (Command == 36 && game_settings[USB_BallSave]) { // Check if the ball is in the plunger lane and ball saver is active
-        if (EX_BallSaveTimer) {                       // Activate the timer
-          KillTimer(EX_BallSaveTimer);}
-        if (QueryLamp(3)) {                           // Extra Ball lamp lit?
-          EX_BallSaveActive = 2;}                     // remember the state of the Extra Ball lamp
-        else {
-          EX_BallSaveActive = 1;}
-        AddBlinkLamp(3, 150);                         // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
-        EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 0, EX_HighSpeed2);}}
-    return(0);                                        // report switch to PinMame
-  case 50:                                            // Stop the timer of Shoot Again after 20 seconds
-    EX_BallSaveTimer = 0;
-    RemoveBlinkLamp(3);                               // stop blinking the extra ball lamps
-    if (EX_BallSaveActive == 2) {                     // restore the state of the Extra Ball lamps
-      TurnOnLamp(3);}                                 // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-    else {
-      TurnOffLamp(3);}
-    EX_BallSaveActive = 0;
-    return(1);
-  case 51:                                            // timer after ball has been kicked to trunk run out
-    if (QuerySwitch(12)) {                            // at least 1 ball in the trunk?
-      ActivateSolenoid(30, 2);}                       // kick ball into shooter lane
-    else {
-      ActivateTimer(1000, 1, EX_HighSpeed2);}         // come back in 1s
-    EX_IgnoreOuthole = false;
-    RemoveBlinkLamp(3);                               // stop blinking the extra ball lamps
-    if (EX_BallSaveActive == 2) {                     // restore the state of the Extra Ball lamps
-      TurnOnLamp(3);}                                 // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-    else {
-      TurnOffLamp(3);}
-    EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
-    return(1);
-  default:                                            // use default treatment for undefined types
-    return(0);}}                                      // no exception rule found for this type so proceed as normal
+//byte EX_HighSpeed(byte Type, byte Command) {          // Exceptions for High Speed (Williams 1986, System 11)
+//  switch(Type){
+//  case SwitchActCommand:                              // activated switches
+//    if (EX_BallSaveActive) {                          // hide switches from PinMame
+//      if (Command == 10 || Command == 11 || Command == 12 || Command == 31 || Command == 32) { // We hide the switches of the outlanes and trunk
+//        return(1);}                                   // hide these switches from PinMame
+//      else if (Command == 9) {                        // Outhole switch : the ball is in the outhole.
+//        if (!EX_IgnoreOuthole) {
+//          if (EX_BallSaveTimer) {                     // timer still running?
+//            KillTimer(EX_BallSaveTimer);              // stop it
+//            EX_BallSaveTimer = 0;}
+//          EX_IgnoreOuthole = true;                    // ignore switch bouncing when the ball is kicked out
+//          ActivateSolenoid(40, 1);                    // kick ball into plunger lane (solenoid 1 outhole)
+//          ActivateTimer(1000, 1, EX_HighSpeed2);}
+//        return(1);}}                                  // hide this switch from PinMame
+//    else {                                            // normal mode
+//      if (Command == 36 && game_settings[USB_BallSave]) { // Check if the ball is in the plunger lane and ball saver is active
+//        if (EX_BallSaveTimer) {                       // Activate the timer
+//          KillTimer(EX_BallSaveTimer);}
+//        if (QueryLamp(3)) {                           // Extra Ball lamp lit?
+//          EX_BallSaveActive = 2;}                     // remember the state of the Extra Ball lamp
+//        else {
+//          EX_BallSaveActive = 1;}
+//        AddBlinkLamp(3, 150);                         // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
+//        EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 0, EX_HighSpeed2);}}
+//    return(0);                                        // report switch to PinMame
+//  case 50:                                            // Stop the timer of Shoot Again after 20 seconds
+//    EX_BallSaveTimer = 0;
+//    RemoveBlinkLamp(3);                               // stop blinking the extra ball lamps
+//    if (EX_BallSaveActive == 2) {                     // restore the state of the Extra Ball lamps
+//      TurnOnLamp(3);}                                 // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
+//    else {
+//      TurnOffLamp(3);}
+//    EX_BallSaveActive = 0;
+//    return(1);
+//  case 51:                                            // timer after ball has been kicked to trunk run out
+//    if (QuerySwitch(12)) {                            // at least 1 ball in the trunk?
+//      ActivateSolenoid(30, 2);}                       // kick ball into shooter lane
+//    else {
+//      ActivateTimer(1000, 1, EX_HighSpeed2);}         // come back in 1s
+//    EX_IgnoreOuthole = false;
+//    RemoveBlinkLamp(3);                               // stop blinking the extra ball lamps
+//    if (EX_BallSaveActive == 2) {                     // restore the state of the Extra Ball lamps
+//      TurnOnLamp(3);}                                 // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
+//    else {
+//      TurnOffLamp(3);}
+//    EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
+//    return(1);
+//  default:                                            // use default treatment for undefined types
+//    return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 void EX_HighSpeed2(byte Selector) {                   // to be called by timer from EX_HighSpeed
   if (Selector) {
@@ -871,16 +1064,11 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_CountBallsInTrunk() {
-  byte Count = 0;
-  for (byte i=0; i<3; i++) {
-    if (QuerySwitch(11+i)) {
-      Count++;}}
-  return(Count);}
-
 byte EX_SpaceStation(byte Type, byte Command){
   static byte LastMusic;
-  static byte BallsInTrunk;
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (!Command){                                    // sound command 0x00 - stop sound
@@ -984,154 +1172,14 @@ byte EX_SpaceStation(byte Type, byte Command){
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
         PlaySound(50, (char*) FileName);}}            // play on the sound channel
     return(0);                                        // return number not relevant for sounds
-  case SwitchActCommand:                              // activated switches
-    if (EX_BallSaveMonitor) {
-      if (Command == 11 || Command == 12 || Command == 13) {
-        return (1);}}
-    if (EX_BallSaveActive) {                          // hide switches from PinMame
-      if (Command == 17 || Command == 32) {           // We hide the switches of the outlanes and trunk
-        if (Command == 17) {                          // use the kickback if present
-          ActivateSolenoid(40, 13);}
-        return(1);}                                   // hide these switches from PinMame
-      else if (Command == 10) {                       // Outhole switch : the ball is in the outhole.
-        AppByte = 0;                                  // reset outhole kicks
-        if (!EX_IgnoreOuthole) {
-          if (EX_BallSaveTimer) {                     // timer still running?
-            KillTimer(EX_BallSaveTimer);              // stop it
-            EX_BallSaveTimer = 0;}
-          EX_BallSaveMonitor = true;
-          EX_IgnoreOuthole = true;                    // ignore switch bouncing when the ball is kicked out
-          if (!QuerySolenoid(12)) {                   // AC not active?
-            EX_BallSaveACstate = false;
-            ActivateTimer(1000, 46, EX_SpaceStation2);}
-          else {                                      // AC needs to be switched
-            EX_BallSaveACstate = true;
-            if (!SolBuffer[0]) {                      // none of solenoids 1 - 8 active?
-              EX_SpaceStation(45, 0);}
-            else {
-              SolBuffer[0] = 0;                       // quick way to release
-              ReleaseSolenoid(1);                     // solenoids 1 - 8
-              ActivateTimer(40, 45, EX_SpaceStation2);}}}
-        return(1);}}                                  // hide this switch from PinMame
-    else {                                            // normal mode
-      if (Command == 43 && game_settings[USB_BallSave] && QuerySolenoid(24)) { // Check if the ball is in the plunger lane and ball saver is active
-        if (EX_BallSaveTimer) {                       // Activate the timer
-          KillTimer(EX_BallSaveTimer);}
-        EX_BallSaveActive = true;
-        AddBlinkLamp(42, 150);                        // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
-        EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 50, EX_SpaceStation2);}}
-    return(0);                                        // report switch to PinMame
-  case SwitchRelCommand:
-    if (EX_BallSaveMonitor) {
-      if (Command == 11 || Command == 12 || Command == 13) {
-        return (1);}}
-    if (EX_BallSaveActive) {                          // hide switches from PinMame
-      if (Command == 17 || Command == 32) {           // We hide the switches of the outlanes and trunk
-        return(1);}}                                  // hide these switches from PinMame
-    return(0);
   case SolenoidActCommand:
-    if (Command == 12 && EX_BallSaveMonitor) {        // AC relay
-      EX_BallSaveACstate = true;
-      return(1);}
-    if (Command < 9 && EX_BallSaveACstate) {          // PinMame requesting the AC relay to be set
-      return(1);}                                     // ignore the solenoid command
     if (!QuerySolenoid(12) && (Command == 3 || Command == 4 || Command == 6)) { // protect high power solenoids from over turn on
       ActivatePrioTimer(40, Command, ReleaseSolenoid);}
     else if (Command == 8 || Command == 13 || Command == 17) {
       ActivatePrioTimer(40, Command, ReleaseSolenoid);}
     return(0);
-  case SolenoidRelCommand:                            // released switches
-    if(Command == 12 && EX_BallSaveMonitor) {
-      EX_BallSaveACstate = false;
-      return(1);}                                     // hide these switches from PinMame
-    else if (Command == 25) {
-      if (EX_BallSaveTimer) {                         // timer still running?
-        KillTimer(EX_BallSaveTimer);}                 // stop it
-      EX_SpaceStation(50, 0);}
-    return(0);
-  case LampOnCommand:
-    if (Command == 42) {
-      EX_BallSaveExBallLamp = true;
-      if (EX_BallSaveActive) {
-        return(1);}}
-    return(0);
-  case LampOffCommand:
-    if (Command == 42) {
-      EX_BallSaveExBallLamp = false;
-      if (EX_BallSaveActive) {
-        return(1);}}
-    return(0);
-  case 45:                                            // Turn Off AC relay
-    ReleaseSolenoid(12);
-    ActivateTimer(1000, 46, EX_SpaceStation2);
-    return(1);
-  case 46:
-    if (QuerySwitch(10)) {                            // ball still in outhole?
-      BallsInTrunk = EX_CountBallsInTrunk();
-      ActivateSolenoid(40, 1);                        // kick ball into trunk (solenoid 1 outhole)
-      AppByte = 0;
-      ActivateTimer(1500, 47, EX_SpaceStation2);}
-    else {                                            // ball not in outhole
-      if (AppByte < 10) {                             // already tried 10 times?
-        AppByte++;
-        ActivateTimer(300, 46, EX_SpaceStation2);}
-      else {                                          // something's wrong
-        if (EX_BallSaveTimer) {                       // timer still running?
-          KillTimer(EX_BallSaveTimer);}               // stop it
-        EX_SpaceStation(50, 0);}}                     // end ball saver cycle
-    return(1);
-  case 47:                                            // timer after ball has been kicked to trunk run out
-  {byte CountTrunk = EX_CountBallsInTrunk();
-    if (CountTrunk == BallsInTrunk + 1) {             // ball in the trunk?
-      ActivateSolenoid(30, 2);                        // kick ball into shooter lane
-      if (!EX_BallSaveACstate) {                      // correct AC state?
-        ActivateTimer(40, 49, EX_SpaceStation2);}     // end cycle
-      else {
-        ActivateTimer(40, 48, EX_SpaceStation2);}}    // switch on AC relay
-    else {                                            // wrong number of balls in trunk
-      if (AppByte) {                                  // additional waiting time has already passed
-        if (CountTrunk < BallsInTrunk + 1) {          // less balls in trunk than expected
-          if (QuerySwitch(10)) {                      // ball still in outhole?
-            AppByte = 0;
-            ActivateTimer(100, 46, EX_SpaceStation2);}} // try again
-        else {                                        // more balls in trunk than expected
-          USB_SwitchHandler(11 + BallsInTrunk);       // report one drained ball to PinMame
-          BallsInTrunk++;
-          ActivateTimer(1000, 47, EX_SpaceStation2);}}  // come back to handle second ball
-      else {                                          // wait and try again
-        AppByte = 1;
-        ActivateTimer(1000, 47, EX_SpaceStation2);}}  // come back in 1s
-    return(1);}
-  case 48:                                            // fix state of AC relay
-    if (EX_BallSaveACstate) {
-      ActivateSolenoid(0, 12);}                       // turn on AC relay
-    ActivateTimer(40, 49, EX_SpaceStation2);
-    return(1);
-  case 49:                                            // clean up after ball has been saved
-    EX_IgnoreOuthole = false;
-    EX_BallSaveMonitor = false;
-    RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
-    if (EX_BallSaveExBallLamp) {                      // restore the state of the Extra Ball lamps
-      TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-    else {
-      TurnOffLamp(42);}
-    EX_BallSaveACstate = false;                       // stop fumbling with the AC relay
-    EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
-    return(1);
-  case 50:                                            // Stop the timer of Shoot Again after 20 seconds
-    EX_BallSaveTimer = 0;
-    RemoveBlinkLamp(42);                              // stop blinking the extra ball lamps
-    if (EX_BallSaveExBallLamp) {                      // restore the state of the Extra Ball lamps
-      TurnOnLamp(42);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-    else {
-      TurnOffLamp(42);}
-    EX_BallSaveActive = 0;
-    return(1);
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
-
-void EX_SpaceStation2(byte Selector) {                // to be called by timer from EX_SpaceStation
-  EX_SpaceStation(Selector, 0);}
 
 byte EX_Rollergames(byte Type, byte Command){
   static byte LastMusic;
@@ -1340,9 +1388,9 @@ void EX_Init(byte GameNumber) {
   case 39:                                            // Comet
     PinMameException = EX_Comet;                      // use exception rules for Comet
     break;
-  case 40:                                            // High Speed
-    PinMameException = EX_HighSpeed;                  // use exception rules for High Speed
-    break;
+//  case 40:                                            // High Speed
+//    PinMameException = EX_HighSpeed;                  // use exception rules for High Speed
+//    break;
   case 43:                                            // Pinbot
     PinMameException = EX_Pinbot;                     // use exception rules for Pinbot
     break;
@@ -1351,6 +1399,7 @@ void EX_Init(byte GameNumber) {
     break;
   case 48:                                            // Space Station
     PinMameException = EX_SpaceStation;               // use exception rules for Space Station
+    EX_Machine = EX_SpaceStationProperties;
     break;
   case 67:                                            // Rollergames
     PinMameException = EX_Rollergames;                // use exception rules for Rollergames
