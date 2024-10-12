@@ -45,6 +45,21 @@ const byte EX_SpaceStationProperties[13] = {
     2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
     42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
+const byte EX_TimeWarpProperties[13] = {
+    9,                                               // number of the outhole switch
+    0,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
+    0,                                               // number of the 2nd trunk switch (active if a second ball is in the trunk)
+    0,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
+    0,                                               // number of the shooter lane feeder switch
+    40,                                               // number of the left outlane switch
+    39,                                               // number of the right outlane switch
+    0,                                               // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+    0,                                               // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+    0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
+    1,                                                // number of the outhole kicker solenoid
+    0,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
+    44};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+
 const byte *EX_Machine;                               // machine specific settings (optional)
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
@@ -65,8 +80,6 @@ byte EX_BallSaver(byte Type, byte Command){
   static bool EX_BallSaveExBallLamp = false;          // PinMame state of the extra ball lamp
   static bool EX_BallSaveACstate;                     // store the state of the AC relay while ball saver is operating the coils
   static byte BallsInTrunk;
-  if (!game_settings[USB_BallSave]) {
-    return(0);}                                       // abort if ball saver is not enabled
   switch(Type){
   case SwitchActCommand:                              // activated switches
     if (EX_BallSaveMonitor) {
@@ -117,7 +130,7 @@ byte EX_BallSaver(byte Type, byte Command){
     return(0);
   case SolenoidActCommand:
     if (EX_Machine[SolACrelay]) {
-      if (Command == 12 && EX_BallSaveMonitor) {      // AC relay
+      if (Command == EX_Machine[SolACrelay] && EX_BallSaveMonitor) {  // AC relay
         EX_BallSaveACstate = true;
         return(1);}
       if (Command < 9 && EX_BallSaveACstate) {        // PinMame requesting the AC relay to be set
@@ -177,7 +190,7 @@ byte EX_BallSaver(byte Type, byte Command){
   else {                                              // wrong number of balls in trunk
     if (AppByte) {                                    // additional waiting time has already passed
       if (CountTrunk < BallsInTrunk + 1) {            // less balls in trunk than expected
-        if (QuerySwitch(10)) {                        // ball still in outhole?
+        if (QuerySwitch(EX_Machine[SwOuthole])) {     // ball still in outhole?
           AppByte = 0;
           ActivateTimer(100, 46, EX_BallSaver2);}}    // try again
       else {                                          // more balls in trunk than expected
@@ -198,7 +211,7 @@ byte EX_BallSaver(byte Type, byte Command){
     EX_BallSaveMonitor = false;
     RemoveBlinkLamp(EX_Machine[LampExBall]);          // stop blinking the extra ball lamps
     if (EX_BallSaveExBallLamp) {                      // restore the state of the Extra Ball lamps
-      TurnOnLamp(EX_Machine[LampExBall]);}                                // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
+      TurnOnLamp(EX_Machine[LampExBall]);}            // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
     else {
       TurnOffLamp(EX_Machine[LampExBall]);}
     EX_BallSaveACstate = false;                       // stop fumbling with the AC relay
@@ -907,11 +920,11 @@ byte EX_Comet(byte Type, byte Command) {
 //  default:                                            // use default treatment for undefined types
 //    return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-void EX_HighSpeed2(byte Selector) {                   // to be called by timer from EX_HighSpeed
-  if (Selector) {
-    EX_HighSpeed(51, 0);}
-  else {
-    EX_HighSpeed(50, 0);}}                            //We return Type number 50 because it does not exist in the known types
+//void EX_HighSpeed2(byte Selector) {                   // to be called by timer from EX_HighSpeed
+//  if (Selector) {
+//    EX_HighSpeed(51, 0);}
+//  else {
+//    EX_HighSpeed(50, 0);}}                            //We return Type number 50 because it does not exist in the known types
 
 byte EX_Pinbot(byte Type, byte Command){
   switch(Type){
