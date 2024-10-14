@@ -20,22 +20,20 @@
 #define SwTrunk1 1                                    // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
 #define SwTrunk2 2                                    // number of the 2nd trunk switch (active if a second ball is in the trunk)
 #define SwTrunk3 3                                    // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
-#define SwShooterLn 4                                 // number of the shooter lane feeder switch
-#define SwLeftOutlane 5                               // number of the left outlane switch
-#define SwRightOutlane 6                              // number of the right outlane switch
-#define SolACrelay 7                                  // number of the AC relay solenoid (set to 0 if machine has no AC relay)
-#define SolLeftKickback 8                             // number of the left kickback solenoid (set to 0 if machine has no left kickback)
-#define SolRightKickback 9                            // number of the right kickback solenoid (set to 0 if machine has no right kickback)
-#define SolOuthole 10                                 // number of the outhole kicker solenoid
-#define SolShooterLn 11                               // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
-#define LampExBall 12                                 // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+#define SwLeftOutlane 4                               // number of the left outlane switch
+#define SwRightOutlane 5                              // number of the right outlane switch
+#define SolACrelay 6                                  // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+#define SolLeftKickback 7                             // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+#define SolRightKickback 8                            // number of the right kickback solenoid (set to 0 if machine has no right kickback)
+#define SolOuthole 9                                  // number of the outhole kicker solenoid
+#define SolShooterLn 10                               // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
+#define LampExBall 11                                 // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
-const byte EX_SpaceStationProperties[13] = {
+const byte EX_SpaceStationProperties[12] = {
     10,                                               // number of the outhole switch
     11,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
     12,                                               // number of the 2nd trunk switch (active if a second ball is in the trunk)
     13,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
-    43,                                               // number of the shooter lane feeder switch
     17,                                               // number of the left outlane switch
     32,                                               // number of the right outlane switch
     12,                                               // number of the AC relay solenoid (set to 0 if machine has no AC relay)
@@ -45,16 +43,15 @@ const byte EX_SpaceStationProperties[13] = {
     2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
     42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
-const byte EX_TimeWarpProperties[13] = {
-    9,                                               // number of the outhole switch
-    0,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
-    0,                                               // number of the 2nd trunk switch (active if a second ball is in the trunk)
-    0,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
-    0,                                               // number of the shooter lane feeder switch
+const byte EX_TimeWarpProperties[12] = {
+    9,                                                // number of the outhole switch
+    0,                                                // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
+    0,                                                // number of the 2nd trunk switch (active if a second ball is in the trunk)
+    0,                                                // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
     40,                                               // number of the left outlane switch
     39,                                               // number of the right outlane switch
-    0,                                               // number of the AC relay solenoid (set to 0 if machine has no AC relay)
-    0,                                               // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+    0,                                                // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+    0,                                                // number of the left kickback solenoid (set to 0 if machine has no left kickback)
     0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
     1,                                                // number of the outhole kicker solenoid
     0,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
@@ -112,13 +109,6 @@ byte EX_BallSaver(byte Type, byte Command){
               ReleaseSolenoid(1);                     // solenoids 1 - 8
               ActivateTimer(40, 45, EX_BallSaver2);}}}
         return(1);}}                                  // hide this switch from PinMame
-    else {                                            // normal mode
-      if (Command == EX_Machine[SwShooterLn] && QuerySolenoid(24)) { // Check if the ball is in the plunger lane and ball saver is active
-        if (EX_BallSaveTimer) {                       // Activate the timer
-          KillTimer(EX_BallSaveTimer);}
-        EX_BallSaveActive = true;
-        AddBlinkLamp(EX_Machine[LampExBall], 150);    // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
-        EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 50, EX_BallSaver2);}}
     return(0);                                        // report switch to PinMame
   case SwitchRelCommand:
     if (EX_BallSaveMonitor) {
@@ -129,7 +119,13 @@ byte EX_BallSaver(byte Type, byte Command){
         return(1);}}                                  // hide these switches from PinMame
     return(0);
   case SolenoidActCommand:
-    if (EX_Machine[SolACrelay]) {
+    if (((EX_Machine[SolShooterLn] && Command == EX_Machine[SolShooterLn]) || (!EX_Machine[SolShooterLn] && Command == EX_Machine[SolOuthole])) && QuerySolenoid(24)) { // Use the shooter lane coil to start ball saver. If none present use outhole coil.
+      if (EX_BallSaveTimer) {                         // Activate the timer
+        KillTimer(EX_BallSaveTimer);}
+      EX_BallSaveActive = true;
+      AddBlinkLamp(EX_Machine[LampExBall], 150);      // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
+      EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 50, EX_BallSaver2);}
+    else if (EX_Machine[SolACrelay]) {                // machine has an AC relay?
       if (Command == EX_Machine[SolACrelay] && EX_BallSaveMonitor) {  // AC relay
         EX_BallSaveACstate = true;
         return(1);}
@@ -414,6 +410,9 @@ byte EX_Flash(byte Type, byte Command){
 
 byte EX_TimeWarp(byte Type, byte Command){
   static byte SoundSeries;                            // buffer to handle pre system11 sound series
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 31) { }                            // ignore sound command 0x1f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
@@ -1376,6 +1375,7 @@ void EX_Init(byte GameNumber) {
     break;
   case 10:                                            // Time Warp
     PinMameException = EX_TimeWarp;                   // use exception rules for Time Warp
+    EX_Machine = EX_TimeWarpProperties;               // machine properties for ball saver
     break;
   case 16:                                            // Firepower
     PinMameException = EX_Firepower;                  // use exception rules for Firepower
@@ -1412,7 +1412,7 @@ void EX_Init(byte GameNumber) {
     break;
   case 48:                                            // Space Station
     PinMameException = EX_SpaceStation;               // use exception rules for Space Station
-    EX_Machine = EX_SpaceStationProperties;
+    EX_Machine = EX_SpaceStationProperties;           // machine properties for ball saver
     break;
   case 67:                                            // Rollergames
     PinMameException = EX_Rollergames;                // use exception rules for Rollergames
