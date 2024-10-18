@@ -120,11 +120,12 @@ byte EX_BallSaver(byte Type, byte Command){
     return(0);
   case SolenoidActCommand:
     if (((EX_Machine[SolShooterLn] && Command == EX_Machine[SolShooterLn]) || (!EX_Machine[SolShooterLn] && Command == EX_Machine[SolOuthole])) && QuerySolenoid(24)) { // Use the shooter lane coil to start ball saver. If none present use outhole coil.
-      if (EX_BallSaveTimer) {                         // Activate the timer
-        KillTimer(EX_BallSaveTimer);}
-      EX_BallSaveActive = true;
-      AddBlinkLamp(EX_Machine[LampExBall], 150);      // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
-      EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 50, EX_BallSaver2);}
+      if (!EX_Machine[SolACrelay] || !QuerySolenoid(EX_Machine[SolACrelay])) {
+        if (EX_BallSaveTimer) {                       // Activate the timer
+          KillTimer(EX_BallSaveTimer);}
+        EX_BallSaveActive = true;
+        AddBlinkLamp(EX_Machine[LampExBall], 150);    // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
+        EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 50, EX_BallSaver2);}}
     else if (EX_Machine[SolACrelay]) {                // machine has an AC relay?
       if (Command == EX_Machine[SolACrelay] && EX_BallSaveMonitor) {  // AC relay
         EX_BallSaveACstate = true;
