@@ -55,7 +55,7 @@ const byte EX_TimeWarpProperties[12] = {
     0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
     1,                                                // number of the outhole kicker solenoid
     0,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
-    44};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+    38};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
 const byte *EX_Machine;                               // machine specific settings (optional)
 byte USB_SerialBuffer[128];                           // received command arguments
