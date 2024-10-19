@@ -57,6 +57,48 @@ const byte EX_TimeWarpProperties[12] = {
     0,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
     38};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
+const byte EX_CometProperties[12] = {
+    45,                                               // number of the outhole switch
+    0,                                                // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
+    0,                                                // number of the 2nd trunk switch (active if a second ball is in the trunk)
+    0,                                                // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
+    32,                                               // number of the left outlane switch
+    31,                                               // number of the right outlane switch
+    0,                                                // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+    0,                                                // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+    0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
+    1,                                                // number of the outhole kicker solenoid
+    0,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
+    60};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+
+const byte EX_RollerGamesProperties[12] = {
+    9,                                                // number of the outhole switch
+    13,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
+    12,                                               // number of the 2nd trunk switch (active if a second ball is in the trunk)
+    11,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
+    40,                                               // number of the left outlane switch
+    19,                                               // number of the right outlane switch
+    12,                                               // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+    20,                                               // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+    0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
+    1,                                                // number of the outhole kicker solenoid
+    2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
+    21};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+
+const byte EX_JungleLordProperties[12] = {
+    42,                                               // number of the outhole switch
+    43,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
+    9,                                                // number of the 2nd trunk switch (active if a second ball is in the trunk)
+    10,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
+    22,                                               // number of the left outlane switch
+    23,                                               // number of the right outlane switch
+    0,                                                // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+    0,                                                // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+    0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
+    1,                                                // number of the outhole kicker solenoid
+    2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
+    27};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+
 const byte *EX_Machine;                               // machine specific settings (optional)
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
@@ -1387,6 +1429,7 @@ void EX_Init(byte GameNumber) {
   case 20:                                            // Jungle Lord
     EX_EjectSolenoid = 2;                             // specify eject coil for improved ball release
     PinMameException = EX_JungleLord;                 // use exception rules for Jungle Lord
+    EX_Machine = EX_JungleLordProperties;             // machine properties for ball saver
     break;
   case 21:                                            // Pharaoh
     PinMameException = EX_Pharaoh;                    // use exception rules for Pharaoh
@@ -1401,6 +1444,7 @@ void EX_Init(byte GameNumber) {
     break;
   case 39:                                            // Comet
     PinMameException = EX_Comet;                      // use exception rules for Comet
+    EX_Machine = EX_CometProperties;                  // machine properties for ball saver
     break;
 //  case 40:                                            // High Speed
 //    PinMameException = EX_HighSpeed;                  // use exception rules for High Speed
@@ -1417,6 +1461,7 @@ void EX_Init(byte GameNumber) {
     break;
   case 67:                                            // Rollergames
     PinMameException = EX_Rollergames;                // use exception rules for Rollergames
+    EX_Machine = EX_RollerGamesProperties;            // machine properties for ball saver
     break;
   case 71:                                            // Riverboat Gambler
     PinMameException = EX_FakeSwitches;               // use exception rules for Rollergames
