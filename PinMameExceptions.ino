@@ -207,7 +207,7 @@ byte EX_BallSaver(byte Type, byte Command){
         AppByte = 0;
         ActivateTimer(1500, 47, EX_BallSaver2);}
       else {
-        ActivateTimer(200, 49, EX_BallSaver2);}
+        ActivateTimer(200, 50, EX_BallSaver2);}
       ActivateSolenoid(40, EX_Machine[SolOuthole]);}  // kick ball into trunk (solenoid 1 outhole)
     else {                                            // ball not in outhole
       if (AppByte < 10) {                             // already tried 10 times?
@@ -223,7 +223,7 @@ byte EX_BallSaver(byte Type, byte Command){
   if (CountTrunk == BallsInTrunk + 1) {               // ball in the trunk?
     ActivateSolenoid(30, EX_Machine[SolShooterLn]);   // kick ball into shooter lane
     if (!EX_BallSaveACstate) {                        // correct AC state?
-      ActivateTimer(40, 49, EX_BallSaver2);}          // end cycle
+      ActivateTimer(40, 50, EX_BallSaver2);}          // end cycle
     else {
       ActivateTimer(40, 48, EX_BallSaver2);}}         // switch on AC relay
   else {                                              // wrong number of balls in trunk
@@ -243,23 +243,13 @@ byte EX_BallSaver(byte Type, byte Command){
   case 48:                                            // fix state of AC relay
     if (EX_BallSaveACstate) {
       ActivateSolenoid(0, EX_Machine[SolACrelay]);}   // turn on AC relay
-    ActivateTimer(40, 49, EX_BallSaver2);
-    return(1);
-  case 49:                                            // clean up after ball has been saved
-    EX_IgnoreOuthole = false;
-    EX_BallSaveMonitor = false;
-    RemoveBlinkLamp(EX_Machine[LampExBall]);          // stop blinking the extra ball lamps
-    if (EX_BallSaveExBallLamp) {                      // restore the state of the Extra Ball lamps
-      TurnOnLamp(EX_Machine[LampExBall]);}            // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-    else {
-      TurnOffLamp(EX_Machine[LampExBall]);}
-    EX_BallSaveACstate = false;                       // stop fumbling with the AC relay
-    EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
+    ActivateTimer(40, 50, EX_BallSaver2);
     return(1);
   case 50:                                            // Stop the timer of Shoot Again after 20 seconds
     EX_BallSaveTimer = 0;
     EX_IgnoreOuthole = false;
     EX_BallSaveMonitor = false;
+    EX_BallSaveACstate = false;                       // stop fumbling with the AC relay
     RemoveBlinkLamp(EX_Machine[LampExBall]);          // stop blinking the extra ball lamps
     if (EX_BallSaveExBallLamp) {                      // restore the state of the Extra Ball lamps
       TurnOnLamp(EX_Machine[LampExBall]);}            // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
