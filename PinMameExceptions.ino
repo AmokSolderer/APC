@@ -258,6 +258,8 @@ byte EX_BallSaver(byte Type, byte Command){
     return(1);
   case 50:                                            // Stop the timer of Shoot Again after 20 seconds
     EX_BallSaveTimer = 0;
+    EX_IgnoreOuthole = false;
+    EX_BallSaveMonitor = false;
     RemoveBlinkLamp(EX_Machine[LampExBall]);          // stop blinking the extra ball lamps
     if (EX_BallSaveExBallLamp) {                      // restore the state of the Extra Ball lamps
       TurnOnLamp(EX_Machine[LampExBall]);}            // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
@@ -631,6 +633,9 @@ byte EX_AlienPoker(byte Type, byte Command){
 
 byte EX_JungleLord(byte Type, byte Command){
   static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
@@ -889,6 +894,9 @@ byte EX_BlackKnight(byte Type, byte Command){
     return(0);}}
 
 byte EX_Comet(byte Type, byte Command) {
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (!Command || Command > 254) {                  // sound command 0x00 and 0xff -> stop sound
@@ -897,8 +905,12 @@ byte EX_Comet(byte Type, byte Command) {
       StopPlayingSound();}
     else if (Command == 11 || Command == 254) { }     // ignore sound commands 0x0b and 0xfe
     else if (Command == 47) {                         // play BG music
-      PlayMusic(50, "0_2f.snd");
-      QueueNextMusic("0_2f.snd");}                    // track is looping so queue it also
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        PlayMusic(50, "MUSIC.snd");                   // play music track
+        QueueNextMusic("MUSIC.snd");}                 // and loop it
+      else {
+        PlayMusic(50, "0_2f.snd");
+        QueueNextMusic("0_2f.snd");}}                 // track is looping so queue it also
     else {                                            // handle standard sound
       if (Command == 9) {
         MusicVolume = 4;}                             // reduce music volume
@@ -1238,6 +1250,9 @@ byte EX_SpaceStation(byte Type, byte Command){
 
 byte EX_Rollergames(byte Type, byte Command){
   static byte LastMusic;
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh2:                               // sound commands for channel 1
     if (!Command){                                    // sound command 0x00 - stop sound
