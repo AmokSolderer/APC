@@ -20,20 +20,22 @@
 #define SwTrunk1 1                                    // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
 #define SwTrunk2 2                                    // number of the 2nd trunk switch (active if a second ball is in the trunk)
 #define SwTrunk3 3                                    // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
-#define SwLeftOutlane 4                               // number of the left outlane switch
-#define SwRightOutlane 5                              // number of the right outlane switch
-#define SolACrelay 6                                  // number of the AC relay solenoid (set to 0 if machine has no AC relay)
-#define SolLeftKickback 7                             // number of the left kickback solenoid (set to 0 if machine has no left kickback)
-#define SolRightKickback 8                            // number of the right kickback solenoid (set to 0 if machine has no right kickback)
-#define SolOuthole 9                                  // number of the outhole kicker solenoid
-#define SolShooterLn 10                               // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
-#define LampExBall 11                                 // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+#define SwTrunk4 4                                    // number of the 4th trunk switch (active if a fourth ball is in the trunk) - set to 0 if machine has only three balls
+#define SwLeftOutlane 5                               // number of the left outlane switch
+#define SwRightOutlane 6                              // number of the right outlane switch
+#define SolACrelay 7                                  // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+#define SolLeftKickback 8                             // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+#define SolRightKickback 9                            // number of the right kickback solenoid (set to 0 if machine has no right kickback)
+#define SolOuthole 10                                 // number of the outhole kicker solenoid
+#define SolShooterLn 11                               // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
+#define LampExBall 12                                 // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
-const byte EX_SpaceStationProperties[12] = {
+const byte EX_SpaceStationProperties[13] = {
     10,                                               // number of the outhole switch
     11,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
     12,                                               // number of the 2nd trunk switch (active if a second ball is in the trunk)
     13,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
+    0,                                                // number of the 4th trunk switch (active if a fourth ball is in the trunk) - set to 0 if machine has only three balls
     17,                                               // number of the left outlane switch
     32,                                               // number of the right outlane switch
     12,                                               // number of the AC relay solenoid (set to 0 if machine has no AC relay)
@@ -43,61 +45,17 @@ const byte EX_SpaceStationProperties[12] = {
     2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
     42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
-const byte EX_TimeWarpProperties[12] = {
-    9,                                                // number of the outhole switch
-    0,                                                // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
-    0,                                                // number of the 2nd trunk switch (active if a second ball is in the trunk)
-    0,                                                // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
-    40,                                               // number of the left outlane switch
-    39,                                               // number of the right outlane switch
-    0,                                                // number of the AC relay solenoid (set to 0 if machine has no AC relay)
-    0,                                                // number of the left kickback solenoid (set to 0 if machine has no left kickback)
-    0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
-    1,                                                // number of the outhole kicker solenoid
-    0,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
-    38};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+const byte EX_TimeWarpProperties[13] = {
+    9, 0, 0, 0, 0, 40, 39, 0, 0, 0, 1, 0, 38};
 
-const byte EX_CometProperties[12] = {
-    45,                                               // number of the outhole switch
-    0,                                                // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
-    0,                                                // number of the 2nd trunk switch (active if a second ball is in the trunk)
-    0,                                                // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
-    32,                                               // number of the left outlane switch
-    31,                                               // number of the right outlane switch
-    0,                                                // number of the AC relay solenoid (set to 0 if machine has no AC relay)
-    0,                                                // number of the left kickback solenoid (set to 0 if machine has no left kickback)
-    0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
-    1,                                                // number of the outhole kicker solenoid
-    0,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
-    60};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+const byte EX_CometProperties[13] = {
+    45, 0, 0, 0, 0, 32, 31, 0, 0, 0, 1, 0, 60};
 
-const byte EX_RollerGamesProperties[12] = {
-    9,                                                // number of the outhole switch
-    13,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
-    12,                                               // number of the 2nd trunk switch (active if a second ball is in the trunk)
-    11,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
-    40,                                               // number of the left outlane switch
-    19,                                               // number of the right outlane switch
-    12,                                               // number of the AC relay solenoid (set to 0 if machine has no AC relay)
-    20,                                               // number of the left kickback solenoid (set to 0 if machine has no left kickback)
-    0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
-    1,                                                // number of the outhole kicker solenoid
-    2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
-    21};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+const byte EX_RollerGamesProperties[13] = {
+    9, 13, 12, 11, 0, 40, 19, 12, 20, 0, 1, 2, 21};
 
-const byte EX_JungleLordProperties[12] = {
-    42,                                               // number of the outhole switch
-    43,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
-    9,                                                // number of the 2nd trunk switch (active if a second ball is in the trunk)
-    10,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
-    22,                                               // number of the left outlane switch
-    23,                                               // number of the right outlane switch
-    0,                                                // number of the AC relay solenoid (set to 0 if machine has no AC relay)
-    0,                                                // number of the left kickback solenoid (set to 0 if machine has no left kickback)
-    0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
-    1,                                                // number of the outhole kicker solenoid
-    2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
-    27};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+const byte EX_JungleLordProperties[13] = {
+    42, 43, 9, 10, 0, 22, 23, 0, 0, 0, 1, 2, 27};
 
 const byte *EX_Machine;                               // machine specific settings (optional)
 byte USB_SerialBuffer[128];                           // received command arguments
@@ -106,7 +64,7 @@ byte EX_EjectSolenoid;                                // eject coil for improved
 
 byte EX_CountBallsInTrunk() {
   byte Count = 0;
-  for (byte i=0; i<3; i++) {
+  for (byte i=0; i<4; i++) {
     if (EX_Machine[SwTrunk1+i] && QuerySwitch(EX_Machine[SwTrunk1+i])) {
       Count++;}}
   return(Count);}
