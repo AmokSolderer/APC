@@ -30,7 +30,7 @@
 #define SolShooterLn 11                               // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
 #define LampExBall 12                                 // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
-const byte EX_SpaceStationProperties[13] = {
+const byte EX_SpaceStationProperties[13] = {          // machine properties for ball saver
     10,                                               // number of the outhole switch
     11,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
     12,                                               // number of the 2nd trunk switch (active if a second ball is in the trunk)
@@ -44,6 +44,9 @@ const byte EX_SpaceStationProperties[13] = {
     1,                                                // number of the outhole kicker solenoid
     2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
     42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+
+const byte EX_FlashProperties[13] = {
+    48, 0, 0, 0, 0, 43, 46, 0, 0, 0, 1, 0, 16};
 
 const byte EX_TimeWarpProperties[13] = {
     9, 0, 0, 0, 0, 40, 39, 0, 0, 0, 1, 0, 38};
@@ -335,6 +338,9 @@ byte EX_DiscoFever(byte Type, byte Command){
 
 byte EX_Flash(byte Type, byte Command){
   static byte SoundSeries[3];                         // buffer to handle pre system11 sound series
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SolenoidActCommand:
     if (Command == 1) {                               // ball release
@@ -373,15 +379,21 @@ byte EX_Flash(byte Type, byte Command){
       PlaySound(51, (char*) FileName);}
     else if (Command == 13) {                         // sound command 0x0d - background sound - sound series
       SoundSeries[0] = 0;
-      if (SoundSeries[2] < 25) {                      // this sound has 25 pitches
-        SoundSeries[2]++;}
-      char FileName[13] = "0_0e_000.snd";
-      FileName[7] = 48 + (SoundSeries[2] % 10);
-      FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
-      for (byte i=0; i<12; i++) {                     // prepare the filename
-        USB_RepeatSound[i] = FileName[i];}
-      QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
-      PlaySound(51, (char*) FileName);}
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        if (!SoundSeries[2]) {                        // ignore the pitches
+          PlayMusic(50, "MUSIC.snd");                 // play music track
+          QueueNextMusic("MUSIC.snd");                // and loop it
+          SoundSeries[2] = 1;}}
+      else {
+        if (SoundSeries[2] < 25) {                    // this sound has 25 pitches
+          SoundSeries[2]++;}
+        char FileName[13] = "0_0e_000.snd";
+        FileName[7] = 48 + (SoundSeries[2] % 10);
+        FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
+        for (byte i=0; i<12; i++) {                   // prepare the filename
+          USB_RepeatSound[i] = FileName[i];}
+        QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
+        PlaySound(51, (char*) FileName);}}
     else if (Command == 14) {                         // sound command 0x0e - background sound - sound series
       SoundSeries[2] = 0;
       char FileName[13] = "0_0e_001.snd";
@@ -439,7 +451,7 @@ byte EX_TimeWarp(byte Type, byte Command){
         PlaySound(51, (char*) FileName);}}
     return(0);                                        // return number not relevant for sounds
   case SolenoidActCommand:
-    if (Command == 6) {                               // ball release
+    if (Command == 6) {                               // the 5 bank bottom drop target reset solenoid needs to be stronger
       ActivateSolenoid(80, 6);                        // drop target reset
       return(1);}
     return(0);
@@ -1377,6 +1389,7 @@ void EX_Init(byte GameNumber) {
     break;
   case 6:                                             // Flash
     SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
+    EX_Machine = EX_FlashProperties;                  // machine properties for ball saver
     PinMameException = EX_Flash;                      // use exception rules for Flash
     break;
   case 10:                                            // Time Warp
