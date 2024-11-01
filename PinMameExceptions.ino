@@ -45,8 +45,14 @@ const byte EX_SpaceStationProperties[13] = {          // machine properties for 
     2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
     42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
+const byte EX_DiscoFeverProperties[13] = {
+    22, 0, 0, 0, 0, 25, 19, 0, 0, 0, 1, 0, 33};
+
 const byte EX_FlashProperties[13] = {
     48, 0, 0, 0, 0, 43, 46, 0, 0, 0, 1, 0, 16};
+
+const byte EX_FirepowerProperties[13] = {
+    9, 57, 58, 51, 0, 10, 44, 0, 7, 0, 1, 8, 1};
 
 const byte EX_TimeWarpProperties[13] = {
     9, 0, 0, 0, 0, 40, 39, 0, 0, 0, 1, 0, 38};
@@ -320,6 +326,9 @@ byte EX_DummyProcess(byte Type, byte Command) {       // plays just the standard
   return(0);}                                         // no exception rule found for this type so proceed as normal
 
 byte EX_DiscoFever(byte Type, byte Command){
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SolenoidActCommand:
     if (Command == 2) {                               // ball release
@@ -466,7 +475,9 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
   static byte SoundSeries[5] = {0, 0, 0, 0, 0};       // buffer to handle pre system11 sound series
   static byte PlayingMultiballSound = 0;
   const byte PlayCombinedSoundForMultiball = 1;       // 1-> play one sound "1, 2, 3". 2-> play 3 sounds "1", "2", "3".
-
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 31) { }                            // ignore sound command 0x1f
@@ -523,15 +534,21 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
         PlaySound(51, (char*) FileName);}             // play the sound
       else if (Command == 14) {                       // 0x0e Background // repeated
         PlayingMultiballSound = 0;                    // if the background plays, we're not in a multiball start session
-        if (SoundSeries[4] < 31 )                     // this sound has 31 pitches
-          SoundSeries[4]++;                           // every call of this sound proceeds with next pitch
-        char FileName[13] = "0_0e_000.snd";           // generate base filename
-        FileName[7] = 48 + (SoundSeries[4] % 10);     // change the 7th character of filename according to current pitch
-        FileName[6] = 48 + (SoundSeries[4] % 100) / 10; // the same with the 6th character
-        for (byte i=0; i<12; i++) {                   // store the name of this sound
-          USB_RepeatSound[i] = FileName[i];}
-        QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
-        PlaySound(51, (char*) FileName);}             // play the sound
+        if (game_settings[USB_BGmusic]) {             // use MUSIC.SND instead of BG sound
+          if (!SoundSeries[4]) {                      // don't restart if next pitch is requested
+            PlayMusic(50, "MUSIC.snd");               // play music track
+            QueueNextMusic("MUSIC.snd");              // and loop it
+            SoundSeries[4] = 1;}}
+        else {                                        // normal BG sound
+          if (SoundSeries[4] < 31 )                   // this sound has 31 pitches
+            SoundSeries[4]++;                         // every call of this sound proceeds with next pitch
+          char FileName[13] = "0_0e_000.snd";         // generate base filename
+          FileName[7] = 48 + (SoundSeries[4] % 10);   // change the 7th character of filename according to current pitch
+          FileName[6] = 48 + (SoundSeries[4] % 100) / 10; // the same with the 6th character
+          for (byte i=0; i<12; i++) {                 // store the name of this sound
+            USB_RepeatSound[i] = FileName[i];}
+          QueueNextSound(USB_RepeatSound);            // select this sound to be repeated
+          PlaySound(51, (char*) FileName);}}          // play the sound
       else if ((Command == 8 || Command == 11)        // ignore these sounds at beginning of multiball
           && PlayingMultiballSound == 1) { }
       else {                                          // standard sound
@@ -1385,6 +1402,7 @@ void EX_Init(byte GameNumber) {
   switch(GameNumber) {
   case 4:                                             // Disco Fever
     //SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
+    EX_Machine = EX_DiscoFeverProperties;             // machine properties for ball saver
     PinMameException = EX_DiscoFever;                 // use exception rules for Flash
     break;
   case 6:                                             // Flash
@@ -1397,6 +1415,7 @@ void EX_Init(byte GameNumber) {
     EX_Machine = EX_TimeWarpProperties;               // machine properties for ball saver
     break;
   case 16:                                            // Firepower
+    EX_Machine = EX_FirepowerProperties;              // machine properties for ball saver
     PinMameException = EX_Firepower;                  // use exception rules for Firepower
     break;
   case 18:                                            // Alien Poker
