@@ -45,26 +45,47 @@ const byte EX_SpaceStationProperties[13] = {          // machine properties for 
     2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
     42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
-const byte EX_DiscoFeverProperties[13] = {
-    22, 0, 0, 0, 0, 25, 19, 0, 0, 0, 1, 0, 33};
+const byte EX_AlienPokerProperties[13] = {
+    9, 0, 0, 0, 0, 11, 32, 0, 0, 0, 1, 0, 1};
 
-const byte EX_FlashProperties[13] = {
-    48, 0, 0, 0, 0, 43, 46, 0, 0, 0, 1, 0, 16};
+const byte EX_BarracoraProperties[13] = {
+    12, 15, 14, 13, 0, 23, 24, 0, 0, 0, 11, 12, 26};
 
-const byte EX_FirepowerProperties[13] = {
-    9, 57, 58, 51, 0, 10, 44, 0, 7, 0, 1, 8, 1};
-
-const byte EX_TimeWarpProperties[13] = {
-    9, 0, 0, 0, 0, 40, 39, 0, 0, 0, 1, 0, 38};
+const byte EX_BlackKnightProperties[13] = {
+    20, 17, 18, 19, 0, 11, 12, 0, 0, 0, 1, 6, 47};
 
 const byte EX_CometProperties[13] = {
     45, 0, 0, 0, 0, 32, 31, 0, 0, 0, 1, 0, 60};
 
-const byte EX_RollerGamesProperties[13] = {
-    9, 13, 12, 11, 0, 40, 19, 12, 20, 0, 1, 2, 21};
+const byte EX_DiscoFeverProperties[13] = {
+    22, 0, 0, 0, 0, 25, 19, 0, 0, 0, 1, 0, 33};
+
+const byte EX_FirepowerProperties[13] = {
+    9, 57, 58, 51, 0, 10, 44, 0, 7, 0, 1, 8, 1};
+
+const byte EX_FlashProperties[13] = {
+    48, 0, 0, 0, 0, 43, 46, 0, 0, 0, 1, 0, 16};
+
+const byte EX_F14Properties[13] = {
+    10, 11, 12, 13, 14, 61, 62, 14, 13, 0, 1, 2, 16};
+
+const byte EX_HighSpeedProperties[13] = {
+    9, 12, 11, 10, 0, 31, 32, 0, 14, 0, 1, 2, 3};
 
 const byte EX_JungleLordProperties[13] = {
     42, 43, 9, 10, 0, 22, 23, 0, 0, 0, 1, 2, 27};
+
+const byte EX_PharaohProperties[13] = {
+    36, 39, 38, 0, 0, 15, 16, 0, 0, 0, 1, 2, 8};
+
+const byte EX_PinbotProperties[13] = {
+    16, 17, 18, 0, 0, 12, 15, 14, 0, 0, 1, 2, 33};
+
+const byte EX_RollerGamesProperties[13] = {
+    9, 13, 12, 11, 0, 40, 19, 12, 20, 0, 1, 2, 21};
+
+const byte EX_TimeWarpProperties[13] = {
+    9, 0, 0, 0, 0, 40, 39, 0, 0, 0, 1, 0, 38};
 
 const byte *EX_Machine;                               // machine specific settings (optional)
 byte USB_SerialBuffer[128];                           // received command arguments
@@ -561,6 +582,9 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
 
 byte EX_AlienPoker(byte Type, byte Command){
   static byte SoundSeries[3] = {0, 0, 0};             // buffer to handle pre system11 sound series
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 31) { }                            // ignore sound command 0x1f
@@ -587,15 +611,21 @@ byte EX_AlienPoker(byte Type, byte Command){
     else if (Command == 14) {                         // 0x0e Background sound series - repeated
       SoundSeries[0] = 0;
       SoundSeries[1] = 0;
-      if (SoundSeries[2] < 36 )                       // this sound has 36 pitches
-        SoundSeries[2]++;                             // every call of this sound proceeds with next pitch
-      char FileName[13] = "0_0e_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[2] % 10);       // change the 7th character of filename according to current pitch
-      FileName[6] = 48 + (SoundSeries[2] % 100) / 10; // the same with the 6th character
-      for (byte i=0; i<12; i++) {                     // store the name of this sound
-        USB_RepeatSound[i] = FileName[i];}
-      QueueNextSound(USB_RepeatSound);                // select this sound to be repeated
-      PlaySound(51, (char*) FileName);}               // play the sound
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        if (!SoundSeries[2]) {                        // don't restart if next pitch is requested
+          PlayMusic(50, "MUSIC.snd");                 // play music track
+          QueueNextMusic("MUSIC.snd");                // and loop it
+          SoundSeries[2] = 1;}}
+      else {
+        if (SoundSeries[2] < 36 )                     // this sound has 36 pitches
+          SoundSeries[2]++;                           // every call of this sound proceeds with next pitch
+        char FileName[13] = "0_0e_000.snd";           // generate base filename
+        FileName[7] = 48 + (SoundSeries[2] % 10);     // change the 7th character of filename according to current pitch
+        FileName[6] = 48 + (SoundSeries[2] % 100) / 10; // the same with the 6th character
+        for (byte i=0; i<12; i++) {                   // store the name of this sound
+          USB_RepeatSound[i] = FileName[i];}
+        QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
+        PlaySound(51, (char*) FileName);}}            // play the sound
     else if (Command == 23){                          // sound command 0x17 - game over random phrase
       char FileName[13] = "0_17_000.snd";             // generate base filename
       FileName[7] = 48 + random(6) + 1;               // change the counter according to random number
@@ -683,6 +713,9 @@ byte EX_JungleLord(byte Type, byte Command){
 
 byte EX_Pharaoh(byte Type, byte Command){             // thanks to Grangeomatic for sending me this code
   static byte SoundSeries;                            // buffer to handle pre system11 sound series
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
@@ -741,6 +774,9 @@ byte EX_Pharaoh(byte Type, byte Command){             // thanks to Grangeomatic 
 
 byte EX_Barracora(byte Type, byte Command){
   static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
@@ -750,15 +786,21 @@ byte EX_Barracora(byte Type, byte Command){
       SoundSeries[1] = 0;                             // reset the multiball start sound
       StopPlayingSound();}
     else if (Command == 45){                          // sound command 0x2d - sound series
-      if (SoundSeries[0] < 32) {                      // this sound has 32 pitches
-        SoundSeries[0]++;}                            // every call of this sound proceeds with next pitch
-      char FileName[13] = "0_2d_000.snd";             // generate base filename
-      FileName[7] = 48 + (SoundSeries[0] % 10);       // change the 7th character of filename according to current pitch
-      FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
-      for (byte i=0; i<12; i++) {                     // prepare the filename
-        USB_RepeatSound[i] = FileName[i];}
-      QueueNextSound(USB_RepeatSound);                // sound is being auto repeated
-      PlaySound(51, (char*) FileName);}               // play the sound
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        if (!SoundSeries[0]) {                        // don't restart if next pitch is requested
+          PlayMusic(50, "MUSIC.snd");                 // play music track
+          QueueNextMusic("MUSIC.snd");                // and loop it
+          SoundSeries[0] = 1;}}
+      else {
+        if (SoundSeries[0] < 32) {                    // this sound has 32 pitches
+          SoundSeries[0]++;}                          // every call of this sound proceeds with next pitch
+        char FileName[13] = "0_2d_000.snd";           // generate base filename
+        FileName[7] = 48 + (SoundSeries[0] % 10);     // change the 7th character of filename according to current pitch
+        FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
+        for (byte i=0; i<12; i++) {                   // prepare the filename
+          USB_RepeatSound[i] = FileName[i];}
+        QueueNextSound(USB_RepeatSound);              // sound is being auto repeated
+        PlaySound(51, (char*) FileName);}}            // play the sound
     else if (Command == 46) {                         // sound command 0x2e - background sound - sound series
       SoundSeries[0] = 0;
       if (SoundSeries[1] < 30) {                      // this sound has 30 pitches
@@ -790,6 +832,9 @@ byte EX_Barracora(byte Type, byte Command){
 byte EX_BlackKnight(byte Type, byte Command){
   static byte SoundSeries[3];                         // buffer to handle pre system11 sound series
   static byte LastCh1Sound;                           // preSys11: stores the number of the last sound that has been played on Ch1
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (Command == 127) { }                           // ignore sound command 0x7f - audio bus init - not relevant for APC sound
@@ -825,17 +870,23 @@ byte EX_BlackKnight(byte Type, byte Command){
       StopPlayingSound();}
     else if (Command == 46) {                         // sound command 0x2e - background sound - sound series
       SoundSeries[0] = 0;
-      if (SoundSeries[2] < 29)
-        SoundSeries[2]++;
-      char FileName[13] = "0_2e_000.snd";
-      FileName[7] = 48 + (SoundSeries[2] % 10);
-      FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
-      FileName[5] = 48 + SoundSeries[2] / 100;
-      for (byte i=0; i<12; i++) {
-        USB_RepeatSound[i] = FileName[i];}
-      QueueNextSound(USB_RepeatSound);
-      LastCh1Sound = Command;                         // buffer sound number
-      PlaySound(51, (char*) FileName);}
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        if (!SoundSeries[2]) {                        // don't restart if next pitch is requested
+          PlayMusic(50, "MUSIC.snd");                 // play music track
+          QueueNextMusic("MUSIC.snd");                // and loop it
+          SoundSeries[2] = 1;}}
+      else {
+        if (SoundSeries[2] < 29)
+          SoundSeries[2]++;
+        char FileName[13] = "0_2e_000.snd";
+        FileName[7] = 48 + (SoundSeries[2] % 10);
+        FileName[6] = 48 + (SoundSeries[2] % 100) / 10;
+        FileName[5] = 48 + SoundSeries[2] / 100;
+        for (byte i=0; i<12; i++) {
+          USB_RepeatSound[i] = FileName[i];}
+        QueueNextSound(USB_RepeatSound);
+        LastCh1Sound = Command;                       // buffer sound number
+        PlaySound(51, (char*) FileName);}}
     else if (Command == 52) {                         // sound command 0x34 - bonus count
       AfterSound = 0;
       if (!QueryLamp(49) && !QueryLamp(57) && !QueryLamp(61)) { // only bonus lamp 1 lit?
@@ -900,64 +951,24 @@ byte EX_Comet(byte Type, byte Command) {
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-//byte EX_HighSpeed(byte Type, byte Command) {          // Exceptions for High Speed (Williams 1986, System 11)
-//  switch(Type){
-//  case SwitchActCommand:                              // activated switches
-//    if (EX_BallSaveActive) {                          // hide switches from PinMame
-//      if (Command == 10 || Command == 11 || Command == 12 || Command == 31 || Command == 32) { // We hide the switches of the outlanes and trunk
-//        return(1);}                                   // hide these switches from PinMame
-//      else if (Command == 9) {                        // Outhole switch : the ball is in the outhole.
-//        if (!EX_IgnoreOuthole) {
-//          if (EX_BallSaveTimer) {                     // timer still running?
-//            KillTimer(EX_BallSaveTimer);              // stop it
-//            EX_BallSaveTimer = 0;}
-//          EX_IgnoreOuthole = true;                    // ignore switch bouncing when the ball is kicked out
-//          ActivateSolenoid(40, 1);                    // kick ball into plunger lane (solenoid 1 outhole)
-//          ActivateTimer(1000, 1, EX_HighSpeed2);}
-//        return(1);}}                                  // hide this switch from PinMame
-//    else {                                            // normal mode
-//      if (Command == 36 && game_settings[USB_BallSave]) { // Check if the ball is in the plunger lane and ball saver is active
-//        if (EX_BallSaveTimer) {                       // Activate the timer
-//          KillTimer(EX_BallSaveTimer);}
-//        if (QueryLamp(3)) {                           // Extra Ball lamp lit?
-//          EX_BallSaveActive = 2;}                     // remember the state of the Extra Ball lamp
-//        else {
-//          EX_BallSaveActive = 1;}
-//        AddBlinkLamp(3, 150);                         // start blinking of Shoot again lamps (Shoot again on backglass, Drive again on playfield)
-//        EX_BallSaveTimer = ActivateTimer(game_settings[USB_BallSaveTime] * 1000, 0, EX_HighSpeed2);}}
-//    return(0);                                        // report switch to PinMame
-//  case 50:                                            // Stop the timer of Shoot Again after 20 seconds
-//    EX_BallSaveTimer = 0;
-//    RemoveBlinkLamp(3);                               // stop blinking the extra ball lamps
-//    if (EX_BallSaveActive == 2) {                     // restore the state of the Extra Ball lamps
-//      TurnOnLamp(3);}                                 // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-//    else {
-//      TurnOffLamp(3);}
-//    EX_BallSaveActive = 0;
-//    return(1);
-//  case 51:                                            // timer after ball has been kicked to trunk run out
-//    if (QuerySwitch(12)) {                            // at least 1 ball in the trunk?
-//      ActivateSolenoid(30, 2);}                       // kick ball into shooter lane
-//    else {
-//      ActivateTimer(1000, 1, EX_HighSpeed2);}         // come back in 1s
-//    EX_IgnoreOuthole = false;
-//    RemoveBlinkLamp(3);                               // stop blinking the extra ball lamps
-//    if (EX_BallSaveActive == 2) {                     // restore the state of the Extra Ball lamps
-//      TurnOnLamp(3);}                                 // Activate lamps Shoot Again (backglass) and Drive Again (playfield)
-//    else {
-//      TurnOffLamp(3);}
-//    EX_BallSaveActive = 0;                            // and don't fool PinMame any longer
-//    return(1);
-//  default:                                            // use default treatment for undefined types
-//    return(0);}}                                      // no exception rule found for this type so proceed as normal
-
-//void EX_HighSpeed2(byte Selector) {                   // to be called by timer from EX_HighSpeed
-//  if (Selector) {
-//    EX_HighSpeed(51, 0);}
-//  else {
-//    EX_HighSpeed(50, 0);}}                            //We return Type number 50 because it does not exist in the known types
+byte EX_HighSpeed(byte Type, byte Command) {          // plays just the standard sounds
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
+  if (Type == SoundCommandCh1) {                      // sound commands for channel 1
+    char FileName[9] = "0_00.snd";                    // handle standard sound
+    if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+      PlaySound(51, (char*) FileName);}}
+  else if (Type == SoundCommandCh2) {                 // sound commands for channel 2
+    char FileName[9] = "1_00.snd";                    // handle standard music
+    if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+      PlayMusic(51, (char*) FileName);}}
+  return(0);}                                         // no exception rule found for this type so proceed as normal
 
 byte EX_Pinbot(byte Type, byte Command){
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SoundCommandCh1:                               // sound commands for channel 1
     if (!Command){                                    // sound command 0x00 - stop sound
@@ -1034,6 +1045,9 @@ byte EX_Pinbot(byte Type, byte Command){
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tomcat, thanks to Snux for sending me this code
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SwitchActCommand:                              // Check for switches
     if (Command > 64 && Command < 72) {               // If special solenoid switch
@@ -1402,24 +1416,25 @@ void EX_Init(byte GameNumber) {
   switch(GameNumber) {
   case 4:                                             // Disco Fever
     //SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
-    EX_Machine = EX_DiscoFeverProperties;             // machine properties for ball saver
     PinMameException = EX_DiscoFever;                 // use exception rules for Flash
+    EX_Machine = EX_DiscoFeverProperties;             // machine properties for ball saver
     break;
   case 6:                                             // Flash
     SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
-    EX_Machine = EX_FlashProperties;                  // machine properties for ball saver
     PinMameException = EX_Flash;                      // use exception rules for Flash
+    EX_Machine = EX_FlashProperties;                  // machine properties for ball saver
     break;
   case 10:                                            // Time Warp
     PinMameException = EX_TimeWarp;                   // use exception rules for Time Warp
     EX_Machine = EX_TimeWarpProperties;               // machine properties for ball saver
     break;
   case 16:                                            // Firepower
-    EX_Machine = EX_FirepowerProperties;              // machine properties for ball saver
     PinMameException = EX_Firepower;                  // use exception rules for Firepower
+    EX_Machine = EX_FirepowerProperties;              // machine properties for ball saver
     break;
   case 18:                                            // Alien Poker
     PinMameException = EX_AlienPoker;                 // use exception rules for Alien Poker
+    EX_Machine = EX_AlienPokerProperties;             // machine properties for ball saver
     break;
   case 20:                                            // Jungle Lord
     EX_EjectSolenoid = 2;                             // specify eject coil for improved ball release
@@ -1428,27 +1443,33 @@ void EX_Init(byte GameNumber) {
     break;
   case 21:                                            // Pharaoh
     PinMameException = EX_Pharaoh;                    // use exception rules for Pharaoh
+    EX_Machine = EX_PharaohProperties;                // machine properties for ball saver
     break;
   case 25:                                            // Barracora
     EX_EjectSolenoid = 12;                            // specify eject coil for improved ball release
     PinMameException = EX_Barracora;                  // use exception rules for Barracora
+    EX_Machine = EX_BarracoraProperties;              // machine properties for ball saver
     break;
   case 34:                                            // Black Knight
     EX_EjectSolenoid = 6;                             // specify eject coil for improved ball release
     PinMameException = EX_BlackKnight;                // use exception rules for Jungle Lord
+    EX_Machine = EX_BlackKnightProperties;            // machine properties for ball saver
     break;
   case 39:                                            // Comet
     PinMameException = EX_Comet;                      // use exception rules for Comet
     EX_Machine = EX_CometProperties;                  // machine properties for ball saver
     break;
-//  case 40:                                            // High Speed
-//    PinMameException = EX_HighSpeed;                  // use exception rules for High Speed
-//    break;
+  case 40:                                            // High Speed
+    PinMameException = EX_HighSpeed;                  // use exception rules for High Speed
+    EX_Machine = EX_HighSpeedProperties;              // machine properties for ball saver
+    break;
   case 43:                                            // Pinbot
     PinMameException = EX_Pinbot;                     // use exception rules for Pinbot
+    EX_Machine = EX_PinbotProperties;                 // machine properties for ball saver
     break;
   case 44:                                            // F-14 Tomcat
     PinMameException = EX_F14Tomcat;                  // use exception rules for Tomcat
+    EX_Machine = EX_F14Properties;                    // machine properties for ball saver
     break;
   case 48:                                            // Space Station
     PinMameException = EX_SpaceStation;               // use exception rules for Space Station
