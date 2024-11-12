@@ -1,7 +1,7 @@
 # Usefull SW tools
 
 I have written some perl scripts to do certain APC related work.  
-All thess scripts can be executed with a perl interpreter, e.g. for windows available from http://strawberryperl.com
+All these scripts can be executed with a perl interpreter e.g. for Windows available from http://strawberryperl.com
 
 ## Audio data converter 
 

@@ -391,7 +391,8 @@ byte EX_Flash(byte Type, byte Command){
       SoundSeries[0] = 0;
       SoundSeries[1] = 0;                             // reset the multiball start sound
       SoundSeries[2] = 0;                             // Reset BG sound
-      StopPlayingSound();}
+      StopPlayingSound();
+      StopPlayingMusic();}
     else if (Command == 10){                          // sound command 0x0a - sound series
       if (SoundSeries[0] < 80) {                      // this sound has 80 pitches
         SoundSeries[0]++;}                            // every call of this sound proceeds with next pitch
@@ -509,7 +510,8 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
       SoundSeries[2] = 0;
       SoundSeries[3] = 0;
       SoundSeries[4] = 0;
-      StopPlayingSound();}
+      StopPlayingSound();
+      StopPlayingMusic();}
     else {
       if (Command == 4){                              // 0x04 End game - random speech
         char FileName[13] = "0_04_000.snd";           // generate base filename
@@ -593,7 +595,8 @@ byte EX_AlienPoker(byte Type, byte Command){
       SoundSeries[0] = 0;
       SoundSeries[1] = 0;
       SoundSeries[2] = 0;
-      StopPlayingSound();}
+      StopPlayingSound();
+      StopPlayingMusic();}
     else if (Command == 10) {                         // sound series
       if (SoundSeries[0] < 29 )                       // this sound has 29 pitches
         SoundSeries[0]++;                             // every call of this sound proceeds with next pitch
@@ -784,7 +787,8 @@ byte EX_Barracora(byte Type, byte Command){
       AfterSound = 0;
       SoundSeries[0] = 0;                             // Reset BG sound
       SoundSeries[1] = 0;                             // reset the multiball start sound
-      StopPlayingSound();}
+      StopPlayingSound();
+      StopPlayingMusic();}
     else if (Command == 45){                          // sound command 0x2d - sound series
       if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
         if (!SoundSeries[0]) {                        // don't restart if next pitch is requested
@@ -867,7 +871,8 @@ byte EX_BlackKnight(byte Type, byte Command){
       SoundSeries[0] = 0;                             // Reset last sound series number
       SoundSeries[1] = 0;                             // reset the multiball start sound
       SoundSeries[2] = 0;                             // Reset BG sound
-      StopPlayingSound();}
+      StopPlayingSound();
+      StopPlayingMusic();}
     else if (Command == 46) {                         // sound command 0x2e - background sound - sound series
       SoundSeries[0] = 0;
       if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
