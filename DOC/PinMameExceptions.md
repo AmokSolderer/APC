@@ -202,7 +202,7 @@ Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see
 
 ### The easy way
 
-There's a general ball saver program included in PinMameExceptions.ino that can be used for most machines. The ball saver is controlled by the [game settings](https://github.com/AmokSolderer/APC/blob/V01.02/DOC/Settings.md) number 5 and 6.
+There's a general ball saver program included in PinMameExceptions.ino that can be used for most machines. The ball saver is controlled by the [game settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) number 5 and 6.
 
 To enable the ball saver for your machine you have to provide the number of certain switches, lamps and solenoids.  
 At the top of PinMameExceptions.ino there's a section where the ball saver related properties for various machines are already present. In EX_SpaceStationProperties all properties are decribed by line comments. Use this as an example to generate the properties for your machine.
