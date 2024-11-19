@@ -173,7 +173,7 @@ Setting AfterSound = 0 will disable this mechanism.
 Most machines of this era have a quite boring background sound. This can be replaced by a music track of your choice with a simple change in the PinMameExceptions. A general [game setting](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode) to activate the ball saver is already present, so you don't have to bother with changing the settings menu.
 
 The code below is for the Alien Poker, but the principle is the same for all System 3-7 machines.  
-In case of the Alien Poker, the command for the background sound is 14. If this command is received, we have to check whether the setting for background music is selected or not. If yes and SoundSeries[2] variable is zero, the file MUSIC.snd is played on the music channel and also queued for looping. The SoundSeries variable is just used to prevent the music file from being restarted every time PinMame requests a new pitch.  
+In case of the Alien Poker, the command for the background sound is 14. If this command is received, we have to check whether the setting for background music is selected or not. If yes and the SoundSeries[2] variable is zero, the file MUSIC.snd is played on the music channel and also queued for looping. The SoundSeries variable is just used to prevent the music file from being restarted every time PinMame requests a new pitch.  
 If background music is not selected in the settings, the normal BG sound is played as described in the section above.
 
     else if (Command == 14) {                         // 0x0e Background sound series - repeated
