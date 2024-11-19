@@ -20,15 +20,17 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 #define USB_PinMameSound 2                            // use APC sound HW or old sound board?
 #define USB_PinMameGame 3                             // number of the game to be run in PinMame
 #define USB_LisyDebug 4                               // selected debug mode
-//#define USB_Option1 -> this option is defined in PinMameExceptions.ino
-//#define USB_BGmusic 9  to select an own BG music -> this option is defined in PinMameExceptions.ino
-//#define USB_CustomText 10  to select a custom text to be shown during attract mode -> this option is defined in PinMameExceptions.ino
-//#define USB_BallSave 5                              // optional ball saver -> this option is defined in PinMameExceptions.ino
-//#define USB_BallSaveTime 6                          // activation time for the optional ball saver -> this option is defined in PinMameExceptions.ino
-//#define USB_BGmusic 7                               // to select an own BG music -> this option is defined in PinMameExceptions.ino
+//#define USB_BallSave 5                                // optional ball saver
+//#define USB_BallSaveTime 6                            // activation time for the optional ball saver
+//#define USB_BGmusic 7                                 // to select an own BG music
+//#define LED_red 8                                     // to change the color of the LED GI
+//#define LED_green 9
+//#define LED_blue 10
+//#define USB_CustomText 11                             // to select a custom text to be shown during attract mode
+//#define USB_Option1 12                                // an option for own PinMame exceptions
 
 const byte USB_defaults[64] = {0,0,0,255,0,0,20,0,    // game default settings
-                              0,0,0,0,0,0,0,0,
+                              200,200,200,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
@@ -51,7 +53,7 @@ const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   
 const char TXTUSB_BallSave[5][17] = {{"          OFF   "},{" RIGHT OUTLANE  "},{" LEFT  OUTLANE  "},{" BOTH  OUTLANE  "},{"       GENERAL  "}};
 const char TxtUSB_Music[2][17] = {{"PINMAMEDEFAULT  "},{"  MUSICSND      "}};
 
-const struct SettingTopic USB_setList[14] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
     {" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
     {"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
     {"PINMAME GAME    ",HandleNumSetting,0,0,72},
