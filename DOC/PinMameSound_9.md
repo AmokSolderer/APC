@@ -236,7 +236,7 @@ By that you can just play your game and only if the number of a missing sound fi
 
 ### Changing the background music
 
-Most machines of this era have a quite basic background music. Of course you could just replace the audio file aon the SD-card, but you could also do a simple change in the PinMameExceptions to make it selectable. A general [game setting](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode) to activate the ball saver is already present, so you don't have to bother with changing the settings menu.
+Most machines of this era have a quite basic background music. Of course you could just replace the audio file on the SD-card, but you could also do a simple change in the PinMameExceptions to make it selectable. A general [game setting](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode) to select the new background music file is already present, so you don't have to bother with changing the settings menu.
 
 The code below is for the Comet, but the principle is the same for all System 9 machines.  
 In case of the Comet, the command for the background sound is 47. If this command is received, we have to check whether the setting for background music is selected or not. If yes the file MUSIC.snd is played on the music channel and also queued for looping. If background music is not selected in the settings, the normal BG music is played as usual.
