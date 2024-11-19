@@ -200,7 +200,57 @@ Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see
 
 ## How to add a ball saver
 
-I have a Comet which made me really angry when it drowned my balls in the outlanes before I even had a chance to touch them with a flipper. My first countermeasure was to remove the plumb bob tilt. By this I could nudge the ball out of the left outlane back into play (this is due to the special left outlane of the Comet). But as I had an APC board installed I could do it in a more subtle way eventually. My [Comet video](https://youtu.be/JbgMa_pn0Lo) makes more clear what I mean.
+### The easy way
+
+There's a general ball saver program included in PinMameExceptions.ino that can be used for most machines. The ball saver is controlled by the [game settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) number 5 and 6.
+
+To enable the ball saver for your machine you have to provide the number of certain switches, lamps and solenoids.  
+At the top of PinMameExceptions.ino there's a section where the ball saver related properties for various machines are already present. In EX_SpaceStationProperties all properties are decribed by line comments. Use this as an example to generate the properties for your machine.
+
+    const byte EX_SpaceStationProperties[13] = {          // machine properties for ball saver
+        10,                                               // number of the outhole switch
+        11,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
+        12,                                               // number of the 2nd trunk switch (active if a second ball is in the trunk)
+        13,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
+        0,                                                // number of the 4th trunk switch (active if a fourth ball is in the trunk) - set to 0 if machine has only three balls
+        17,                                               // number of the left outlane switch
+        32,                                               // number of the right outlane switch
+        12,                                               // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+        13,                                               // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+        0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
+        1,                                                // number of the outhole kicker solenoid
+        2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
+        42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+
+After that you have to register your properties by setting the EX_Machine pointer accordingly. The best place to do this is in EX_Init where the PinMameExceptions of your machine have to be registered anyway. For Space Station this looks like below:
+
+    case 48:                                            // Space Station
+      PinMameException = EX_SpaceStation;               // use exception rules for Space Station
+      EX_Machine = EX_SpaceStationProperties;           // machine properties for ball saver
+      break;
+    
+As a last step you have to add the call for the ball saver to your PinMameExceptions. Note that the ball saver is called only when the USB_BallSave setting is active.
+
+    if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+      if (EX_BallSaver(Type, Command)) {                // include ball saver
+        return(1);}}                                    // omit command if ball saver says so
+      
+This should be done at the beginning of the exceptions so the ball saver can decide whether a command is processed by PinMame or skipped. 
+
+    byte EX_SpaceStation(byte Type, byte Command){
+      static byte LastMusic;
+      if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+        if (EX_BallSaver(Type, Command)) {                // include ball saver
+          return(1);}}                                    // omit command if ball saver says so
+      switch(Type){
+
+In this example you can see that the ball saver part should be added in front of the switch(Type) command.
+
+### The hard way
+
+Of course you can also program an individual ball saver tailored to your machine, but this can become quite complicated, especially if your machine has an AC relay and more than one ball.
+
+My Comet has neither and it really needs an individual ball saver as it makes me really angry when it drowns my balls in the outlanes before I even had a chance to touch them with a flipper. My first countermeasure was to remove the plumb bob tilt. By this I could nudge the ball out of the left outlane back into play (this is due to the special left outlane of the Comet). But as I had an APC board installed I could do it in a more subtle way eventually. My [Comet video](https://youtu.be/JbgMa_pn0Lo) makes more clear what I mean.
 
 The code for this ball saver is quite simple. These are the complete PinMameExceptions of my Comet:
 

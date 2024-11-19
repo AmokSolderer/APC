@@ -28,8 +28,8 @@ The german electronics retailer Reichelt doesn't sell all required components, b
 
 I got a notification from Mouser that the TDA7496 audio amplifier IC won't be produced any longer.
 
-At the moment I don't have the time to select a new amplifier IC, change the board design and do the necessary tests. I might do it in the future if the IC is not available any more.  
-That means you should try to get these ICs before you order any boards.
+You can use the TDA7495 instead which is a pin compatible replacement. It's also discontinued, but at the moment the TDA7495 is available on eBay for a reasonable price. In China there are still large quantities of both ICs available for very low prices.
+However, this might change in the future so you should be sure to get these ICs before you order any boards.
 
 ## The assembly
 
