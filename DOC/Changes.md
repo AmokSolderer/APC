@@ -5,7 +5,7 @@
 ### New SW Version V1.02
 
 * The default name of music files has been changed from MUSIC.BIN to MUSIC.SND to be consistent with the APC audio files having .SND as a suffix. That means you might have to rename the MUSIC.BIN files of your SD card to MUSIC.SND
-* A new option is available to replace the old (and sometimes annoying) BG sound of old machines by MUSIC.SND. It can be activated with setting 7 in the [game settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode).
+* A new option is available to replace the old (and sometimes annoying) [BG sound of old machines by MUSIC.SND](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_3_7.md#Adding background music). It can be activated with setting 7 in the [game settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode).
 * A general ball saver is available. It can be activated with setting 5 in the [game settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode). There's [a list](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md#available-sounds) of supported machines. Look [here](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md#how-to-add-a-ball-saver) if it's not yet available for your machine.
 
 ## June 2024

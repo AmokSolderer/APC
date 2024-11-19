@@ -234,6 +234,21 @@ As the pre System11 displays cannot show letters, the corresponding sound number
 
 By that you can just play your game and only if the number of a missing sound file pops up on the right side of your display you note it down and add it later.
 
+### Changing the background music
+
+Most machines of this era have a quite basic background music. This can be replaced by a music track of your choice with a simple change in the PinMameExceptions. A general [game setting](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode) to activate the ball saver is already present, so you don't have to bother with changing the settings menu.
+
+The code below is for the Comet, but the principle is the same for all System 9 machines.  
+In case of the Comet, the command for the background sound is 47. If this command is received, we have to check whether the setting for background music is selected or not. If yes the file MUSIC.snd is played on the music channel and also queued for looping. If background music is not selected in the settings, the normal BG music is played as usual.
+
+    else if (Command == 47) {                         // play BG music
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        PlayMusic(50, "MUSIC.snd");                   // play music track
+        QueueNextMusic("MUSIC.snd");}                 // and loop it
+      else {
+        PlayMusic(50, "0_2f.snd");
+        QueueNextMusic("0_2f.snd");}}                 // track is looping so queue it also
+        
 ## Sound problems
 
 Most sound problems like lags and stuttering are caused by the performance of the SD card. Take a look at the [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) section for more.

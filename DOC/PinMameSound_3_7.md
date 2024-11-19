@@ -168,6 +168,33 @@ However, the major difference is that 0x2a is the background sound which can be 
 In the APC SW the Aftersound pointer can be used for this. This pointer can be set to a routine which is called automatically when a sound has run out. That's why the name of the current pitch is always stored in the USB_RepeatSound variable. Then QueueNextSound is called which takes the filename USB_RepeatSound points to as an argument. It sets the AfterSound pointer to a routine which will play the filename stored in USB_RepeatSound when the current sound file is running out. This ensures that whenever the background sound is being interrupted by another sound, it is immediately being restarted as soon as this sound has run out.  
 Setting AfterSound = 0 will disable this mechanism.
 
+### Adding background music
+
+Most machines of this era have a quite boring background sound. This can be replaced by a music track of your choice with a simple change in the PinMameExceptions. A general [game setting](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode) to activate the ball saver is already present, so you don't have to bother with changing the settings menu.
+
+The code below is for the Alien Poker, but the principle is the same for all System 3-7 machines.  
+In case of the Alien Poker, the command for the background sound is 14. If this command is received, we have to check whether the setting for background music is selected or not. If yes and SoundSeries[2] variable is zero, the file MUSIC.snd is played on the music channel and also queued for looping. The SoundSeries variable is just used to prevent the music file from being restarted every time PinMame requests a new pitch.  
+If background music is not selected in the settings, the normal BG sound is played as described in the section above.
+
+    else if (Command == 14) {                         // 0x0e Background sound series - repeated
+      SoundSeries[0] = 0;
+      SoundSeries[1] = 0;
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        if (!SoundSeries[2]) {                        // don't restart if next pitch is requested
+          PlayMusic(50, "MUSIC.snd");                 // play music track
+          QueueNextMusic("MUSIC.snd");                // and loop it
+          SoundSeries[2] = 1;}}
+      else {
+        if (SoundSeries[2] < 36 )                     // this sound has 36 pitches
+          SoundSeries[2]++;                           // every call of this sound proceeds with next pitch
+        char FileName[13] = "0_0e_000.snd";           // generate base filename
+        FileName[7] = 48 + (SoundSeries[2] % 10);     // change the 7th character of filename according to current pitch
+        FileName[6] = 48 + (SoundSeries[2] % 100) / 10; // the same with the 6th character
+        for (byte i=0; i<12; i++) {                   // store the name of this sound
+          USB_RepeatSound[i] = FileName[i];}
+        QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
+        PlaySound(51, (char*) FileName);}}            // play the sound
+
 ### Defining the basic special commands
 
 At last we have to implement the two basic special commands every system 3 - 7 game has. These are the sound stop command (0x0c for Sys 3 - 6 and 0x2c for Sys 7) and the bus initialization (0x1f for Sys 3 - 6 and 0x7f for Sys 7). 
