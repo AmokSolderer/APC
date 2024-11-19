@@ -18,20 +18,20 @@ Note that the menus have changed since these videos have been made. So use them 
 
 ## Using the settings menu
 
-To enter the APC settings you have to press the Advance button at the coin door. If you're in Remote Control mode you have to keep it pressed for more than 1s.
+To enter the APC settings you have to press the Advance button at the coin door with the Up/Down switch in 'up' position. If you're in Remote Control mode you have to keep it pressed for more than 1s.
 
-In settings mode use Advance to select the setting and the Game Start button to change it's value. If the Up/Down button is in down position then you're moving backwards.
-
-If an SD card is present the settings are stored when you choose 'Exit Settings'.
-
-The APC settings are splitted in two parts.
+After that you have to select whether you want to enter the system or game settings.
 
 * The System Settings are valid for all selected active games
-* The Game Settings are game specific. They change depending on which 'Active Game' is selected in the System Settings.
+* The Game Settings are game specific. They change depending on which 'Active Game' is selected in the System Settings. This is not identical to the game you might want to run in PinMame, but you have to set your 'Active Game' to [Remote Control mode](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md#pinmame) in order to run PinMame.
 
 Games with a credit display show 00 for System Settings and 01 for Game Settings in the left two digits. The number of the setting currently being shown appears in the right two digits of the credit display. This is important for pre System11 displays as they can show only numbers and no menu text. 
 
 For pre Sys11 displays all text settings are represented by their item number as shown in the tables. For example, if a pre Sys11 display is selected and the credit display shows 00 01 you have selected the System Settings and the 'Active Game' setting is currently being shown. An early System11 display (upper display row alphanumerical and lower row numerical) will still try to show the name of the currently selected game as a text which is not perfect, but good enough. A pre System11 display will show the item number instead and if there is a 3 stated in the player 4 display then you're in Remote Control mode.
+
+In settings mode use Advance to select the setting and the Game Start button to change it's value. If the Up/Down button is in down position then you're moving backwards.
+
+If an SD card is present the settings are stored when you choose 'Exit Settings'.
 
 ## Using PinMame settings
 
@@ -86,6 +86,8 @@ Enter the game settings and do your changes. When you're done, just select menu 
 
 ## Game Settings in Remote Control mode
 
+These game settings are only visible if 'Remote Control' is selected as the 'Active Game' in the 'System Settings'.
+
 | Number | Text  | Item Nr | Item Text | Default | Comment |
 |--|--|--|--|--|--|
 | 0 | USB watchdog | - | - | No | Bool settings - disables all solenoids when no watchdog reset command is received for 1s |
@@ -96,7 +98,15 @@ Enter the game settings and do your changes. When you're done, just select menu 
 | 2 | | 1 | Board | - | PinMame sounds are played on an external audio board |
 | 3 | PinMame game | - | - | 0 | Numerical setting - [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) |
 | 4 | Lisy Debug | - | - | 0 | Numerical setting according to the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page |
-| 5 - 45 | Setting Unused | - | – | - | They behave like boolean settings, but they have no effect |
+| 5 | Ball Saver | 0 | Off | X | The optional ball saver is not active |
+| 5 |  | 1 | Right Outlane | - | The ball saver is only active for the right outlane |
+| 5 |  | 2 | Left Outlane | - | The ball saver is only active for the left outlane |
+| 5 |  | 3 | Both Oulanes | - | The ball saver is only active for the outlanes |
+| 5 |  | 4 | General | - | The ball saver is active for all drained balls |
+| 6 | Ball Saver Time | - | - | 20 | Numerical setting - range 5 - 250 / Active time of the Ball Saver |
+| 7 | BG Music | 0 | PinMame default | X | Normal BG music |
+| 7 |  | 1 | Music snd | - | Uses the MUSIC.SND file as BG music |
+| 8 - 45 | Setting Unused | - | – | - | They behave like boolean settings, but they have no effect |
 | 46 | System3 Set 1 | - | - | - | Use this to change the 1st setting of system 3 games |
 | 47 | System3 Set 2 | - | - | - | Use this to change the 2nd setting of system 3 games |
 | 48 | System3 Set 3 | - | - | - | Use this to change the 3rd setting of system 3 games |

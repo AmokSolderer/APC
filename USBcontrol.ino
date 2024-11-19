@@ -23,8 +23,11 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 //#define USB_Option1 -> this option is defined in PinMameExceptions.ino
 //#define USB_BGmusic 9  to select an own BG music -> this option is defined in PinMameExceptions.ino
 //#define USB_CustomText 10  to select a custom text to be shown during attract mode -> this option is defined in PinMameExceptions.ino
+//#define USB_BallSave 5                              // optional ball saver -> this option is defined in PinMameExceptions.ino
+//#define USB_BallSaveTime 6                          // activation time for the optional ball saver -> this option is defined in PinMameExceptions.ino
+//#define USB_BGmusic 7                               // to select an own BG music -> this option is defined in PinMameExceptions.ino
 
-const byte USB_defaults[64] = {0,0,0,255,0,0,0,0,       // game default settings
+const byte USB_defaults[64] = {0,0,0,255,0,0,20,0,    // game default settings
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
@@ -45,20 +48,73 @@ unsigned int USB_SolTimes[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
 const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
-const char TXTUSB_AmokOption[4][17] = {{"          OFF   "},{" RIGHT OUTLANE  "},{" LEFT  OUTLANE  "},{" BOTH  OUTLANE  "}};
-const char TxtUSB_Music[2][17] = {{"PINMAMEDEFAULT  "},{"  MUSICBIN      "}};
+const char TXTUSB_BallSave[5][17] = {{"          OFF   "},{" RIGHT OUTLANE  "},{" LEFT  OUTLANE  "},{" BOTH  OUTLANE  "},{"       GENERAL  "}};
+const char TxtUSB_Music[2][17] = {{"PINMAMEDEFAULT  "},{"  MUSICSND      "}};
 
 const struct SettingTopic USB_setList[14] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
     {" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
     {"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
     {"PINMAME GAME    ",HandleNumSetting,0,0,72},
-    {" LISY   DEBUG   ",HandleNumSetting,0,1,31},
-		{" BALL   SAVER   ",HandleTextSetting,&TXTUSB_AmokOption[0][0],0,3},
+    {" LISY  DEBUG    ",HandleNumSetting,0,1,31},
+    {" BALL   SAVER   ",HandleTextSetting,&TXTUSB_BallSave[0][0],0,4},
+    {"B SAVER  TIME   ",HandleNumSetting,0,5,250},
+    {"   BG   MUSIC   ",HandleTextSetting,&TxtUSB_Music[0][0],0,1},
     {" LED GI  RED    ",HandleColorSetting,0,0,255},
     {" LED GI  GREEN  ",HandleColorSetting,0,0,255},
     {" LED GI  BLUE   ",HandleColorSetting,0,0,255},
-    {"   BG   MUSIC   ",HandleTextSetting,&TxtUSB_Music[0][0],0,1},
     {" CUSTOM TEXT  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"SYSTEM3 SET 1   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 2   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 3   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 4   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 5   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 6   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 7   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 8   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 9   ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 10  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 11  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 12  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 13  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 14  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 15  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 16  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 17  ",HandleNumSetting,0,0,72},
+    {"SYSTEM3 SET 18  ",HandleNumSetting,0,0,72},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};

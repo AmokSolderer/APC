@@ -1,15 +1,82 @@
 # PinMameExceptions
 
-PinMameExceptions are a simple but powerful tool to change the behaviour of your game even though it is controlled by PinMame. Some exceptions are inevitable to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page.
+The APC features a machine specific exception handling, which means that you can manipulate your game even though it is running in PinMame. To enable this for your machine you have to add a game specific section to the PinMameExceptions.ino file and recompile the SW.
+You can manipulate sound, lamp, switch, display and solenoid commands. Some exceptions are mandatory to make the APC generate the sound for your machine correctly. A description for this is on the [PinMame sound howto](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page.
 
-In this section we'll focus on exceptions that change a game. This can be by just fixing flaws in the original game SW or adding new features.
+In this section we'll focus on exceptions that change a game. This can be just to fix flaws in the original game SW (or PinMame) or add new features.
+
+## How it works
+
+PinMame controls the APC by sending commands over the serial interface. Each of these commands triggers the APC SW to fullfill a specific task, e.g. turning on a lamp, report the latest activated switch and so on. Normally the APC does exactly what it has been told to do, but you can use the [APC SW framework](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) to program game specific exceptions which are collected in the file PinMameExceptions.ino.  
+
+### Adding exceptions for your machine
+
+Let's use the System 3 Disco Fever as an example how to use exception handling in practice:
+
+First of all we need to generate a Disco Fever specific code section to handle all the required exceptions. There's a template named
+
+    byte EX_Blank(byte Type, byte Command)
+
+in PinMameExceptions.ino you could use as a start. So let's create a copy of this and rename it to
+
+    byte EX_DiscoFever(byte Type, byte Command)
+
+In order for the system to use this code section, we have to add it to EX_Init which is at the end of PinMameExceptions.ino and determines which code is used for which machine. For simplicity, the following code shows an EX_Init with only two machine entries and the default handler. In the real EX_Init the list is already much longer:
+
+    void EX_Init(byte GameNumber) {
+      switch(GameNumber) {
+      case 4:                                             // Disco Fever
+        PinMameException = EX_DiscoFever;                 // use exception rules for Flash
+        break;
+      case 6:                                             // Flash
+        PinMameException = EX_Flash;                      // use exception rules for Flash
+        break;
+      default:
+        PinMameException = EX_DummyProcess;}}
+    
+Each entry consists of a case statement with the [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) as an argument. You can define all kind of optional stuff in these case statements, but the definition of the PinMameException is mandatory as it tells the system which code to use for this machine.  
+All other games do not have an exception handler yet, so the exception pointer just points to a dummy process which provides some basic sound handling.
+
+In order to implement some exceptions for Disco Fever, we can use our new 
+
+    byte EX_DiscoFever(byte Type, byte Command){
+      switch(Type){
+
+The Type argument determines what kind of event should be dealt with. You can find a list of possible events at the top of PinMameExceptions.ino:
+
+    #define SoundCommandCh1 0
+    #define SoundCommandCh2 1
+    #define SwitchActCommand 2
+    #define SwitchRelCommand 3
+    #define SolenoidActCommand 4
+    #define SolenoidRelCommand 5
+    #define LampOnCommand 6
+    #define LampOffCommand 7
+    #define WriteToDisplay0 8
+    #define WriteToDisplay1 9
+    #define WriteToDisplay2 10
+    #define WriteToDisplay3 11
+    #define WriteToDisplay4 12
+
+The Command argument determines which specific lamp, solenoid, switch or sound shall be affected.  
+For example
+
+    case LampOnCommand:
+      if (Command == 32) {
+        TurnOnLamp(33);
+        return(1);}
+
+will turn on lamp 33 when PinMame requests lamp 32 to be turned on.  
+The argument of the return command is important as it determines whether PinMame's original request will still be executed or not. In this case return(1) means that the original request will be ignored, so lamp 33 will be turned on INSTEAD of lamp 32. With return(0) lamp 32 would be turned on additionally to lamp 33.
+
+Below are some more examples starting with the Disco Fever.
 
 ## Fixing the drop targets of pre System 7 games
 
 PinMame has a timing issue with System 3,4 and 6 games. For some reason the activation times of some solenoids is too short to trigger them correctly. This is especially problematic with drop targets because they won't reset any more.  
 Even though it's a PinMame issue we decided to fix this in PinMameExceptions which means you have to do it if your machines shows this problem.
 
-Let's use the System 3 Disco Fever as an example. In this machine solenoid 2 is for resetting the drop targets.  
+This section shows the necessary code for the Disco Fever. In this machine solenoid 2 is for resetting the drop targets.  
 Normally PinMame sends turn-on and off commands for the solenoids and does therefore control the activation time by itself. In order to increase the length of the activation time, we capture the turn-on command from PinMame and activate the solenoid for a time of our choosing, in this case 80ms.
 
     case SolenoidActCommand:
@@ -133,7 +200,57 @@ Watch my [Jungle Lord video](https://www.youtube.com/watch?v=bbfhH_-gMfE) so see
 
 ## How to add a ball saver
 
-I have a Comet which made me really angry when it drowned my balls in the outlanes before I even had a chance to touch them with a flipper. My first countermeasure was to remove the plumb bob tilt. By this I could nudge the ball out of the left outlane back into play (this is due to the special left outlane of the Comet). But as I had an APC board installed I could do it in a more subtle way eventually. My [Comet video](https://youtu.be/JbgMa_pn0Lo) makes more clear what I mean.
+### The easy way
+
+There's a general ball saver program included in PinMameExceptions.ino that can be used for most machines. The ball saver is controlled by the [game settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) number 5 and 6.
+
+To enable the ball saver for your machine you have to provide the number of certain switches, lamps and solenoids.  
+At the top of PinMameExceptions.ino there's a section where the ball saver related properties for various machines are already present. In EX_SpaceStationProperties all properties are decribed by line comments. Use this as an example to generate the properties for your machine.
+
+    const byte EX_SpaceStationProperties[13] = {          // machine properties for ball saver
+        10,                                               // number of the outhole switch
+        11,                                               // number of the 1st trunk switch (active if one ball is in the trunk) - set to 0 if machine has only one ball (-> no trunk)
+        12,                                               // number of the 2nd trunk switch (active if a second ball is in the trunk)
+        13,                                               // number of the 3rd trunk switch (active if a third ball is in the trunk) - set to 0 if machine has only two balls
+        0,                                                // number of the 4th trunk switch (active if a fourth ball is in the trunk) - set to 0 if machine has only three balls
+        17,                                               // number of the left outlane switch
+        32,                                               // number of the right outlane switch
+        12,                                               // number of the AC relay solenoid (set to 0 if machine has no AC relay)
+        13,                                               // number of the left kickback solenoid (set to 0 if machine has no left kickback)
+        0,                                                // number of the right kickback solenoid (set to 0 if machine has no right kickback)
+        1,                                                // number of the outhole kicker solenoid
+        2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
+        42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
+
+After that you have to register your properties by setting the EX_Machine pointer accordingly. The best place to do this is in EX_Init where the PinMameExceptions of your machine have to be registered anyway. For Space Station this looks like below:
+
+    case 48:                                            // Space Station
+      PinMameException = EX_SpaceStation;               // use exception rules for Space Station
+      EX_Machine = EX_SpaceStationProperties;           // machine properties for ball saver
+      break;
+    
+As a last step you have to add the call for the ball saver to your PinMameExceptions. Note that the ball saver is called only when the USB_BallSave setting is active.
+
+    if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+      if (EX_BallSaver(Type, Command)) {                // include ball saver
+        return(1);}}                                    // omit command if ball saver says so
+      
+This should be done at the beginning of the exceptions so the ball saver can decide whether a command is processed by PinMame or skipped. 
+
+    byte EX_SpaceStation(byte Type, byte Command){
+      static byte LastMusic;
+      if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+        if (EX_BallSaver(Type, Command)) {                // include ball saver
+          return(1);}}                                    // omit command if ball saver says so
+      switch(Type){
+
+In this example you can see that the ball saver part should be added in front of the switch(Type) command.
+
+### The hard way
+
+Of course you can also program an individual ball saver tailored to your machine, but this can become quite complicated, especially if your machine has an AC relay and more than one ball.
+
+My Comet has neither and it really needs an individual ball saver as it makes me really angry when it drowns my balls in the outlanes before I even had a chance to touch them with a flipper. My first countermeasure was to remove the plumb bob tilt. By this I could nudge the ball out of the left outlane back into play (this is due to the special left outlane of the Comet). But as I had an APC board installed I could do it in a more subtle way eventually. My [Comet video](https://youtu.be/JbgMa_pn0Lo) makes more clear what I mean.
 
 The code for this ball saver is quite simple. These are the complete PinMameExceptions of my Comet:
 
