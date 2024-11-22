@@ -99,10 +99,7 @@ These game settings are only visible if 'Remote Control' is selected as the 'Act
 | 3 | PinMame game | - | - | 0 | Numerical setting - [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) |
 | 4 | Lisy Debug | - | - | 0 | Numerical setting according to the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page |
 | 5 | Ball Saver | 0 | Off | X | The optional ball saver is not active |
-| 5 |  | 1 | Right Outlane | - | The ball saver is only active for the right outlane |
-| 5 |  | 2 | Left Outlane | - | The ball saver is only active for the left outlane |
-| 5 |  | 3 | Both Oulanes | - | The ball saver is only active for the outlanes |
-| 5 |  | 4 | General | - | The ball saver is active for all drained balls |
+| 5 |  | 1 | On | - | The ball saver is active for all drained balls |
 | 6 | Ball Saver Time | - | - | 20 | Numerical setting - range 5 - 250 / Active time of the Ball Saver |
 | 7 | BG Music | 0 | PinMame default | X | Normal BG music |
 | 7 |  | 1 | Music snd | - | Uses the MUSIC.SND file as BG music |

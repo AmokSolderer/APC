@@ -45,7 +45,7 @@ unsigned int USB_SolTimes[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"        AUDIO   "}};
 const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
-const char TXTUSB_BallSave[5][17] = {{"          OFF   "},{" RIGHT OUTLANE  "},{" LEFT  OUTLANE  "},{" BOTH  OUTLANE  "},{"       GENERAL  "}};
+const char TXTUSB_BallSave[5][17] = {{"          OFF   "},{"           ON   "},{" LEFT  OUTLANE  "},{" BOTH  OUTLANE  "},{"       GENERAL  "}};
 const char TxtUSB_Music[2][17] = {{"PINMAMEDEFAULT  "},{"  MUSICSND      "}};
 
 const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
@@ -53,7 +53,7 @@ const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting
     {"PINMAME SOUND   ",HandleTextSetting,&TxTUSB_PinMameSound[0][0],0,1},
     {"PINMAME GAME    ",HandleNumSetting,0,0,72},
     {" LISY  DEBUG    ",HandleNumSetting,0,1,31},
-    {" BALL   SAVER   ",HandleTextSetting,&TXTUSB_BallSave[0][0],0,4},
+    {" BALL   SAVER   ",HandleTextSetting,&TXTUSB_BallSave[0][0],0,1},
     {"B SAVER  TIME   ",HandleNumSetting,0,5,250},
     {"   BG   MUSIC   ",HandleTextSetting,&TxtUSB_Music[0][0],0,1},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},

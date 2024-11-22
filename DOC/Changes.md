@@ -110,7 +110,7 @@ That means you should try to get these ICs before you order any boards.
 
 ### New SW Version V0.22
 
-* A new exception handling system has been implemented. This makes it easier to program machine specific changes while using PinMame. Take a look at the [PinMame How-to](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) page for details
+* A new exception handling system has been implemented. This makes it easier to program machine specific changes while using PinMame. Take a look at the [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md) page for details
 * Exception rules for System 7 Pharaoh have been added. Sound files for Pharaoh are also available (Thanks to Grangeomatic)
 * Exception rules for System 6 Firepower have been added. Sound files for Firepower are also available (Thanks to Matiou)
 * Support for 6 digit numerical displays (System3 - 6) has been added
