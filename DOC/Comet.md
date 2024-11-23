@@ -22,7 +22,7 @@ Watch [this video](https://youtu.be/JbgMa_pn0Lo) to see how the ball saver works
 * GI gameplay animations -> During normal gameplay the GI LEDs behave like the normal GI, but in some occasions when the game shows some fireworks animation with the backbox flashers the GI does the same on the playfield, which makes this effect much stronger.
 * GI attract animations -> I also use the GI LEDs to play some colorful animations every now and then during attract mode. There's a video showing my [GI LEDs](https://youtu.be/kLWVUdhSwfo) in action
 * Custom Text Message -> As my game has alphanumeric displays I'm showing a custom text message when the GI LEDs are showing their animations during attract mode. The text is retrieved from the file Custom.txt which has to be present on the SD card.
-* Custom game music -> Comet's original music is ... basic. So to hear a song of your choice during gameplay, name it MUSIC.BIN, store it on the SD card and select 'Music bin' in the game settings.
+* Custom game music -> Comet's original music is ... basic. So to hear a song of your choice during gameplay, name it MUSIC.SND, store it on the SD card and select 'Music bin' in the game settings.
 
 ## How to set up this game
 
@@ -50,7 +50,7 @@ Watch [this video](https://youtu.be/JbgMa_pn0Lo) to see how the ball saver works
 | 7 | LED GI green | - | - | 255 | Numerical setting (0-255) -> GI color setting green |
 | 8 | LED GI blue | - | - | 255 | Numerical setting (0-255) -> GI color setting blue |
 | 9 | BG Music | 0 | PinMame default | X | Normal Comet BG music |
-| 9 |  | 1 | Music bin | - | Uses the MUSIC.bin file as BG music |
+| 9 |  | 1 | Music snd | - | Uses the MUSIC.snd file as BG music |
 | 10 | Custom Text | - | - | No | Bool setting - Shows the custom text sometimes during attract mode |
 | 11 | Restore Default | - | - | - | No setting - restores the default settings |
 | 12 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |

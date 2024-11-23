@@ -10,18 +10,18 @@ At the moment the list of available sound packages is still quite short, but we 
 |System|Game| Sound Files |Comments|
 |--|--|--|--|
 |3|Disco Fever| available on request| PinMameExceptions might still need some finetuning |
-|4|Flash| available on request| |
-|6|Time Warp| available on request | PinMameExceptions might still need some finetuning |
-|6|Firepower| available on request thanks to Matiou | PinMameExceptions also done by Matiou |
-|6|Alien Poker| available on request | PinMameExceptions might still need some finetuning |
-|7|Barracora| available on request | PinMameExceptions might still need some finetuning |
-|7|Black Knight| available on request| |
-|7|Jungle Lord| available on request| |
-|7|Pharaoh| available on request| PinMameExceptions done by Grangeomatic |
-|9|Comet|available on request| |
-|11a|Pinbot| available on request| |
-|11a|F-14 Tomcat| available on request thanks to Snux | PinMameExceptions also done by Snux |
-|11b|Space Station| available on request| |
+|4|Flash| available on request| Ball saver and alternate music mode implemented for this machine |
+|6|Time Warp| available on request | Ball saver and alternate music mode implemented for this machine |
+|6|Firepower| available on request thanks to Matiou | PinMameExceptions also done by Matiou / Ball saver and alternate music mode implemented for this machine |
+|6|Alien Poker| available on request | Ball saver and alternate music mode implemented for this machine |
+|7|Barracora| available on request | Ball saver and alternate music mode implemented for this machine |
+|7|Black Knight| available on request| Ball saver and alternate music mode implemented for this machine |
+|7|Jungle Lord| available on request| Ball saver and alternate music mode implemented for this machine |
+|7|Pharaoh| available on request| PinMameExceptions done by Grangeomatic / Ball saver and alternate music mode implemented for this machine|
+|9|Comet|available on request| Ball saver and alternate music mode implemented for this machine |
+|11a|Pinbot| available on request| Ball saver implemented for this machine |
+|11a|F-14 Tomcat| available on request thanks to Snux | PinMameExceptions also done by Snux / Ball saver implemented for this machine|
+|11b|Space Station| available on request| Ball saver implemented for this machine |
 |11c|Rollergames| available on request| There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. The issue doesn't seem to affect the Windows version of PinMame. Please contact me if you have any idea what the root cause might be. |
 
 # What needs to be done

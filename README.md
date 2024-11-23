@@ -35,9 +35,10 @@ There's a table of contents of the available documentation at the end of this pa
 
 Typical examples for the use of PinMameExceptions are:
 
-* Pre System11 games usually use just one audio channel, so you could add a background music track. Wouldn't it be great if your Disco Fever would play old Disco music in the BG?
+* Pre System11 games usually use just one audio channel which can even be annoying at times. With PinMameExceptions you can add [a background music track](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_3_7.md#adding-background-music) which replaces the original background sound. The change is easy and for most pre System11 which have PinMameExceptions it's already implemented. Check [this list](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md#available-sounds) for details.
+* Add a ball saver. There's a [general ball saver](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md#how-to-add-a-ball-saver) available which can be easily adapted to your machine. Of course you can also add an individual ball saver - all you have to do is not to tell PinMame that the ball has reached the outhole, but to kick it into the plunger lane instead. Watch my [Comet video](https://youtu.be/JbgMa_pn0Lo) to see how it can be done with just a few lines of code.  
+Check the [description](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md#how-to-add-a-ball-saver) to see how both options work.
 * Add HW toys like a shaker motor or flashers and the necessary rules to drive them. If your game has no free solenoid drivers left, then just add the [Solenoid expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/SolExpBoard.md) to get 8 more. You can also use the [LED expansion board](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) to control RGB-LED stripes or just connect your own individual HW.
-* Add a ball saver. Ball savers are quite easy to realize. All you have to do is not to tell PinMame that the ball has reached the outhole, but to kick it into the plunger lane instead. Watch my [Comet video](https://youtu.be/JbgMa_pn0Lo) to see how it can be done with just a few [lines of code](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md#how-to-add-a-ball-saver).
 
 The picture below shows an APC prototype in my Pinbot.
 
@@ -94,7 +95,7 @@ The second board is a [driver for 8 additional solenoids](https://github.com/Amo
 
 I use [special alphanumerical displays](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) in my Black Knight which can also be found in the HW section as well as an LED replacement for the original System7 numerical displays.
 
-## Current Status (June 2024)
+## Current Status (November 2024)
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md#cable-extensions)
 

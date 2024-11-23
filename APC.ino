@@ -17,7 +17,7 @@ SdFat SD;
 #define AllData 510
 #define HwExtStackPosMax 20                           // size of the HwExtBuffer
 
-const char APC_Version[6] = "01.01";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "01.02";                  // Current APC version - includes the other INO files also
 
 void HandleBoolSetting(bool change);
 void HandleTextSetting(bool change);
@@ -158,7 +158,7 @@ byte AfterSoundPending = 0;                           // indicates an after soun
 void (*AfterSound)(byte) = 0;                         // program to execute after sound file has ended
 byte SoundPriority = 0;                               // stores the priority of the sound file currently being played
 bool SoundPrio = false;                               // indicates which channel has to be processed first
-const char TestSounds[3][15] = {{"MUSIC.BIN"},{"SOUND.BIN"},0};
+const char TestSounds[3][15] = {{"MUSIC.SND"},{"SOUND.SND"},0};
 byte APC_settings[64];                                // system settings to be stored on the SD
 byte game_settings[64];                               // game settings to be stored on the SD
 byte *SettingsPointer;                                // points to the settings being changed
@@ -2648,7 +2648,7 @@ void HandleTextSetting(bool change) {                 // handling method for tex
 void HandleVolumeSetting(bool change) {
   HandleNumSetting(change);
   if (!change) {
-    PlayMusic(90, "MUSIC.BIN");}
+    PlayMusic(90, "MUSIC.SND");}
   analogWrite(VolumePin,255-APC_settings[Volume]);}   // adjust PWM to volume setting
 
 byte HandleHighScores(unsigned int Score) {
