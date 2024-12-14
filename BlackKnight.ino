@@ -1906,7 +1906,7 @@ void BK_AddBonus(byte BonusPts) {
   byte OldBonusToAdd = BK_BonusToAdd;
   if (Bonus < 49) {
     if (Bonus+BonusPts > 49) {                        // full bonus reached?
-      BK_BonusToAdd += 49 - Bonus;
+      BK_BonusToAdd = 0;
       Bonus = 49;
       if (BonusMultiplier == 5) {                     // multiplier = 5?
         BK_CycleSwordLights(1);}}                     // start sword lamp animation
@@ -1925,7 +1925,7 @@ void BK_ClearBonusLight(byte Step) {
   if (Step == 10) {
     Step = 0;}
   if (Step == 9) {
-    for (i=BK_BonusLamp; i<BK_BonusLamp+9; i++) {
+    for (byte i=BK_BonusLamp; i<BK_BonusLamp+9; i++) {
       TurnOffLamp(i);}
     BK_BonusToAdd--;}
   else {
@@ -1938,7 +1938,7 @@ void BK_ClearBonusLight(byte Step) {
 void BK_SetBonusLight(byte Step) {
   if (Step == 9) {
     if (QueryLamp(BK_BonusLamp+9) || QueryLamp(BK_BonusLamp+10) || QueryLamp(BK_BonusLamp+11) || QueryLamp(BK_BonusLamp+12)) {
-      i = 0;
+      byte i = 0;
       while (i < 3) {
         if (QueryLamp(BK_BonusLamp+9+i)) {
           TurnOffLamp(BK_BonusLamp+9+i);
@@ -1960,7 +1960,7 @@ void BK_ShowBonus() {                                 // set lamps on bonus mete
     Count = Bonus;}
   else {
     Count = 49;}
-  for (i=0; i<13; i++) {                              // for all 13 lamps of the bonus meter
+  for (byte i=0; i<13; i++) {                         // for all 13 lamps of the bonus meter
     if (Count >= BK_BonusValues[i]) {                 // bonus larger or equal than the value of the actual lamp?
       if (i < 4) {
         Count -= BK_BonusValues[i];}                  // reduce bonus accordingly
