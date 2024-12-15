@@ -1905,8 +1905,8 @@ void BK_PlayFullBonusEffect(byte Step) {
 void BK_AddBonus(byte BonusPts) {
   byte OldBonusToAdd = BK_BonusToAdd;
   if (Bonus < 49) {
-    if (Bonus+BonusPts > 49) {                        // full bonus reached?
-      BK_BonusToAdd = 0;
+    if (Bonus + BonusPts + BK_BonusToAdd > 49) {                        // full bonus reached?
+      BK_BonusToAdd = 49 - Bonus;
       Bonus = 49;
       if (BonusMultiplier == 5) {                     // multiplier = 5?
         BK_CycleSwordLights(1);}}                     // start sword lamp animation
