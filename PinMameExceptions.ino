@@ -531,16 +531,12 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
         else {                                        // code for combined sounds (not standard but works better)
           if (PlayingMultiballSound == 0) {
             PlayingMultiballSound = 1;
-            char FileName[13] = "0_07_004.snd"; // this wav is combined version from 67_001 to 67_003
+            char FileName[13] = "0_07_004.snd";       // this wav is combined version from 67_001 to 67_003
             PlaySound(51, (char*) FileName);}}}
-      else if (Command == 9){                         // 0x09 Bonus
-        if (SoundSeries[1] < 146)                     // this sound has 146 pitches
-          SoundSeries[1]++;                           // every call of this sound proceeds with next pitch
-        char FileName[13] = "0_09_000.snd";           // generate base filename
-        FileName[7] = 48 + (SoundSeries[1] % 10);     // change the 7th character of filename according to current pitch
-        FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
-        FileName[5] = 48 + (SoundSeries[1] / 100);    // the same with the 5th character
-        PlaySound(51, (char*) FileName);}             // play the sound
+      else if (Command == 9) {                        // 0x09 Bonus
+        if (!SoundSeries[1]) {
+          SoundSeries[1] = 1;
+          PlaySound(51, "0_09.snd");}}                // this wav is combined version from all bonus pitches
       else if (Command == 10) {                       // 0x0a Whirling background
         if (SoundSeries[2] < 29 )                     // this sound has 29 pitches
           SoundSeries[2]++;                           // every call of this sound proceeds with next pitch
