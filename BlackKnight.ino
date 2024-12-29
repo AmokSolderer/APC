@@ -392,7 +392,7 @@ void BK_AttractDisplayCycle(byte Step) {
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
     WriteLower2("                ");
-    for (i=1; i<=NoPlayers; i++) {                    // display the points of all active players
+    for (byte i=1; i<=NoPlayers; i++) {               // display the points of all active players
       ShowNumber(8*i-1, Points[i]);}
     Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, BK_AttractDisplayCycle);
@@ -402,7 +402,7 @@ void BK_AttractDisplayCycle(byte Step) {
     AddBlinkLamp(6, 150);                             // blink Highest Score lamp
     WriteUpper2("1>              ");
     WriteLower2("2>              ");
-    for (i=0; i<3; i++) {
+    for (byte i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
       *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
@@ -417,7 +417,7 @@ void BK_AttractDisplayCycle(byte Step) {
     RemoveBlinkLamp(6);                               // stop blinking of Highest Score lamp
     WriteUpper2("3>              ");
     WriteLower2("4>              ");
-    for (i=0; i<3; i++) {
+    for (byte i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
       *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
@@ -493,7 +493,7 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
         analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
       else {
         digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
-      for (i=0; i< 8; i++) {
+      for (byte i=0; i< 8; i++) {
         LampColumns[i] = 0;}
       LampPattern = LampColumns;
       TurnOnLamp(2);                                  // turn on Ball in Play lamp
@@ -514,11 +514,11 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
       ExBalls = 0;
       Bonus = 1;
       BonusMultiplier = 1;
-      for (i=0; i<16; i++) {
+      for (byte i=0; i<16; i++) {
         BK_DropHits[i] = 0;}                          // clear drop target hits
       InLock = 0;
       Multiballs = 1;
-      for (i=1; i < 5; i++) {
+      for (byte i=1; i < 5; i++) {
         BK_LowerExBall[i] = false;
         BK_UpperExBall[i] = false;
         BK_PlayersExBalls[i] = false;
@@ -532,7 +532,7 @@ void BK_AttractModeSW(byte Event) {                   // Attract Mode switch beh
 
 void BK_ResetAllDTargets(byte Dummy) {
   for (Dummy=0; Dummy <4; Dummy++) {                  // Dummy counts through the drop target banks
-    for (i=0; i<3;i++) {                              // for each target
+    for (byte i=0; i<3;i++) {                         // for each target
       if (QuerySwitch(BK_DropTargets[Dummy]+i)) {     // target down?
         ActivateSolenoid(0, BK_DropSolenoid+Dummy);   // reset
         break;}}}}                                    // quit for next bank
@@ -647,7 +647,7 @@ void BK_SearchBall(byte Counter) {                    // ball watchdog timer has
         BK_BallEnd(0);}                               // ball has probably jumped over the outhole switch
       else {
         byte c2 = 0;
-        for (i=0; i<3; i++) {                         // count balls in lock
+        for (byte i=0; i<3; i++) {                    // count balls in lock
           if (QuerySwitch(41+i)) {
             if (c2 < i) {
               c = 5;}                                 // set warning flag
@@ -671,7 +671,7 @@ void BK_SearchBall(byte Counter) {                    // ball watchdog timer has
 
 byte BK_CountBallsInTrunk() {
   byte Balls = 0;
-  for (i=0; i<3; i++) {                               // check how many balls are on the ball ramp
+  for (byte i=0; i<3; i++) {                          // check how many balls are on the ball ramp
     if (QuerySwitch(17+i)) {
       if (Balls < i) {
         return 5;}                                    // send warning
@@ -859,11 +859,11 @@ void BK_GameMain(byte Event) {                        // game switch events
     if (BK_LeftMysteryTimer) {                        // left mystery active?
       //StopPlayingMusic();
       PlaySound(52, "BK_E19.snd");
-      ByteBuffer = ((byte)(TimerValue[BK_LeftMysteryTimer])/2.56);
-      if (ByteBuffer < 20) {
+      byte Buffer = ((byte)(TimerValue[BK_LeftMysteryTimer])/2.56);
+      if (Buffer < 20) {
         Points[Player] += Multiballs * 20000;}        // at least 20000 points
       else {
-        Points[Player] += Multiballs * ByteBuffer * 1000;} // or more
+        Points[Player] += Multiballs * Buffer * 1000;} // or more
       KillTimer(BK_LeftMysteryTimer);                 // turn off left mystery
       BK_LeftMysteryTimer = 0;
       RemoveBlinkLamp(14);}                           // stop the blinking of the mystery lamp
@@ -1091,7 +1091,7 @@ void BK_BallEnd(byte Event) {
   if ((BallsInTrunk == 5)||(BallsInTrunk < 4-Multiballs-InLock)) {
     InLock = 0;
     if (Multiballs == 1) {
-      for (i=0; i<3; i++) {                           // check how many balls are on the ball ramp
+      for (byte i=0; i<3; i++) {                      // check how many balls are on the ball ramp
         if (QuerySwitch(41+i)) {
           InLock++;}}}
     if (APC_settings[DebugMode]) {
@@ -1143,7 +1143,7 @@ void BK_BallEnd(byte Event) {
         if (APC_settings[DebugMode]) {
           WriteUpper(" COUNT  ERROR ");}
         InLock = 0;
-        for (i=0; i<3; i++) {                         // check how many balls are on the ball ramp
+        for (byte i=0; i<3; i++) {                    // check how many balls are on the ball ramp
           if (QuerySwitch(41+i)) {
             InLock++;}}
         ActivateTimer(1000, 0, BK_BallEnd);}
@@ -1177,7 +1177,7 @@ void BK_CountBonus(byte Balls) {
     TurnOffLamp(BK_BonusLamp + 8 + BonusL);
     if (BonusL > 1) {
       TurnOnLamp(BK_BonusLamp + 7 + BonusL);}
-    for (i=48; i<57; i++) {
+    for (byte i=48; i<57; i++) {
       TurnOnLamp(i);}}
   Points[Player] += 1000;
   ShowPoints(Player);
@@ -1347,7 +1347,7 @@ void BK_BlinkInitial(byte State) {                    // blink actual character
     *(DisplayLower+21+4*ByteBuffer) = 0;
     State = 0;}
   else {
-    for (i=0; i<3; i++) {
+    for (byte i=0; i<3; i++) {
       *(DisplayLower+20+4*i) = DispPattern2[(EnterIni[i]-32)*2];
       *(DisplayLower+20+4*i+1) = DispPattern2[(EnterIni[i]-32)*2+1];}// restore the characters
     State = 1;}
@@ -1416,7 +1416,7 @@ void BK_HandleLock(byte Event) {
   UNUSED(Event);
   bool Flag = false;
   byte LockCount = 0;
-  for (i=0; i<3; i++) {                               // count balls in lock
+  for (byte i=0; i<3; i++) {                          // count balls in lock
     if (QuerySwitch(41+i)) {
       if (LockCount < i) {
         Flag = true;}                                 // set warning flag
@@ -1495,7 +1495,7 @@ void BK_HandleDropTargets(byte Event) {
       if (BK_DropHits[(Player-1)*4+Event] == 3) {     // target bank cleared 3 times?
         if (BK_PlayersExBalls[Player]) {              // if the player did already get an extra ball
           if ((BK_DropHits[(Player-1)*4] == 3) && (BK_DropHits[(Player-1)*4+1] == 3) && (BK_DropHits[(Player-1)*4+2] == 3) && (BK_DropHits[(Player-1)*4+3] == 3)) {
-            for (i=0; i<4; i++) {                     // for all drop target banks
+            for (byte i=0; i<4; i++) {                // for all drop target banks
               BK_DropHits[(Player-1)*4+i] = 0;        // clear their hits
               TurnOffLamp(BK_DropTargets[i]);         // and their arrow lamps
               TurnOffLamp(BK_DropTargets[i]+1);
@@ -1510,7 +1510,7 @@ void BK_HandleDropTargets(byte Event) {
         else {                                        // if the player didn't get an extra ball yet
           for (byte Counter=0 ; Counter < 2; Counter++) {
             if ((BK_DropHits[(Player-1)*4+Counter*2] == 3) && (BK_DropHits[(Player-1)*4+Counter*2+1] == 3)) {
-              for (i=0; i<2; i++) {                   // for all drop target banks
+              for (byte i=0; i<2; i++) {              // for all drop target banks
                 BK_DropHits[(Player-1)*4+Counter*2+i] = 0;  // clear their hits
                 TurnOffLamp(BK_DropTargets[Counter*2+i]);   // and their arrow lamps
                 TurnOffLamp(BK_DropTargets[Counter*2+i]+1);

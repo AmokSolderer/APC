@@ -64,8 +64,6 @@ const byte AllLamps[8] = {255,255,255,255,255,255,255,255};
 unsigned int IntBuffer;                               // general purpose buffer
 byte ByteBuffer = 0;                                  // general purpose buffer
 byte ByteBuffer2 = 0;                                 // general purpose buffer
-byte ByteBuffer3 = 0;                                 // general purpose buffer
-byte i = 0;                                           // general purpose counter
 byte IRQerror = 0;                                    // general purpose counter
 bool SDfound = false;                                 // SD card present?
 volatile byte SwitchStack = 0;                        // determines which switch events stack is active
@@ -293,13 +291,13 @@ void setup() {
   REG_PIOC_SODR = 4194304;                            // use Sel4
   MusicBuffer = (uint16_t *) malloc(2048 * 2);
   SoundBuffer = (uint16_t *) malloc(2048 * 2);
-  for (i=0; i<8; i++) {                               // initialize lamp status
+  for (byte i=0; i<8; i++) {                          // initialize lamp status
     LampColumns[i+1] = 0; }
-  for (i=0; i< 8; i++) {                              // initialize switch input pins
+  for (byte i=0; i< 8; i++) {                         // initialize switch input pins
     pinMode(54 + i, INPUT); }
   g_Sound.begin(44100, 100);                          // initialize sound
   Buffer32b = g_Sound.next;                           // fill first part of audio DAC buffer with silence
-  for (i=0; i<64; i++) {
+  for (byte i=0; i<64; i++) {
     *Buffer32b = 402655232;                           // 2048 on both channels and the channel 2 tag
     Buffer32b++;}
   g_Sound.next = Buffer32b;
@@ -334,13 +332,13 @@ void Init_System() {
     File Settings = SD.open(APC_set_file_name);       // look for system settings
     if (!Settings) {
       WriteLower("NO SYS SETTNGS  ");                   // if no system settings
-      for(i=0;i<64;i++) {                             // use default settings
+      for(byte i=0;i<64;i++) {                             // use default settings
         APC_settings[i] = APC_defaults[i];}}
     else {                                            // if system settings found
       Settings.read(&APC_settings, sizeof APC_settings);} // read them
     Settings.close();}
   else {                                              // no SD card?
-    for(i=0;i<64;i++) {                               // use default settings
+    for(byte i=0;i<64;i++) {                          // use default settings
       APC_settings[i] = APC_defaults[i];}}
   if (APC_settings[DisplayType] && APC_settings[DisplayType] != 3 && APC_settings[DisplayType] != 6) { // display with numerical lower row
     DispPattern2 = NumLower;}                         // use patterns for num displays
@@ -405,14 +403,14 @@ void Init_System2(byte State) {                       // state = 0 will restore 
     if (!Settings) {
       WriteLower("NO GAMESETTNGS  ");
       if (!State) {                                   // only initialize the settings in the boot up run
-        for(i=0;i<64;i++) {
+        for(byte i=0;i<64;i++) {
           game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
     else {
       Settings.read(&game_settings, sizeof game_settings);}
     Settings.close();}
   else {
     if (!State) {                                     // only initialize the settings in the boot up run
-      for(i=0;i<64;i++) {
+      for(byte i=0;i<64;i++) {
         game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
   digitalWrite(VolumePin,HIGH);                       // turn off the digital volume control
   if (APC_settings[SolenoidExp]) {                    // solenoid exp board selected?
@@ -877,7 +875,7 @@ void ReadMusic() {                                    // read music data from SD
   else {                                              // not enough data to fill one block
     byte Avail = MusicFile.available();               // determine how much is left
     MusicFile.read(MusicBuffer+MBP*128,Avail);        // read it
-    for (i=0; i<128-Avail/2; i++) {                   // fill the rest with silence
+    for (byte i=0; i<128-Avail/2; i++) {                   // fill the rest with silence
       *(MusicBuffer+MBP*128+Avail/2+i) = 2048;}
     MBP++;                                            // increase read pointer
     if (MBP == 16) {                                  // last block read?
@@ -898,7 +896,7 @@ void ReadSound() {                                    // same as above but for t
   else {
     byte Avail = SoundFile.available();
     SoundFile.read(SoundBuffer+SBP*128,Avail);
-    for (i=0; i<128-Avail/2; i++) {
+    for (byte i=0; i<128-Avail/2; i++) {
       *(SoundBuffer+SBP*128+Avail/2+i) = 2048;}
     SBP++;
     if (SBP == 16) {
@@ -1184,13 +1182,13 @@ void KillAllTimers() {
   BlockTimers = true;                                 // block IRQ timer handling to avoid interference
   ActiveTimers = 0;
   TimerStack = 0;
-  for (i=1; i<64; i++) {                              // check all 64 timers
+  for (byte i=1; i<64; i++) {                              // check all 64 timers
     TimerValue[i] = 0;
     TimerArgument[i] = 0;
     TimerEvent[i] = 0;}
   for (byte x=0; x<2; x++) {
     TimerEvents[x] = 0;
-    for (i=0; i<30; i++) {
+    for (byte i=0; i<30; i++) {
       RunOutTimers[x][i] = 0;}}
   BlockTimers = false;}                               // release the IRQ block
 
@@ -1287,7 +1285,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
     if (Player) {                                     // player display?
       if (Player < 3) {                               // upper row?
         Player--;
-        for (i=0;i<7;i++) {                           // for all digits
+        for (byte i=0;i<7;i++) {                      // for all digits
           if (*(DisplayText+i) & 128) {               // comma set?
             *(DisplayUpper+2+16*Player+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
             *(DisplayUpper+3+16*Player+2*i) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
@@ -1296,7 +1294,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
             *(DisplayUpper+3+16*Player+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}}
       else {                                          // lower row
         Player = Player - 3;
-        for (i=0;i<7;i++) {                           // for all digits
+        for (byte i=0;i<7;i++) {                      // for all digits
           if (*(DisplayText+i) & 128) {               // comma set?
             *(DisplayLower+2+16*Player+2*i) = 1 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)];
             *(DisplayLower+3+16*Player+2*i) = 8 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
@@ -1316,7 +1314,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
   case 3:                                             // Sys11 BK2K
   case 6:                                             // DE 2x16
     if (Player == 1) {
-      for (i=0;i<16;i++) {                            // for all digits
+      for (byte i=0;i<16;i++) {                       // for all digits
         if (*(DisplayText+i) & 128) {                 // comma set?
           *(DisplayUpper+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
           *(DisplayUpper+2*i+1) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
@@ -1324,7 +1322,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
           *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
           *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}}
     else {
-      for (i=0;i<16;i++) {                            // for all digits
+      for (byte i=0;i<16;i++) {                       // for all digits
         if (*(DisplayText+i) & 128) {                 // comma set?
           *(DisplayLower+2*i) = 1 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)];
           *(DisplayLower+2*i+1) = 8 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
@@ -1335,7 +1333,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
   case 4:                                             // Sys11 Taxi
   case 5:                                             // Sys11 Riverboat Gambler
     if (Player == 1) {
-      for (i=0;i<16;i++) {                            // for all digits
+      for (byte i=0;i<16;i++) {                       // for all digits
         if (*(DisplayText+i) & 128) {                 // comma set?
           *(DisplayUpper+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
           *(DisplayUpper+2*i+1) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
@@ -1343,7 +1341,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
           *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
           *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}}
     else {
-      for (i=0;i<16;i++) {                            // for all digits
+      for (byte i=0;i<16;i++) {                       // for all digits
         if (*(DisplayText+i) & 128) {                 // comma set?
           *(DisplayLower+2*i) = 1 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)];}
         else {
@@ -1353,11 +1351,11 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
     if (Player) {                                     // player display?
       if (Player < 3) {                               // upper row?
         Player--;
-        for (i=0;i<6;i++) {                           // for all digits
+        for (byte i=0;i<6;i++) {                      // for all digits
           *(DisplayLower+16*Player+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+16*Player+2*i));}}
       else {                                          // lower row
         Player = Player - 3;
-        for (i=0;i<6;i++) {                           // for all digits
+        for (byte i=0;i<6;i++) {                      // for all digits
           *(DisplayLower+16*Player+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+16*Player+2*i));}}}
     else {                                            // credit display
       *(DisplayLower+28) = ConvertNumUpper((byte) *(DisplayText)-48,(byte) *(DisplayLower+28));
@@ -1369,7 +1367,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
     if (Player) {                                     // player display?
       if (Player < 3) {                               // upper row?
         Player--;
-        for (i=0;i<7;i++) {                           // for all digits
+        for (byte i=0;i<7;i++) {                      // for all digits
           if (*(DisplayText+i) & 128) {               // comma set?
             *(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) (*(DisplayText+i) & 127)-48,(byte) *(DisplayLower+2+16*Player+2*i));
             *(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) | 1;}
@@ -1378,7 +1376,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
             *(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) & 254;}}}
       else {                                          // lower row
         Player = Player - 3;
-        for (i=0;i<7;i++) {                           // for all digits
+        for (byte i=0;i<7;i++) {                      // for all digits
           if (*(DisplayText+i) & 128) {               // comma set?
             *(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) (*(DisplayText+i) & 127)-48,(byte) *(DisplayLower+2+16*Player+2*i));
             *(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) | 128;}
@@ -1393,16 +1391,16 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
 
 void WriteUpper(const char* DisplayText) {            
   if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-    for (i=0; i<16; i++) {
+    for (byte i=0; i<16; i++) {
       *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
   else {
     if (APC_settings[DisplayType] > 6) {              // numbers only type display
-      for (i=0;i<7;i++) {                             // for all digits
+      for (byte i=0;i<7;i++) {                        // for all digits
         *(DisplayLower+2+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+2*i));
         *(DisplayLower+18+2*i) = ConvertNumUpper((byte) *(DisplayText+7+i)-48,(byte) *(DisplayLower+18+2*i));}}
     else {                                            // Sys11 display with credit
-      for (i=0; i<7; i++) {
+      for (byte i=0; i<7; i++) {
         *(DisplayUpper+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
         *(DisplayUpper+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
         *(DisplayUpper+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
@@ -1410,16 +1408,16 @@ void WriteUpper(const char* DisplayText) {
 
 void WriteLower(const char* DisplayText) {
   if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-    for (i=0; i<16; i++) {
+    for (byte i=0; i<16; i++) {
       *(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
   else {
     if (APC_settings[DisplayType] > 6) {              // numbers only type display
-      for (i=0;i<7;i++) {                             // for all digits
+      for (byte i=0;i<7;i++) {                        // for all digits
         *(DisplayLower+2+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+2*i));
         *(DisplayLower+18+2*i) = ConvertNumLower((byte) *(DisplayText+7+i)-48,(byte) *(DisplayLower+18+2*i));}}
     else {                                            // Sys11 display with credit
-      for (i=0; i<7; i++) {
+      for (byte i=0; i<7; i++) {
         *(DisplayLower+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
         *(DisplayLower+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
         *(DisplayLower+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
@@ -1427,11 +1425,11 @@ void WriteLower(const char* DisplayText) {
 
 void WriteUpper2(const char* DisplayText) {
   if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-    for (i=0; i<16; i++) {
+    for (byte i=0; i<16; i++) {
       *(DisplayUpper2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
   else {
-    for (i=0; i<7; i++) {
+    for (byte i=0; i<7; i++) {
       *(DisplayUpper2+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper2+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
       *(DisplayUpper2+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
@@ -1439,11 +1437,11 @@ void WriteUpper2(const char* DisplayText) {
 
 void WriteLower2(const char* DisplayText) {
   if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-    for (i=0; i<16; i++) {
+    for (byte i=0; i<16; i++) {
       *(DisplayLower2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
   else {
-    for (i=0; i<7; i++) {
+    for (byte i=0; i<7; i++) {
       *(DisplayLower2+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower2+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
       *(DisplayLower2+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
@@ -1457,7 +1455,7 @@ void ScrollUpper(byte Step) {                         // call with Step = 0 and 
       Timer = 0;}}
   else {                                              // normal call
     if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-      for (i=0; i<30; i++) {
+      for (byte i=0; i<30; i++) {
         DisplayUpper[i] = DisplayUpper[i+2];}
       DisplayUpper[30] = DisplayUpper2[2*Step];       // add the corresponding char of DisplayUpper2
       DisplayUpper[31] = DisplayUpper2[2*Step+1];
@@ -1465,11 +1463,11 @@ void ScrollUpper(byte Step) {                         // call with Step = 0 and 
     else {                                            // dont use columns 0 and 8 as they are reserved for the credit display
       if (!Step) {
         Step++;}
-      for (i=2; i<14; i++) {                          // scroll display 1
+      for (byte i=2; i<14; i++) {                     // scroll display 1
         DisplayUpper[i] = DisplayUpper[i+2];}
       DisplayUpper[14] = DisplayUpper[18];            // add put the leftmost char of the display 2 to the end
       DisplayUpper[15] = DisplayUpper[19];
-      for (i=18; i<30; i++) {                         // scroll display 2
+      for (byte i=18; i<30; i++) {                    // scroll display 2
         DisplayUpper[i] = DisplayUpper[i+2];}
       DisplayUpper[30] = DisplayUpper2[2*Step];       // add the corresponding char of DisplayUpper2
       DisplayUpper[31] = DisplayUpper2[2*Step+1];
@@ -1491,14 +1489,14 @@ void AddScrollUpper(byte Step) {                      // call with Step = 0 and 
     if (!Step) {
       Step++;}
     if (Step > 8) {                                   // scroll into the left display?
-      for (i=0; i<2*(Step-9);i++) {                   // for all characters in the left display that have to be scrolled
+      for (byte i=0; i<2*(Step-9);i++) {                   // for all characters in the left display that have to be scrolled
         DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];} // scroll them
       DisplayUpper[14] = DisplayUpper[18];            // get the leftmost character of the right display
       DisplayUpper[15] = DisplayUpper[19];
-      for (i=0; i<12; i++) {                          // scroll the right display by 6 characters
+      for (byte i=0; i<12; i++) {                     // scroll the right display by 6 characters
         DisplayUpper[18+i] = DisplayUpper[20+i];}}
     else {                                            // scroll only the right display
-      for (i=0; i<2*(Step-1); i++) {
+      for (byte i=0; i<2*(Step-1); i++) {
         DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];}}
     DisplayUpper[30] = DisplayUpper2[2*Step];         // fill the rightmost character of the right display
     DisplayUpper[31] = DisplayUpper2[2*Step+1];
@@ -1520,12 +1518,12 @@ void ScrollLower(byte Step) {                         // call with Step = 0 and 
     if (!Step) {
       Step++;}
     if (Step < 8) {                                   // do display 3 first
-      for (i=2; i<14; i++) {                          // scroll display 3
+      for (byte i=2; i<14; i++) {                     // scroll display 3
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[14] = DisplayLower2[2*Step];       // add the corresponding char of DisplayLower2
       DisplayLower[15] = DisplayLower2[2*Step+1];}
     else {                                            // do display 4
-      for (i=18; i<30; i++) {                         // scroll display 4
+      for (byte i=18; i<30; i++) {                    // scroll display 4
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[30] = DisplayLower2[2*Step+2];     // add the corresponding char of DisplayLower2
       DisplayLower[31] = DisplayLower2[2*Step+3];}
@@ -1543,7 +1541,7 @@ void ScrollLower2(byte Step) {                        // call with Step = 0 and 
       Timer = 0;}}
   else {                                              // normal call
     if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-      for (i=0; i<30; i++) {
+      for (byte i=0; i<30; i++) {
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[30] = DisplayLower2[2*Step];       // add the corresponding char of DisplayLower2
       DisplayLower[31] = DisplayLower2[2*Step+1];
@@ -1551,11 +1549,11 @@ void ScrollLower2(byte Step) {                        // call with Step = 0 and 
     else {                                            // not a 2x16 char type
       if (!Step) {
         Step++;}
-      for (i=2; i<14; i++) {                          // scroll display 1
+      for (byte i=2; i<14; i++) {                          // scroll display 1
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[14] = DisplayLower[18];            // add put the leftmost char of the display 2 to the end
       DisplayLower[15] = DisplayLower[19];
-      for (i=18; i<30; i++) {                         // scroll display 2
+      for (byte i=18; i<30; i++) {                         // scroll display 2
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[30] = DisplayLower2[2*Step];       // add the corresponding char of DisplayLower2
       DisplayLower[31] = DisplayLower2[2*Step+1];
@@ -1580,7 +1578,7 @@ void ShowMessage(byte Seconds) {                      // switch to the second di
 
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
   if ((Solenoid < 23 && !SolRecycleTimers[Solenoid-1]) || (Solenoid < 25 && Solenoid > 22)) { // consider recycling time for A bank solenoids only
-    SolChange = false;                                  // block IRQ solenoid handling
+    SolChange = false;                                // block IRQ solenoid handling
     if (Solenoid > 8) {                               // does the solenoid not belong to the first latch?
       if (Solenoid < 17) {                            // does it belong to the second latch?
         SolBuffer[1] |= 1<<(Solenoid-9);}             // latch counts from 0
@@ -1598,7 +1596,7 @@ void DelaySolenoid(byte Solenoid) {                   // activate solenoid after
   ActivateSolenoid(0, Solenoid);}
 
 void ReleaseAllSolenoids() {
-  for (i=0; i< 4; i++) {                              // clear all solenoid buffers
+  for (byte i=0; i< 4; i++) {                         // clear all solenoid buffers
     SolBuffer[i] = 0;}
   if (APC_settings[SolenoidExp]) {                    // sol exp board selected
     WriteToHwExt(0, 128+4);
@@ -2561,10 +2559,10 @@ void RestoreDefaults(bool change) {                   // restore the default set
   if (change) {                                       // if the start button has been pressed
     AppByte2 = 1;                                     // set the change indicator
     if (SettingsPointer == APC_settings) {            // system settings mode?
-      for(i=0;i<64;i++) {                             // change all settings to their default values
+      for(byte i=0;i<64;i++) {                        // change all settings to their default values
         *(SettingsPointer+i) = APC_defaults[i];}}
     else {                                            // game settings mode
-      for(i=0;i<64;i++) {                             // change all settings to their default values
+      for(byte i=0;i<64;i++) {                        // change all settings to their default values
         *(SettingsPointer+i) = *(GameDefinition.GameDefaultsPointer+i);}}
     WriteLower("SETTNGS DONE    ");}
   else {
@@ -2655,12 +2653,12 @@ byte HandleHighScores(unsigned int Score) {
   byte Position = 0;
   while (HallOfFame.Scores[Position] > Score) {       // check to which position of the highscore list it belongs
     Position++;}
-  for (i=3; i>Position; i--) {                        // move all lower highscores down
+  for (byte i=3; i>Position; i--) {                   // move all lower highscores down
     HallOfFame.Scores[i] = HallOfFame.Scores[i-1];}
-  for (i=9; i>Position*3; i--) {
+  for (byte i=9; i>Position*3; i--) {
     HallOfFame.Initials[i+2] = HallOfFame.Initials[i-1];}
   HallOfFame.Scores[Position] = Score;                // and include the new highscore to the list
-  for (i=0; i<3; i++) {
+  for (byte i=0; i<3; i++) {
     HallOfFame.Initials[Position*3+i] = EnterIni[i];} // copy initials
   if (SDfound) {
     SD.remove(GameDefinition.HighScoresFileName);

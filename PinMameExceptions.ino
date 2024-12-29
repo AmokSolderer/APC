@@ -534,7 +534,7 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
             char FileName[13] = "0_07_004.snd";       // this wav is combined version from 67_001 to 67_003
             PlaySound(51, (char*) FileName);}}}
       else if (Command == 9) {                        // 0x09 Bonus
-        if (!SoundSeries[1]) {
+        if (!SoundSeries[1]) {                        // ignore subsequent calls
           SoundSeries[1] = 1;
           PlaySound(51, "0_09.snd");}}                // this wav is combined version from all bonus pitches
       else if (Command == 10) {                       // 0x0a Whirling background

@@ -143,7 +143,7 @@ void USB_AttractMode() {                              // Attract Mode
     analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
   else {
     digitalWrite(VolumePin,HIGH);}                    // turn off the digital volume control
-  for (i=0; i<8; i++) {                               // turn off all lamps
+  for (byte i=0; i<8; i++) {                          // turn off all lamps
     LampColumns[i] = 0;}
   LampPattern = LampColumns;
   Switch_Pressed = USB_SwitchHandler;
@@ -1152,7 +1152,7 @@ void USB_ResetWaitSoundTimers(byte Dummy) {           // reset the timer and pla
     if (USB_WaitingSoundFiles[0][0] & 1) {            // sound for channel 2 waiting?
       PlaySound(50, (char*) USB_WaitingSoundFiles+1);
       if (USB_WaitingSoundFiles[0][0] & 2) {          // looping active?
-        for (i=0; i<12; i++) {
+        for (byte i=0; i<12; i++) {
           USB_RepeatSound[i] = USB_WaitingSoundFiles[0][1+i];}
         QueueNextSound(USB_RepeatSound);}
       else {
@@ -1160,17 +1160,17 @@ void USB_ResetWaitSoundTimers(byte Dummy) {           // reset the timer and pla
     else {                                            // waiting sound is for channel 1
       PlayMusic(50, (char*) USB_WaitingSoundFiles+1);
       if (USB_WaitingSoundFiles[0][0] & 2) {          // looping active?
-        for (i=0; i<12; i++) {
+        for (byte i=0; i<12; i++) {
           USB_RepeatMusic[i] = USB_WaitingSoundFiles[0][1+i];}
         QueueNextMusic(USB_RepeatMusic);}
       else {
         AfterMusic = 0;}}
     if (USB_WaitingSoundFiles[1][1]) {                // any sound waiting at stack position 2?
-      for (i=0; i<13; i++) {                          // if yes move it to position 1 and clear position 2
+      for (byte i=0; i<13; i++) {                     // if yes move it to position 1 and clear position 2
         USB_WaitingSoundFiles[0][i] = USB_WaitingSoundFiles[1][i];
         USB_WaitingSoundFiles[1][i] = 0;}}
     else {                                            // no sound waiting at stack position 2
-      for (i=0; i<13; i++) {                          // clear stack position 1
+      for (byte i=0; i<13; i++) {                     // clear stack position 1
         USB_WaitingSoundFiles[0][i] = 0;}}
     USB_WaitSoundTimer = ActivateTimer(15, 0, USB_ResetWaitSoundTimers);} // start a new timer
   else {

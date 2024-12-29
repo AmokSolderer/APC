@@ -503,7 +503,7 @@ void PB_AttractDisplayCycle(byte Step) {
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
     WriteLower2("                ");
-    for (i=1; i<=NoPlayers; i++) {                    // display the points of all active players
+    for (byte i=1; i<=NoPlayers; i++) {               // display the points of all active players
       ShowNumber(8*i-1, Points[i]);}
     Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);
@@ -512,7 +512,7 @@ void PB_AttractDisplayCycle(byte Step) {
   case 3:                                             // Show highscores
     WriteUpper2("1>     2>     ");
     WriteLower2("              ");
-    for (i=0; i<3; i++) {
+    for (byte i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
       *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
@@ -526,7 +526,7 @@ void PB_AttractDisplayCycle(byte Step) {
   case 4:
     WriteUpper2("3>     4>     ");
     WriteLower2("              ");
-    for (i=0; i<3; i++) {
+    for (byte i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
       *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
