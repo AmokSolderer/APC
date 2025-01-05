@@ -81,8 +81,9 @@ Enter the game settings and do your changes. When you're done, just select menu 
 | 11 | Backbox Lamps | 0| Column 1 | X | Backbox lamps are in lamp column 1 |
 | 11 |  | 1 | Column 8 | - | Backbox lamps are in lamp column 8 |
 | 11 |  | 2 | None | - | game has no controlled backbox lamps |
-| 12 | Restore Default | - | - | - | No setting - restores the default settings |
-| 13 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 12 | Connect Startup | - | - | No | Bool setting - If active, then the connection type is not set by setting 4 (Connect Type) but by the state of the Up/Down switch during startup (and when leaving the settings). Switch in Up state selects the onboard Pi, otherwise the USB programming port |
+| 13 | Restore Default | - | - | - | No setting - restores the default settings |
+| 14 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## Game Settings in Remote Control mode
 

@@ -165,6 +165,7 @@ const unsigned long SwitchMask[8] = {65536, 16777216, 8388608, 4194304, 64, 16, 
 uint16_t SwDrvMask = 2;                               // mask for switch row select
 byte SolBuffer[4];                                    // stores the state of the solenoid latches + solenoid_exp board
 bool OnBoardCom = false;                              // on board Pi detected?
+byte ComState = 0;                                    // current status of the com interface
 
 struct SettingTopic {                                 // one topic of a list of settings
   char Text[17];                                      // display text
@@ -187,7 +188,7 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 #define ActiveGame  1                                 // Select the active game
 #define NofBalls  2                                   // Balls per game
 #define FreeGame  3                                   // Free game mode?
-#define ConnType  4                                   // Remote control mode?
+#define ConnType  4                                   // Remote control mode by onboard PI or USB?
 #define DimInserts  5                                 // Reduce lighting time of playfield lamps by 50%
 #define Volume  6                                     // Volume of the speaker
 #define LEDsetting  7                                 // Setting for the APC_LED_EXP board
@@ -195,6 +196,7 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 #define SolenoidExp 9                                 // Solenoid expander present?
 #define DebugMode  10                                 // debug mode enabled?
 #define BackboxLamps 11                               // Column of backbox lamps
+#define ConnectStartup 12                             // Select connection type during startup
 
 const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{"   TUTORIAL     "}};
 const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
@@ -202,7 +204,7 @@ const char TxTDisplaySelect[9][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "},{"        NONE    "}};
 
-const struct SettingTopic APC_setList[15] = {
+const struct SettingTopic APC_setList[16] = {
     {"DISPLAY TYPE    ",HandleDisplaySetting,&TxTDisplaySelect[0][0],0,8},
     {" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
     {" NO OF  BALLS   ",HandleNumSetting,0,1,5},
@@ -215,6 +217,7 @@ const struct SettingTopic APC_setList[15] = {
     {"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
     {"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,2},
+    {"CONNECTSTARTUP  ",HandleBoolSetting,0,0,0},
     {"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS  ",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
@@ -331,8 +334,8 @@ void Init_System() {
   if (SDfound) {                                      // SD card found?
     File Settings = SD.open(APC_set_file_name);       // look for system settings
     if (!Settings) {
-      WriteLower("NO SYS SETTNGS  ");                   // if no system settings
-      for(byte i=0;i<64;i++) {                             // use default settings
+      WriteLower("NO SYS SETTNGS  ");                 // if no system settings
+      for(byte i=0;i<64;i++) {                        // use default settings
         APC_settings[i] = APC_defaults[i];}}
     else {                                            // if system settings found
       Settings.read(&APC_settings, sizeof APC_settings);} // read them
@@ -368,6 +371,16 @@ void Init_System() {
   Init_System2(0);}
 
 void Init_System2(byte State) {                       // state = 0 will restore the settings if no card is found
+  if (APC_settings[ActiveGame] == 3) {                // Remote Control selected?
+    if (APC_settings[ConnectStartup]) {               // use Up/Down switch to select com interface?
+      if (QuerySwitch(73)) {                          // switch pressed?
+        ComState = 1;}                                // use onboard Pi
+      else {                                          // switch not pressed
+        ComState = 2;}}                               // use USB
+    else {                                            // select by setting
+      ComState = APC_settings[ConnType];}}
+  else {
+    ComState = 0;}
   switch(APC_settings[ActiveGame]) {                  // init calls for all valid games
   case 0:
     BC_init();
@@ -855,8 +868,8 @@ void loop() {
             AfterSoundPending = 0;
             if (AfterSound) {
               AfterSound(0);}}}}}}
-  if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) {  // Remote mode?
-    if (APC_settings[ConnType] == 1) {                // onboard Pi selected?
+  if (ComState) {                                     // Remote mode?
+    if (ComState == 1) {                              // onboard Pi selected?
       if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {  // onboard com off and Pi detected?
         Serial3.begin(115200);                        // needed for onboard serial communication
         OnBoardCom = true;}}
@@ -1182,7 +1195,7 @@ void KillAllTimers() {
   BlockTimers = true;                                 // block IRQ timer handling to avoid interference
   ActiveTimers = 0;
   TimerStack = 0;
-  for (byte i=1; i<64; i++) {                              // check all 64 timers
+  for (byte i=1; i<64; i++) {                         // check all 64 timers
     TimerValue[i] = 0;
     TimerArgument[i] = 0;
     TimerEvent[i] = 0;}
@@ -1549,11 +1562,11 @@ void ScrollLower2(byte Step) {                        // call with Step = 0 and 
     else {                                            // not a 2x16 char type
       if (!Step) {
         Step++;}
-      for (byte i=2; i<14; i++) {                          // scroll display 1
+      for (byte i=2; i<14; i++) {                     // scroll display 1
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[14] = DisplayLower[18];            // add put the leftmost char of the display 2 to the end
       DisplayLower[15] = DisplayLower[19];
-      for (byte i=18; i<30; i++) {                         // scroll display 2
+      for (byte i=18; i<30; i++) {                    // scroll display 2
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[30] = DisplayLower2[2*Step];       // add the corresponding char of DisplayLower2
       DisplayLower[31] = DisplayLower2[2*Step+1];
@@ -2031,7 +2044,7 @@ void ShowNumber(byte Position, unsigned int Number) { // write a number into the
 
 void ShowAllPoints(byte Dummy) {                      // just a dummy event to access it via timer
   UNUSED(Dummy);
-  WriteUpper("                ");                       // erase display
+  WriteUpper("                ");                     // erase display
   WriteLower("                ");
   for (byte i=1; i<=NoPlayers; i++) {                 // display the points of all active players
     ShowPoints(i);}}
@@ -2228,7 +2241,7 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
         KillTimer(Timer);
         Timer = 0;}}}}
 
-void StrobeLights(byte Time) {                       // switch between no lamps and normal lamp pattern (0-> stop, >2 -> strobe lamps with this pulse length
+void StrobeLights(byte Time) {                        // switch between no lamps and normal lamp pattern (0-> stop, >2 -> strobe lamps with this pulse length
   static byte Timer = 0;
   static byte PulseLength;
   if (Time) {

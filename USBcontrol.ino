@@ -127,8 +127,8 @@ struct GameDef USB_GameDefinition = {
 void USB_init() {
   Switch_Pressed = DummyProcess;
   GameDefinition = USB_GameDefinition;                // read the game specific settings and highscores
-  if (APC_settings[ConnType]) {
-    if (APC_settings[ConnType] == 1) {
+  if (ComState) {
+    if (ComState == 1) {
       OnBoardCom = false;}
     else {
       Serial.begin(115200);                           // needed for USB and serial communication
@@ -154,8 +154,8 @@ void USB_AttractMode() {                              // Attract Mode
     USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
   if (game_settings[USB_Watchdog]) {                  // watchdog enabled?
     USB_WatchdogHandler(1);}                          // initiate reset and start watchdog
-  if (APC_settings[ConnType]) {
-    if (APC_settings[ConnType] == 1) {
+  if (ComState) {
+    if (ComState == 1) {
       WriteUpper("BOOTING  LISY   ");}
     else {
       WriteUpper("  USB  CONTROL  ");}}
@@ -262,26 +262,26 @@ void USB_Testmode(byte Dummy) {                       // enter system settings i
   USB_WatchdogHandler(3);                             // stop USB watchdog
   for (byte i=0; i<5; i++) {
     USB_DisplayProtocol[i] = 6;}                      // use ASCII protocol for displays
-  if (APC_settings[ConnType] == 2) {                  // USB mode selected?
+  if (ComState == 2) {                                // USB mode selected?
     Serial.end();}
-  else if ((APC_settings[ConnType] == 1) && OnBoardCom) { // onboard Pi selected and detected?
+  else if ((ComState == 1) && OnBoardCom) {           // onboard Pi selected and detected?
     Serial3.end();}
   Settings_Enter();}
 
 byte USB_ReadByte() {                                 // read a byte from the selected interface
-  if (APC_settings[ConnType] == 1) {                  // onboard PI selected?
+  if (ComState == 1) {                                // onboard PI selected?
     return Serial3.read();}
   else {                                              // USB selected
     return Serial.read();}}
 
 void USB_WriteByte(byte Data) {                       // write a byte to the selected interface
-  if (APC_settings[ConnType] == 1) {                  // onboard PI selected?
+  if (ComState == 1) {                                // onboard PI selected?
     Serial3.write(Data);}
   else {                                              // USB selected
     Serial.write(Data);}}
 
 byte USB_Available() {
-  if (APC_settings[ConnType] == 1) {                  // onboard PI selected?
+  if (ComState == 1) {                                // onboard PI selected?
     if (OnBoardCom) {                                 // onboard Pi detected?
       return Serial3.available();}
     else {
@@ -379,7 +379,7 @@ void USB_SerialCommand() {
     USB_WriteByte((byte) 0);
     break;
   case 1:                                             // get firmware version
-    if (APC_settings[ConnType] == 1) {
+    if (ComState == 1) {
       Serial3.print(APC_Version);}
     else {
       Serial.print(APC_Version);}
