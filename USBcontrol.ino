@@ -438,7 +438,8 @@ void USB_SerialCommand() {
       TurnOffLamp(USB_SerialBuffer[0]);}
     break;
   case 19:                                            // get number of modern lights
-    USB_WriteByte((byte) 0);
+    USB_WriteByte((byte) 0);                          // APC does not support MPF's modern lights, use Facecandy to control LEDs
+    USB_WriteByte((byte) 0);                          // MPF seems to expect two bytes as an answer (since Lisy API 0.10)
     break;
   case 20:                                            // get status of solenoid
     if (USB_SerialBuffer[0] < 26) {                   // max 24 solenoids
