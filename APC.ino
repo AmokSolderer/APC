@@ -807,12 +807,13 @@ void loop() {
     ErrorHandler(IRQerror,0,0);
     IRQerror = 0;}
   if (SwEvents[SwitchStack]) {                        // switch event pending?
-    SwitchStack = 1-SwitchStack;                      // switch to the other stack to avoid a conflict with the interrupt
-    while (SwEvents[1-SwitchStack]) {                 // as long as there are switch events to process
-      if (ChangedSw[1-SwitchStack][c]) {              // pending switch event found?
-        SwEvents[1-SwitchStack]--;                    // decrease number of pending events
-        i = ChangedSw[1-SwitchStack][c];              // buffer the switch number
-        ChangedSw[1-SwitchStack][c] = 0;              // clear the event
+    byte SwitchBuffer = SwitchStack;
+    SwitchStack = 1 - SwitchBuffer;                   // switch to the other stack to avoid a conflict with the interrupt
+    while (SwEvents[SwitchBuffer]) {                  // as long as there are switch events to process
+      if (ChangedSw[SwitchBuffer][c]) {               // pending switch event found?
+        SwEvents[SwitchBuffer]--;                     // decrease number of pending events
+        i = ChangedSw[SwitchBuffer][c];               // buffer the switch number
+        ChangedSw[SwitchBuffer][c] = 0;               // clear the event
         if (QuerySwitch(i)) {                         // process SET switches
           Switch_Pressed(i);}                         // access the set switch handler
         else {                                        // process released switches
@@ -820,22 +821,25 @@ void loop() {
       if (c < 29) {                                   // number of pending events still in the allowed range?
         c++;}                                         // increase counter
       else {
-        if (c > 29) {
-          ErrorHandler(21,0,c);}}}}
+        ErrorHandler(21,0,c);}}}
   c = 0;                                              // initialize counter
   if (TimerEvents[TimerStack]) {                      // timer event pending?
-    TimerStack = 1-TimerStack;                        // switch to the other stack to avoid a conflict with the interrupt
-    while (TimerEvents[1-TimerStack]) {               // as long as there are timer events to process
-      if (RunOutTimers[1-TimerStack][c]) {            // number of run out timer found?
-        TimerEvents[1-TimerStack]--;                  // decrease number of pending events
-        i = RunOutTimers[1-TimerStack][c];            // buffer the timer number
+    byte StackBuffer = TimerStack;
+    TimerStack = 1-StackBuffer;                       // switch to the other stack to avoid a conflict with the interrupt
+    while (TimerEvents[StackBuffer]) {                // as long as there are timer events to process
+      if (RunOutTimers[StackBuffer][c]) {             // number of run out timer found?
+        TimerEvents[StackBuffer]--;                   // decrease number of pending events
+        i = RunOutTimers[StackBuffer][c];             // buffer the timer number
         void (*TimerBuffer)(byte) = TimerEvent[i];    // Buffer the event for this timer
         if (!TimerBuffer) {                           // TimerEvent must be specified
           ErrorHandler(20,0,c);}
-        RunOutTimers[1-TimerStack][c] = 0;            // delete the timer from the list
+        RunOutTimers[StackBuffer][c] = 0;             // delete the timer from the list
         TimerEvent[i] = 0;                            // delete the event to show the timer as free
         TimerBuffer(TimerArgument[i]);}               // call event procedure
-      c++;}}                                          // increase search counter
+      if (c < 29) {                                   // number of pending events still in the allowed range?
+        c++;}                                         // increase counter
+      else {
+        ErrorHandler(22,0,c);}}}                      // increase search counter
   if (SoundPrio) {                                    // which channel has to be processed first?
     if (!StopSound && (SBP != SoundIRpos)) {          // still sound data to read?
       ReadSound();}                                   // read it
