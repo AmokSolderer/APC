@@ -2268,6 +2268,11 @@ void PB_MballDisplay(byte Step) {
   static byte Timer = 0;
   byte *PB_MballDispUpper;
   byte *PB_MballDispLower;
+  if (Step == 100) {                                  // initial call?
+    if (Timer) {                                      // already running?
+      return;}                                        // ignore call
+    else {
+      Step = 24;}}
   if (Multiballs == 3) {
     PB_MballDispUpper = (byte* ) PB_3MballDispUpper;
     PB_MballDispLower = (byte* ) PB_3MballDispLower;}
@@ -2303,7 +2308,7 @@ void PB_Multiball(byte State) {                       // state machine for sound
     ActivateTimer(1200, 1, PB_Multiball);
     PB_EyeFlash(0);
     PB_ShowMessage(254);                              // block display messages
-    PB_MballDisplay(24);                              // show display animation
+    PB_MballDisplay(100);                             // show display animation
     PatPointer = PB_MultiballPat;                     // set the pointer to the lamp pattern
     FlowRepeat = 1;                                   // set the repetitions
     ActivateTimer(6100, 0, PB_Multiball_RestoreLamps) ; // call this when the lamp pattern has run out
