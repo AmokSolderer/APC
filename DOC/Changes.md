@@ -1,5 +1,12 @@
 # APC News and Changelog
 
+## TBD
+
+### New SW Version V1.03
+
+* Bugfix -> MPF boot issue fixed by changing the reply to USB command 19 (get number of modern lights) to a two bit response
+* New [System Setting 12](https://github.com/AmokSolderer/APC/blob/V01.03/DOC/Settings.md#system-settings) 'Connect Startup' added. This is for MPF users who also use PinMame. With this setting enabled you can decide whether to boot Lisy/PinMame from the onboard PI or boot to 'USB control' mode by the state of the Up/Down switch. Hence, changing the 'Connect Type' setting is no longer necessary.
+
 ## November 2024
 
 ### New SW Version V1.02
