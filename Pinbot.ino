@@ -442,6 +442,22 @@ void PB_AttractMode() {
   PB_AttractLampCycle(1);
   PB_AttractDisplayCycle(1);}
 
+void PB_ShowBigScores(byte Row, unsigned int Score) {
+  byte Buffer;
+  byte i = 0;
+  Score = Score / 1000000;
+  while (Score && i<3) {
+    Buffer = Score % 10;
+    Score = (Score-Buffer)/10;
+    Buffer = 32+2*Buffer;
+    if (Row) {
+      *(DisplayUpper2+2*(23-i)) = DispPattern1[Buffer];
+      *(DisplayUpper2+2*(23-i)+1) = DispPattern1[Buffer+1];}
+    else {
+      *(DisplayUpper2+2*(7-i)) = DispPattern1[Buffer];
+      *(DisplayUpper2+2*(7-i)+1) = DispPattern1[Buffer+1];}
+    i++;}}
+
 void PB_AttractDisplayCycle(byte Step) {
   static byte Count = 0;
   static byte Timer0 = 0;
@@ -510,29 +526,63 @@ void PB_AttractDisplayCycle(byte Step) {
     Step++;
     break;
   case 3:                                             // Show highscores
-    WriteUpper2("1>     2>     ");
-    WriteLower2("              ");
-    for (byte i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-      *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
-      *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
-    ShowNumber(23, HallOfFame.Scores[0]);
-    ShowNumber(31, HallOfFame.Scores[1]);
+    if (APC_settings[DisplayType]) {                  // Standard display
+      WriteUpper2("1>     2>     ");
+      WriteLower2("              ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+        *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+        *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
+        *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
+      ShowNumber(23, HallOfFame.Scores[0]);
+      ShowNumber(31, HallOfFame.Scores[1]);}
+    else {                                            // 4Alpha + Credit
+      WriteUpper2("1>            ");
+      WriteLower2("2>            ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+        *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+        *(DisplayLower2+6+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
+        *(DisplayLower2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
+      ShowNumber(15, HallOfFame.Scores[0]);
+      ShowNumber(31, HallOfFame.Scores[1]);
+      if (HallOfFame.Scores[0] >= 10000000) {         // expand scores > 10M to the left display
+        unsigned int Buffer = HallOfFame.Scores[0] / 10000000;
+        ShowNumber(7, Buffer);}
+      if (HallOfFame.Scores[1] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[1] / 10000000;
+        ShowNumber(23, Buffer);}}
     Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);
     Step++;
     break;
   case 4:
-    WriteUpper2("3>     4>     ");
-    WriteLower2("              ");
-    for (byte i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-      *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
-      *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
-    ShowNumber(23, HallOfFame.Scores[2]);
-    ShowNumber(31, HallOfFame.Scores[3]);
+    if (APC_settings[DisplayType]) {
+      WriteUpper2("3>     4>     ");
+      WriteLower2("              ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+        *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+        *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
+        *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
+      ShowNumber(23, HallOfFame.Scores[2]);
+      ShowNumber(31, HallOfFame.Scores[3]);}
+    else {
+      WriteUpper2("3>            ");
+      WriteLower2("4>            ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+        *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+        *(DisplayLower2+6+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
+        *(DisplayLower2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
+      ShowNumber(15, HallOfFame.Scores[2]);
+      ShowNumber(31, HallOfFame.Scores[3]);
+      if (HallOfFame.Scores[0] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[2] / 10000000;
+        ShowNumber(7, Buffer);}
+      if (HallOfFame.Scores[1] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[3] / 10000000;
+        ShowNumber(23, Buffer);}}
     Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);
     Step = 1;
