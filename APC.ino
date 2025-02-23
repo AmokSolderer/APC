@@ -808,7 +808,10 @@ void loop() {
     IRQerror = 0;}
   if (SwEvents[SwitchStack]) {                        // switch event pending?
     byte SwitchBuffer = SwitchStack;
-    SwitchStack = 1 - SwitchBuffer;                   // switch to the other stack to avoid a conflict with the interrupt
+    if (SwitchBuffer) {                               // switch to the other stack to avoid a conflict with the interrupt
+      SwitchStack = 0;}
+    else {
+      SwitchStack = 1;}
     while (SwEvents[SwitchBuffer]) {                  // as long as there are switch events to process
       if (ChangedSw[SwitchBuffer][c]) {               // pending switch event found?
         SwEvents[SwitchBuffer]--;                     // decrease number of pending events
@@ -825,7 +828,10 @@ void loop() {
   c = 0;                                              // initialize counter
   if (TimerEvents[TimerStack]) {                      // timer event pending?
     byte StackBuffer = TimerStack;
-    TimerStack = 1-StackBuffer;                       // switch to the other stack to avoid a conflict with the interrupt
+    if (StackBuffer) {                                // switch to the other stack to avoid a conflict with the interrupt
+      TimerStack = 0;}
+    else {
+      TimerStack = 1;}
     while (TimerEvents[StackBuffer]) {                // as long as there are timer events to process
       if (RunOutTimers[StackBuffer][c]) {             // number of run out timer found?
         TimerEvents[StackBuffer]--;                   // decrease number of pending events
