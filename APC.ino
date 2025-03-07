@@ -311,7 +311,7 @@ void setup() {
   TC_SetRC(TC2, 1, 656);                              // set counter value to achieve an interrupt period of 1ms
   TC_Start(TC2, 1);
   TC2->TC_CHANNEL[1].TC_IER=TC_IER_CPCS;              // IER = interrupt enable register
-  TC2->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;             // IDR = interrupt disable register
+  //TC2->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;             // IDR = interrupt disable register
   NVIC_EnableIRQ(TC7_IRQn);                           // enable interrupt
   delay(1000);
   watchdogEnable(2000);                               // set watchdog to 2s
@@ -807,11 +807,13 @@ void loop() {
     ErrorHandler(IRQerror,0,0);
     IRQerror = 0;}
   if (SwEvents[SwitchStack]) {                        // switch event pending?
+    NVIC_DisableIRQ(TC7_IRQn);                        // disable interrupt
     byte SwitchBuffer = SwitchStack;
     if (SwitchBuffer) {                               // switch to the other stack to avoid a conflict with the interrupt
       SwitchStack = 0;}
     else {
       SwitchStack = 1;}
+    NVIC_EnableIRQ(TC7_IRQn);                         // enable interrupt
     while (SwEvents[SwitchBuffer]) {                  // as long as there are switch events to process
       if (ChangedSw[SwitchBuffer][c]) {               // pending switch event found?
         SwEvents[SwitchBuffer]--;                     // decrease number of pending events
@@ -827,11 +829,13 @@ void loop() {
         ErrorHandler(21,0,c);}}}
   c = 0;                                              // initialize counter
   if (TimerEvents[TimerStack]) {                      // timer event pending?
+    NVIC_DisableIRQ(TC7_IRQn);                        // disable interrupt
     byte StackBuffer = TimerStack;
     if (StackBuffer) {                                // switch to the other stack to avoid a conflict with the interrupt
       TimerStack = 0;}
     else {
       TimerStack = 1;}
+    NVIC_EnableIRQ(TC7_IRQn);                         // enable interrupt
     while (TimerEvents[StackBuffer]) {                // as long as there are timer events to process
       if (RunOutTimers[StackBuffer][c]) {             // number of run out timer found?
         TimerEvents[StackBuffer]--;                   // decrease number of pending events
