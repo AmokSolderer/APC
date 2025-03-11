@@ -562,7 +562,10 @@ void TC7_Handler() {                                  // interrupt routine - run
             IRQerror = 41;}
           else {
             ActivePrioTimers--;}}}                    // reduce number of active timers
-      x++;}}                                          // increase timer counter
+      if (x > 7) {
+        IRQerror = 47;}
+      else {
+        x++;}}}                                          // increase timer counter
 
   // Timer
 
@@ -583,7 +586,10 @@ void TC7_Handler() {                                  // interrupt routine - run
             IRQerror = 9;}                            // that's wrong
           else {
             ActiveTimers--;}}}                        // reduce number of active timers
-      x++;}}                                          // increase timer counter
+      if (x > 62) {
+        IRQerror = 19;}
+      else {
+        x++;}}}                                       // increase timer counter
 
   // Solenoids
 
