@@ -1193,16 +1193,20 @@ void KillPrioTimer(byte TimerNo) {
 
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
   if (ActiveTimers < 63) {
-    byte i = 1;                                       // reset counter
-    BlockTimers = true;                               // block IRQ timer handling to avoid interference
-    while (TimerEvent[i]) {                           // search for a free timer
-      i++;}
-    TimerArgument[i] = Argument;                      // initialize it
-    TimerEvent[i] = EventPointer;
-    TimerValue[i] = Value;
-    ActiveTimers++;                                   // increase the number of active timers
-    BlockTimers = false;                              // release the IRQ block
-    return i;}                                        // and return its number
+    if (Value && EventPointer) {                      // both must not be zero
+      byte i = 1;                                     // reset counter
+      BlockTimers = true;                             // block IRQ timer handling to avoid interference
+      while (TimerEvent[i]) {                         // search for a free timer
+        i++;}
+      TimerArgument[i] = Argument;                    // initialize it
+      TimerEvent[i] = EventPointer;
+      TimerValue[i] = Value;
+      ActiveTimers++;                                 // increase the number of active timers
+      BlockTimers = false;                            // release the IRQ block
+      return i;}                                      // and return its number
+    else {
+      ErrorHandler(17,0,0);
+      return(0);}}
   else {
     ErrorHandler(18,0,0);
     return 0;}}
