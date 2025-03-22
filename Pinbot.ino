@@ -3015,6 +3015,7 @@ void PB_CountBonus(byte State) {
 
 void PB_BallEnd2() {
   BlockOuthole = false;                               // remove outhole block
+  PB_SpecialLit = false;                              // unlite advance planet special
   PlaySound(53, "1_85.snd");
   if (ExBalls) {                                      // Player has extra balls
     AddBlinkLamp(33, 250);                            // Let the extra ball lamp blink

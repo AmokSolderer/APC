@@ -119,7 +119,7 @@ byte PrioTimerArgument[9];
 void (*PrioTimerEvent[9])(byte);                      // pointers to the procedures to be executed on the prio timer event
 
 volatile bool BlockTimers = false;                    // blocks the timer interrupt while timer properties are being changed
-byte ActiveTimers = 0;                                // Number of active timers
+volatile byte ActiveTimers = 0;                       // Number of active timers
 unsigned int TimerValue[64];                          // Timer values
 volatile byte TimerStack = 0;                         // determines which timer events stack is active
 byte RunOutTimers[2][30];                             // two stacks of timers with pending events
@@ -583,11 +583,12 @@ void TC7_Handler() {                                  // interrupt routine - run
           RunOutTimers[TimerStack][c] = x;
           TimerEvents[TimerStack]++;                  // increase the number of pending timer events
           if (!ActiveTimers) {                        // number of active timers already 0?
-            IRQerror = 9;}                            // that's wrong
-          else {
-            ActiveTimers--;}}}                        // reduce number of active timers
+            IRQerror = 9;
+            break;}                                   // that's wrong
+          ActiveTimers--;}}                           // reduce number of active timers
       if (x > 62) {
-        IRQerror = 19;}
+        IRQerror = 19;
+        break;}
       else {
         x++;}}}                                       // increase timer counter
 
@@ -1228,9 +1229,9 @@ void KillAllTimers() {
 void KillTimer(byte TimerNo) {
   bool FoundFlag = false;
   byte ToFind = 0;
-  byte c = 0;
   BlockTimers = true;                                 // block IRQ timer handling to avoid interference
   for (byte x=0; x<2; x++) {                          // for both timer event stacks
+    byte c = 0;
     ToFind = TimerEvents[x];                          // determine the number of pending events in the current stack
     while (ToFind) {                                  // search for all of these
       if (RunOutTimers[x][c]) {                       // run out timer found
@@ -1240,7 +1241,10 @@ void KillTimer(byte TimerNo) {
           RunOutTimers[x][c] = 0;                     // remove it from the list
           TimerEvents[x]--;                           // reduce the number of pending events for this stack
           ToFind = 0;}}                               // stop searching
-      c++;}}
+      c++;
+      if (c > 29) {
+        ErrorHandler(15, TimerNo, x);
+        break;}}}
   if (!FoundFlag)  {                                  // no pending timer event?
     if (TimerValue[TimerNo]) {                        // timer still active?
       if (!ActiveTimers) {                            // number of active timers already 0?
