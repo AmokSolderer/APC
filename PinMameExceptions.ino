@@ -535,7 +535,8 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
             PlaySound(51, (char*) FileName);}}}
       else if (Command == 9) {                        // 0x09 Bonus
         if (!SoundSeries[1]) {                        // ignore subsequent calls
-          SoundSeries[1] = 1;
+          SoundSeries[1] = 1;                         // block further calls
+          SoundSeries[4] = 0;                         // reset BG sound series
           PlaySound(51, "0_09.snd");}}                // this wav is combined version from all bonus pitches
       else if (Command == 10) {                       // 0x0a Whirling background
         if (SoundSeries[2] < 29 )                     // this sound has 29 pitches
@@ -553,7 +554,7 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
         PlaySound(51, (char*) FileName);}             // play the sound
       else if (Command == 14) {                       // 0x0e Background // repeated
         PlayingMultiballSound = 0;                    // if the background plays, we're not in a multiball start session
-        SoundSeries[1] = 0;                           // reset bonus sound series
+        //SoundSeries[1] = 0;                           // reset bonus sound series
         if (game_settings[USB_BGmusic]) {             // use MUSIC.SND instead of BG sound
           if (!SoundSeries[4]) {                      // don't restart if next pitch is requested
             PlayMusic(50, "MUSIC.snd");               // play music track
