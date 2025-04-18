@@ -553,6 +553,7 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
         PlaySound(51, (char*) FileName);}             // play the sound
       else if (Command == 14) {                       // 0x0e Background // repeated
         PlayingMultiballSound = 0;                    // if the background plays, we're not in a multiball start session
+        SoundSeries[1] = 0;                           // reset bonus sound series
         if (game_settings[USB_BGmusic]) {             // use MUSIC.SND instead of BG sound
           if (!SoundSeries[4]) {                      // don't restart if next pitch is requested
             PlayMusic(50, "MUSIC.snd");               // play music track
