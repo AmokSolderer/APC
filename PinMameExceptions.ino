@@ -557,6 +557,7 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
         //SoundSeries[1] = 0;                           // reset bonus sound series
         if (game_settings[USB_BGmusic]) {             // use MUSIC.SND instead of BG sound
           if (!SoundSeries[4]) {                      // don't restart if next pitch is requested
+            StopPlayingSound();
             PlayMusic(50, "MUSIC.snd");               // play music track
             QueueNextMusic("MUSIC.snd");              // and loop it
             SoundSeries[4] = 1;}}
