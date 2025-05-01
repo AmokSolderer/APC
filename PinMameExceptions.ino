@@ -45,6 +45,9 @@ const byte EX_SpaceStationProperties[13] = {          // machine properties for 
     2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
     42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
+const byte EX_GorgarProperties[13] = {
+    9, 0, 0, 0, 0, 10, 34, 0, 0, 0, 1, 0, 1};
+
 const byte EX_AlienPokerProperties[13] = {
     9, 0, 0, 0, 0, 11, 32, 0, 0, 0, 1, 0, 1};
 
@@ -492,6 +495,53 @@ byte EX_TimeWarp(byte Type, byte Command){
     return(0);
   default:
     return(0);}}
+
+byte EX_Gorgar(byte Type, byte Command){
+  static byte SoundSeries[2] = {0, 0};                // buffer to handle pre system11 sound series
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (Command == 31) { }                            // ignore sound command 0x1f
+    else if (Command == 12) {                         // sound command 0x0c - stop all sounds and reset series
+      AfterSound = 0;
+      SoundSeries[0] = 0;
+      SoundSeries[1] = 0;
+      StopPlayingSound();
+      StopPlayingMusic();}
+    else if (Command == 13) {                         // 0x0d heartbeat sound series
+      if (SoundSeries[1] < 30 )                       // this sound has 31 pitches
+        SoundSeries[1]++;                             // every call of this sound proceeds with next pitch
+      char FileName[13] = "0_0d_000.snd";             // generate base filename
+      FileName[7] = 48 + (SoundSeries[1] % 10);       // change the 7th character of filename according to current pitch
+      FileName[6] = 48 + (SoundSeries[1] % 100) / 10; // the same with the 6th character
+      PlaySound(51, (char*) FileName);}               // play the sound
+    else if (Command == 14) {                         // 0x0e Background sound series - repeated
+      SoundSeries[0] = 0;
+      SoundSeries[1] = 0;
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        if (!SoundSeries[2]) {                        // don't restart if next pitch is requested
+          PlayMusic(50, "MUSIC.snd");                 // play music track
+          QueueNextMusic("MUSIC.snd");                // and loop it
+          SoundSeries[2] = 1;}}
+      else {
+        if (SoundSeries[2] < 30 )                     // this sound has 36 pitches
+          SoundSeries[2]++;                           // every call of this sound proceeds with next pitch
+        char FileName[13] = "0_0e_000.snd";           // generate base filename
+        FileName[7] = 48 + (SoundSeries[2] % 10);     // change the 7th character of filename according to current pitch
+        FileName[6] = 48 + (SoundSeries[2] % 100) / 10; // the same with the 6th character
+        for (byte i=0; i<12; i++) {                   // store the name of this sound
+          USB_RepeatSound[i] = FileName[i];}
+        QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
+        PlaySound(51, (char*) FileName);}}            // play the sound
+    else {                                            // standard sound
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}
+    return(0);                                        // return number not relevant for sounds
+  default:
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for sending me this code
   static byte SoundSeries[5] = {0, 0, 0, 0, 0};       // buffer to handle pre system11 sound series
@@ -1431,6 +1481,10 @@ void EX_Init(byte GameNumber) {
   case 10:                                            // Time Warp
     PinMameException = EX_TimeWarp;                   // use exception rules for Time Warp
     EX_Machine = EX_TimeWarpProperties;               // machine properties for ball saver
+    break;
+  case 15:                                            // Gorgar
+    PinMameException = EX_Gorgar;                     // use exception rules for Time Warp
+    EX_Machine = EX_GorgarProperties;                 // machine properties for ball saver
     break;
   case 16:                                            // Firepower
     PinMameException = EX_Firepower;                  // use exception rules for Firepower

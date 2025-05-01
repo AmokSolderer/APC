@@ -12,6 +12,7 @@ At the moment the list of available sound packages is still quite short, but we 
 |3|Disco Fever| available on request| PinMameExceptions might still need some finetuning |
 |4|Flash| available on request| Ball saver and alternate music mode implemented for this machine |
 |6|Time Warp| available on request | Ball saver and alternate music mode implemented for this machine |
+|6|Gorgar| available on request | Ball saver and alternate music mode implemented for this machine |
 |6|Firepower| available on request thanks to Matiou | PinMameExceptions also done by Matiou / Ball saver and alternate music mode implemented for this machine |
 |6|Alien Poker| available on request | Ball saver and alternate music mode implemented for this machine |
 |7|Barracora| available on request | Ball saver and alternate music mode implemented for this machine |
