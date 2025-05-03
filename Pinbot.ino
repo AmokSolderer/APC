@@ -2804,7 +2804,6 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       PB_MballDisplay(0);                             // stop display animation
       PB_SolarValue = 0;                              // reset jackpot
       PB_MballState = 5;                              // indicate a ball loss
-      PB_MballDisplay(0);                             // stop display animation
       PB_ShooterLaneWarning(0);                       // turn off shooter lane warning
       PB_ShowMessage(255);                            // release message block
       ShowAllPoints(0);
