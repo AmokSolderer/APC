@@ -31,10 +31,6 @@ Here's what to do:
 Most Williams games go into 'Factory Settings' mode when started for the first time. That means if the game doesn't start, use the Advance and Up/Down Buttons to navigate and quit the Williams settings. Note that as you're now in the original Williams settings you can navigate them as usual with one exception:  
 You must not keep Advance pressed for more than 1 second with Up/Down in up position as this will trigger the APC settings. If you want to browse the Williams Settings quickly, just do it backwards with Up/Down in down position.
 
-If you feel that your game is not running at the correct speed, you can change PinMame's emulation speed. To do this you have to remove the SD card from your Raspberry Pi and access the file  
-boot/lisy/lisy_m/cfg/lisyminigames.csv  
-There's a throttle value specified for each game. Changing this value to a lower value will make the game run faster and vice versa.
-
 ## PinMame sound
 
 ### Using old audio boards
@@ -56,6 +52,12 @@ The drawback of this is that someone has to extract the music files from PinMame
 
 Check the table on the [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page to see whether your game is already supported and the audio files are available. If your game is listet there, you can simply request the files and put them on the SD card on the APC board (not the one of the Pi). That's it, have fun.  
 If your game is not yet supported then you should also read this page to find out how to proceed.
+
+### Emulation speed
+
+It might be that your game is not running at the correct speed, e.g. if your bonus sound is running out but your game is still counting. In this case you can change PinMame's emulation speed. To do this you have to remove the SD card from your Raspberry Pi and access the file  
+boot/lisy/lisy_m/cfg/lisyminigames.csv  
+There's a throttle value specified for each game, the default for most games is 120. Changing this value to a lower value will make the game run faster and vice versa.
 
 ## MPF
 
