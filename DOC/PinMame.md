@@ -13,7 +13,7 @@ At the moment the list of available sound packages is still quite short, but we 
 |4|Flash| available on request| Ball saver and alternate music mode implemented for this machine |
 |6|Time Warp| available on request | Ball saver and alternate music mode implemented for this machine |
 |6|Gorgar| available on request | Ball saver and alternate music mode implemented for this machine |
-|6|Firepower| available on request thanks to Matiou | PinMameExceptions also done by Matiou / Ball saver and alternate music mode implemented for this machine |
+|6|Firepower| available on request thanks to Matiou | PinMameExceptions also done by Matiou / Ball saver and alternate music mode implemented for this machine / [Throttle value](https://github.com/AmokSolderer/APC/blob/V01.03/DOC/RunGame.md#emulation-speed) needs to be changed to 110|
 |6|Alien Poker| available on request | Ball saver and alternate music mode implemented for this machine |
 |7|Barracora| available on request | Ball saver and alternate music mode implemented for this machine |
 |7|Black Knight| available on request| Ball saver and alternate music mode implemented for this machine |
