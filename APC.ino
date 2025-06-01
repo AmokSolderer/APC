@@ -608,7 +608,6 @@ void TC7_Handler() {                                  // interrupt routine - run
     REG_PIOC_SODR = c<<1;
     REG_PIOC_SODR = 4194304;}                         // select third latch
 
-
   REG_PIOC_CODR = AllSelects - HwExtSels + AllData;   // clear all select signals and the data bus
 
   // Display segments

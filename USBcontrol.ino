@@ -756,7 +756,7 @@ void USB_SerialCommand() {
           break;
         case 3:                                       // 7 segment pattern (1 byte)
           for (i=0; i<7; i++) {
-            *(DisplayUpper+2*i+2) = ConvertPattern(0, USB_SerialBuffer[i]);
+            *(DisplayLower+2*i+2) = ConvertPattern(0, USB_SerialBuffer[i]);
             if (USB_SerialBuffer[i] & 64) {           // g segment set?
               *(DisplayLower+2*i+3) = 2;}             // turn on m segment of alpha display
             else {
@@ -838,7 +838,7 @@ void USB_SerialCommand() {
           break;
         case 3:                                       // 7 segment pattern (1 byte)
           for (i=0; i<7; i++) {
-            *(DisplayUpper+2*i+18) = ConvertPattern(0, USB_SerialBuffer[i]);
+            *(DisplayLower+2*i+18) = ConvertPattern(0, USB_SerialBuffer[i]);
             if (USB_SerialBuffer[i] & 64) {           // g segment set?
               *(DisplayLower+2*i+19) = 2;}            // turn on m segment of alpha display
             else {
