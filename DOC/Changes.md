@@ -1,6 +1,6 @@
 # APC News and Changelog
 
-## TBD
+## June 2025
 
 ### New SW Version V1.03
 
