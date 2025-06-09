@@ -127,8 +127,8 @@ struct GameDef USB_GameDefinition = {
 void USB_init() {
   Switch_Pressed = DummyProcess;
   GameDefinition = USB_GameDefinition;                // read the game specific settings and highscores
-  if (APC_settings[ConnType]) {
-    if (APC_settings[ConnType] == 1) {
+  if (ComState) {
+    if (ComState == 1) {
       OnBoardCom = false;}
     else {
       Serial.begin(115200);                           // needed for USB and serial communication
@@ -143,7 +143,7 @@ void USB_AttractMode() {                              // Attract Mode
     analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
   else {
     digitalWrite(VolumePin,HIGH);}                    // turn off the digital volume control
-  for (i=0; i<8; i++) {                               // turn off all lamps
+  for (byte i=0; i<8; i++) {                          // turn off all lamps
     LampColumns[i] = 0;}
   LampPattern = LampColumns;
   Switch_Pressed = USB_SwitchHandler;
@@ -154,8 +154,8 @@ void USB_AttractMode() {                              // Attract Mode
     USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
   if (game_settings[USB_Watchdog]) {                  // watchdog enabled?
     USB_WatchdogHandler(1);}                          // initiate reset and start watchdog
-  if (APC_settings[ConnType]) {
-    if (APC_settings[ConnType] == 1) {
+  if (ComState) {
+    if (ComState == 1) {
       WriteUpper("BOOTING  LISY   ");}
     else {
       WriteUpper("  USB  CONTROL  ");}}
@@ -262,26 +262,26 @@ void USB_Testmode(byte Dummy) {                       // enter system settings i
   USB_WatchdogHandler(3);                             // stop USB watchdog
   for (byte i=0; i<5; i++) {
     USB_DisplayProtocol[i] = 6;}                      // use ASCII protocol for displays
-  if (APC_settings[ConnType] == 2) {                  // USB mode selected?
+  if (ComState == 2) {                                // USB mode selected?
     Serial.end();}
-  else if ((APC_settings[ConnType] == 1) && OnBoardCom) { // onboard Pi selected and detected?
+  else if ((ComState == 1) && OnBoardCom) {           // onboard Pi selected and detected?
     Serial3.end();}
   Settings_Enter();}
 
 byte USB_ReadByte() {                                 // read a byte from the selected interface
-  if (APC_settings[ConnType] == 1) {                  // onboard PI selected?
+  if (ComState == 1) {                                // onboard PI selected?
     return Serial3.read();}
   else {                                              // USB selected
     return Serial.read();}}
 
 void USB_WriteByte(byte Data) {                       // write a byte to the selected interface
-  if (APC_settings[ConnType] == 1) {                  // onboard PI selected?
+  if (ComState == 1) {                                // onboard PI selected?
     Serial3.write(Data);}
   else {                                              // USB selected
     Serial.write(Data);}}
 
 byte USB_Available() {
-  if (APC_settings[ConnType] == 1) {                  // onboard PI selected?
+  if (ComState == 1) {                                // onboard PI selected?
     if (OnBoardCom) {                                 // onboard Pi detected?
       return Serial3.available();}
     else {
@@ -379,7 +379,7 @@ void USB_SerialCommand() {
     USB_WriteByte((byte) 0);
     break;
   case 1:                                             // get firmware version
-    if (APC_settings[ConnType] == 1) {
+    if (ComState == 1) {
       Serial3.print(APC_Version);}
     else {
       Serial.print(APC_Version);}
@@ -438,7 +438,8 @@ void USB_SerialCommand() {
       TurnOffLamp(USB_SerialBuffer[0]);}
     break;
   case 19:                                            // get number of modern lights
-    USB_WriteByte((byte) 0);
+    USB_WriteByte((byte) 0);                          // APC does not support MPF's modern lights, use Facecandy to control LEDs
+    USB_WriteByte((byte) 0);                          // MPF seems to expect two bytes as an answer (since Lisy API 0.10)
     break;
   case 20:                                            // get status of solenoid
     if (USB_SerialBuffer[0] < 26) {                   // max 24 solenoids
@@ -755,7 +756,7 @@ void USB_SerialCommand() {
           break;
         case 3:                                       // 7 segment pattern (1 byte)
           for (i=0; i<7; i++) {
-            *(DisplayUpper+2*i+2) = ConvertPattern(0, USB_SerialBuffer[i]);
+            *(DisplayLower+2*i+2) = ConvertPattern(0, USB_SerialBuffer[i]);
             if (USB_SerialBuffer[i] & 64) {           // g segment set?
               *(DisplayLower+2*i+3) = 2;}             // turn on m segment of alpha display
             else {
@@ -837,7 +838,7 @@ void USB_SerialCommand() {
           break;
         case 3:                                       // 7 segment pattern (1 byte)
           for (i=0; i<7; i++) {
-            *(DisplayUpper+2*i+18) = ConvertPattern(0, USB_SerialBuffer[i]);
+            *(DisplayLower+2*i+18) = ConvertPattern(0, USB_SerialBuffer[i]);
             if (USB_SerialBuffer[i] & 64) {           // g segment set?
               *(DisplayLower+2*i+19) = 2;}            // turn on m segment of alpha display
             else {
@@ -1152,7 +1153,7 @@ void USB_ResetWaitSoundTimers(byte Dummy) {           // reset the timer and pla
     if (USB_WaitingSoundFiles[0][0] & 1) {            // sound for channel 2 waiting?
       PlaySound(50, (char*) USB_WaitingSoundFiles+1);
       if (USB_WaitingSoundFiles[0][0] & 2) {          // looping active?
-        for (i=0; i<12; i++) {
+        for (byte i=0; i<12; i++) {
           USB_RepeatSound[i] = USB_WaitingSoundFiles[0][1+i];}
         QueueNextSound(USB_RepeatSound);}
       else {
@@ -1160,17 +1161,17 @@ void USB_ResetWaitSoundTimers(byte Dummy) {           // reset the timer and pla
     else {                                            // waiting sound is for channel 1
       PlayMusic(50, (char*) USB_WaitingSoundFiles+1);
       if (USB_WaitingSoundFiles[0][0] & 2) {          // looping active?
-        for (i=0; i<12; i++) {
+        for (byte i=0; i<12; i++) {
           USB_RepeatMusic[i] = USB_WaitingSoundFiles[0][1+i];}
         QueueNextMusic(USB_RepeatMusic);}
       else {
         AfterMusic = 0;}}
     if (USB_WaitingSoundFiles[1][1]) {                // any sound waiting at stack position 2?
-      for (i=0; i<13; i++) {                          // if yes move it to position 1 and clear position 2
+      for (byte i=0; i<13; i++) {                     // if yes move it to position 1 and clear position 2
         USB_WaitingSoundFiles[0][i] = USB_WaitingSoundFiles[1][i];
         USB_WaitingSoundFiles[1][i] = 0;}}
     else {                                            // no sound waiting at stack position 2
-      for (i=0; i<13; i++) {                          // clear stack position 1
+      for (byte i=0; i<13; i++) {                     // clear stack position 1
         USB_WaitingSoundFiles[0][i] = 0;}}
     USB_WaitSoundTimer = ActivateTimer(15, 0, USB_ResetWaitSoundTimers);} // start a new timer
   else {

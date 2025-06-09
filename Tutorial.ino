@@ -228,7 +228,7 @@ void TT_AttractDisplayCycle(byte Step) {
   case 1:
     WriteUpper2("                ");                  // erase display
     WriteLower2("                ");
-    for (i=1; i<=NoPlayers; i++) {                    // display the points of all active players
+    for (byte i=1; i<=NoPlayers; i++) {               // display the points of all active players
       ShowNumber(8*i-1, Points[i]);}
     ActivateTimer(50, 0, ScrollUpper);
     ActivateTimer(900, 0, ScrollLower2);
@@ -237,7 +237,7 @@ void TT_AttractDisplayCycle(byte Step) {
   case 2:                                             // Show highscores
     WriteUpper2("1>              ");
     WriteLower2("2>              ");
-    for (i=0; i<3; i++) {
+    for (byte i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
       *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
@@ -251,7 +251,7 @@ void TT_AttractDisplayCycle(byte Step) {
   case 3:
     WriteUpper2("3>              ");
     WriteLower2("4>              ");
-    for (i=0; i<3; i++) {
+    for (byte i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
       *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
@@ -301,7 +301,7 @@ void TT_InitGame() {
       analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
     else {
       digitalWrite(VolumePin,HIGH);}                  // turn off the digital volume control
-    for (i=0; i< 8; i++) {                            // turn off all lamps
+    for (byte i=0; i< 8; i++) {                       // turn off all lamps
       LampColumns[i] = 0;}
     LampPattern = LampColumns;
     NoPlayers = 0;
@@ -315,7 +315,7 @@ void TT_InitGame() {
     BonusMultiplier = 1;
     InLock = 0;
     Multiballs = 1;
-    for (i=1; i < 5; i++) {
+    for (byte i=1; i < 5; i++) {
       LockedBalls[i] = 0;
       Points[i] = 0;}
     TT_NewBall(3);                                    // release a new ball (3 expected balls in the trunk)
@@ -408,7 +408,7 @@ void TT_SearchBall(byte Counter) {                    // ball watchdog timer has
 
 byte TT_CountBallsInTrunk() {
   byte Balls = 0;
-  for (i=0; i<TT_InstalledBalls; i++) {               // check how many balls are on the ball ramp
+  for (byte i=0; i<TT_InstalledBalls; i++) {          // check how many balls are on the ball ramp
     if (QuerySwitch(*(TT_BallThroughSwitches+i))) {
       if (Balls < i) {
         return 5;}                                    // send warning
@@ -645,7 +645,7 @@ void TT_Testmode(byte Select) {
           AppByte2 = 1;
           break;}
       default:                                        // all other switches
-        for (i=1; i<24; i++) {                        // move all characters in the lower display row 4 chars to the left
+        for (byte i=1; i<24; i++) {                   // move all characters in the lower display row 4 chars to the left
           DisplayLower[i] = DisplayLower[i+8];}
         *(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
         *(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
@@ -678,7 +678,7 @@ void TT_Testmode(byte Select) {
             WriteUpper(" SINGLE LAMP    ");
             WriteLower("                ");
             AppByte2 = 0;
-            for (i=0; i<8; i++){                      // erase lamp matrix
+            for (byte i=0; i<8; i++){                 // erase lamp matrix
               LampColumns[i] = 0;}
             LampPattern = LampColumns;                // and show it
             break;
@@ -809,7 +809,7 @@ void TT_DisplayCycle(byte CharNo) {                   // Display cycle test
         CharNo = 66;}
       else {
         CharNo = CharNo+2;}}                          // otherwise show next character
-    for (i=0; i<16; i++) {                            // use for all alpha digits
+    for (byte i=0; i<16; i++) {                       // use for all alpha digits
       if ((APC_settings[DisplayType] < 3 || APC_settings[DisplayType] > 6) && ((i==0) || (i==8))) {
         DisplayUpper[2*i] = LeftCredit[CharNo];
         DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
