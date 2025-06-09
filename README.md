@@ -95,7 +95,7 @@ The second board is a [driver for 8 additional solenoids](https://github.com/Amo
 
 I use [special alphanumerical displays](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) in my Black Knight which can also be found in the HW section as well as an LED replacement for the original System7 numerical displays.
 
-## Current Status (November 2024)
+## Supported machines
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md#cable-extensions)
 
@@ -146,7 +146,8 @@ Up to now only Rollergames seems to be affected, other machines using the same a
 
 ## Feedback
 
-Feedback is very important for me, because if there is none I must assume that nobody is interested in this project and that I can stop to bother with additional documentation. And albeit I have tried my best to help you to become familiar with this project, there will be questions and I am willing to do some support. Like I said, it's a hobby so don't expect 24/7 availability, but I'll do my best to help.
+Feedback is very important for me, also to learn where additional documentation is needed. There're still features that are undocumented because I just don't have the time (and motivation) to write the docs.  
+Hence, I've limited my documentation effort to a minimum, but I'm willing to provide additional docs and hints on request. Please use the forum links below for these requests.  
 
 **So if you're interested please leave some feedback in the [Flippertreff forum (german)](https://www.flippertreff.de/start/forum/topic/11356-arduino-pinball-controller/) or in the  - [Pinside Form (english)](https://pinside.com/pinball/forum/topic/arduino-pinball-controller#post-4898318).**
 
