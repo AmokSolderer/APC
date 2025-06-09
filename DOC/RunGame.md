@@ -63,7 +63,7 @@ There's a throttle value specified for each game, the default for most games is 
 
 If you want to do your own rules without having to program in C, the [Mission Pinball Framework](http://missionpinball.org/) might be your method of choice. It can run on a PC which then controls the APC via USB. You'd have to select 'Remote Control' as the Active Game and  'Connect Type' to 'USB' in the [System Settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#system-settings).
 
-Most of the switch numbering and so on is quite straightforward but there're some [APC specialties](https://github.com/AmokSolderer/APC/blob/V01.03/DOC/Specialties.md) you should be aware of when doing your own game.
+Most of the switch numbering and so on is quite straightforward but there're some [APC specialties](https://github.com/AmokSolderer/APC/blob/master/DOC/Specialties.md) you should be aware of when doing your own game.
 
 We can also let Lisy run MPF which would then work without a PC, but we'd do this only on request.
 
@@ -79,6 +79,6 @@ The APC software itself consists of two parts: the operating system APC.ino and 
 
 I have written game codes for my Black Knight and Pinbot. They are still not final, but good enough to have fun with and to use as a reference when writing own code. Additionally there's a [Base Code](https://github.com/AmokSolderer/APC/blob/master/BaseCode.ino) which should serve as a starting point for you to do your own game. It contains the very basics of a pinball game and it can be easily adapted to your machine. As a startup guide how to start writing game code I have written a short [tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md).
 
-Most of the switch numbering and so on is quite straightforward but there're some [APC specialties](https://github.com/AmokSolderer/APC/blob/V01.03/DOC/Specialties.md) you should be aware of when doing your own game.
+Most of the switch numbering and so on is quite straightforward but there're some [APC specialties](https://github.com/AmokSolderer/APC/blob/master/DOC/Specialties.md) you should be aware of when doing your own game.
 
 Please note that I have equipped my Black Knight with a [special alphanumerical display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) for pre System11 machines and that advanced APC commands like scrolling are currently not usable with numerical only displays. This is because I think that these displays are not suited for homebrew machines. If you do all the work needed to do your own game code, you'd for sure want to have a display with letters, otherwise you wouldn't be able to even have a decent high score list. Additionally it would be quite cumbersome to debug some game software without the display being able to show letters. Therfore I recommend to use an early System11 display which has at least one row with alphanumeric displays (or build my [System7Alpha](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7Alpha)). However, the basic software support is implemented, which means you can use the old displays without any restrictions you just have to do a bit more coding to get all the features. And if you just want to use them with PinMame to replace your old boards these displays will work perfectly well.
