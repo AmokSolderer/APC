@@ -198,7 +198,7 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 #define DebugMode  10                                 // debug mode enabled?
 #define BackboxLamps 11                               // Column of backbox lamps
 
-const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{"   TUTORIAL     "}};
+const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{" SPACE STATION  "}};
 const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
 const char TxTDisplaySelect[9][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{" DATA EAST 2X16 "},{"123456123456    "},{"12345671234567  "}};
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
@@ -384,7 +384,7 @@ void Init_System2(byte State) {                       // state = 0 will restore 
     USB_init();
     break;
   case 4:
-    TT_init();
+    SS_init();
     break;
   default:
     WriteUpper("NO GAMESELECTD  ");
