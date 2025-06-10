@@ -17,7 +17,7 @@ SdFat SD;
 #define AllData 510
 #define HwExtStackPosMax 20                           // size of the HwExtBuffer
 
-const char APC_Version[6] = "01.02";                  // Current APC version - includes the other INO files also
+const char APC_Version[6] = "01.03";                  // Current APC version - includes the other INO files also
 
 void HandleBoolSetting(bool change);
 void HandleTextSetting(bool change);
@@ -64,8 +64,6 @@ const byte AllLamps[8] = {255,255,255,255,255,255,255,255};
 unsigned int IntBuffer;                               // general purpose buffer
 byte ByteBuffer = 0;                                  // general purpose buffer
 byte ByteBuffer2 = 0;                                 // general purpose buffer
-byte ByteBuffer3 = 0;                                 // general purpose buffer
-byte i = 0;                                           // general purpose counter
 byte IRQerror = 0;                                    // general purpose counter
 bool SDfound = false;                                 // SD card present?
 volatile byte SwitchStack = 0;                        // determines which switch events stack is active
@@ -121,7 +119,7 @@ byte PrioTimerArgument[9];
 void (*PrioTimerEvent[9])(byte);                      // pointers to the procedures to be executed on the prio timer event
 
 volatile bool BlockTimers = false;                    // blocks the timer interrupt while timer properties are being changed
-byte ActiveTimers = 0;                                // Number of active timers
+volatile byte ActiveTimers = 0;                       // Number of active timers
 unsigned int TimerValue[64];                          // Timer values
 volatile byte TimerStack = 0;                         // determines which timer events stack is active
 byte RunOutTimers[2][30];                             // two stacks of timers with pending events
@@ -167,6 +165,7 @@ const unsigned long SwitchMask[8] = {65536, 16777216, 8388608, 4194304, 64, 16, 
 uint16_t SwDrvMask = 2;                               // mask for switch row select
 byte SolBuffer[4];                                    // stores the state of the solenoid latches + solenoid_exp board
 bool OnBoardCom = false;                              // on board Pi detected?
+byte ComState = 0;                                    // current status of the com interface
 
 struct SettingTopic {                                 // one topic of a list of settings
   char Text[17];                                      // display text
@@ -189,7 +188,7 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 #define ActiveGame  1                                 // Select the active game
 #define NofBalls  2                                   // Balls per game
 #define FreeGame  3                                   // Free game mode?
-#define ConnType  4                                   // Remote control mode?
+#define ConnType  4                                   // Remote control mode by onboard PI or USB?
 #define DimInserts  5                                 // Reduce lighting time of playfield lamps by 50%
 #define Volume  6                                     // Volume of the speaker
 #define LEDsetting  7                                 // Setting for the APC_LED_EXP board
@@ -197,6 +196,7 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 #define SolenoidExp 9                                 // Solenoid expander present?
 #define DebugMode  10                                 // debug mode enabled?
 #define BackboxLamps 11                               // Column of backbox lamps
+#define ConnectStartup 12                             // Select connection type during startup
 
 const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{" SPACE STATION  "}};
 const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
@@ -204,7 +204,7 @@ const char TxTDisplaySelect[9][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "},{"        NONE    "}};
 
-const struct SettingTopic APC_setList[15] = {
+const struct SettingTopic APC_setList[16] = {
     {"DISPLAY TYPE    ",HandleDisplaySetting,&TxTDisplaySelect[0][0],0,8},
     {" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
     {" NO OF  BALLS   ",HandleNumSetting,0,1,5},
@@ -217,6 +217,7 @@ const struct SettingTopic APC_setList[15] = {
     {"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
     {" DEBUG MODE     ",HandleBoolSetting,0,0,0},
     {"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,2},
+    {"CONNECTSTARTUP  ",HandleBoolSetting,0,0,0},
     {"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS  ",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
@@ -293,13 +294,13 @@ void setup() {
   REG_PIOC_SODR = 4194304;                            // use Sel4
   MusicBuffer = (uint16_t *) malloc(2048 * 2);
   SoundBuffer = (uint16_t *) malloc(2048 * 2);
-  for (i=0; i<8; i++) {                               // initialize lamp status
+  for (byte i=0; i<8; i++) {                          // initialize lamp status
     LampColumns[i+1] = 0; }
-  for (i=0; i< 8; i++) {                              // initialize switch input pins
+  for (byte i=0; i< 8; i++) {                         // initialize switch input pins
     pinMode(54 + i, INPUT); }
   g_Sound.begin(44100, 100);                          // initialize sound
   Buffer32b = g_Sound.next;                           // fill first part of audio DAC buffer with silence
-  for (i=0; i<64; i++) {
+  for (byte i=0; i<64; i++) {
     *Buffer32b = 402655232;                           // 2048 on both channels and the channel 2 tag
     Buffer32b++;}
   g_Sound.next = Buffer32b;
@@ -333,14 +334,14 @@ void Init_System() {
   if (SDfound) {                                      // SD card found?
     File Settings = SD.open(APC_set_file_name);       // look for system settings
     if (!Settings) {
-      WriteLower("NO SYS SETTNGS  ");                   // if no system settings
-      for(i=0;i<64;i++) {                             // use default settings
+      WriteLower("NO SYS SETTNGS  ");                 // if no system settings
+      for(byte i=0;i<64;i++) {                        // use default settings
         APC_settings[i] = APC_defaults[i];}}
     else {                                            // if system settings found
       Settings.read(&APC_settings, sizeof APC_settings);} // read them
     Settings.close();}
   else {                                              // no SD card?
-    for(i=0;i<64;i++) {                               // use default settings
+    for(byte i=0;i<64;i++) {                          // use default settings
       APC_settings[i] = APC_defaults[i];}}
   if (APC_settings[DisplayType] && APC_settings[DisplayType] != 3 && APC_settings[DisplayType] != 6) { // display with numerical lower row
     DispPattern2 = NumLower;}                         // use patterns for num displays
@@ -370,6 +371,16 @@ void Init_System() {
   Init_System2(0);}
 
 void Init_System2(byte State) {                       // state = 0 will restore the settings if no card is found
+  if (APC_settings[ActiveGame] == 3) {                // Remote Control selected?
+    if (APC_settings[ConnectStartup]) {               // use Up/Down switch to select com interface?
+      if (QuerySwitch(73)) {                          // switch pressed?
+        ComState = 1;}                                // use onboard Pi
+      else {                                          // switch not pressed
+        ComState = 2;}}                               // use USB
+    else {                                            // select by setting
+      ComState = APC_settings[ConnType];}}
+  else {
+    ComState = 0;}
   switch(APC_settings[ActiveGame]) {                  // init calls for all valid games
   case 0:
     BC_init();
@@ -405,14 +416,14 @@ void Init_System2(byte State) {                       // state = 0 will restore 
     if (!Settings) {
       WriteLower("NO GAMESETTNGS  ");
       if (!State) {                                   // only initialize the settings in the boot up run
-        for(i=0;i<64;i++) {
+        for(byte i=0;i<64;i++) {
           game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
     else {
       Settings.read(&game_settings, sizeof game_settings);}
     Settings.close();}
   else {
     if (!State) {                                     // only initialize the settings in the boot up run
-      for(i=0;i<64;i++) {
+      for(byte i=0;i<64;i++) {
         game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
   digitalWrite(VolumePin,HIGH);                       // turn off the digital volume control
   if (APC_settings[SolenoidExp]) {                    // solenoid exp board selected?
@@ -551,7 +562,10 @@ void TC7_Handler() {                                  // interrupt routine - run
             IRQerror = 41;}
           else {
             ActivePrioTimers--;}}}                    // reduce number of active timers
-      x++;}}                                          // increase timer counter
+      if (x > 7) {
+        IRQerror = 47;}
+      else {
+        x++;}}}                                          // increase timer counter
 
   // Timer
 
@@ -569,10 +583,14 @@ void TC7_Handler() {                                  // interrupt routine - run
           RunOutTimers[TimerStack][c] = x;
           TimerEvents[TimerStack]++;                  // increase the number of pending timer events
           if (!ActiveTimers) {                        // number of active timers already 0?
-            IRQerror = 9;}                            // that's wrong
-          else {
-            ActiveTimers--;}}}                        // reduce number of active timers
-      x++;}}                                          // increase timer counter
+            IRQerror = 9;
+            break;}                                   // that's wrong
+          ActiveTimers--;}}                           // reduce number of active timers
+      if (x > 62) {
+        IRQerror = 19;
+        break;}
+      else {
+        x++;}}}                                       // increase timer counter
 
   // Solenoids
 
@@ -589,7 +607,6 @@ void TC7_Handler() {                                  // interrupt routine - run
     c = SolBuffer[2];
     REG_PIOC_SODR = c<<1;
     REG_PIOC_SODR = 4194304;}                         // select third latch
-
 
   REG_PIOC_CODR = AllSelects - HwExtSels + AllData;   // clear all select signals and the data bus
 
@@ -796,12 +813,16 @@ void loop() {
     ErrorHandler(IRQerror,0,0);
     IRQerror = 0;}
   if (SwEvents[SwitchStack]) {                        // switch event pending?
-    SwitchStack = 1-SwitchStack;                      // switch to the other stack to avoid a conflict with the interrupt
-    while (SwEvents[1-SwitchStack]) {                 // as long as there are switch events to process
-      if (ChangedSw[1-SwitchStack][c]) {              // pending switch event found?
-        SwEvents[1-SwitchStack]--;                    // decrease number of pending events
-        i = ChangedSw[1-SwitchStack][c];              // buffer the switch number
-        ChangedSw[1-SwitchStack][c] = 0;              // clear the event
+    byte SwitchBuffer = SwitchStack;
+    if (SwitchBuffer) {                               // switch to the other stack to avoid a conflict with the interrupt
+      SwitchStack = 0;}
+    else {
+      SwitchStack = 1;}
+    while (SwEvents[SwitchBuffer]) {                  // as long as there are switch events to process
+      if (ChangedSw[SwitchBuffer][c]) {               // pending switch event found?
+        SwEvents[SwitchBuffer]--;                     // decrease number of pending events
+        i = ChangedSw[SwitchBuffer][c];               // buffer the switch number
+        ChangedSw[SwitchBuffer][c] = 0;               // clear the event
         if (QuerySwitch(i)) {                         // process SET switches
           Switch_Pressed(i);}                         // access the set switch handler
         else {                                        // process released switches
@@ -809,22 +830,28 @@ void loop() {
       if (c < 29) {                                   // number of pending events still in the allowed range?
         c++;}                                         // increase counter
       else {
-        if (c > 29) {
-          ErrorHandler(21,0,c);}}}}
+        ErrorHandler(21,0,c);}}}
   c = 0;                                              // initialize counter
   if (TimerEvents[TimerStack]) {                      // timer event pending?
-    TimerStack = 1-TimerStack;                        // switch to the other stack to avoid a conflict with the interrupt
-    while (TimerEvents[1-TimerStack]) {               // as long as there are timer events to process
-      if (RunOutTimers[1-TimerStack][c]) {            // number of run out timer found?
-        TimerEvents[1-TimerStack]--;                  // decrease number of pending events
-        i = RunOutTimers[1-TimerStack][c];            // buffer the timer number
+    byte StackBuffer = TimerStack;
+    if (StackBuffer) {                                // switch to the other stack to avoid a conflict with the interrupt
+      TimerStack = 0;}
+    else {
+      TimerStack = 1;}
+    while (TimerEvents[StackBuffer]) {                // as long as there are timer events to process
+      if (RunOutTimers[StackBuffer][c]) {             // number of run out timer found?
+        TimerEvents[StackBuffer]--;                   // decrease number of pending events
+        i = RunOutTimers[StackBuffer][c];             // buffer the timer number
         void (*TimerBuffer)(byte) = TimerEvent[i];    // Buffer the event for this timer
         if (!TimerBuffer) {                           // TimerEvent must be specified
           ErrorHandler(20,0,c);}
-        RunOutTimers[1-TimerStack][c] = 0;            // delete the timer from the list
+        RunOutTimers[StackBuffer][c] = 0;             // delete the timer from the list
         TimerEvent[i] = 0;                            // delete the event to show the timer as free
         TimerBuffer(TimerArgument[i]);}               // call event procedure
-      c++;}}                                          // increase search counter
+      if (c < 29) {                                   // number of pending events still in the allowed range?
+        c++;}                                         // increase counter
+      else {
+        ErrorHandler(22,0,c);}}}                      // increase search counter
   if (SoundPrio) {                                    // which channel has to be processed first?
     if (!StopSound && (SBP != SoundIRpos)) {          // still sound data to read?
       ReadSound();}                                   // read it
@@ -857,8 +884,8 @@ void loop() {
             AfterSoundPending = 0;
             if (AfterSound) {
               AfterSound(0);}}}}}}
-  if ((APC_settings[ActiveGame] == 3) && (APC_settings[ConnType])) {  // Remote mode?
-    if (APC_settings[ConnType] == 1) {                // onboard Pi selected?
+  if (ComState) {                                     // Remote mode?
+    if (ComState == 1) {                              // onboard Pi selected?
       if (!OnBoardCom && (REG_PIOB_PDSR & 33554432)) {  // onboard com off and Pi detected?
         Serial3.begin(115200);                        // needed for onboard serial communication
         OnBoardCom = true;}}
@@ -877,7 +904,7 @@ void ReadMusic() {                                    // read music data from SD
   else {                                              // not enough data to fill one block
     byte Avail = MusicFile.available();               // determine how much is left
     MusicFile.read(MusicBuffer+MBP*128,Avail);        // read it
-    for (i=0; i<128-Avail/2; i++) {                   // fill the rest with silence
+    for (byte i=0; i<128-Avail/2; i++) {                   // fill the rest with silence
       *(MusicBuffer+MBP*128+Avail/2+i) = 2048;}
     MBP++;                                            // increase read pointer
     if (MBP == 16) {                                  // last block read?
@@ -898,7 +925,7 @@ void ReadSound() {                                    // same as above but for t
   else {
     byte Avail = SoundFile.available();
     SoundFile.read(SoundBuffer+SBP*128,Avail);
-    for (i=0; i<128-Avail/2; i++) {
+    for (byte i=0; i<128-Avail/2; i++) {
       *(SoundBuffer+SBP*128+Avail/2+i) = 2048;}
     SBP++;
     if (SBP == 16) {
@@ -1166,16 +1193,20 @@ void KillPrioTimer(byte TimerNo) {
 
 byte ActivateTimer(unsigned int Value, byte Argument, void (*EventPointer)(byte)) {
   if (ActiveTimers < 63) {
-    byte i = 1;                                       // reset counter
-    BlockTimers = true;                               // block IRQ timer handling to avoid interference
-    while (TimerEvent[i]) {                           // search for a free timer
-      i++;}
-    TimerArgument[i] = Argument;                      // initialize it
-    TimerEvent[i] = EventPointer;
-    TimerValue[i] = Value;
-    ActiveTimers++;                                   // increase the number of active timers
-    BlockTimers = false;                              // release the IRQ block
-    return i;}                                        // and return its number
+    if (Value && EventPointer) {                      // both must not be zero
+      byte i = 1;                                     // reset counter
+      BlockTimers = true;                             // block IRQ timer handling to avoid interference
+      while (TimerEvent[i]) {                         // search for a free timer
+        i++;}
+      TimerArgument[i] = Argument;                    // initialize it
+      TimerEvent[i] = EventPointer;
+      TimerValue[i] = Value;
+      ActiveTimers++;                                 // increase the number of active timers
+      BlockTimers = false;                            // release the IRQ block
+      return i;}                                      // and return its number
+    else {
+      ErrorHandler(17,0,0);
+      return(0);}}
   else {
     ErrorHandler(18,0,0);
     return 0;}}
@@ -1184,22 +1215,22 @@ void KillAllTimers() {
   BlockTimers = true;                                 // block IRQ timer handling to avoid interference
   ActiveTimers = 0;
   TimerStack = 0;
-  for (i=1; i<64; i++) {                              // check all 64 timers
+  for (byte i=1; i<64; i++) {                         // check all 64 timers
     TimerValue[i] = 0;
     TimerArgument[i] = 0;
     TimerEvent[i] = 0;}
   for (byte x=0; x<2; x++) {
     TimerEvents[x] = 0;
-    for (i=0; i<30; i++) {
+    for (byte i=0; i<30; i++) {
       RunOutTimers[x][i] = 0;}}
   BlockTimers = false;}                               // release the IRQ block
 
 void KillTimer(byte TimerNo) {
   bool FoundFlag = false;
   byte ToFind = 0;
-  byte c = 0;
   BlockTimers = true;                                 // block IRQ timer handling to avoid interference
   for (byte x=0; x<2; x++) {                          // for both timer event stacks
+    byte c = 0;
     ToFind = TimerEvents[x];                          // determine the number of pending events in the current stack
     while (ToFind) {                                  // search for all of these
       if (RunOutTimers[x][c]) {                       // run out timer found
@@ -1209,7 +1240,10 @@ void KillTimer(byte TimerNo) {
           RunOutTimers[x][c] = 0;                     // remove it from the list
           TimerEvents[x]--;                           // reduce the number of pending events for this stack
           ToFind = 0;}}                               // stop searching
-      c++;}}
+      c++;
+      if (c > 29) {
+        ErrorHandler(15, TimerNo, x);
+        break;}}}
   if (!FoundFlag)  {                                  // no pending timer event?
     if (TimerValue[TimerNo]) {                        // timer still active?
       if (!ActiveTimers) {                            // number of active timers already 0?
@@ -1287,7 +1321,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
     if (Player) {                                     // player display?
       if (Player < 3) {                               // upper row?
         Player--;
-        for (i=0;i<7;i++) {                           // for all digits
+        for (byte i=0;i<7;i++) {                      // for all digits
           if (*(DisplayText+i) & 128) {               // comma set?
             *(DisplayUpper+2+16*Player+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
             *(DisplayUpper+3+16*Player+2*i) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
@@ -1296,7 +1330,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
             *(DisplayUpper+3+16*Player+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}}
       else {                                          // lower row
         Player = Player - 3;
-        for (i=0;i<7;i++) {                           // for all digits
+        for (byte i=0;i<7;i++) {                      // for all digits
           if (*(DisplayText+i) & 128) {               // comma set?
             *(DisplayLower+2+16*Player+2*i) = 1 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)];
             *(DisplayLower+3+16*Player+2*i) = 8 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
@@ -1316,7 +1350,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
   case 3:                                             // Sys11 BK2K
   case 6:                                             // DE 2x16
     if (Player == 1) {
-      for (i=0;i<16;i++) {                            // for all digits
+      for (byte i=0;i<16;i++) {                       // for all digits
         if (*(DisplayText+i) & 128) {                 // comma set?
           *(DisplayUpper+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
           *(DisplayUpper+2*i+1) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
@@ -1324,7 +1358,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
           *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
           *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}}
     else {
-      for (i=0;i<16;i++) {                            // for all digits
+      for (byte i=0;i<16;i++) {                       // for all digits
         if (*(DisplayText+i) & 128) {                 // comma set?
           *(DisplayLower+2*i) = 1 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)];
           *(DisplayLower+2*i+1) = 8 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
@@ -1335,7 +1369,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
   case 4:                                             // Sys11 Taxi
   case 5:                                             // Sys11 Riverboat Gambler
     if (Player == 1) {
-      for (i=0;i<16;i++) {                            // for all digits
+      for (byte i=0;i<16;i++) {                       // for all digits
         if (*(DisplayText+i) & 128) {                 // comma set?
           *(DisplayUpper+2*i) = 128 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)];
           *(DisplayUpper+2*i+1) = 64 | DispPattern1[(int)(((*(DisplayText+i) & 127)-32)*2)+1];}
@@ -1343,7 +1377,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
           *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
           *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}}
     else {
-      for (i=0;i<16;i++) {                            // for all digits
+      for (byte i=0;i<16;i++) {                       // for all digits
         if (*(DisplayText+i) & 128) {                 // comma set?
           *(DisplayLower+2*i) = 1 | DispPattern2[(int)(((*(DisplayText+i) & 127)-32)*2)];}
         else {
@@ -1353,11 +1387,11 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
     if (Player) {                                     // player display?
       if (Player < 3) {                               // upper row?
         Player--;
-        for (i=0;i<6;i++) {                           // for all digits
+        for (byte i=0;i<6;i++) {                      // for all digits
           *(DisplayLower+16*Player+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+16*Player+2*i));}}
       else {                                          // lower row
         Player = Player - 3;
-        for (i=0;i<6;i++) {                           // for all digits
+        for (byte i=0;i<6;i++) {                      // for all digits
           *(DisplayLower+16*Player+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+16*Player+2*i));}}}
     else {                                            // credit display
       *(DisplayLower+28) = ConvertNumUpper((byte) *(DisplayText)-48,(byte) *(DisplayLower+28));
@@ -1369,7 +1403,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
     if (Player) {                                     // player display?
       if (Player < 3) {                               // upper row?
         Player--;
-        for (i=0;i<7;i++) {                           // for all digits
+        for (byte i=0;i<7;i++) {                      // for all digits
           if (*(DisplayText+i) & 128) {               // comma set?
             *(DisplayLower+2+16*Player+2*i) = ConvertNumUpper((byte) (*(DisplayText+i) & 127)-48,(byte) *(DisplayLower+2+16*Player+2*i));
             *(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) | 1;}
@@ -1378,7 +1412,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
             *(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) & 254;}}}
       else {                                          // lower row
         Player = Player - 3;
-        for (i=0;i<7;i++) {                           // for all digits
+        for (byte i=0;i<7;i++) {                      // for all digits
           if (*(DisplayText+i) & 128) {               // comma set?
             *(DisplayLower+2+16*Player+2*i) = ConvertNumLower((byte) (*(DisplayText+i) & 127)-48,(byte) *(DisplayLower+2+16*Player+2*i));
             *(DisplayLower+3+16*Player+2*i) = *(DisplayLower+3+16*Player+2*i) | 128;}
@@ -1393,16 +1427,16 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
 
 void WriteUpper(const char* DisplayText) {            
   if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-    for (i=0; i<16; i++) {
+    for (byte i=0; i<16; i++) {
       *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
   else {
     if (APC_settings[DisplayType] > 6) {              // numbers only type display
-      for (i=0;i<7;i++) {                             // for all digits
+      for (byte i=0;i<7;i++) {                        // for all digits
         *(DisplayLower+2+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+2*i));
         *(DisplayLower+18+2*i) = ConvertNumUpper((byte) *(DisplayText+7+i)-48,(byte) *(DisplayLower+18+2*i));}}
     else {                                            // Sys11 display with credit
-      for (i=0; i<7; i++) {
+      for (byte i=0; i<7; i++) {
         *(DisplayUpper+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
         *(DisplayUpper+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
         *(DisplayUpper+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
@@ -1410,16 +1444,16 @@ void WriteUpper(const char* DisplayText) {
 
 void WriteLower(const char* DisplayText) {
   if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-    for (i=0; i<16; i++) {
+    for (byte i=0; i<16; i++) {
       *(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
   else {
     if (APC_settings[DisplayType] > 6) {              // numbers only type display
-      for (i=0;i<7;i++) {                             // for all digits
+      for (byte i=0;i<7;i++) {                        // for all digits
         *(DisplayLower+2+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+2*i));
         *(DisplayLower+18+2*i) = ConvertNumLower((byte) *(DisplayText+7+i)-48,(byte) *(DisplayLower+18+2*i));}}
     else {                                            // Sys11 display with credit
-      for (i=0; i<7; i++) {
+      for (byte i=0; i<7; i++) {
         *(DisplayLower+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
         *(DisplayLower+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
         *(DisplayLower+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
@@ -1427,11 +1461,11 @@ void WriteLower(const char* DisplayText) {
 
 void WriteUpper2(const char* DisplayText) {
   if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-    for (i=0; i<16; i++) {
+    for (byte i=0; i<16; i++) {
       *(DisplayUpper2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
   else {
-    for (i=0; i<7; i++) {
+    for (byte i=0; i<7; i++) {
       *(DisplayUpper2+2+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper2+2+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];
       *(DisplayUpper2+18+2*i) = DispPattern1[(int)((*(DisplayText+7+i)-32)*2)];
@@ -1439,11 +1473,11 @@ void WriteUpper2(const char* DisplayText) {
 
 void WriteLower2(const char* DisplayText) {
   if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-    for (i=0; i<16; i++) {
+    for (byte i=0; i<16; i++) {
       *(DisplayLower2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
   else {
-    for (i=0; i<7; i++) {
+    for (byte i=0; i<7; i++) {
       *(DisplayLower2+2+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower2+2+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];
       *(DisplayLower2+18+2*i) = DispPattern2[(int)((*(DisplayText+7+i)-32)*2)];
@@ -1457,7 +1491,7 @@ void ScrollUpper(byte Step) {                         // call with Step = 0 and 
       Timer = 0;}}
   else {                                              // normal call
     if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-      for (i=0; i<30; i++) {
+      for (byte i=0; i<30; i++) {
         DisplayUpper[i] = DisplayUpper[i+2];}
       DisplayUpper[30] = DisplayUpper2[2*Step];       // add the corresponding char of DisplayUpper2
       DisplayUpper[31] = DisplayUpper2[2*Step+1];
@@ -1465,11 +1499,11 @@ void ScrollUpper(byte Step) {                         // call with Step = 0 and 
     else {                                            // dont use columns 0 and 8 as they are reserved for the credit display
       if (!Step) {
         Step++;}
-      for (i=2; i<14; i++) {                          // scroll display 1
+      for (byte i=2; i<14; i++) {                     // scroll display 1
         DisplayUpper[i] = DisplayUpper[i+2];}
       DisplayUpper[14] = DisplayUpper[18];            // add put the leftmost char of the display 2 to the end
       DisplayUpper[15] = DisplayUpper[19];
-      for (i=18; i<30; i++) {                         // scroll display 2
+      for (byte i=18; i<30; i++) {                    // scroll display 2
         DisplayUpper[i] = DisplayUpper[i+2];}
       DisplayUpper[30] = DisplayUpper2[2*Step];       // add the corresponding char of DisplayUpper2
       DisplayUpper[31] = DisplayUpper2[2*Step+1];
@@ -1491,14 +1525,14 @@ void AddScrollUpper(byte Step) {                      // call with Step = 0 and 
     if (!Step) {
       Step++;}
     if (Step > 8) {                                   // scroll into the left display?
-      for (i=0; i<2*(Step-9);i++) {                   // for all characters in the left display that have to be scrolled
+      for (byte i=0; i<2*(Step-9);i++) {                   // for all characters in the left display that have to be scrolled
         DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];} // scroll them
       DisplayUpper[14] = DisplayUpper[18];            // get the leftmost character of the right display
       DisplayUpper[15] = DisplayUpper[19];
-      for (i=0; i<12; i++) {                          // scroll the right display by 6 characters
+      for (byte i=0; i<12; i++) {                     // scroll the right display by 6 characters
         DisplayUpper[18+i] = DisplayUpper[20+i];}}
     else {                                            // scroll only the right display
-      for (i=0; i<2*(Step-1); i++) {
+      for (byte i=0; i<2*(Step-1); i++) {
         DisplayUpper[32-(2*Step)+i] = DisplayUpper[34-(2*Step)+i];}}
     DisplayUpper[30] = DisplayUpper2[2*Step];         // fill the rightmost character of the right display
     DisplayUpper[31] = DisplayUpper2[2*Step+1];
@@ -1520,12 +1554,12 @@ void ScrollLower(byte Step) {                         // call with Step = 0 and 
     if (!Step) {
       Step++;}
     if (Step < 8) {                                   // do display 3 first
-      for (i=2; i<14; i++) {                          // scroll display 3
+      for (byte i=2; i<14; i++) {                     // scroll display 3
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[14] = DisplayLower2[2*Step];       // add the corresponding char of DisplayLower2
       DisplayLower[15] = DisplayLower2[2*Step+1];}
     else {                                            // do display 4
-      for (i=18; i<30; i++) {                         // scroll display 4
+      for (byte i=18; i<30; i++) {                    // scroll display 4
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[30] = DisplayLower2[2*Step+2];     // add the corresponding char of DisplayLower2
       DisplayLower[31] = DisplayLower2[2*Step+3];}
@@ -1543,7 +1577,7 @@ void ScrollLower2(byte Step) {                        // call with Step = 0 and 
       Timer = 0;}}
   else {                                              // normal call
     if ((APC_settings[DisplayType] > 2) && (APC_settings[DisplayType] < 7)) { // 2x16 character display
-      for (i=0; i<30; i++) {
+      for (byte i=0; i<30; i++) {
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[30] = DisplayLower2[2*Step];       // add the corresponding char of DisplayLower2
       DisplayLower[31] = DisplayLower2[2*Step+1];
@@ -1551,11 +1585,11 @@ void ScrollLower2(byte Step) {                        // call with Step = 0 and 
     else {                                            // not a 2x16 char type
       if (!Step) {
         Step++;}
-      for (i=2; i<14; i++) {                          // scroll display 1
+      for (byte i=2; i<14; i++) {                     // scroll display 1
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[14] = DisplayLower[18];            // add put the leftmost char of the display 2 to the end
       DisplayLower[15] = DisplayLower[19];
-      for (i=18; i<30; i++) {                         // scroll display 2
+      for (byte i=18; i<30; i++) {                    // scroll display 2
         DisplayLower[i] = DisplayLower[i+2];}
       DisplayLower[30] = DisplayLower2[2*Step];       // add the corresponding char of DisplayLower2
       DisplayLower[31] = DisplayLower2[2*Step+1];
@@ -1580,7 +1614,7 @@ void ShowMessage(byte Seconds) {                      // switch to the second di
 
 void ActivateSolenoid(unsigned int Duration, byte Solenoid) {
   if ((Solenoid < 23 && !SolRecycleTimers[Solenoid-1]) || (Solenoid < 25 && Solenoid > 22)) { // consider recycling time for A bank solenoids only
-    SolChange = false;                                  // block IRQ solenoid handling
+    SolChange = false;                                // block IRQ solenoid handling
     if (Solenoid > 8) {                               // does the solenoid not belong to the first latch?
       if (Solenoid < 17) {                            // does it belong to the second latch?
         SolBuffer[1] |= 1<<(Solenoid-9);}             // latch counts from 0
@@ -1598,7 +1632,7 @@ void DelaySolenoid(byte Solenoid) {                   // activate solenoid after
   ActivateSolenoid(0, Solenoid);}
 
 void ReleaseAllSolenoids() {
-  for (i=0; i< 4; i++) {                              // clear all solenoid buffers
+  for (byte i=0; i< 4; i++) {                         // clear all solenoid buffers
     SolBuffer[i] = 0;}
   if (APC_settings[SolenoidExp]) {                    // sol exp board selected
     WriteToHwExt(0, 128+4);
@@ -2033,7 +2067,7 @@ void ShowNumber(byte Position, unsigned int Number) { // write a number into the
 
 void ShowAllPoints(byte Dummy) {                      // just a dummy event to access it via timer
   UNUSED(Dummy);
-  WriteUpper("                ");                       // erase display
+  WriteUpper("                ");                     // erase display
   WriteLower("                ");
   for (byte i=1; i<=NoPlayers; i++) {                 // display the points of all active players
     ShowPoints(i);}}
@@ -2230,7 +2264,7 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
         KillTimer(Timer);
         Timer = 0;}}}}
 
-void StrobeLights(byte Time) {                       // switch between no lamps and normal lamp pattern (0-> stop, >2 -> strobe lamps with this pulse length
+void StrobeLights(byte Time) {                        // switch between no lamps and normal lamp pattern (0-> stop, >2 -> strobe lamps with this pulse length
   static byte Timer = 0;
   static byte PulseLength;
   if (Time) {
@@ -2561,10 +2595,10 @@ void RestoreDefaults(bool change) {                   // restore the default set
   if (change) {                                       // if the start button has been pressed
     AppByte2 = 1;                                     // set the change indicator
     if (SettingsPointer == APC_settings) {            // system settings mode?
-      for(i=0;i<64;i++) {                             // change all settings to their default values
+      for(byte i=0;i<64;i++) {                        // change all settings to their default values
         *(SettingsPointer+i) = APC_defaults[i];}}
     else {                                            // game settings mode
-      for(i=0;i<64;i++) {                             // change all settings to their default values
+      for(byte i=0;i<64;i++) {                        // change all settings to their default values
         *(SettingsPointer+i) = *(GameDefinition.GameDefaultsPointer+i);}}
     WriteLower("SETTNGS DONE    ");}
   else {
@@ -2655,12 +2689,12 @@ byte HandleHighScores(unsigned int Score) {
   byte Position = 0;
   while (HallOfFame.Scores[Position] > Score) {       // check to which position of the highscore list it belongs
     Position++;}
-  for (i=3; i>Position; i--) {                        // move all lower highscores down
+  for (byte i=3; i>Position; i--) {                   // move all lower highscores down
     HallOfFame.Scores[i] = HallOfFame.Scores[i-1];}
-  for (i=9; i>Position*3; i--) {
+  for (byte i=9; i>Position*3; i--) {
     HallOfFame.Initials[i+2] = HallOfFame.Initials[i-1];}
   HallOfFame.Scores[Position] = Score;                // and include the new highscore to the list
-  for (i=0; i<3; i++) {
+  for (byte i=0; i<3; i++) {
     HallOfFame.Initials[Position*3+i] = EnterIni[i];} // copy initials
   if (SDfound) {
     SD.remove(GameDefinition.HighScoresFileName);

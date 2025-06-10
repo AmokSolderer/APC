@@ -81,8 +81,9 @@ Enter the game settings and do your changes. When you're done, just select menu 
 | 11 | Backbox Lamps | 0| Column 1 | X | Backbox lamps are in lamp column 1 |
 | 11 |  | 1 | Column 8 | - | Backbox lamps are in lamp column 8 |
 | 11 |  | 2 | None | - | game has no controlled backbox lamps |
-| 12 | Restore Default | - | - | - | No setting - restores the default settings |
-| 13 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 12 | Connect Startup | - | - | No | Bool setting - If active, then the connection type is not set by setting 4 (Connect Type) but by the state of the Up/Down switch during startup (and when leaving the settings). Switch in Up state selects the onboard Pi, otherwise the USB programming port |
+| 13 | Restore Default | - | - | - | No setting - restores the default settings |
+| 14 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## Game Settings in Remote Control mode
 
@@ -99,10 +100,7 @@ These game settings are only visible if 'Remote Control' is selected as the 'Act
 | 3 | PinMame game | - | - | 0 | Numerical setting - [PinMame game number](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) |
 | 4 | Lisy Debug | - | - | 0 | Numerical setting according to the [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) page |
 | 5 | Ball Saver | 0 | Off | X | The optional ball saver is not active |
-| 5 |  | 1 | Right Outlane | - | The ball saver is only active for the right outlane |
-| 5 |  | 2 | Left Outlane | - | The ball saver is only active for the left outlane |
-| 5 |  | 3 | Both Oulanes | - | The ball saver is only active for the outlanes |
-| 5 |  | 4 | General | - | The ball saver is active for all drained balls |
+| 5 |  | 1 | On | - | The ball saver is active for all drained balls |
 | 6 | Ball Saver Time | - | - | 20 | Numerical setting - range 5 - 250 / Active time of the Ball Saver |
 | 7 | BG Music | 0 | PinMame default | X | Normal BG music |
 | 7 |  | 1 | Music snd | - | Uses the MUSIC.SND file as BG music |
