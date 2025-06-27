@@ -374,9 +374,9 @@ void Init_System2(byte State) {                       // state = 0 will restore 
   if (APC_settings[ActiveGame] == 3) {                // Remote Control selected?
     if (APC_settings[ConnectStartup]) {               // use Up/Down switch to select com interface?
       if (QuerySwitch(73)) {                          // switch pressed?
-        ComState = 1;}                                // use onboard Pi
+        APC_settings[ActiveGame] = 3;}                // use PinMame
       else {                                          // switch not pressed
-        ComState = 2;}}                               // use USB
+        APC_settings[ActiveGame] = 4;}}               // use Space Station code
     else {                                            // select by setting
       ComState = APC_settings[ConnType];}}
   else {
