@@ -2313,8 +2313,10 @@ void PB_Multiball_RestoreLamps(byte Dummy) {
 void PB_MballDisplay(byte Step) {
   const byte PB_2MballDispUpper[78] = {17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during 2 ball multiball
   const byte PB_2MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,96,0,98,0,106,0,122,0,90,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  const byte PB_2MballDispLower2[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,96,0,98,2,106,2,122,2,90,2,26,2,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   const byte PB_3MballDispUpper[78] = {3,0,67,4,71,4,79,4,78,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,0,67,4,71,4,79,4,78,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during 3 ball multiball
   const byte PB_3MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,160,0,162,0,170,0,186,0,154,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  const byte PB_3MballDispLower2[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,160,0,162,2,170,2,186,2,154,2,26,2,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   static byte Timer = 0;
   byte *PB_MballDispUpper;
   byte *PB_MballDispLower;
@@ -2325,10 +2327,16 @@ void PB_MballDisplay(byte Step) {
       Step = 24;}}
   if (Multiballs == 3) {
     PB_MballDispUpper = (byte* ) PB_3MballDispUpper;
-    PB_MballDispLower = (byte* ) PB_3MballDispLower;}
+    if (APC_settings[DisplayType]) {                  // normal display?
+      PB_MballDispLower = (byte* ) PB_3MballDispLower;}
+    else {                                            // lower row alphanumeric
+      PB_MballDispLower = (byte* ) PB_3MballDispLower2;}}
   else {
     PB_MballDispUpper = (byte* ) PB_2MballDispUpper;
-    PB_MballDispLower = (byte* ) PB_2MballDispLower;}
+    if (APC_settings[DisplayType]) {                  // normal display
+      PB_MballDispLower = (byte* ) PB_2MballDispLower;}
+    else {                                            // lower row alphanumeric
+      PB_MballDispLower = (byte* ) PB_2MballDispLower2;}}
   if (!Step) {
     if (Timer) {
       KillTimer(Timer);
