@@ -1,5 +1,11 @@
 # APC News and Changelog
 
+## TBD
+
+### New SW Version V1.04
+
+* Native Pinbot code shows points >= 10M in highscore list if 4 Aplha + Credit display in installed
+
 ## June 2025
 
 ### New SW Version V1.03
