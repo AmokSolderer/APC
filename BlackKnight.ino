@@ -361,7 +361,7 @@ void BK_AttractDisplayCycle(byte Step) {
     RemoveBlinkLamp(6);
     return;
   case 1:                                             // attract mode title 'page'
-    if (Count == 40 && !APC_settings[DisplayType]) {  // only for alphanumeriscal displays
+    if (Count == 40 && !APC_settings[DisplayType]) {  // only for alphanumerical displays
       if (APC_settings[Volume]) {                     // system set to digital volume control?
         analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
       else {
@@ -403,12 +403,18 @@ void BK_AttractDisplayCycle(byte Step) {
     WriteUpper2("1>              ");
     WriteLower2("2>              ");
     for (byte i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
-      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
+      *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+      *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+      *(DisplayLower2+6+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
+      *(DisplayLower2+6+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
     ShowNumber(15, HallOfFame.Scores[0]);
     ShowNumber(31, HallOfFame.Scores[1]);
+    if (HallOfFame.Scores[0] >= 10000000) {         // expand scores > 10M to the left display
+      unsigned int Buffer = HallOfFame.Scores[0] / 10000000;
+      ShowNumber(7, Buffer);}
+    if (HallOfFame.Scores[1] >= 10000000) {
+      unsigned int Buffer = HallOfFame.Scores[1] / 10000000;
+      ShowNumber(23, Buffer);}
     Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, BK_AttractDisplayCycle);
     Step++;
@@ -418,12 +424,18 @@ void BK_AttractDisplayCycle(byte Step) {
     WriteUpper2("3>              ");
     WriteLower2("4>              ");
     for (byte i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
-      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
+      *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+      *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+      *(DisplayLower2+6+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
+      *(DisplayLower2+6+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
     ShowNumber(15, HallOfFame.Scores[2]);
     ShowNumber(31, HallOfFame.Scores[3]);
+    if (HallOfFame.Scores[0] >= 10000000) {
+      unsigned int Buffer = HallOfFame.Scores[2] / 10000000;
+      ShowNumber(7, Buffer);}
+    if (HallOfFame.Scores[1] >= 10000000) {
+      unsigned int Buffer = HallOfFame.Scores[3] / 10000000;
+      ShowNumber(23, Buffer);}
     Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, BK_AttractDisplayCycle);
     Step = 1;

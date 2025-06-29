@@ -4,7 +4,8 @@
 
 ### New SW Version V1.04
 
-* Native Pinbot code shows points >= 10M in highscore list if 4 Aplha + Credit display in installed
+* Native Pinbot code shows points >= 10M in highscore list if 4 Aplha + Credit display is installed
+* Native Black Knight code shows points >= 10M in highscore list if 4 Aplha + Credit display is installed
 
 ## June 2025
 
