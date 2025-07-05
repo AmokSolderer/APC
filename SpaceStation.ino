@@ -2,6 +2,8 @@
 
 const byte SS_SearchCoils[15] = {1,3,4,6,8,13,18,19,20,21,22,17,32,0}; // coils to fire when the ball watchdog timer runs out - has to end with a zero
 unsigned int SS_SolTimes[32] = {50,50,50,50,50,50,30,50,0,0,0,0,50,50,100,0,50,50,50,50,50,50,0,0,100,100,100,100,100,100,100,50}; // Activation times for solenoids
+const byte SS_ACselectRelay = 14;                     // solenoid number of the A/C select relay
+const char SS_TestSounds[10][15] = {{"1_01L.snd"},{"1_02.snd"},{"1_02L.snd"},{"1_03L.snd"},{"1_04.snd"},{"1_04L.snd"},{"1_05.snd"},{"1_06.snd"},{"1_06L.snd"},0};
 
 const byte SS_defaults[64] = {9,13,12,11,20,12,1,2,        // game default settings
                               3,0,0,0,0,0,0,0,
@@ -176,17 +178,24 @@ void SS_AttractMode() {                               // Attract Mode
 
 void SS_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
   UNUSED(Event);
-  PatPointer = SS_AttractFlow[AppByte2].FlowPat;      // set the pointer to the current series
-  FlowRepeat = SS_AttractFlow[AppByte2].Repeat;       // set the repetitions
-  AppByte2++;                                         // increase counter
-  if (!SS_AttractFlow[AppByte2].Repeat) {             // repetitions of next series = 0?
-    AppByte2 = 0;}                                    // reset counter
+  static byte State = 1;
+  PatPointer = SS_AttractFlow[State].FlowPat;         // set the pointer to the current series
+  FlowRepeat = SS_AttractFlow[State].Repeat;          // set the repetitions
+  State++;                                            // increase counter
+  if (!SS_AttractFlow[State].Repeat) {                // repetitions of next series = 0?
+    State = 0;}                                       // reset counter
   ShowLampPatterns(1);}                               // call the player
 
+void SS_RestoreLamps(byte Dummy) {                    // restore lamps after ShowLampPatterns has run out
+  UNUSED(Dummy);
+  LampPattern = LampColumns;}
+
 void SS_AttractDisplayCycle(byte Step) {
+  static byte Count = 0;
   static byte Timer0 = 0;
   static byte Timer1 = 0;
   static byte Timer2 = 0;
+  static byte Timer3 = 0;
   switch (Step) {
   case 0:                                             // stop command
     if (Timer0) {
@@ -198,18 +207,48 @@ void SS_AttractDisplayCycle(byte Step) {
     if (Timer2) {
       KillTimer(Timer2);
       Timer2 = 0;}
+    if (Timer3) {
+      KillTimer(Timer3);
+      Timer3 = 0;}
+    Count = 0;
     ScrollUpper(100);                                 // stop scrolling
-    ScrollLower2(100);
+    ScrollLower(100);
+    AddScrollUpper(100);
     return;
   case 1:                                             // attract mode title 'page'
-    WriteUpper2("APC BASE CODE   ");
-    Timer1 = ActivateTimer(50, 5, SS_AttractDisplayCycle);
-    WriteLower2("                ");
-    Timer2 = ActivateTimer(1000, 6, SS_AttractDisplayCycle);
-    if (NoPlayers) {                                  // if there were no games before skip the next step
-      Step++;}
+    if (Count == 20) {
+      Count++;
+      Step = 1;
+      WriteUpper(" NOW I SEE YOU  ");                 // erase display
+      WriteLower("                ");
+      PlaySound(55, "0_b0.snd");}                     // 'now I see you'
+    else if (Count == 40) {
+      Timer0 = 0;
+      Count++;
+      Step = 1;
+      LampReturn = SS_RestoreLamps;
+      ShowLampPatterns(0);                            // stop lamp animations
+      SS_AttractDisplayCycle(0);                      // stop display animations
+      for (byte i=0; i< 8; i++) {
+        LampColumns[i] = 0;}
+      LampPattern = LampColumns;
+      //SS_RulesDisplay(1);
+      Count = 0;
+      return;}
     else {
-      Step = 3;}
+      Count++;
+      WriteUpper2("THE APC         ");
+      Timer1 = ActivateTimer(50, 5, SS_AttractDisplayCycle);
+      Timer3 = ActivateTimer(2000, 7, SS_AttractDisplayCycle);
+      if (APC_settings[DisplayType]) {                // Standard display
+        WriteLower2("                ");}
+      else {                                          // 4Alpha + Credit
+        WriteLower2("  FOR  STEPHAN  ");}
+      Timer2 = ActivateTimer(3000, 6, SS_AttractDisplayCycle);
+      if (NoPlayers) {                                // if there were no games before skip the next step
+        Step++;}
+      else {
+        Step = 3;}}
     break;
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
@@ -221,29 +260,63 @@ void SS_AttractDisplayCycle(byte Step) {
     Step++;
     break;
   case 3:                                             // Show highscores
-    WriteUpper2("1>              ");
-    WriteLower2("2>              ");
-    for (byte i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
-      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
-    ShowNumber(15, HallOfFame.Scores[0]);
-    ShowNumber(31, HallOfFame.Scores[1]);
+    if (APC_settings[DisplayType]) {                  // Standard display
+      WriteUpper2("1>     2>     ");
+      WriteLower2("              ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+        *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+        *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
+        *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
+      ShowNumber(23, HallOfFame.Scores[0]);
+      ShowNumber(31, HallOfFame.Scores[1]);}
+    else {                                            // 4Alpha + Credit
+      WriteUpper2("1>            ");
+      WriteLower2("2>            ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+        *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+        *(DisplayLower2+6+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
+        *(DisplayLower2+6+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
+      ShowNumber(15, HallOfFame.Scores[0]);
+      ShowNumber(31, HallOfFame.Scores[1]);
+      if (HallOfFame.Scores[0] >= 10000000) {         // expand scores > 10M to the left display
+        unsigned int Buffer = HallOfFame.Scores[0] / 10000000;
+        ShowNumber(7, Buffer);}
+      if (HallOfFame.Scores[1] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[1] / 10000000;
+        ShowNumber(23, Buffer);}}
     Timer1 = ActivateTimer(50, 5, SS_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, SS_AttractDisplayCycle);
     Step++;
     break;
   case 4:
-    WriteUpper2("3>              ");
-    WriteLower2("4>              ");
-    for (byte i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
-      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
-    ShowNumber(15, HallOfFame.Scores[2]);
-    ShowNumber(31, HallOfFame.Scores[3]);
+    if (APC_settings[DisplayType]) {
+      WriteUpper2("3>     4>     ");
+      WriteLower2("              ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+        *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+        *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
+        *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
+      ShowNumber(23, HallOfFame.Scores[2]);
+      ShowNumber(31, HallOfFame.Scores[3]);}
+    else {
+      WriteUpper2("3>            ");
+      WriteLower2("4>            ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+        *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+        *(DisplayLower2+6+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
+        *(DisplayLower2+6+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
+      ShowNumber(15, HallOfFame.Scores[2]);
+      ShowNumber(31, HallOfFame.Scores[3]);
+      if (HallOfFame.Scores[0] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[2] / 10000000;
+        ShowNumber(7, Buffer);}
+      if (HallOfFame.Scores[1] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[3] / 10000000;
+        ShowNumber(23, Buffer);}}
     Timer1 = ActivateTimer(50, 5, SS_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, SS_AttractDisplayCycle);
     Step = 1;
@@ -254,8 +327,19 @@ void SS_AttractDisplayCycle(byte Step) {
     return;
   case 6:
     Timer2 = 0;
-    ScrollLower2(0);
-    return;}
+    ScrollLower(0);
+    return;
+  case 7:
+    Timer3 = 0;
+    WriteUpper2(" SPACE STATION");
+    ScrollUpper(0);
+    return;
+  case 10:
+    AddBlinkLamp(1, 150);                             // blink Game Over lamp
+    LampReturn = SS_AttractLampCycle;
+    SS_AttractLampCycle(1);
+    SS_AttractDisplayCycle(1);
+    break;}
   SS_CheckForLockedBalls(0);                          // check for a ball in the outhole
   Timer0 = ActivateTimer(4000, Step, SS_AttractDisplayCycle);}  // come back for the next 'page'
 
@@ -574,25 +658,14 @@ void SS_Testmode(byte Select) {
       *(DisplayLower+16) = 0;
       *(DisplayUpper) = 0;
       *(DisplayUpper+16) = 0;
-      if (APC_settings[DisplayType] < 7) {            // Sys11 display
-        WriteUpper("DISPLAY TEST    ");
-        WriteLower("                ");}
-      else {                                          // Sys3 - 9 display
-        for(byte c=0; c<16; c++) {                    // clear numerical displays
-          *(DisplayLower+2*c) = 255;                  // delete numbers
-          *(DisplayLower+1+2*c) = 0;}                 // delete commas
-        DisplayScore(1, 1);}                          // show test number
+      WriteUpper("DISPLAY TEST  ");
+      WriteLower("              ");
       AppByte2 = 0;
       break;
     case 3:                                           // credit button
-      if (APC_settings[DisplayType] < 7) {            // Sys11 display
-        WriteUpper("0000000000000000");
-        WriteLower("0000000000000000");
-        AppByte2 = ActivateTimer(1000, 32, SS_DisplayCycle);}
-      else {
-        for(byte c=0; c<16; c++) {                    // clear numerical displays
-          *(DisplayLower+2*c) = 0;}                   // delete numbers
-        AppByte2 = ActivateTimer(1000, 0, SS_DisplayCycle);}
+      WriteUpper("0000000000000000");
+      WriteLower("0000000000000000");
+      AppByte2 = ActivateTimer(1000, 32, SS_DisplayCycle);
       break;
     case 72:                                          // advance button
       if (AppByte2) {
@@ -602,179 +675,167 @@ void SS_Testmode(byte Select) {
         AppByte++;}
       SS_Testmode(0);}
     break;
-    case 1:                                           // switch edges test
+  case 1:                                             // switch edges test
+    switch(Select) {                                  // switch events
+    case 0:                                           // init (not triggered by switch)
+      AppByte2 = 0;
+      WriteUpper(" SWITCHEDGES  ");
+      WriteLower("              ");
+      break;
+    case 72:                                          // advance button
+      if (AppByte2) {
+        AppByte2 = 0;}
+      else {
+        AppByte++;}
+      SS_Testmode(0);
+      break;
+    case 3:                                           // credit button
+      if (!AppByte2) {
+        WriteUpper(" LATESTEDGES  ");
+        AppByte2 = 1;
+        break;} // @suppress("No break at end of case")
+    default:                                          // all other switches
+      for (byte i=1; i<24; i++) {                     // move all characters in the lower display row 4 chars to the left
+        DisplayLower[i] = DisplayLower[i+8];}
+      *(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
+      *(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
+      *(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
+      *(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}
+    break;
+  case 2:                                             // solenoid test
+    switch(Select) {                                  // switch events
+    case 0:                                           // init (not triggered by switch)
+      WriteUpper("  COIL  TEST  ");
+      WriteLower("              ");
+      AppByte2 = 0;
+      break;
+    case 3:
+      WriteUpper(" FIRINGCOIL NO");
+      AppBool = false;
+      AppByte2 = ActivateTimer(1000, 1, SS_FireSolenoids);
+      break;
+    case 72:
+      if (AppByte2) {
+        KillTimer(AppByte2);
+        AppByte2 = 0;}
+      else {
+        AppByte++;}
+      SS_Testmode(0);}
+    break;
+    case 3:                                           // single lamp test
       switch(Select) {                                // switch events
       case 0:                                         // init (not triggered by switch)
+        WriteUpper(" SINGLE LAMP  ");
+        WriteLower("              ");
         AppByte2 = 0;
-        if (APC_settings[DisplayType] < 7) {          // Sys11 display
-          WriteUpper(" SWITCH EDGES   ");
-          WriteLower("                ");}
-        else {                                        // Sys3 - 9 display
-          for(byte c=0; c<16; c++) {                  // clear numerical displays
-            *(DisplayLower+2*c) = 255;                // delete numbers
-            *(DisplayLower+1+2*c) = 0;}               // delete commas
-          DisplayScore(1, 2);}                        // show test number
+        for (byte i=0; i<(LampMax+1); i++){           // erase lamp matrix
+          TurnOffLamp(i);}
+        LampPattern = LampColumns;                    // and show it
         break;
-      case 72:                                        // advance button
+      case 3:
+        WriteUpper(" ACTUAL LAMP  ");
+        AppByte2 = ActivateTimer(1000, 1, SS_ShowLamp);
+        break;
+      case 72:
+        LampPattern = NoLamps;
+        if (AppByte2) {
+          KillTimer(AppByte2);
+          AppByte2 = 0;}
+        else {
+          AppByte++;}
+        SS_Testmode(0);}
+      break;
+    case 4:                                           // all lamps test
+      switch(Select) {                                // switch events
+      case 0:                                         // init (not triggered by switch)
+        WriteUpper("  ALL   LAMPS ");
+        WriteLower("              ");
+        AppByte2 = 0;
+        break;
+      case 3:
+        WriteUpper("FLASHNG LAMPS ");
+        AppByte2 = ActivateTimer(1000, 1, SS_ShowAllLamps);
+        break;
+      case 72:
+        LampPattern = NoLamps;
+        if (AppByte2) {
+          KillTimer(AppByte2);
+          AppByte2 = 0;}
+        else {
+          AppByte++;}
+        SS_Testmode(0);}
+      break;
+    case 5:                                           // all music test
+      switch(Select) {                                // switch events
+      case 0:                                         // init (not triggered by switch)
+        WriteUpper(" MUSIC  TEST  ");
+        WriteLower("              ");
+        AppByte2 = 0;
+        break;
+      case 3:
+        if (!AppByte2) {                              // first sound?
+          WriteUpper("PLAYING MUSIC ");
+          *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte2+1) % 10)]; // show the actual sound number
+          *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte2+1) % 10)];
+          *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+          *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+          AfterMusic = SS_NextTestSound;
+          PlayMusic(50, (char*) SS_TestSounds[AppByte2]);
+          AppByte2++;}                                // prepare for next sound
+        else {                                        // not the first sound
+          SS_NextTestSound(0);}
+        break;
+      case 72:
+        AfterMusic = 0;
+        StopPlayingMusic();
         if (AppByte2) {
           AppByte2 = 0;}
         else {
           AppByte++;}
-        SS_Testmode(0);
-        break;
-      case 3:                                         // credit button
-        if (!AppByte2) {
-          WriteUpper(" LATEST EDGES   ");
-          AppByte2 = 1;
-          break;}
-        /* no break */
-      default:                                        // all other switches
-        if (APC_settings[DisplayType] == 7) {         // Sys6 display?
-          for (byte i=0; i<10; i++) {                 // move all characters in the lower display row 4 chars to the left
-            DisplayLower[2*i] = DisplayLower[2*i+8];}
-          *(DisplayLower+24) = ConvertNumLower((byte) Select / 10, 0); // and insert the switch number to the right of the row
-          *(DisplayLower+26) = ConvertNumLower((byte) (Select % 10), 0);}
-        else if (APC_settings[DisplayType] == 8) {    // Sys7 display?
-          for (byte i=1; i<24; i++) {                 // move all characters in the lower display row 4 chars to the left
-            DisplayLower[i] = DisplayLower[i+8];}
-          *(DisplayLower+28) = ConvertNumLower((byte) Select / 10, 0); // and insert the switch number to the right of the row
-          *(DisplayLower+30) = ConvertNumLower((byte) (Select % 10), 0);}
-        else {
-          for (byte i=1; i<24; i++) {                 // move all characters in the lower display row 4 chars to the left
-            DisplayLower[i] = DisplayLower[i+8];}
-          *(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
-          *(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
-          *(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
-          *(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}}
+        SS_Testmode(0);}
       break;
-      case 2:                                         // solenoid test
-        switch(Select) {                              // switch events
-        case 0:                                       // init (not triggered by switch)
-          if (APC_settings[DisplayType] < 7) {        // Sys11 display
-            WriteUpper("  COIL  TEST    ");
-            WriteLower("                ");}
-          else {                                      // Sys3 - 9 display
-            for(byte c=0; c<16; c++) {                // clear numerical displays
-              *(DisplayLower+2*c) = 255;              // delete numbers
-              *(DisplayLower+1+2*c) = 0;}             // delete commas
-            DisplayScore(1, 3);}                      // show test number
-          AppByte2 = 0;
-          break;
-        case 3:
-          WriteUpper(" FIRINGCOIL NO  ");
-          AppBool = false;
-          AppByte2 = ActivateTimer(1000, 1, SS_FireSolenoids);
-          break;
-        case 72:
-          if (AppByte2) {
-            ReleaseAllSolenoids();
-            KillTimer(AppByte2);
-            AppByte2 = 0;}
-          else {
-            AppByte++;}
-          SS_Testmode(0);}
+    case 6:                                           // station test
+      switch(Select) {                                // switch events
+      case 0:                                         // init (not triggered by switch)
+        WriteUpper("STATION TEST  ");
+        WriteLower("              ");
+        AppByte2 = 0;
         break;
-        case 3:                                       // single lamp test
-          switch(Select) {                            // switch events
-          case 0:                                     // init (not triggered by switch)
-            if (APC_settings[DisplayType] < 7) {      // Sys11 display
-              WriteUpper(" SINGLE LAMP    ");
-              WriteLower("                ");}
-            else {                                    // Sys3 - 9 display
-              for(byte c=0; c<16; c++) {              // clear numerical displays
-                *(DisplayLower+2*c) = 255;            // delete numbers
-                *(DisplayLower+1+2*c) = 0;}           // delete commas
-              DisplayScore(1, 4);}                    // show test number
-            AppByte2 = 0;
-            for (byte i=0; i<8; i++){                 // erase lamp matrix
-              LampColumns[i] = 0;}
-            LampPattern = LampColumns;                // and show it
-            break;
-          case 3:
-            WriteUpper(" ACTUAL LAMP    ");
-            AppByte2 = ActivateTimer(1000, 1, SS_ShowLamp);
-            break;
-          case 72:
-            LampPattern = NoLamps;
-            if (AppByte2) {
-              KillTimer(AppByte2);
-              AppByte2 = 0;}
-            else {
-              AppByte++;}
-            SS_Testmode(0);}
-          break;
-          case 4:                                     // all lamps test
-            switch(Select) {                          // switch events
-            case 0:                                   // init (not triggered by switch)
-              if (APC_settings[DisplayType] < 7) {    // Sys11 display
-                WriteUpper("  ALL   LAMPS   ");
-                WriteLower("                ");}
-              else {                                  // Sys3 - 9 display
-                for(byte c=0; c<16; c++) {            // clear numerical displays
-                  *(DisplayLower+2*c) = 255;          // delete numbers
-                  *(DisplayLower+1+2*c) = 0;}         // delete commas
-                DisplayScore(1, 5);}                  // show test number
-              AppByte2 = 0;
-              break;
-            case 3:
-              WriteUpper("FLASHNG LAMPS   ");
-              AppByte2 = ActivateTimer(1000, 1, SS_ShowAllLamps);
-              break;
-            case 72:
-              LampPattern = NoLamps;
-              if (AppByte2) {
-                KillTimer(AppByte2);
-                AppByte2 = 0;}
-              else {
-                AppByte++;}
-              SS_Testmode(0);}
-            break;
-            case 5:                                   // all music test
-              switch(Select) {                        // switch events
-              case 0:                                 // init (not triggered by switch)
-                if (APC_settings[DisplayType] < 7) {  // Sys11 display
-                  WriteUpper(" MUSIC  TEST    ");
-                  WriteLower("                ");}
-                else {                                // Sys3 - 9 display
-                  for(byte c=0; c<16; c++) {          // clear numerical displays
-                    *(DisplayLower+2*c) = 255;        // delete numbers
-                    *(DisplayLower+1+2*c) = 0;}       // delete commas
-                  DisplayScore(1, 6);}                // show test number
-                AppByte2 = 0;
-                break;
-              case 3:
-                WriteUpper("PLAYING MUSIC   ");
-                if (APC_settings[Volume]) {           // system set to digital volume control?
-                  analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-                AfterMusic = SS_RepeatMusic;
-                AppByte2 = 1;
-                PlayMusic(50, "MUSIC.SND");
-                break;
-              case 72:
-                AfterMusic = 0;
-                digitalWrite(VolumePin,HIGH);         // set volume to zero
-                StopPlayingMusic();
-                if (AppByte2) {
-                  AppByte2 = 0;}
-                else {
-                  GameDefinition.AttractMode();
-                  return;}
-                SS_Testmode(0);}
-              break;}}
+      case 3:
+        AppByte2 = 1;
+        if (QuerySwitch(52)) {                        // station in position 1?
+          AppBool = true;}
+        else {
+          AppBool = false;}
+        ActivateSolenoid(0, 16);                      // activate station motor
+        break;
+      case 52:
+        if (AppBool) {
+          ReleaseSolenoid(16);
+          WriteUpper(" POS 2 REACHED");}
+        break;
+      case 53:
+        if (!AppBool) {
+          ReleaseSolenoid(16);
+          WriteUpper(" POS 1 REACHED");}
+        break;
+      case 72:
+        ReleaseSolenoid(13);
+        if (AppByte2) {
+          AppByte2 = 0;}
+        else {
+          // AppByte++;}
+          GameDefinition.AttractMode();
+          return;}
+        SS_Testmode(0);
+        break;}}}
 
 void SS_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
   if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    if (APC_settings[DisplayType] == 7) {             // Sys6 display?
-      *(DisplayLower+24) = ConvertNumLower((byte) CurrentLamp / 10, 0); // and insert the switch number to the right of the row
-      *(DisplayLower+26) = ConvertNumLower((byte) (CurrentLamp % 10), 0);}
-    else if (APC_settings[DisplayType] == 8) {        // Sys7 display?
-      *(DisplayLower+28) = ConvertNumLower((byte) CurrentLamp / 10, 0); // and insert the switch number to the right of the row
-      *(DisplayLower+30) = ConvertNumLower((byte) (CurrentLamp % 10), 0);}
-    else {                                            // Sys11 display
-      *(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
-      *(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
-      *(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
-      *(DisplayLower+29) = DispPattern2[33 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];}
+    *(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
+    *(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
+    *(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
+    *(DisplayLower+29) = DispPattern2[33 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
     TurnOnLamp(CurrentLamp);                          // turn on lamp
     if (CurrentLamp > 1) {                            // and turn off the previous one
       TurnOffLamp(CurrentLamp-1);}
@@ -787,11 +848,9 @@ void SS_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
 
 void SS_ShowAllLamps(byte State) {                    // Flash all lamps
   if (State) {                                        // if all lamps are on
-    LampColumns[0] = 0;                               // first column
     LampPattern = NoLamps;                            // turn them off
     State = 0;}
   else {                                              // or the other way around
-    LampColumns[0] = 255;                             // first column
     LampPattern = AllLamps;
     State = 1;}
   AppByte2 = ActivateTimer(500, State, SS_ShowAllLamps);}  // come back in 500ms
@@ -805,30 +864,23 @@ void SS_FireSolenoids(byte Solenoid) {                // cycle all solenoids
       AppBool = false;
       Solenoid++;}}
   else {                                              // if A bank solenoid
-    if (APC_settings[DisplayType] == 7) {             // Sys6 display?
-      *(DisplayLower+24) = ConvertNumLower((byte) Solenoid / 10, 0); // and insert the switch number to the right of the row
-      *(DisplayLower+26) = ConvertNumLower((byte) (Solenoid % 10), 0);}
-    else if (APC_settings[DisplayType] == 8) {        // Sys7 display?
-      *(DisplayLower+28) = ConvertNumLower((byte) Solenoid / 10, 0); // and insert the switch number to the right of the row
-      *(DisplayLower+30) = ConvertNumLower((byte) (Solenoid % 10), 0);}
-    else {                                            // Sys11 display
-      *(DisplayLower+28) = DispPattern2[32 + 2 * (Solenoid % 10)]; // show the actual solenoid number
-      *(DisplayLower+29) = DispPattern2[33 + 2 * (Solenoid % 10)];
-      *(DisplayLower+26) = DispPattern2[32 + 2 * (Solenoid - (Solenoid % 10)) / 10];
-      *(DisplayLower+27) = DispPattern2[33 + 2 * (Solenoid - (Solenoid % 10)) / 10];}
-    if (!(*(GameDefinition.SolTimes+Solenoid-1))) {   // can this solenoid be turned on permanently?
-      ActivateSolenoid(500, Solenoid);}               // then the duration must be specified
+    *(DisplayLower+28) = DispPattern2[32 + 2 * (Solenoid % 10)]; // show the actual solenoid number
+    *(DisplayLower+29) = DispPattern2[33 + 2 * (Solenoid % 10)];
+    *(DisplayLower+26) = DispPattern2[32 + 2 * (Solenoid - (Solenoid % 10)) / 10];
+    *(DisplayLower+27) = DispPattern2[33 + 2 * (Solenoid - (Solenoid % 10)) / 10];
+
+    if (Solenoid == 11 || Solenoid == 12 || Solenoid == 13 || Solenoid == 14 || Solenoid == 9 || Solenoid == 10 || Solenoid == 18) {  // is it a relay or a #1251 flasher?
+      ActivateSolenoid(999, Solenoid);}               // then the duration must be specified
     else {
-      ActivateSolenoid(0, Solenoid);}                 // activate the solenoid with default duration
-    if ((Solenoid < 9) && ACselectRelay) {            // A solenoid and Sys11 machine?
+      ActivateSolenoid(0, Solenoid);}                 // activate the solenoid
+    if (Solenoid < 9) {
       *(DisplayLower+30) = DispPattern2[('A'-32)*2];  // show the A
       *(DisplayLower+31) = DispPattern2[('A'-32)*2+1];
       if (QuerySwitch(73)) {                          // Up/Down switch pressed?
         AppBool = true;}}
     else {
-      if (APC_settings[DisplayType] < 7) {            // Sys11 display?
-        *(DisplayLower+30) = DispPattern2[(' '-32)*2];// delete the C
-        *(DisplayLower+31) = DispPattern2[(' '-32)*2+1];}
+      *(DisplayLower+30) = DispPattern2[(' '-32)*2];  // delete the C
+      *(DisplayLower+31) = DispPattern2[(' '-32)*2+1];
       if (QuerySwitch(73)) {                          // Up/Down switch pressed?
         Solenoid++;                                   // increase the solenoid counter
         if (Solenoid > 22) {                          // maximum reached?
@@ -837,43 +889,35 @@ void SS_FireSolenoids(byte Solenoid) {                // cycle all solenoids
 
 void SS_DisplayCycle(byte CharNo) {                   // Display cycle test
   if (QuerySwitch(73)) {                              // cycle only if Up/Down switch is not pressed
-    if (CharNo < 11) {                                // numerical display
-      CharNo++;
-      if (CharNo > 9) {
-        CharNo = 0;}
-      byte Comma = 0;
-      byte Num = ConvertNumUpper(CharNo, 0);
-      Num = ConvertNumLower(CharNo, Num);
-      if (CharNo & 1) {                               // only do commas at every second run
-        Comma = 129;}
-      for(byte c=0; c<16; c++) {                      // clear numerical displays
-        *(DisplayLower+2*c) = Num;                    // write numbers
-        *(DisplayLower+1+2*c) = Comma;}}
-    else {                                            // System11 display
-      if (CharNo == 116) {                            // if the last character is reached
-        CharNo = 32;}                                 // start from the beginning
+    if (CharNo == 116) {                              // if the last character is reached
+      CharNo = 32;}                                   // start from the beginning
+    else {
+      if (CharNo == 50) {                             // reached the gap between numbers and characters?
+        CharNo = 66;}
       else {
-        if (CharNo == 50) {                           // reached the gap between numbers and characters?
-          CharNo = 66;}
-        else {
-          CharNo = CharNo+2;}}                        // otherwise show next character
-      for (byte i=0; i<16; i++) {                     // use for all alpha digits
-        if ((APC_settings[DisplayType] < 3 || APC_settings[DisplayType] > 6) && ((i==0) || (i==8))) {
-          DisplayUpper[2*i] = LeftCredit[CharNo];
-          DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
-          DisplayLower[2*i] = RightCredit[CharNo];
-          DisplayLower[2*i+1] = RightCredit[CharNo+1];}
-        else {
-          DisplayUpper[2*i] = DispPattern1[CharNo];
-          DisplayUpper[2*i+1] = DispPattern1[CharNo+1];
-          if (APC_settings[DisplayType] == 4 || APC_settings[DisplayType] == 5) { // 16 digit numerical
-            DisplayLower[2*i] = DispPattern2[CharNo];
-            DisplayLower[2*i+1] = ConvertTaxi(DispPattern2[CharNo]);}
-          else {
-            DisplayLower[2*i] = DispPattern2[CharNo];
-            DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}}}
+        CharNo = CharNo+2;}}                          // otherwise show next character
+    for (byte i=0; i<16; i++) {                       // use for all alpha digits
+      if ((i==0) || (i==8)) {
+        DisplayUpper[2*i] = LeftCredit[CharNo];
+        DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
+        DisplayLower[2*i] = RightCredit[CharNo];
+        DisplayLower[2*i+1] = RightCredit[CharNo+1];}
+      else {
+        DisplayUpper[2*i] = DispPattern1[CharNo];
+        DisplayUpper[2*i+1] = DispPattern1[CharNo+1];
+        DisplayLower[2*i] = DispPattern2[CharNo];
+        DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}
   AppByte2 = ActivateTimer(500, CharNo, SS_DisplayCycle);}   // restart timer
 
-void SS_RepeatMusic(byte Dummy) {
+void SS_NextTestSound(byte Dummy) {
   UNUSED(Dummy);
-  PlayMusic(50, "MUSIC.SND");}
+  *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte2+1) % 10)]; // show the actual sound number
+  *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte2+1) % 10)];
+  *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+  *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+  PlayMusic(50, (char*) SS_TestSounds[AppByte2]);
+  if (QuerySwitch(73)) {                              // Up/Down switch not pressed?
+    AppByte2++;}                                      // proceed to next sound
+  if (!SS_TestSounds[AppByte2][0]) {
+    AppByte2 = 0;}}
+
