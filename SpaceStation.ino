@@ -1,17 +1,12 @@
-// The basic Rollergames game
+// APC game code for the Space Station pinball machine
 
-const byte TT_OutholeSwitch = 9;                      // number of the outhole switch
-const byte TT_BallThroughSwitches[3] = {13,12,11};    // ball through switches from the plunger lane to the outhole
-const byte TT_PlungerLaneSwitch = 20;
-const byte TT_ACselectRelay = 12;                     // solenoid number of the A/C select relay - set it to 0 if the game doesn't have one
-const byte TT_OutholeKicker = 1;                      // solenoid number of the outhole kicker
-const byte TT_ShooterLaneFeeder = 2;                  // solenoid number of the shooter lane feeder
-const byte TT_InstalledBalls = 3;                     // number of balls installed in the game
-const byte TT_SearchCoils[15] = {1,4,6,8,13,15,16,17,18,19,20,21,22,14,0}; // coils to fire when the ball watchdog timer runs out - has to end with a zero
-const unsigned int TT_SolTimes[32] = {30,30,50,50,50,50,30,999,100,999,999,999,50,50,50,50,50,999,50,50,50,999,0,0,100,100,100,100,100,100,100,100}; // Activation times for solenoids
+const byte SS_SearchCoils[15] = {1,3,4,6,8,13,18,19,20,21,22,17,32,0}; // coils to fire when the ball watchdog timer runs out - has to end with a zero
+unsigned int SS_SolTimes[32] = {50,50,50,50,50,50,30,50,0,0,0,0,50,50,100,0,50,50,50,50,50,50,0,0,100,100,100,100,100,100,100,50}; // Activation times for solenoids
+const byte SS_ACselectRelay = 14;                     // solenoid number of the A/C select relay
+const char SS_TestSounds[10][15] = {{"1_01L.snd"},{"1_02.snd"},{"1_02L.snd"},{"1_03L.snd"},{"1_04.snd"},{"1_04L.snd"},{"1_05.snd"},{"1_06.snd"},{"1_06L.snd"},0};
 
-const byte TT_defaults[64] = {0,0,0,0,0,0,0,0,        // game default settings
-                              0,0,0,0,0,0,0,0,
+const byte SS_defaults[64] = {9,13,12,11,20,12,1,2,        // game default settings
+                              3,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
@@ -19,15 +14,23 @@ const byte TT_defaults[64] = {0,0,0,0,0,0,0,0,        // game default settings
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0};
 
-struct SettingTopic TT_setList[5] = {{"  GOD   MODE  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
-    {" RESET  HIGH  ",TT_ResetHighScores,0,0,0},
+const struct SettingTopic SS_setList[12] = {{"OUTHOLESWITCH ",HandleNumSetting,0,1,64}, // defines the game specific settings
+    {" BALL  THRU 1 ",HandleNumSetting,0,1,64},
+    {" BALL  THRU 2 ",HandleNumSetting,0,1,64},
+    {" BALL  THRU 3 ",HandleNumSetting,0,1,64},
+    {"PLUNGERLN SW  ",HandleNumSetting,0,1,64},
+    {"AC SEL RELAY  ",HandleNumSetting,0,0,22},
+    {"OUTHOLEKICKER ",HandleNumSetting,0,1,22},
+    {"SHOOTERLN FEED",HandleNumSetting,0,1,22},
+    {"INSTALD BALLS ",HandleNumSetting,0,1,3},
+   // {" RESET  HIGH  ",SS_ResetHighScores,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
     {"",NULL,0,0,0}};
 
-                                    // Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
-                                    // Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
-const struct LampPat TT_AttractPat1[57] ={{250,0,0b00000001,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+                                      // Duration..11111110...22222111...33322222...43333333...44444444...55555554...66666555
+                                      // Duration..65432109...43210987...21098765...09876543...87654321...65432109...43210987
+const struct LampPat SS_AttractPat1[57] ={{250,0,0b00000001,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {250,0,0b00000010,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {250,0,0b00000100,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {250,0,0b00001000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
@@ -85,7 +88,7 @@ const struct LampPat TT_AttractPat1[57] ={{250,0,0b00000001,0b00000000,0b0000000
                                           {250,0,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b10000000},
                                           {0,0,0,0,0,0,0,0,0}};
 
-const struct LampPat TT_AttractPat2[57] ={{250,0,0b00000001,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
+const struct LampPat SS_AttractPat2[57] ={{250,0,0b00000001,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {250,0,0b00000010,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {250,0,0b00000100,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
                                           {250,0,0b00001000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000},
@@ -143,133 +146,210 @@ const struct LampPat TT_AttractPat2[57] ={{250,0,0b00000001,0b00000000,0b0000000
                                           {250,0,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b10000000},
                                           {0,0,0,0,0,0,0,0,0}};
 
-const struct LampFlow TT_AttractFlow[3] = {{3,TT_AttractPat1},{10,TT_AttractPat2},{0,0}};
+const struct LampFlow SS_AttractFlow[3] = {{3,SS_AttractPat1},{10,SS_AttractPat2},{0,0}};
 
-struct GameDef TT_GameDefinition = {
-    TT_setList,                                       // GameSettingsList
-    (byte*)TT_defaults,                               // GameDefaultsPointer
-    "TT_SET.BIN",                                     // GameSettingsFileName
-    "TT_SCORE.BIN",                                   // HighScoresFileName
-    TT_AttractMode,                                   // AttractMode
-    TT_SolTimes};                                     // Default activation times of solenoids
+struct GameDef SS_GameDefinition = {
+    SS_setList,                                       // GameSettingsList
+    (byte*)SS_defaults,                               // GameDefaultsPointer
+    "SS_SET.BIN",                                     // GameSettingsFileName
+    "SS_SCORE.BIN",                                   // HighScoresFileName
+    SS_AttractMode,                                   // AttractMode
+    SS_SolTimes};                                     // Default activation times of solenoids
 
-void TT_init() {
+void SS_init() {
   if (APC_settings[DebugMode]) {                      // activate serial interface in debug mode
     Serial.begin(115200);}
-  ACselectRelay = TT_ACselectRelay;                   // assign the number of the A/C select relay
-  GameDefinition = TT_GameDefinition;}                // read the game specific settings and highscores
+  GameDefinition = SS_GameDefinition;}                // read the game specific settings and highscores
 
-void TT_AttractMode() {                               // Attract Mode
+void SS_AttractMode() {                               // Attract Mode
+  ACselectRelay = 12;                                 // assign the number of the A/C select relay
+  if (ACselectRelay) {
+    SS_SolTimes[ACselectRelay-1] = 0;}                // allow A/C relay to be turned on permanently
   DispRow1 = DisplayUpper;
   DispRow2 = DisplayLower;
-  WriteUpper("MY NEW GAME     ");
-  LampPattern = LampColumns;                          // point to the standard lamp array
-  //TurnOnLamp(53);
-  //AddBlinkLamp(54, 250);
-  Switch_Pressed = TT_AttractModeSW;
-  //Switch_Pressed = TT_TutorialSW;
-  //Switch_Released = DummyProcess;}
   digitalWrite(VolumePin,HIGH);                       // set volume to zero
   LampPattern = NoLamps;
-  LampReturn = TT_AttractLampCycle;
-  ActivateTimer(1000, 1, TT_AttractLampCycle);
-  TT_AttractDisplayCycle(0);}
+  Switch_Pressed = SS_AttractModeSW;
+  Switch_Released = DummyProcess;
+  AppByte2 = 0;
+  LampReturn = SS_AttractLampCycle;
+  ActivateTimer(1000, 0, SS_AttractLampCycle);
+  SS_AttractDisplayCycle(1);}
 
-void TT_TutorialSW(byte SwitchNo) {
-  static byte DropTimer = 0;
-  switch (SwitchNo) {
-  case 8:                                             // high score reset
-    digitalWrite(Blanking, LOW);                      // invoke the blanking
-    break;
-  case 49:                                            // drop targets
-  case 50:
-  case 51:
-    if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {  // all targets down?
-      if (DropTimer) {                                // timer running?
-        KillTimer(DropTimer);                         // stop timer
-        DropTimer = 0;                                // and indicate it
-        RemoveBlinkLamp(53);}                         // turn off blinking lamp
-      ActA_BankSol(6);}                               // reset drop targets
-    else {                                            // not all targets down
-      if (!DropTimer) {                               // timer not yet running?
-        AddBlinkLamp(53, 500);                        // start blinking lamp
-        DropTimer = ActivateTimer(5000, 100, TT_TutorialSW);}}  // start timer for 5s
-    break;
-  case 100:                                           // timer has run out
-    DropTimer = 0;                                    // indicate it
-    RemoveBlinkLamp(53);                              // turn off blinking lamp
-    ActA_BankSol(6);                                  // reset drop targets
-    break;}}
-
-void TT_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
-  static byte Phase;
-  if (Event == 1) {                                   // initial call?
-    Phase = 0;}                                       // reset cycle phase
-  PatPointer = TT_AttractFlow[Phase].FlowPat;         // set the pointer to the current series
-  FlowRepeat = TT_AttractFlow[Phase].Repeat;          // set the repetitions
-  Phase++;                                            // increase counter
-  if (!TT_AttractFlow[Phase].Repeat) {                // repetitions of next series = 0?
-    Phase = 0;}                                       // reset counter
+void SS_AttractLampCycle(byte Event) {                // play multiple lamp pattern series
+  UNUSED(Event);
+  static byte State = 1;
+  PatPointer = SS_AttractFlow[State].FlowPat;         // set the pointer to the current series
+  FlowRepeat = SS_AttractFlow[State].Repeat;          // set the repetitions
+  State++;                                            // increase counter
+  if (!SS_AttractFlow[State].Repeat) {                // repetitions of next series = 0?
+    State = 0;}                                       // reset counter
   ShowLampPatterns(1);}                               // call the player
 
-void TT_AttractDisplayCycle(byte Step) {
-  TT_CheckForLockedBalls(0);
+void SS_RestoreLamps(byte Dummy) {                    // restore lamps after ShowLampPatterns has run out
+  UNUSED(Dummy);
+  LampPattern = LampColumns;}
+
+void SS_AttractDisplayCycle(byte Step) {
+  static byte Count = 0;
+  static byte Timer0 = 0;
+  static byte Timer1 = 0;
+  static byte Timer2 = 0;
+  static byte Timer3 = 0;
   switch (Step) {
-  case 0:
-    WriteUpper2("THE APC TUTORIAL");
-    ActivateTimer(50, 0, ScrollUpper);
-    WriteLower2("                ");
-    ActivateTimer(1000, 0, ScrollLower2);
-    if (NoPlayers) {                                  // if there were no games before skip the next step
-      Step++;}
+  case 0:                                             // stop command
+    if (Timer0) {
+      KillTimer(Timer0);
+      Timer0 = 0;}
+    if (Timer1) {
+      KillTimer(Timer1);
+      Timer1 = 0;}
+    if (Timer2) {
+      KillTimer(Timer2);
+      Timer2 = 0;}
+    if (Timer3) {
+      KillTimer(Timer3);
+      Timer3 = 0;}
+    Count = 0;
+    ScrollUpper(100);                                 // stop scrolling
+    ScrollLower(100);
+    AddScrollUpper(100);
+    return;
+  case 1:                                             // attract mode title 'page'
+    if (Count == 20) {
+      Count++;
+      Step = 1;
+      WriteUpper(" NOW I SEE YOU  ");                 // erase display
+      WriteLower("                ");
+      PlaySound(55, "0_b0.snd");}                     // 'now I see you'
+    else if (Count == 40) {
+      Timer0 = 0;
+      Count++;
+      Step = 1;
+      LampReturn = SS_RestoreLamps;
+      ShowLampPatterns(0);                            // stop lamp animations
+      SS_AttractDisplayCycle(0);                      // stop display animations
+      for (byte i=0; i< 8; i++) {
+        LampColumns[i] = 0;}
+      LampPattern = LampColumns;
+      //SS_RulesDisplay(1);
+      Count = 0;
+      return;}
     else {
-      Step = 2;}
+      Count++;
+      WriteUpper2("THE APC         ");
+      Timer1 = ActivateTimer(50, 5, SS_AttractDisplayCycle);
+      Timer3 = ActivateTimer(2000, 7, SS_AttractDisplayCycle);
+      if (APC_settings[DisplayType]) {                // Standard display
+        WriteLower2("                ");}
+      else {                                          // 4Alpha + Credit
+        WriteLower2("  FOR  STEPHAN  ");}
+      Timer2 = ActivateTimer(3000, 6, SS_AttractDisplayCycle);
+      if (NoPlayers) {                                // if there were no games before skip the next step
+        Step++;}
+      else {
+        Step = 3;}}
     break;
-  case 1:
+  case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
     WriteLower2("                ");
-    for (i=1; i<=NoPlayers; i++) {                    // display the points of all active players
+    for (byte i=1; i<=NoPlayers; i++) {               // display the points of all active players
       ShowNumber(8*i-1, Points[i]);}
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower2);
+    Timer1 = ActivateTimer(50, 5, SS_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, SS_AttractDisplayCycle);
     Step++;
     break;
-  case 2:                                             // Show highscores
-    WriteUpper2("1>              ");
-    WriteLower2("2>              ");
-    for (i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
-      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
-    ShowNumber(15, HallOfFame.Scores[0]);
-    ShowNumber(31, HallOfFame.Scores[1]);
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower2);
+  case 3:                                             // Show highscores
+    if (APC_settings[DisplayType]) {                  // Standard display
+      WriteUpper2("1>     2>     ");
+      WriteLower2("              ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+        *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+        *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
+        *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
+      ShowNumber(23, HallOfFame.Scores[0]);
+      ShowNumber(31, HallOfFame.Scores[1]);}
+    else {                                            // 4Alpha + Credit
+      WriteUpper2("1>            ");
+      WriteLower2("2>            ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+        *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+        *(DisplayLower2+6+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
+        *(DisplayLower2+6+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
+      ShowNumber(15, HallOfFame.Scores[0]);
+      ShowNumber(31, HallOfFame.Scores[1]);
+      if (HallOfFame.Scores[0] >= 10000000) {         // expand scores > 10M to the left display
+        unsigned int Buffer = HallOfFame.Scores[0] / 10000000;
+        ShowNumber(7, Buffer);}
+      if (HallOfFame.Scores[1] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[1] / 10000000;
+        ShowNumber(23, Buffer);}}
+    Timer1 = ActivateTimer(50, 5, SS_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, SS_AttractDisplayCycle);
     Step++;
     break;
-  case 3:
-    WriteUpper2("3>              ");
-    WriteLower2("4>              ");
-    for (i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
-      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
-    ShowNumber(15, HallOfFame.Scores[2]);
-    ShowNumber(31, HallOfFame.Scores[3]);
-    ActivateTimer(50, 0, ScrollUpper);
-    ActivateTimer(900, 0, ScrollLower2);
-    Step = 0;}
-  ActivateTimer(4000, Step, TT_AttractDisplayCycle);}
+  case 4:
+    if (APC_settings[DisplayType]) {
+      WriteUpper2("3>     4>     ");
+      WriteLower2("              ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+        *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+        *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
+        *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
+      ShowNumber(23, HallOfFame.Scores[2]);
+      ShowNumber(31, HallOfFame.Scores[3]);}
+    else {
+      WriteUpper2("3>            ");
+      WriteLower2("4>            ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+        *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+        *(DisplayLower2+6+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
+        *(DisplayLower2+6+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
+      ShowNumber(15, HallOfFame.Scores[2]);
+      ShowNumber(31, HallOfFame.Scores[3]);
+      if (HallOfFame.Scores[0] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[2] / 10000000;
+        ShowNumber(7, Buffer);}
+      if (HallOfFame.Scores[1] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[3] / 10000000;
+        ShowNumber(23, Buffer);}}
+    Timer1 = ActivateTimer(50, 5, SS_AttractDisplayCycle);
+    Timer2 = ActivateTimer(900, 6, SS_AttractDisplayCycle);
+    Step = 1;
+    break;
+  case 5:                                             // scrolling routine called here to keep track of the timer
+    Timer1 = 0;
+    ScrollUpper(0);
+    return;
+  case 6:
+    Timer2 = 0;
+    ScrollLower(0);
+    return;
+  case 7:
+    Timer3 = 0;
+    WriteUpper2(" SPACE STATION");
+    ScrollUpper(0);
+    return;
+  case 10:
+    AddBlinkLamp(1, 150);                             // blink Game Over lamp
+    LampReturn = SS_AttractLampCycle;
+    SS_AttractLampCycle(1);
+    SS_AttractDisplayCycle(1);
+    break;}
+  SS_CheckForLockedBalls(0);                          // check for a ball in the outhole
+  Timer0 = ActivateTimer(4000, Step, SS_AttractDisplayCycle);}  // come back for the next 'page'
 
-void TT_AttractModeSW(byte Button) {                  // Attract Mode switch behaviour
+void SS_AttractModeSW(byte Button) {                  // Attract Mode switch behaviour
   switch (Button) {
   case 8:                                             // high score reset
     digitalWrite(Blanking, LOW);                      // invoke the blanking
     break;
-  case TT_OutholeSwitch:                              // outhole
-    ActivateTimer(200, 0, TT_CheckForLockedBalls);    // check again in 200ms
+  case 20:                                            // outhole
+    ActivateTimer(200, 0, SS_CheckForLockedBalls);    // check again in 200ms
     break;
   case 72:                                            // Service Mode
     BlinkScore(0);                                    // stop score blinking
@@ -285,152 +365,149 @@ void TT_AttractModeSW(byte Button) {                  // Attract Mode switch beh
       WriteUpper("  TEST  MODE    ");
       WriteLower("                ");
       AppByte = 0;
-      ActivateTimer(1000, 0, TT_Testmode);}
+      ActivateTimer(1000, 0, SS_Testmode);}
     else {
       Settings_Enter();}
     break;
   case 3:                                             // start game
-    TT_InitGame();}}
+    if (SS_CountBallsInTrunk() == 3 || (SS_CountBallsInTrunk() == 2 && QuerySwitch(43))) { // Ball missing?
+      Switch_Pressed = DummyProcess;                  // Switches do nothing
+      ShowLampPatterns(0);                            // stop lamp animations
+      SS_AttractDisplayCycle(0);                      // stop display animations
+      if (APC_settings[Volume]) {                     // system set to digital volume control?
+        analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
+      else {
+        digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
+      for (byte i=0; i< 8; i++) {                     // turn off all lamps
+        LampColumns[i] = 0;}
+      LampPattern = LampColumns;                      // lamps are not controlled by a fixed pattern any more
+      NoPlayers = 0;
+      WriteUpper("                ");
+      WriteLower("                ");
+      Ball = 1;
+      SS_AddPlayer();
+      Player = 1;
+      ExBalls = 0;
+      Bonus = 1;
+      BonusMultiplier = 1;
+      InLock = 0;
+      Multiballs = 1;
+      for (byte i=1; i < 5; i++) {
+        LockedBalls[i] = 0;
+        Points[i] = 0;}
+      SS_NewBall(3);                                  // release a new ball
+      ActivateSolenoid(0, 23);                        // enable flipper fingers
+      ActivateSolenoid(0, 24);}}}
 
-void TT_InitGame() {
-  if (TT_CountBallsInTrunk() == TT_InstalledBalls || (TT_CountBallsInTrunk() == TT_InstalledBalls-1 && QuerySwitch(TT_PlungerLaneSwitch))) { // Ball missing?
-    Switch_Pressed = DummyProcess;                    // Switches do nothing
-    ShowLampPatterns(0);                              // stop lamp animations
-    KillAllTimers();
-    if (APC_settings[Volume]) {                       // system set to digital volume control?
-      analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-    else {
-      digitalWrite(VolumePin,HIGH);}                  // turn off the digital volume control
-    for (i=0; i< 8; i++) {                            // turn off all lamps
-      LampColumns[i] = 0;}
-    LampPattern = LampColumns;
-    NoPlayers = 0;
-    WriteUpper("                ");
-    WriteLower("                ");
-    Ball = 1;
-    TT_AddPlayer();
-    Player = 1;
-    ExBalls = 0;
-    Bonus = 1;
-    BonusMultiplier = 1;
-    InLock = 0;
-    Multiballs = 1;
-    for (i=1; i < 5; i++) {
-      LockedBalls[i] = 0;
-      Points[i] = 0;}
-    TT_NewBall(3);                                    // release a new ball (3 expected balls in the trunk)
-    ActivateSolenoid(0, 23);                          // enable flipper fingers
-    ActivateSolenoid(0, 24);}}
-
-void TT_AddPlayer() {
+void SS_AddPlayer() {
   if ((NoPlayers < 4) && (Ball == 1)) {               // if actual number of players < 4
     NoPlayers++;                                      // add a player
     Points[NoPlayers] = 0;                            // delete the points of the new player
     ShowPoints(NoPlayers);}}                          // and show them
 
-void TT_CheckForLockedBalls(byte Event) {             // check if balls are locked and release them
+void SS_CheckForLockedBalls(byte Event) {             // check if balls are locked and release them
   UNUSED(Event);
-  if (QuerySwitch(TT_OutholeSwitch)) {                     // for the outhole
-    ActA_BankSol(TT_OutholeKicker);}
-}                                                     // add the locks of your game here
+    if (QuerySwitch(10)) {  // for the outhole
+      ActA_BankSol(1);}
+  }                                                   // add the locks of your game here
 
-void TT_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
+void SS_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
   ShowAllPoints(0);
   if (APC_settings[DisplayType] < 2) {                // credit display present?
     *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];}  // show current ball in left credit
   BlinkScore(1);                                      // start score blinking
-  Switch_Released = TT_CheckShooterLaneSwitch;
-  if (!QuerySwitch(TT_PlungerLaneSwitch)) {
-    ActA_BankSol(TT_ShooterLaneFeeder);               // release ball
-    Switch_Pressed = TT_BallReleaseCheck;             // set switch check to enter game
-    CheckReleaseTimer = ActivateTimer(5000, Balls-1, TT_CheckReleasedBall);} // start release watchdog
+  Switch_Released = SS_CheckShooterLaneSwitch;
+  if (!QuerySwitch(43)) {
+    ActA_BankSol(2);               // release ball
+    Switch_Pressed = SS_BallReleaseCheck;             // set switch check to enter game
+    CheckReleaseTimer = ActivateTimer(5000, Balls-1, SS_CheckReleasedBall);} // start release watchdog
   else {
-    Switch_Pressed = TT_ResetBallWatchdog;}}
+    Switch_Pressed = SS_ResetBallWatchdog;}}
 
-void TT_CheckShooterLaneSwitch(byte Switch) {
-  if (Switch == TT_PlungerLaneSwitch) {               // shooter lane switch released?
+void SS_CheckShooterLaneSwitch(byte Switch) {
+  if (Switch == 43) { // shooter lane switch released?
     Switch_Released = DummyProcess;
     if (!BallWatchdogTimer) {
-      BallWatchdogTimer = ActivateTimer(30000, 0, TT_SearchBall);}}}
+      BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}}}
 
-void TT_BallReleaseCheck(byte Switch) {               // handle switches during ball release
+void SS_BallReleaseCheck(byte Switch) {               // handle switches during ball release
   if (Switch > 15) {                                  // edit this to be true only for playfield switches
     if (CheckReleaseTimer) {
       KillTimer(CheckReleaseTimer);
       CheckReleaseTimer = 0;}                         // stop watchdog
-    Switch_Pressed = TT_ResetBallWatchdog;
-    if (Switch == TT_PlungerLaneSwitch) {             // ball is in the shooter lane
-      Switch_Released = TT_CheckShooterLaneSwitch;}   // set mode to register when ball is shot
+    Switch_Pressed = SS_ResetBallWatchdog;
+    if (Switch == 43) { // ball is in the shooter lane
+      Switch_Released = SS_CheckShooterLaneSwitch;}   // set mode to register when ball is shot
     else {
       if (!BallWatchdogTimer) {
-        BallWatchdogTimer = ActivateTimer(30000, 0, TT_SearchBall);}}} // set switch mode to game
-  TT_GameMain(Switch);}                               // process current switch
+        BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}}} // set switch mode to game
+  SS_GameMain(Switch);}                               // process current switch
 
-void TT_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
+void SS_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
   if (Switch > 15) {                                  // edit this to be true only for playfield switches
     if (BallWatchdogTimer) {
       KillTimer(BallWatchdogTimer);}                  // stop watchdog
-    BallWatchdogTimer = ActivateTimer(30000, 0, TT_SearchBall);}
-  TT_GameMain(Switch);}                               // process current switch
+    BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}
+  SS_GameMain(Switch);}                               // process current switch
 
-void TT_SearchBall(byte Counter) {                    // ball watchdog timer has run out
+void SS_SearchBall(byte Counter) {                    // ball watchdog timer has run out
   BallWatchdogTimer = 0;
-  if (QuerySwitch(TT_OutholeSwitch)) {
+  if (QuerySwitch(10)) {
     BlockOuthole = false;
-    ActivateTimer(1000, 0, TT_ClearOuthole);}
+    ActivateTimer(1000, 0, SS_ClearOuthole);}
   else {
-    if (QuerySwitch(TT_PlungerLaneSwitch)) {          // if ball is waiting to be launched
-      BallWatchdogTimer = ActivateTimer(30000, 0, TT_SearchBall);}  // restart watchdog
+    if (QuerySwitch(43)) { // if ball is waiting to be launched
+      BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}  // restart watchdog
     else {                                            // if ball is really missing
-      byte c = TT_CountBallsInTrunk();                // recount all balls
-      if (c == TT_InstalledBalls) {                   // found all balls in trunk?
+      byte c = SS_CountBallsInTrunk();                // recount all balls
+      if (c == 3) {                                   // found all balls in trunk?
         if (BlockOuthole) {                           // is the outhole blocked
-          TT_BallEnd(0);}                             // then it was probably a ball loss gone wrong
+          SS_BallEnd(0);}                             // then it was probably a ball loss gone wrong
         else {
-          ActivateTimer(1000, TT_InstalledBalls, TT_NewBall);}} // otherwise try it with a new ball
+          ActivateTimer(1000, 3, SS_NewBall);}}       // otherwise try it with a new ball
       else {
         byte c2 = 0;                                  // counted balls in lock
                   // count balls in lock here with 5 being a warning when the switch states don't add up
         if (c == 5) {                                 // balls have not settled yet
           WriteUpper("  LOCK  STUCK   ");
-          BallWatchdogTimer = ActivateTimer(1000, 0, TT_SearchBall);} // and try again in 1s
+          BallWatchdogTimer = ActivateTimer(1000, 0, SS_SearchBall);} // and try again in 1s
         else {
           if (c2 > InLock) {                          // more locked balls found than expected?
-            TT_HandleLock(0);                         // lock them
-            BallWatchdogTimer = ActivateTimer(30000, 0, TT_SearchBall);}
+            SS_HandleLock(0);                         // lock them
+            BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}
           else {
             WriteUpper("  BALL  SEARCH  ");
-            ActivateSolenoid(0, TT_SearchCoils[Counter]); // fire coil to get ball free
+            ActivateSolenoid(0, SS_SearchCoils[Counter]); // fire coil to get ball free
             Counter++;
-            if (!TT_SearchCoils[Counter]) {           // all coils fired?
+            if (!SS_SearchCoils[Counter]) {           // all coils fired?
               Counter = 0;}                           // start again
-            BallWatchdogTimer = ActivateTimer(1000, Counter, TT_SearchBall);}}}}}} // come again in 1s if no switch is activated
+            BallWatchdogTimer = ActivateTimer(1000, Counter, SS_SearchBall);}}}}}} // come again in 1s if no switch is activated
 
-byte TT_CountBallsInTrunk() {
+byte SS_CountBallsInTrunk() {
   byte Balls = 0;
-  for (i=0; i<TT_InstalledBalls; i++) {               // check how many balls are on the ball ramp
-    if (QuerySwitch(*(TT_BallThroughSwitches+i))) {
+  for (byte i=0; i<3; i++) {                          // check how many balls are on the ball ramp
+    if (QuerySwitch(11+i)) {
       if (Balls < i) {
         return 5;}                                    // send warning
       Balls++;}}
   return Balls;}
 
-void TT_CheckReleasedBall(byte Balls) {               // ball release watchdog
+void SS_CheckReleasedBall(byte Balls) {               // ball release watchdog
   CheckReleaseTimer = 0;
   BlinkScore(0);                                      // stop blinking to show messages
-  WriteUpper("WAITINGFORBALL  ");                       // indicate a problem
+  WriteUpper("WAITINGFORBALL  ");                     // indicate a problem
   WriteLower("                ");
   if (Balls == 10) {                                  // indicating a previous trunk error
     WriteUpper("                ");
     WriteLower("                ");
     ShowAllPoints(0);
     BlinkScore(1);
-    ActA_BankSol(TT_ShooterLaneFeeder);}
-  byte c = TT_CountBallsInTrunk();
+    ActA_BankSol(2);}
+  byte c = SS_CountBallsInTrunk();
   if (c == Balls) {                                   // expected number of balls in trunk
     WriteUpper("  BALL MISSING  ");
-    if (QuerySwitch(TT_OutholeSwitch)) {                   // outhole switch still active?
-      ActA_BankSol(TT_OutholeKicker);}}               // shove the ball into the trunk
+    if (QuerySwitch(10)) { // outhole switch still active?
+      ActA_BankSol(1);}}  // shove the ball into the trunk
   else {                                              //
     if (c == 5) {                                     // balls not settled
       WriteLower(" TRUNK  ERROR   ");
@@ -441,146 +518,119 @@ void TT_CheckReleasedBall(byte Balls) {               // ball release watchdog
         WriteLower("                ");
         ShowAllPoints(0);
         BlinkScore(1);
-        ActA_BankSol(TT_ShooterLaneFeeder);}}}        // release again
-  CheckReleaseTimer = ActivateTimer(5000, Balls, TT_CheckReleasedBall);}
+        ActA_BankSol(2);}}} // release again
+  CheckReleaseTimer = ActivateTimer(5000, Balls, SS_CheckReleasedBall);}
 
-void TT_GameMain(byte Switch) {                        // game switch events
-  static byte DropTimer = 0;
-  switch (Switch) {
+void SS_GameMain(byte Event) {                        // game switch events
+  switch (Event) {
   case 1:                                             // plumb bolt tilt
   case 2:                                             // ball roll tilt
   case 7:                                             // slam tilt
     break;
-  case TT_OutholeSwitch:
-    ActivateTimer(200, 0, TT_ClearOuthole);           // check again in 200ms
-    break;
-  case 46:                                            // playfield tilt
-    WriteUpper(" TILT  WARNING  ");
-    ActivateTimer(3000, 0, ShowAllPoints);
-    break;
   case 3:                                             // credit button
-    TT_AddPlayer();
+    SS_AddPlayer();
     break;
-  case 8:                                             // high score reset
-    digitalWrite(Blanking, LOW);                      // invoke the blanking
-    break;
-  case 49:                                            // drop targets
-  case 50:
-  case 51:
-    if (QuerySwitch(49) && QuerySwitch(50) && QuerySwitch(51)) {  // all targets down?
-      if (DropTimer) {                                // timer running?
-        KillTimer(DropTimer);                         // stop timer
-        DropTimer = 0;                                // and indicate it
-        RemoveBlinkLamp(53);}                         // turn off blinking lamp
-      ActA_BankSol(6);}                               // reset drop targets
-    else {                                            // not all targets down
-      if (!DropTimer) {                               // timer not yet running?
-        AddBlinkLamp(53, 500);                        // start blinking lamp
-        DropTimer = ActivateTimer(5000, 100, TT_GameMain);}}  // start timer for 5s
-    break;
-  case 100:                                           // timer has run out
-    DropTimer = 0;                                    // indicate it
-    RemoveBlinkLamp(53);                              // turn off blinking lamp
-    ActA_BankSol(6);                                  // reset drop targets
-    break;
+  default:
+    if (Event == 10) {
+      ActivateTimer(200, 0, SS_ClearOuthole);}        // check again in 200ms
   }}
 
-void TT_ClearOuthole(byte Event) {
+void SS_ClearOuthole(byte Event) {
   UNUSED(Event);
-  if (QuerySwitch(TT_OutholeSwitch)) {                     // outhole switch still active?
+  if (QuerySwitch(10)) {                              // outhole switch still active?
     if (!BlockOuthole && !C_BankActive) {             // outhole blocked?
       BlockOuthole = true;                            // block outhole until this ball has been processed
-      ActivateSolenoid(30, TT_OutholeKicker);         // put ball in trunk
-      ActivateTimer(2000, 0, TT_BallEnd);}
+      ActivateSolenoid(30, 1);                        // put ball in trunk
+      ActivateTimer(2000, 0, SS_BallEnd);}
     else {
-      ActivateTimer(2000, 0, TT_ClearOuthole);}}}     // come back in 2s if outhole is blocked
+      ActivateTimer(2000, 0, SS_ClearOuthole);}}}     // come back in 2s if outhole is blocked
 
-void TT_HandleLock(byte Balls) {
+void SS_HandleLock(byte Balls) {
       // do something with your lock
 }
 
-void TT_BallEnd(byte Event) {
-  byte BallsInTrunk = TT_CountBallsInTrunk();
-  if ((BallsInTrunk == 5)||(BallsInTrunk < TT_InstalledBalls+1-Multiballs-InLock)) {
+void SS_BallEnd(byte Event) {
+  byte BallsInTrunk = SS_CountBallsInTrunk();
+  if ((BallsInTrunk == 5)||(BallsInTrunk < 4-Multiballs-InLock)) {
     InLock = 0;
-//    if (Multiballs == 1) {
-//      for (i=0; i<3; i++) {                           // Count your locked balls here
-//        if (Switch[41+i]) {
-//          InLock++;}}}
+    //    if (Multiballs == 1) {
+    //      for (i=0; i<3; i++) {                           // Count your locked balls here
+    //        if (Switch[41+i]) {
+    //          InLock++;}}}
     WriteLower(" BALL   ERROR   ");
-    if (QuerySwitch(TT_OutholeSwitch)) {                   // ball still in outhole?
-      ActA_BankSol(TT_OutholeKicker);                 // make the coil a bit stronger
-      ActivateTimer(2000, Event, TT_BallEnd);}        // and come back in 2s
+    if (QuerySwitch(10)) { // ball still in outhole?
+      ActA_BankSol(1); // make the coil a bit stronger
+      ActivateTimer(2000, Event, SS_BallEnd);}        // and come back in 2s
     else {
       if (Event < 11) {                               // have I been here already?
         Event++;
-        ActivateTimer(1000, Event, TT_BallEnd);}      // if not try again in 1s
+        ActivateTimer(1000, Event, SS_BallEnd);}      // if not try again in 1s
       else {                                          // ball may be still in outhole
         BlockOuthole = false;
         Event = 0;
-        TT_ClearOuthole(0);}}}
+        SS_ClearOuthole(0);}}}
   else {
     switch (Multiballs) {
     case 3:                                           // goto 2 ball multiball
       Multiballs = 2;
       if (BallsInTrunk != 1) {                        // not 1 ball in trunk
-        ActivateTimer(1000, 0, TT_BallEnd);}          // check again later
+        ActivateTimer(1000, 0, SS_BallEnd);}          // check again later
       else {
         BlockOuthole = false;}                        // remove outhole block
       break;
     case 2:                                           // end multiball
       Multiballs = 1;
-      if (BallsInTrunk == 3) {                        // 3 balls in trunk?
-        ActivateTimer(1000, 0, TT_BallEnd);}
+      if (BallsInTrunk == 3) {                        // all balls in trunk?
+        ActivateTimer(1000, 0, SS_BallEnd);}
       else {
         BlockOuthole = false;}                        // remove outhole block
       break;
     case 1:                                           // end of ball
-      if (BallsInTrunk + InLock != TT_InstalledBalls) {
+      if (BallsInTrunk + InLock != 3) {
         WriteUpper(" COUNT  ERROR   ");
         InLock = 0;
-//        for (i=0; i<3; i++) {                       // check how many balls are on the ball ramp
-//          if (Switch[41+i]) {
-//            InLock++;}}
-        ActivateTimer(1000, 0, TT_BallEnd);}
+        //        for (i=0; i<3; i++) {                       // check how many balls are on the ball ramp
+        //          if (Switch[41+i]) {
+        //            InLock++;}}
+        ActivateTimer(1000, 0, SS_BallEnd);}
       else {
         LockedBalls[Player] = 0;
         BlinkScore(0);                                // stop score blinking
-        TT_BallEnd2(BallsInTrunk);                    // add bonus count here and start BallEnd2 afterwards
+        SS_BallEnd2(BallsInTrunk);                    // add bonus count here and start BallEnd2 afterwards
       }}}}
 
-void TT_BallEnd2(byte Balls) {
+void SS_BallEnd2(byte Balls) {
   if (BallWatchdogTimer) {
     KillTimer(BallWatchdogTimer);
     BallWatchdogTimer = 0;}
   if (ExBalls) {                                      // Player has extra balls
     ExBalls--;
-    ActivateTimer(1000, AppByte, TT_NewBall);
+    ActivateTimer(1000, AppByte, SS_NewBall);
     BlockOuthole = false;}                            // remove outhole block
   else {                                              // Player has no extra balls
     if ((Points[Player] > HallOfFame.Scores[3]) && (Ball == APC_settings[NofBalls])) { // last ball & high score?
-      Switch_Pressed = DummyProcess;                                // Switches do nothing
-      TT_CheckHighScore(Player);}
+      Switch_Pressed = DummyProcess;                  // Switches do nothing
+      SS_CheckHighScore(Player);}
     else {
-      TT_BallEnd3(Balls);}}}
+      SS_BallEnd3(Balls);}}}
 
-void TT_BallEnd3(byte Balls) {
+void SS_BallEnd3(byte Balls) {
   BlockOuthole = false;                               // remove outhole block
   if (Player < NoPlayers) {                           // last player?
     Player++;
-    ActivateTimer(1000, Balls, TT_NewBall);}
+    ActivateTimer(1000, Balls, SS_NewBall);}
   else {
     if (Ball < APC_settings[NofBalls]) {
       Player = 1;
       Ball++;
-      ActivateTimer(1000, Balls, TT_NewBall);}
+      ActivateTimer(1000, Balls, SS_NewBall);}
     else {                                            // game end
       ReleaseSolenoid(23);                            // disable flipper fingers
       ReleaseSolenoid(24);
-      TT_CheckForLockedBalls(0);
+      SS_CheckForLockedBalls(0);
       GameDefinition.AttractMode();}}}
 
-void TT_ResetHighScores(bool change) {                // delete the high scores file
+void SS_ResetHighScores(bool change) {                // delete the high scores file
   if (change) {                                       // if the start button has been pressed
     if (SDfound) {
       SD.remove(GameDefinition.HighScoresFileName);
@@ -592,14 +642,14 @@ void TT_ResetHighScores(bool change) {                // delete the high scores 
   else {
     WriteLower(" SCORES         ");}}
 
-void TT_CheckHighScore(byte Player) {
+void SS_CheckHighScore(byte Player) {
 
 }
 
 // Test mode
 
-void TT_Testmode(byte Select) {
-  Switch_Pressed = TT_Testmode;
+void SS_Testmode(byte Select) {
+  Switch_Pressed = SS_Testmode;
   switch(AppByte) {                                   // which testmode?
   case 0:                                             // display test
     switch(Select) {                                  // switch events
@@ -608,14 +658,14 @@ void TT_Testmode(byte Select) {
       *(DisplayLower+16) = 0;
       *(DisplayUpper) = 0;
       *(DisplayUpper+16) = 0;
-      WriteUpper("DISPLAY TEST    ");
-      WriteLower("                ");
+      WriteUpper("DISPLAY TEST  ");
+      WriteLower("              ");
       AppByte2 = 0;
       break;
     case 3:                                           // credit button
       WriteUpper("0000000000000000");
       WriteLower("0000000000000000");
-      AppByte2 = ActivateTimer(1000, 32, TT_DisplayCycle);
+      AppByte2 = ActivateTimer(1000, 32, SS_DisplayCycle);
       break;
     case 72:                                          // advance button
       if (AppByte2) {
@@ -623,127 +673,164 @@ void TT_Testmode(byte Select) {
         AppByte2 = 0;}
       else {
         AppByte++;}
-      TT_Testmode(0);}
+      SS_Testmode(0);}
     break;
-    case 1:                                           // switch edges test
+  case 1:                                             // switch edges test
+    switch(Select) {                                  // switch events
+    case 0:                                           // init (not triggered by switch)
+      AppByte2 = 0;
+      WriteUpper(" SWITCHEDGES  ");
+      WriteLower("              ");
+      break;
+    case 72:                                          // advance button
+      if (AppByte2) {
+        AppByte2 = 0;}
+      else {
+        AppByte++;}
+      SS_Testmode(0);
+      break;
+    case 3:                                           // credit button
+      if (!AppByte2) {
+        WriteUpper(" LATESTEDGES  ");
+        AppByte2 = 1;
+        break;} // @suppress("No break at end of case")
+    default:                                          // all other switches
+      for (byte i=1; i<24; i++) {                     // move all characters in the lower display row 4 chars to the left
+        DisplayLower[i] = DisplayLower[i+8];}
+      *(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
+      *(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
+      *(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
+      *(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}
+    break;
+  case 2:                                             // solenoid test
+    switch(Select) {                                  // switch events
+    case 0:                                           // init (not triggered by switch)
+      WriteUpper("  COIL  TEST  ");
+      WriteLower("              ");
+      AppByte2 = 0;
+      break;
+    case 3:
+      WriteUpper(" FIRINGCOIL NO");
+      AppBool = false;
+      AppByte2 = ActivateTimer(1000, 1, SS_FireSolenoids);
+      break;
+    case 72:
+      if (AppByte2) {
+        KillTimer(AppByte2);
+        AppByte2 = 0;}
+      else {
+        AppByte++;}
+      SS_Testmode(0);}
+    break;
+    case 3:                                           // single lamp test
       switch(Select) {                                // switch events
       case 0:                                         // init (not triggered by switch)
+        WriteUpper(" SINGLE LAMP  ");
+        WriteLower("              ");
         AppByte2 = 0;
-        WriteUpper(" SWITCH EDGES   ");
-        WriteLower("                ");
+        for (byte i=0; i<(LampMax+1); i++){           // erase lamp matrix
+          TurnOffLamp(i);}
+        LampPattern = LampColumns;                    // and show it
         break;
-      case 72:                                        // advance button
+      case 3:
+        WriteUpper(" ACTUAL LAMP  ");
+        AppByte2 = ActivateTimer(1000, 1, SS_ShowLamp);
+        break;
+      case 72:
+        LampPattern = NoLamps;
+        if (AppByte2) {
+          KillTimer(AppByte2);
+          AppByte2 = 0;}
+        else {
+          AppByte++;}
+        SS_Testmode(0);}
+      break;
+    case 4:                                           // all lamps test
+      switch(Select) {                                // switch events
+      case 0:                                         // init (not triggered by switch)
+        WriteUpper("  ALL   LAMPS ");
+        WriteLower("              ");
+        AppByte2 = 0;
+        break;
+      case 3:
+        WriteUpper("FLASHNG LAMPS ");
+        AppByte2 = ActivateTimer(1000, 1, SS_ShowAllLamps);
+        break;
+      case 72:
+        LampPattern = NoLamps;
+        if (AppByte2) {
+          KillTimer(AppByte2);
+          AppByte2 = 0;}
+        else {
+          AppByte++;}
+        SS_Testmode(0);}
+      break;
+    case 5:                                           // all music test
+      switch(Select) {                                // switch events
+      case 0:                                         // init (not triggered by switch)
+        WriteUpper(" MUSIC  TEST  ");
+        WriteLower("              ");
+        AppByte2 = 0;
+        break;
+      case 3:
+        if (!AppByte2) {                              // first sound?
+          WriteUpper("PLAYING MUSIC ");
+          *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte2+1) % 10)]; // show the actual sound number
+          *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte2+1) % 10)];
+          *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+          *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+          AfterMusic = SS_NextTestSound;
+          PlayMusic(50, (char*) SS_TestSounds[AppByte2]);
+          AppByte2++;}                                // prepare for next sound
+        else {                                        // not the first sound
+          SS_NextTestSound(0);}
+        break;
+      case 72:
+        AfterMusic = 0;
+        StopPlayingMusic();
         if (AppByte2) {
           AppByte2 = 0;}
         else {
           AppByte++;}
-        TT_Testmode(0);
-        break;
-      case 3:                                         // credit button
-        if (!AppByte2) {
-          WriteUpper(" LATEST EDGES   ");
-          AppByte2 = 1;
-          break;}
-      default:                                        // all other switches
-        for (i=1; i<24; i++) {                        // move all characters in the lower display row 4 chars to the left
-          DisplayLower[i] = DisplayLower[i+8];}
-        *(DisplayLower+30) = DispPattern2[32 + 2 * (Select % 10)]; // and insert the switch number to the right of the row
-        *(DisplayLower+31) = DispPattern2[33 + 2 * (Select % 10)];
-        *(DisplayLower+28) = DispPattern2[32 + 2 * (Select - (Select % 10)) / 10];
-        *(DisplayLower+29) = DispPattern2[33 + 2 * (Select - (Select % 10)) / 10];}
+        SS_Testmode(0);}
       break;
-      case 2:                                         // solenoid test
-        switch(Select) {                              // switch events
-        case 0:                                       // init (not triggered by switch)
-          WriteUpper("  COIL  TEST    ");
-          WriteLower("                ");
-          AppByte2 = 0;
-          break;
-        case 3:
-          WriteUpper(" FIRINGCOIL NO  ");
-          AppBool = false;
-          AppByte2 = ActivateTimer(1000, 1, TT_FireSolenoids);
-          break;
-        case 72:
-          if (AppByte2) {
-            KillTimer(AppByte2);
-            AppByte2 = 0;}
-          else {
-            AppByte++;}
-          TT_Testmode(0);}
+    case 6:                                           // station test
+      switch(Select) {                                // switch events
+      case 0:                                         // init (not triggered by switch)
+        WriteUpper("STATION TEST  ");
+        WriteLower("              ");
+        AppByte2 = 0;
         break;
-        case 3:                                       // single lamp test
-          switch(Select) {                            // switch events
-          case 0:                                     // init (not triggered by switch)
-            WriteUpper(" SINGLE LAMP    ");
-            WriteLower("                ");
-            AppByte2 = 0;
-            for (i=0; i<8; i++){                      // erase lamp matrix
-              LampColumns[i] = 0;}
-            LampPattern = LampColumns;                // and show it
-            break;
-          case 3:
-            WriteUpper(" ACTUAL LAMP    ");
-            AppByte2 = ActivateTimer(1000, 1, TT_ShowLamp);
-            break;
-          case 72:
-            LampPattern = NoLamps;
-            if (AppByte2) {
-              KillTimer(AppByte2);
-              AppByte2 = 0;}
-            else {
-              AppByte++;}
-            TT_Testmode(0);}
-          break;
-          case 4:                                     // all lamps test
-            switch(Select) {                          // switch events
-            case 0:                                   // init (not triggered by switch)
-              WriteUpper("  ALL   LAMPS   ");
-              WriteLower("                ");
-              AppByte2 = 0;
-              break;
-            case 3:
-              WriteUpper("FLASHNG LAMPS   ");
-              AppByte2 = ActivateTimer(1000, 1, TT_ShowAllLamps);
-              break;
-            case 72:
-              LampPattern = NoLamps;
-              if (AppByte2) {
-                KillTimer(AppByte2);
-                AppByte2 = 0;}
-              else {
-                AppByte++;}
-              TT_Testmode(0);}
-            break;
-            case 5:                                   // all music test
-              switch(Select) {                        // switch events
-              case 0:                                 // init (not triggered by switch)
-                WriteUpper(" MUSIC  TEST    ");
-                WriteLower("                ");
-                AppByte2 = 0;
-                break;
-              case 3:
-                WriteUpper("PLAYING MUSIC   ");
-                if (APC_settings[Volume]) {           // system set to digital volume control?
-                  analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
-                AfterMusic = TT_NextTestSound;
-                AppByte2 = 1;
-                PlayMusic(50, (char*) TestSounds[0]);
-                break;
-              case 72:
-                AfterMusic = 0;
-                digitalWrite(VolumePin,HIGH);         // set volume to zero
-                StopPlayingMusic();
-                if (AppByte2) {
-                  AppByte2 = 0;}
-                else {
-                  GameDefinition.AttractMode();
-                  return;}
-                TT_Testmode(0);}
-              break;
-}}
+      case 3:
+        AppByte2 = 1;
+        if (QuerySwitch(52)) {                        // station in position 1?
+          AppBool = true;}
+        else {
+          AppBool = false;}
+        ActivateSolenoid(0, 16);                      // activate station motor
+        break;
+      case 52:
+        if (AppBool) {
+          ReleaseSolenoid(16);
+          WriteUpper(" POS 2 REACHED");}
+        break;
+      case 53:
+        if (!AppBool) {
+          ReleaseSolenoid(16);
+          WriteUpper(" POS 1 REACHED");}
+        break;
+      case 72:
+        ReleaseSolenoid(13);
+        if (AppByte2) {
+          AppByte2 = 0;}
+        else {
+          // AppByte++;}
+          GameDefinition.AttractMode();
+          return;}
+        SS_Testmode(0);
+        break;}}}
 
-void TT_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
+void SS_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
   if (QuerySwitch(73)) {                              // Up/Down switch pressed?
     *(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
     *(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
@@ -757,18 +844,18 @@ void TT_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
     CurrentLamp++;                                    // increase the lamp counter
     if (CurrentLamp == LampMax+1) {                   // maximum reached?
       CurrentLamp = 1;}}                              // then start again
-  AppByte2 = ActivateTimer(1000, CurrentLamp, TT_ShowLamp);} // come back in one second
+  AppByte2 = ActivateTimer(1000, CurrentLamp, SS_ShowLamp);} // come back in one second
 
-void TT_ShowAllLamps(byte State) {                    // Flash all lamps
+void SS_ShowAllLamps(byte State) {                    // Flash all lamps
   if (State) {                                        // if all lamps are on
     LampPattern = NoLamps;                            // turn them off
     State = 0;}
   else {                                              // or the other way around
     LampPattern = AllLamps;
     State = 1;}
-  AppByte2 = ActivateTimer(500, State, TT_ShowAllLamps);}  // come back in 500ms
+  AppByte2 = ActivateTimer(500, State, SS_ShowAllLamps);}  // come back in 500ms
 
-void TT_FireSolenoids(byte Solenoid) {                // cycle all solenoids
+void SS_FireSolenoids(byte Solenoid) {                // cycle all solenoids
   if (AppBool) {                                      // if C bank solenoid
     ActC_BankSol(Solenoid);
     *(DisplayLower+30) = DispPattern2[('C'-32)*2];    // show the C
@@ -796,11 +883,11 @@ void TT_FireSolenoids(byte Solenoid) {                // cycle all solenoids
       *(DisplayLower+31) = DispPattern2[(' '-32)*2+1];
       if (QuerySwitch(73)) {                          // Up/Down switch pressed?
         Solenoid++;                                   // increase the solenoid counter
-        if (Solenoid == 22) {                         // maximum reached?
+        if (Solenoid > 22) {                          // maximum reached?
           Solenoid = 1;}}}}                           // then start again
-  AppByte2 = ActivateTimer(1000, Solenoid, TT_FireSolenoids);}   // come back in one second
+  AppByte2 = ActivateTimer(1000, Solenoid, SS_FireSolenoids);}   // come back in one second
 
-void TT_DisplayCycle(byte CharNo) {                   // Display cycle test
+void SS_DisplayCycle(byte CharNo) {                   // Display cycle test
   if (QuerySwitch(73)) {                              // cycle only if Up/Down switch is not pressed
     if (CharNo == 116) {                              // if the last character is reached
       CharNo = 32;}                                   // start from the beginning
@@ -809,8 +896,8 @@ void TT_DisplayCycle(byte CharNo) {                   // Display cycle test
         CharNo = 66;}
       else {
         CharNo = CharNo+2;}}                          // otherwise show next character
-    for (i=0; i<16; i++) {                            // use for all alpha digits
-      if ((APC_settings[DisplayType] < 3 || APC_settings[DisplayType] > 6) && ((i==0) || (i==8))) {
+    for (byte i=0; i<16; i++) {                       // use for all alpha digits
+      if ((i==0) || (i==8)) {
         DisplayUpper[2*i] = LeftCredit[CharNo];
         DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
         DisplayLower[2*i] = RightCredit[CharNo];
@@ -820,16 +907,17 @@ void TT_DisplayCycle(byte CharNo) {                   // Display cycle test
         DisplayUpper[2*i+1] = DispPattern1[CharNo+1];
         DisplayLower[2*i] = DispPattern2[CharNo];
         DisplayLower[2*i+1] = DispPattern2[CharNo+1];}}}
-  AppByte2 = ActivateTimer(500, CharNo, TT_DisplayCycle);}   // restart timer
+  AppByte2 = ActivateTimer(500, CharNo, SS_DisplayCycle);}   // restart timer
 
-void TT_NextTestSound(byte Dummy) {
+void SS_NextTestSound(byte Dummy) {
   UNUSED(Dummy);
-  if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    AppByte++;}
-  if (!TestSounds[AppByte][0]) {
-    AppByte = 0;}
-  *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte+1) % 10)]; // show the actual solenoid number
-  *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte+1) % 10)];
-  *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte+1) - ((AppByte+1) % 10)) / 10];
-  PlayMusic(50, (char*) TestSounds[AppByte]);}
+  *(DisplayLower+30) = DispPattern2[32 + 2 * ((AppByte2+1) % 10)]; // show the actual sound number
+  *(DisplayLower+31) = DispPattern2[33 + 2 * ((AppByte2+1) % 10)];
+  *(DisplayLower+28) = DispPattern2[32 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+  *(DisplayLower+29) = DispPattern2[33 + 2 * ((AppByte2+1) - ((AppByte2+1) % 10)) / 10];
+  PlayMusic(50, (char*) SS_TestSounds[AppByte2]);
+  if (QuerySwitch(73)) {                              // Up/Down switch not pressed?
+    AppByte2++;}                                      // proceed to next sound
+  if (!SS_TestSounds[AppByte2][0]) {
+    AppByte2 = 0;}}
+

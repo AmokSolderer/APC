@@ -1,5 +1,14 @@
 # APC News and Changelog
 
+## June 2025
+
+### New SW Version V1.03
+
+* Stability fix in KillTimer() -> does only affect self written code with heavy timer use
+* Bugfix -> MPF boot issue fixed by changing the reply to USB command 19 (get number of modern lights) to a two bit response
+* New [System Setting 12](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#system-settings) 'Connect Startup' added. This is for MPF users who also use PinMame. With this setting enabled you can decide whether to boot Lisy/PinMame from the onboard PI or boot to 'USB control' mode by the state of the Up/Down switch. Hence, changing the 'Connect Type' setting is no longer necessary.
+* Exception rules for System 6 Gorgar have been added. [Sound files for Gorgar are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+
 ## November 2024
 
 ### New SW Version V1.02
@@ -110,7 +119,7 @@ That means you should try to get these ICs before you order any boards.
 
 ### New SW Version V0.22
 
-* A new exception handling system has been implemented. This makes it easier to program machine specific changes while using PinMame. Take a look at the [PinMame How-to](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame_howto.md#programming-exceptions) page for details
+* A new exception handling system has been implemented. This makes it easier to program machine specific changes while using PinMame. Take a look at the [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md) page for details
 * Exception rules for System 7 Pharaoh have been added. Sound files for Pharaoh are also available (Thanks to Grangeomatic)
 * Exception rules for System 6 Firepower have been added. Sound files for Firepower are also available (Thanks to Matiou)
 * Support for 6 digit numerical displays (System3 - 6) has been added

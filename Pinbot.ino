@@ -442,6 +442,22 @@ void PB_AttractMode() {
   PB_AttractLampCycle(1);
   PB_AttractDisplayCycle(1);}
 
+void PB_ShowBigScores(byte Row, unsigned int Score) {
+  byte Buffer;
+  byte i = 0;
+  Score = Score / 1000000;
+  while (Score && i<3) {
+    Buffer = Score % 10;
+    Score = (Score-Buffer)/10;
+    Buffer = 32+2*Buffer;
+    if (Row) {
+      *(DisplayUpper2+2*(23-i)) = DispPattern1[Buffer];
+      *(DisplayUpper2+2*(23-i)+1) = DispPattern1[Buffer+1];}
+    else {
+      *(DisplayUpper2+2*(7-i)) = DispPattern1[Buffer];
+      *(DisplayUpper2+2*(7-i)+1) = DispPattern1[Buffer+1];}
+    i++;}}
+
 void PB_AttractDisplayCycle(byte Step) {
   static byte Count = 0;
   static byte Timer0 = 0;
@@ -503,36 +519,70 @@ void PB_AttractDisplayCycle(byte Step) {
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
     WriteLower2("                ");
-    for (i=1; i<=NoPlayers; i++) {                    // display the points of all active players
+    for (byte i=1; i<=NoPlayers; i++) {               // display the points of all active players
       ShowNumber(8*i-1, Points[i]);}
     Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);
     Step++;
     break;
   case 3:                                             // Show highscores
-    WriteUpper2("1>     2>     ");
-    WriteLower2("              ");
-    for (i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-      *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
-      *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
-    ShowNumber(23, HallOfFame.Scores[0]);
-    ShowNumber(31, HallOfFame.Scores[1]);
+    if (APC_settings[DisplayType]) {                  // Standard display
+      WriteUpper2("1>     2>     ");
+      WriteLower2("              ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+        *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+        *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
+        *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
+      ShowNumber(23, HallOfFame.Scores[0]);
+      ShowNumber(31, HallOfFame.Scores[1]);}
+    else {                                            // 4Alpha + Credit
+      WriteUpper2("1>            ");
+      WriteLower2("2>            ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+        *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+        *(DisplayLower2+6+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
+        *(DisplayLower2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
+      ShowNumber(15, HallOfFame.Scores[0]);
+      ShowNumber(31, HallOfFame.Scores[1]);
+      if (HallOfFame.Scores[0] >= 10000000) {         // expand scores > 10M to the left display
+        unsigned int Buffer = HallOfFame.Scores[0] / 10000000;
+        ShowNumber(7, Buffer);}
+      if (HallOfFame.Scores[1] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[1] / 10000000;
+        ShowNumber(23, Buffer);}}
     Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);
     Step++;
     break;
   case 4:
-    WriteUpper2("3>     4>     ");
-    WriteLower2("              ");
-    for (i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-      *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
-      *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
-    ShowNumber(23, HallOfFame.Scores[2]);
-    ShowNumber(31, HallOfFame.Scores[3]);
+    if (APC_settings[DisplayType]) {
+      WriteUpper2("3>     4>     ");
+      WriteLower2("              ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+        *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+        *(DisplayUpper2+24+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
+        *(DisplayUpper2+24+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
+      ShowNumber(23, HallOfFame.Scores[2]);
+      ShowNumber(31, HallOfFame.Scores[3]);}
+    else {
+      WriteUpper2("3>            ");
+      WriteLower2("4>            ");
+      for (byte i=0; i<3; i++) {
+        *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+        *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+        *(DisplayLower2+6+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
+        *(DisplayLower2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
+      ShowNumber(15, HallOfFame.Scores[2]);
+      ShowNumber(31, HallOfFame.Scores[3]);
+      if (HallOfFame.Scores[0] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[2] / 10000000;
+        ShowNumber(7, Buffer);}
+      if (HallOfFame.Scores[1] >= 10000000) {
+        unsigned int Buffer = HallOfFame.Scores[3] / 10000000;
+        ShowNumber(23, Buffer);}}
     Timer1 = ActivateTimer(50, 5, PB_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, PB_AttractDisplayCycle);
     Step = 1;
@@ -2268,6 +2318,11 @@ void PB_MballDisplay(byte Step) {
   static byte Timer = 0;
   byte *PB_MballDispUpper;
   byte *PB_MballDispLower;
+  if (Step == 100) {                                  // initial call?
+    if (Timer) {                                      // already running?
+      return;}                                        // ignore call
+    else {
+      Step = 24;}}
   if (Multiballs == 3) {
     PB_MballDispUpper = (byte* ) PB_3MballDispUpper;
     PB_MballDispLower = (byte* ) PB_3MballDispLower;}
@@ -2303,7 +2358,7 @@ void PB_Multiball(byte State) {                       // state machine for sound
     ActivateTimer(1200, 1, PB_Multiball);
     PB_EyeFlash(0);
     PB_ShowMessage(254);                              // block display messages
-    PB_MballDisplay(24);                              // show display animation
+    PB_MballDisplay(100);                             // show display animation
     PatPointer = PB_MultiballPat;                     // set the pointer to the lamp pattern
     FlowRepeat = 1;                                   // set the repetitions
     ActivateTimer(6100, 0, PB_Multiball_RestoreLamps) ; // call this when the lamp pattern has run out
@@ -2749,7 +2804,6 @@ void PB_BallEnd(byte Balls) {                         // ball has been kicked in
       PB_MballDisplay(0);                             // stop display animation
       PB_SolarValue = 0;                              // reset jackpot
       PB_MballState = 5;                              // indicate a ball loss
-      PB_MballDisplay(0);                             // stop display animation
       PB_ShooterLaneWarning(0);                       // turn off shooter lane warning
       PB_ShowMessage(255);                            // release message block
       ShowAllPoints(0);
@@ -2960,6 +3014,7 @@ void PB_CountBonus(byte State) {
 
 void PB_BallEnd2() {
   BlockOuthole = false;                               // remove outhole block
+  PB_SpecialLit = false;                              // unlite advance planet special
   PlaySound(53, "1_85.snd");
   if (ExBalls) {                                      // Player has extra balls
     AddBlinkLamp(33, 250);                            // Let the extra ball lamp blink

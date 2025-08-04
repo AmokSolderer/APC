@@ -229,7 +229,7 @@ void BC_AttractDisplayCycle(byte Step) {
   case 2:                                             // show scores of previous game
     WriteUpper2("                ");                  // erase display
     WriteLower2("                ");
-    for (i=1; i<=NoPlayers; i++) {                    // display the points of all active players
+    for (byte i=1; i<=NoPlayers; i++) {               // display the points of all active players
       ShowNumber(8*i-1, Points[i]);}
     Timer1 = ActivateTimer(50, 5, BC_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, BC_AttractDisplayCycle);
@@ -238,7 +238,7 @@ void BC_AttractDisplayCycle(byte Step) {
   case 3:                                             // Show highscores
     WriteUpper2("1>              ");
     WriteLower2("2>              ");
-    for (i=0; i<3; i++) {
+    for (byte i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
       *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
@@ -252,7 +252,7 @@ void BC_AttractDisplayCycle(byte Step) {
   case 4:
     WriteUpper2("3>              ");
     WriteLower2("4>              ");
-    for (i=0; i<3; i++) {
+    for (byte i=0; i<3; i++) {
       *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
       *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
       *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
@@ -310,7 +310,7 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
         analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
       else {
         digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
-      for (i=0; i< 8; i++) {                          // turn off all lamps
+      for (byte i=0; i< 8; i++) {                     // turn off all lamps
         LampColumns[i] = 0;}
       LampPattern = LampColumns;                      // lamps are not controlled by a fixed pattern any more
       NoPlayers = 0;
@@ -324,7 +324,7 @@ void BC_AttractModeSW(byte Button) {                  // Attract Mode switch beh
       BonusMultiplier = 1;
       InLock = 0;
       Multiballs = 1;
-      for (i=1; i < 5; i++) {
+      for (byte i=1; i < 5; i++) {
         LockedBalls[i] = 0;
         Points[i] = 0;}
       BC_NewBall(game_settings[BCset_InstalledBalls]); // release a new ball
@@ -418,7 +418,7 @@ void BC_SearchBall(byte Counter) {                    // ball watchdog timer has
 
 byte BC_CountBallsInTrunk() {
   byte Balls = 0;
-  for (i=0; i<game_settings[BCset_InstalledBalls]; i++) { // check how many balls are on the ball ramp
+  for (byte i=0; i<game_settings[BCset_InstalledBalls]; i++) { // check how many balls are on the ball ramp
     if (QuerySwitch(game_settings[BCset_BallThroughSwitches+i])) {
       if (Balls < i) {
         return 5;}                                    // send warning
@@ -710,7 +710,7 @@ void BC_Testmode(byte Select) {
                 *(DisplayLower+1+2*c) = 0;}           // delete commas
               DisplayScore(1, 4);}                    // show test number
             AppByte2 = 0;
-            for (i=0; i<8; i++){                      // erase lamp matrix
+            for (byte i=0; i<8; i++){                 // erase lamp matrix
               LampColumns[i] = 0;}
             LampPattern = LampColumns;                // and show it
             break;
@@ -881,7 +881,7 @@ void BC_DisplayCycle(byte CharNo) {                   // Display cycle test
           CharNo = 66;}
         else {
           CharNo = CharNo+2;}}                        // otherwise show next character
-      for (i=0; i<16; i++) {                          // use for all alpha digits
+      for (byte i=0; i<16; i++) {                     // use for all alpha digits
         if ((APC_settings[DisplayType] < 3 || APC_settings[DisplayType] > 6) && ((i==0) || (i==8))) {
           DisplayUpper[2*i] = LeftCredit[CharNo];
           DisplayUpper[2*i+1] = LeftCredit[CharNo+1];
