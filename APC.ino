@@ -372,8 +372,9 @@ void Init_System() {
 
 void Init_System2(byte State) {                       // state = 0 will restore the settings if no card is found
   if (APC_settings[ActiveGame] == 3) {                // Remote Control selected?
-    if (APC_settings[ConnectStartup]) {               // use Up/Down switch to select com interface?
+    if (APC_settings[ConnectStartup]) {               // use Up/Down switch to select game?
       if (QuerySwitch(73)) {                          // switch pressed?
+        ComState = 1;                                 // select on board PI
         APC_settings[ActiveGame] = 3;}                // use PinMame
       else {                                          // switch not pressed
         APC_settings[ActiveGame] = 4;}}               // use Space Station code
