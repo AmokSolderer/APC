@@ -14,7 +14,7 @@ Both methods have in common, that both music and sound board of the pinball cont
 
 Before that, renaming and postprocessing of the files is required. This could be performed with an automatic renaming tool ( eg. Bulk Rename Utility https://www.bulkrenameutility.co.uk). The sound files need to be changed to '00_XX.wav' with XX in hexadecimal format, and the music files to '01_XX.wav' accordingly.
 
-The next step is postprocessing in an audio tool like e.g. audacity (http://www.audacity.com). With audacity nearly every operation can be batch processed. This is very handy to change the relative volume of music files or/and sound files with a single mouse click.
+The next step is postprocessing in an audio tool like e.g. [Audacity](https://www.audacityteam.org/). With audacity nearly every operation can be batch processed. This is very handy to change the relative volume of music files or/and sound files with a single mouse click.
 It also can be used to automize a time series of 'F5' exported soundfiles. Eg. if the 'F5' method is used to record the sounds 0x00-0x0F into a single sound file, the sounds can be threshold-level detected by audacity and saved automatically.
 This can be achieved by inserting the following commands into the macro queue:
 
@@ -24,7 +24,7 @@ This can be achieved by inserting the following commands into the macro queue:
 
 After executing the macro, check if the text markers are set correctly. Then use CTRL-Shift-L to export single files defined by the text markers (use prefix '0_').
 
-The next recommended step is to mix the stereo track down to mono (use Tracks->mix->downmix to mono in audacity) and change the volume (either use 'normalize' oder 'amplify' function in audacity). Experiment a bit with the amplification, because the synthetically generated peak values (by pinmame) are sometimes misleading. Try it out on the real machine.
+The next recommended step is to mix the stereo track down to mono (use Tracks->mix->downmix to mono in audacity) and change the volume (either use 'normalize' or 'amplify' function in audacity). Experiment a bit with the amplification, because the synthetically generated peak values (by pinmame) are sometimes misleading. Try it out on the real machine.
 
 After this step, you can either convert each file to 44.1kHz manually in audacity (for this there is no macro function yet ). Or use a different tool like OCENAUDIO (https://www.ocenaudio.com) which can batch convert sample rates. With OCENAUDIO you can pull a folder in the left column of the program screen, mark all with CTRL-A and use the right mouse button to 'change samplerate' and set this to 44100Hz. After this, close all files and confirm 'save files' with ok and wait for automatic conversion.
 
