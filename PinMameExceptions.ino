@@ -449,6 +449,7 @@ byte EX_Flash(byte Type, byte Command){
 
 byte EX_TimeWarp(byte Type, byte Command){
   static byte SoundSeries;                            // buffer to handle pre system11 sound series
+  static bool GameOver;                               // indicates that the game over lamp has been lit
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
       return(1);}}                                    // omit command if ball saver says so
@@ -458,7 +459,7 @@ byte EX_TimeWarp(byte Type, byte Command){
     else if (Command == 12) {                         // sound command 0x0c - stop sound
       AfterSound = 0;
       SoundSeries = 0;                                // Reset BG sound
-      StopPlayingMusic();
+      //StopPlayingMusic();
       StopPlayingSound();}
     else if (Command == 13) {                         // sound command 0x0d - increase pitch of background sound
       if (!game_settings[USB_BGmusic]) {              // use MUSIC.SND instead of BG sound
@@ -473,8 +474,10 @@ byte EX_TimeWarp(byte Type, byte Command){
         PlaySound(51, (char*) FileName);}}
     else if (Command == 14) {                         // sound command 0x0e - background sound - sound series
       if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
-        PlayMusic(50, "MUSIC.snd");                   // play music track
-        QueueNextMusic("MUSIC.snd");}                 // and loop it
+        if (GameOver) {
+          GameOver = false;
+          PlayMusic(50, "MUSIC.snd");                 // play music track
+          QueueNextMusic("MUSIC.snd");}}              // and loop it
       else {
         SoundSeries = 1;
         PlaySound(51, "0_0e_001.snd");                // play BG sound
@@ -492,6 +495,11 @@ byte EX_TimeWarp(byte Type, byte Command){
   case SolenoidRelCommand:
     if (Command == 6) {                               // ignore turn-off commands for drop target solenoids
       return(1);}                                     // ignore it
+    return(0);
+  case LampOnCommand:                                 // if game over lamp is lit
+    if (Command == 62) {
+      GameOver = true;
+      StopPlayingMusic();}
     return(0);
   default:
     return(0);}}
