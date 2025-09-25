@@ -219,7 +219,7 @@ void USB_SwitchHandler(byte Switch) {
         USB_Enter_TestmodeTimer = ActivateTimer(1000, 0, USB_Testmode);}  // look again in 1s
       break;
     default:
-      while (USB_HWrule_ActSw[i][0]) {                // check for HW rules for this switch
+      while (USB_HWrule_ActSw[i][0] && QuerySolenoid(24)) {  // check for HW rules for this switch if flipper relay is active
         if (USB_HWrule_ActSw[i][0] == Switch) {
           if (USB_HWrule_ActSw[i][2]) {               // duration != 0 ?
             ActivateSolenoid((byte) USB_HWrule_ActSw[i][2], USB_HWrule_ActSw[i][1]);}
