@@ -864,6 +864,8 @@ const struct LampPat SS_GameStartPat[19] ={
       {50,0b10000000,0b01000101,0b11111111,0b10000111,0b01000000,0b00000000,0b11000001,0b00000100},
       {0,0,0,0,0,0,0,0,0}};
 
+byte SS_Status = 0;                                   // indicates the status of the game (0 = game over, 1 = new ball released, 2 = game running, 3 = kickback enabled)
+
 struct GameDef SS_GameDefinition = {
     SS_setList,                                       // GameSettingsList
     (byte*)SS_defaults,                               // GameDefaultsPointer
@@ -1095,10 +1097,12 @@ void SS_AttractModeSW(byte Button) {                  // Attract Mode switch beh
         digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
       for (byte i=0; i< 8; i++) {                     // turn off all lamps
         LampColumns[i] = 0;}
-      LampPattern = LampColumns;                      // lamps are not controlled by a fixed pattern any more
       NoPlayers = 0;
       WriteUpper("                ");
       WriteLower("                ");
+      PlaySound(50, "0_84.snd");                      // we have ignition
+      PlayMusic(50, "1_02.snd");
+      QueueNextMusic("1_02L.snd");
       Ball = 1;
       SS_AddPlayer();
       Player = 1;
@@ -1126,14 +1130,27 @@ void SS_CheckForLockedBalls(byte Event) {             // check if balls are lock
       ActA_BankSol(1);}
   }                                                   // add the locks of your game here
 
+void SS_StartBallAnimation(byte Command) {            // shows the lamp animation for every new ball
+  if (Command) {
+    PatPointer = SS_GameStartPat;                     // set the pointer to the current series
+    FlowRepeat = 250;                                 // set the repetitions
+    LampReturn = SS_StartBallAnimation;
+    ShowLampPatterns(1);}
+  else {
+    ShowLampPatterns(0);
+    LampReturn = 0;
+    LampPattern = LampColumns;}}                      // lamps are not controlled by a fixed pattern any more
+
 void SS_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
   ShowAllPoints(0);
   if (APC_settings[DisplayType] < 2) {                // credit display present?
     *(DisplayUpper+16) = LeftCredit[32 + 2 * Ball];}  // show current ball in left credit
   BlinkScore(1);                                      // start score blinking
   Switch_Released = SS_CheckShooterLaneSwitch;
+  SS_StartBallAnimation(1);
+  SS_Status = 1;                                      // indicate a new ball
   if (!QuerySwitch(43)) {
-    ActA_BankSol(2);               // release ball
+    ActA_BankSol(2);                                  // release ball
     Switch_Pressed = SS_BallReleaseCheck;             // set switch check to enter game
     CheckReleaseTimer = ActivateTimer(5000, Balls-1, SS_CheckReleasedBall);} // start release watchdog
   else {
@@ -1142,11 +1159,15 @@ void SS_NewBall(byte Balls) {                         // release ball (Event = e
 void SS_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 43) { // shooter lane switch released?
     Switch_Released = DummyProcess;
+    PlaySound(50, "1_89.snd");                        // launch sound
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}}}
 
 void SS_BallReleaseCheck(byte Switch) {               // handle switches during ball release
-  if (Switch > 15) {                                  // edit this to be true only for playfield switches
+  if (Switch > 13 && Switch < 51) {                   // playfield switch?
+    if (SS_Status == 1) {
+      SS_Status = 2;                                  // game is running
+      SS_HandleShSt(1);}                              // stop startup lamp animation and set Shuttle/Station goodies
     if (CheckReleaseTimer) {
       KillTimer(CheckReleaseTimer);
       CheckReleaseTimer = 0;}                         // stop watchdog
@@ -1159,7 +1180,10 @@ void SS_BallReleaseCheck(byte Switch) {               // handle switches during 
   SS_GameMain(Switch);}                               // process current switch
 
 void SS_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
-  if (Switch > 15) {                                  // edit this to be true only for playfield switches
+  if (Switch > 13 && Switch < 51) {                   // playfield switch?
+    if (SS_Status == 1) {
+      SS_Status = 2;                                  // game is running
+      SS_HandleShSt(1);}                              // stop startup lamp animation and set Shuttle/Station goodies
     if (BallWatchdogTimer) {
       KillTimer(BallWatchdogTimer);}                  // stop watchdog
     BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}
@@ -1245,10 +1269,256 @@ void SS_GameMain(byte Event) {                        // game switch events
   case 3:                                             // credit button
     SS_AddPlayer();
     break;
+  case 35:                                            // change shuttle/station score
+    SS_HandleShSt(5);                                 // shuffle new score
+    break;
+  case 55:                                            // left flipper
+    SS_HandleShSt(2);
+    break;
+  case 56:                                            // right flipper
+    SS_HandleShSt(3);
+    break;
+  case 66:                                            // left slingshot
+    if (SS_Status) {
+      ActivateSolenoid(0, 18);}
+    break;
+  case 67:                                            // right jet bumper
+    if (SS_Status) {
+      ActivateSolenoid(0, 19);}
+    break;
+  case 68:                                            // right slingshot
+    if (SS_Status) {
+      ActivateSolenoid(0, 20);}
+    break;
+  case 69:                                            // left jet bumper
+    if (SS_Status) {
+      ActivateSolenoid(0, 21);}
+    break;
+  case 70:                                            // lower jet bumper
+    if (SS_Status) {
+      ActivateSolenoid(0, 22);}
+    break;
   default:
-    if (Event == 10) {
-      ActivateTimer(200, 0, SS_ClearOuthole);}        // check again in 200ms
+    if (Event < 17 && Event > 32) {                   // shuttle/station target
+      SS_HandleShSt(Event);}
   }}
+
+void SS_HandleShSt(byte Command) {                    // handles the Shuttle/Station targets
+  static byte Timer = 0;                              // timer for simultaneously pressed flipper buttons
+  static byte Timer2 = 0;                             // timer for shuffle
+  static byte LastFlipper = 0;                        // stores the last used flipper for changing sh/st
+  static byte Station = 0;                            // 0 = Shuttle / 1 = Station is lit at the shuffle target
+  static byte LitShuttle[4];                          // lit shuttle targets for each player
+  static byte LitStation[4];                          // lit station targets for each player
+  static byte SelectShuttle;                          // blinking Shuttle goodie
+  static byte SelectStation;                          // blinking Station goodie
+  byte Offset;
+  switch(Command) {
+  case 0:                                             // off
+    if (Timer) {
+      KillTimer(Timer);
+      Timer = 0;}
+    break;
+  case 1:                                             // init for a new ball
+    LampPattern = LampColumns;                        // lamps are not controlled by a fixed pattern any more
+    PlaySound(50, "0_13.snd");
+    PlayMusic(50, "1_01.snd");                        // main music theme
+    QueueNextMusic("1_01L.snd");
+    Station = 0;                                      // Shuttle is selected
+    AddBlinkLamp(9, 80);                              // blink shuttle lamp
+    SelectShuttle = random(7);                        // select shuttle goodie
+    if (SelectShuttle < 3) {                          // Extra ball or Special?
+      AddBlinkLamp(50+SelectShuttle, 80);}            // those need to blink
+    else {
+      TurnOnLamp(50+SelectShuttle);}
+    SelectStation = random(7);                        // select station goodie
+    if (SelectStation < 3) {                          // Extra ball or Special?
+      AddBlinkLamp(50+SelectStation, 80);}            // those need to blink
+    else {
+      TurnOnLamp(50+SelectStation);}
+    LitShuttle[Player-1] = 0;
+    LitStation[Player-1] = 0;
+    for (byte i=18;i<32;i++) {
+      AddBlinkLamp(i, 180);}
+    break;
+  case 2:                                             // left flipper
+  case 3:                                             // right flipper
+    if (!Timer2) {                                    // only if not currently shuffling
+      if (Timer) {
+        if (LastFlipper != Command) {                 // both flipper buttons pressed simultaneously?
+          KillTimer(Timer);
+          Timer = 0;
+          if (Station) {                              // if in station mode
+            Station = 0;                              // switch to shuttle
+            AddBlinkLamp(9, 80);
+            RemoveBlinkLamp(10);}
+          else {
+            Station = 1;                              // and vice versa
+            AddBlinkLamp(10, 80);
+            RemoveBlinkLamp(9);}}}
+      else {
+        Timer = ActivateTimer(100, 4, SS_HandleShSt); // 100ms to press the second flipper button
+        LastFlipper = Command;}}
+    break;
+  case 4:                                             // second flipper button not pressed in time
+    Timer = 0;
+    break;
+  case 5:                                             // shuffle new score
+    if (!Timer2) {
+      PlaySound(51, "0_11.snd");
+      if (Station) {
+        if (SelectStation < 3) {
+          RemoveBlinkLamp(50+SelectStation);}
+        else {
+          TurnOffLamp(50+SelectStation);}}
+      else {
+        if (SelectShuttle < 3) {
+          RemoveBlinkLamp(50+SelectShuttle);}
+        else {
+          TurnOffLamp(50+SelectShuttle);}}
+      Timer2 = ActivateTimer(120, 6, SS_HandleShSt);}
+    break;
+  case 6:
+  case 8:
+  case 10:
+    if (Station) {
+      Offset = 58;}
+    else {
+      Offset = 50;}
+    for (byte i=0;i<7;i++) {
+      TurnOnLamp(Offset + i);}
+    Timer2 = ActivateTimer(120, Command++, SS_HandleShSt);
+    break;
+  case 7:
+  case 9:
+  case 11:
+    if (Station) {
+      Offset = 58;}
+    else {
+      Offset = 50;}
+    for (byte i=0;i<7;i++) {
+      TurnOffLamp(Offset + i);}
+    Timer2 = ActivateTimer(120, Command++, SS_HandleShSt);
+    break;
+  case 12:
+  case 13:
+  case 14:
+  case 15:
+  case 16:
+  case 17:
+    PlaySound(51, "0_06.snd");
+    if (Station) {
+      Offset = 58;}
+    else {
+      Offset = 50;}
+    for (byte i=0;i<7;i++) {
+      TurnOffLamp(Offset + i);}
+    TurnOnLamp(Offset + random(7));
+    Timer2 = ActivateTimer(250, Command++, SS_HandleShSt);
+    break;
+  case 18:
+    PlaySound(51, "0_1e.snd");
+    if (Station) {
+      SelectStation = random(7);
+      AddBlinkLamp(SelectStation + 58, 150);}
+    else {
+      SelectShuttle = random(7);
+      AddBlinkLamp(SelectShuttle + 50, 150);}
+    Timer2 = ActivateTimer(1000, Command++, SS_HandleShSt);
+    break;
+  case 19:
+    if (Station) {
+      RemoveBlinkLamp(SelectStation + 58);
+      TurnOffLamp(SelectStation + 58);}
+    else {
+      RemoveBlinkLamp(SelectShuttle + 50);
+      TurnOffLamp(SelectShuttle + 50);}
+    Timer2 = 0;
+    break;
+  default:
+    if (Command < 17 && Command > 32) {               // shuttle/station target
+      if (Command < 25) {                             // shuttle target
+        if (!((LitShuttle[Player] >> (Command - 18)) & 1)) { // check the corresponding status bit
+          PlaySound(50, "0_13.snd");
+          RemoveBlinkLamp(Command);
+          TurnOnLamp(Command);
+          LitShuttle[Player] = LitShuttle[Player] | (1 >> (Command - 18));  // set the corresponding status bit
+          if (LitShuttle[Player] == 127) {            // all targets hit
+            LitShuttle[Player] = 0;
+            for (byte i=18;i<25;i++) {
+              TurnOffLamp(i);
+              AddBlinkLamp(i, 180);}
+            switch (SelectShuttle) {
+            case 0:                                   // SPECIAL
+            case 1:                                   // extra ball
+              ExBalls++;
+              break;
+            case 2:                                   // 50000 + kickback
+              SS_Status = 3;                          // kickback enabled
+              Points[Player] += 50000;
+              ShowPoints(Player);
+              TurnOnLamp(17);
+              break;
+            case 3:                                   // 50000 + bonus ball
+                        //bonus ball ?
+              Points[Player] += 50000;
+              ShowPoints(Player);
+              break;
+            case 4:                                   // 150000 + hold bonus
+              Points[Player] += 150000;
+              ShowPoints(Player);
+              break;
+            case 5:                                   // 75000
+              Points[Player] += 75000;
+              ShowPoints(Player);
+              break;
+            case 6:                                   // 25000
+              Points[Player] += 25000;
+              ShowPoints(Player);
+              break;}
+            // shuffle
+          }}}
+      else {                                          // station target
+        if (!((LitStation[Player] >> (Command - 25)) & 1)) { // check the corresponding status bit
+          PlaySound(50, "0_13.snd");
+          RemoveBlinkLamp(Command);
+          TurnOnLamp(Command);
+          LitStation[Player] = LitStation[Player] | (1 >> (Command - 25));  // set the corresponding status bit
+          if (LitStation[Player] == 127) {            // all targets hit
+            LitStation[Player] = 0;
+            for (byte i=18;i<25;i++) {
+              TurnOffLamp(i);
+              AddBlinkLamp(i, 180);}
+            switch (SelectStation) {
+            case 0:                                   // SPECIAL
+            case 1:                                   // extra ball
+              ExBalls++;
+              break;
+            case 2:                                   // 50000 + kickback
+              SS_Status = 2;                          // kickback enabled
+              Points[Player] += 50000;
+              ShowPoints(Player);
+              TurnOnLamp(17);
+              break;
+            case 3:                                   // 50000 + bonus ball
+                        // bonus ball?
+              Points[Player] += 50000;
+              ShowPoints(Player);
+              break;
+            case 4:                                   // 150000 + hold bonus
+              Points[Player] += 150000;
+              ShowPoints(Player);
+              break;
+            case 5:                                   // 75000
+              Points[Player] += 75000;
+              ShowPoints(Player);
+              break;
+            case 6:                                   // 25000
+              Points[Player] += 25000;
+              ShowPoints(Player);
+              break;}
+            // shuffle
+          }}}}}}
 
 void SS_ClearOuthole(byte Event) {
   UNUSED(Event);
@@ -1342,6 +1612,7 @@ void SS_BallEnd3(byte Balls) {
     else {                                            // game end
       ReleaseSolenoid(23);                            // disable flipper fingers
       ReleaseSolenoid(24);
+      SS_Status = 0;                                  // game over
       SS_CheckForLockedBalls(0);
       GameDefinition.AttractMode();}}}
 
