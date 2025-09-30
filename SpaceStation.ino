@@ -1158,26 +1158,37 @@ void SS_NewBall(byte Balls) {                         // release ball (Event = e
 
 void SS_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 43) { // shooter lane switch released?
-    Switch_Released = DummyProcess;
-    PlaySound(50, "1_89.snd");                        // launch sound
-    if (!BallWatchdogTimer) {
-      BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}}}
+    SS_BallReleaseCheck(100);}}
 
 void SS_BallReleaseCheck(byte Switch) {               // handle switches during ball release
-  if (Switch > 13 && Switch < 51) {                   // playfield switch?
-    if (CheckReleaseTimer) {
-      KillTimer(CheckReleaseTimer);
-      CheckReleaseTimer = 0;}                         // stop watchdog
-    Switch_Pressed = SS_ResetBallWatchdog;
-    if (Switch == 43) { // ball is in the shooter lane
-      Switch_Released = SS_CheckShooterLaneSwitch;}   // set mode to register when ball is shot
-    else {
-      if (SS_Status == 1) {
-        SS_Status = 2;                                // game is running
-        SS_HandleShSt(1);}                            // stop startup lamp animation and set Shuttle/Station goodies
+  static byte Timer = 0;
+  if (Switch == 100) {                                // shooter lane switch released
+    if (!Timer) {                                     // ignore when debouncing timer is still active
+      Switch_Released = DummyProcess;
+      PlaySound(50, "1_89.snd");                      // launch sound
       if (!BallWatchdogTimer) {
-        BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}}} // set switch mode to game
-  SS_GameMain(Switch);}                               // process current switch
+        BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}}}
+  else if (Switch == 101) {                           // debouncing timer has run out
+    Timer = 0;}
+  else {
+    if (Switch > 13 && Switch < 51) {                 // playfield switch?
+      if (CheckReleaseTimer) {
+        KillTimer(CheckReleaseTimer);
+        CheckReleaseTimer = 0;}                       // stop watchdog
+      Switch_Pressed = SS_ResetBallWatchdog;
+      if (Timer) {
+        KillTimer(Timer);
+        Timer = 0;}
+      if (Switch == 43) {                             // ball is in the shooter lane
+        Timer = ActivateTimer(200, 101, SS_BallReleaseCheck); // start debouncing timer
+        Switch_Released = SS_CheckShooterLaneSwitch;} // set mode to register when ball is shot
+      else {
+        if (SS_Status == 1) {
+          SS_Status = 2;                              // game is running
+          SS_HandleShSt(1);}                          // stop startup lamp animation and set Shuttle/Station goodies
+        if (!BallWatchdogTimer) {
+          BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}}} // set switch mode to game
+    SS_GameMain(Switch);}}                            // process current switch
 
 void SS_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
   if (Switch > 13 && Switch < 51) {                   // playfield switch?
