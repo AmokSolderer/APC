@@ -1165,9 +1165,6 @@ void SS_CheckShooterLaneSwitch(byte Switch) {
 
 void SS_BallReleaseCheck(byte Switch) {               // handle switches during ball release
   if (Switch > 13 && Switch < 51) {                   // playfield switch?
-    if (SS_Status == 1) {
-      SS_Status = 2;                                  // game is running
-      SS_HandleShSt(1);}                              // stop startup lamp animation and set Shuttle/Station goodies
     if (CheckReleaseTimer) {
       KillTimer(CheckReleaseTimer);
       CheckReleaseTimer = 0;}                         // stop watchdog
@@ -1175,13 +1172,16 @@ void SS_BallReleaseCheck(byte Switch) {               // handle switches during 
     if (Switch == 43) { // ball is in the shooter lane
       Switch_Released = SS_CheckShooterLaneSwitch;}   // set mode to register when ball is shot
     else {
+      if (SS_Status == 1) {
+        SS_Status = 2;                                // game is running
+        SS_HandleShSt(1);}                            // stop startup lamp animation and set Shuttle/Station goodies
       if (!BallWatchdogTimer) {
         BallWatchdogTimer = ActivateTimer(30000, 0, SS_SearchBall);}}} // set switch mode to game
   SS_GameMain(Switch);}                               // process current switch
 
 void SS_ResetBallWatchdog(byte Switch) {              // handle switches during ball release
   if (Switch > 13 && Switch < 51) {                   // playfield switch?
-    if (SS_Status == 1) {
+    if (SS_Status == 1 && Switch != 43) {             // ignore shooter lane switch
       SS_Status = 2;                                  // game is running
       SS_HandleShSt(1);}                              // stop startup lamp animation and set Shuttle/Station goodies
     if (BallWatchdogTimer) {
@@ -1269,8 +1269,13 @@ void SS_GameMain(byte Event) {                        // game switch events
   case 3:                                             // credit button
     SS_AddPlayer();
     break;
+  case 8:                                             // high score reset
+    digitalWrite(Blanking, LOW);                      // invoke the blanking
+    StopPlayingMusic();
+    StopPlayingSound();
+    break;
   case 35:                                            // change shuttle/station score
-    SS_HandleShSt(5);                                 // shuffle new score
+    SS_HandleShSt(55);                                // shuffle new score
     break;
   case 55:                                            // left flipper
     SS_HandleShSt(2);
@@ -1299,7 +1304,7 @@ void SS_GameMain(byte Event) {                        // game switch events
       ActivateSolenoid(0, 22);}
     break;
   default:
-    if (Event < 17 && Event > 32) {                   // shuttle/station target
+    if (Event > 17 && Event < 32) {                   // shuttle/station target
       SS_HandleShSt(Event);}
   }}
 
@@ -1320,8 +1325,8 @@ void SS_HandleShSt(byte Command) {                    // handles the Shuttle/Sta
       Timer = 0;}
     break;
   case 1:                                             // init for a new ball
-    LampPattern = LampColumns;                        // lamps are not controlled by a fixed pattern any more
-    PlaySound(50, "0_13.snd");
+    SS_StartBallAnimation(0);                         // lamps are not controlled by a fixed pattern any more
+    //PlaySound(50, "0_13.snd");
     PlayMusic(50, "1_01.snd");                        // main music theme
     QueueNextMusic("1_01L.snd");
     Station = 0;                                      // Shuttle is selected
@@ -1363,7 +1368,7 @@ void SS_HandleShSt(byte Command) {                    // handles the Shuttle/Sta
   case 4:                                             // second flipper button not pressed in time
     Timer = 0;
     break;
-  case 5:                                             // shuffle new score
+  case 55:                                             // shuffle new score
     if (!Timer2) {
       PlaySound(51, "0_11.snd");
       if (Station) {
@@ -1376,36 +1381,36 @@ void SS_HandleShSt(byte Command) {                    // handles the Shuttle/Sta
           RemoveBlinkLamp(50+SelectShuttle);}
         else {
           TurnOffLamp(50+SelectShuttle);}}
-      Timer2 = ActivateTimer(120, 6, SS_HandleShSt);}
+      Timer2 = ActivateTimer(120, Command+1, SS_HandleShSt);}
     break;
-  case 6:
-  case 8:
-  case 10:
+  case 56:
+  case 58:
+  case 60:
     if (Station) {
       Offset = 58;}
     else {
       Offset = 50;}
     for (byte i=0;i<7;i++) {
       TurnOnLamp(Offset + i);}
-    Timer2 = ActivateTimer(120, Command++, SS_HandleShSt);
+    Timer2 = ActivateTimer(120, Command+1, SS_HandleShSt);
     break;
-  case 7:
-  case 9:
-  case 11:
+  case 57:
+  case 59:
+  case 61:
     if (Station) {
       Offset = 58;}
     else {
       Offset = 50;}
     for (byte i=0;i<7;i++) {
       TurnOffLamp(Offset + i);}
-    Timer2 = ActivateTimer(120, Command++, SS_HandleShSt);
+    Timer2 = ActivateTimer(120, Command+1, SS_HandleShSt);
     break;
-  case 12:
-  case 13:
-  case 14:
-  case 15:
-  case 16:
-  case 17:
+  case 62:
+  case 63:
+  case 64:
+  case 65:
+  case 66:
+  case 67:
     PlaySound(51, "0_06.snd");
     if (Station) {
       Offset = 58;}
@@ -1414,37 +1419,41 @@ void SS_HandleShSt(byte Command) {                    // handles the Shuttle/Sta
     for (byte i=0;i<7;i++) {
       TurnOffLamp(Offset + i);}
     TurnOnLamp(Offset + random(7));
-    Timer2 = ActivateTimer(250, Command++, SS_HandleShSt);
+    Timer2 = ActivateTimer(250, Command+1, SS_HandleShSt);
     break;
-  case 18:
+  case 68:
     PlaySound(51, "0_1e.snd");
     if (Station) {
+      for (byte i=58;i<65;i++) {
+        TurnOffLamp(i);}
       SelectStation = random(7);
       AddBlinkLamp(SelectStation + 58, 150);}
     else {
+      for (byte i=50;i<57;i++) {
+        TurnOffLamp(i);}
       SelectShuttle = random(7);
       AddBlinkLamp(SelectShuttle + 50, 150);}
-    Timer2 = ActivateTimer(1000, Command++, SS_HandleShSt);
+    Timer2 = ActivateTimer(1000, Command+1, SS_HandleShSt);
     break;
-  case 19:
+  case 69:
     if (Station) {
       RemoveBlinkLamp(SelectStation + 58);
-      TurnOffLamp(SelectStation + 58);}
+      TurnOnLamp(SelectStation + 58);}
     else {
       RemoveBlinkLamp(SelectShuttle + 50);
-      TurnOffLamp(SelectShuttle + 50);}
+      TurnOnLamp(SelectShuttle + 50);}
     Timer2 = 0;
     break;
   default:
-    if (Command < 17 && Command > 32) {               // shuttle/station target
+    if (Command > 17 && Command < 32) {               // shuttle/station target
       if (Command < 25) {                             // shuttle target
-        if (!((LitShuttle[Player] >> (Command - 18)) & 1)) { // check the corresponding status bit
+        if (!((LitShuttle[Player-1] & 1 << (Command - 18)))) { // check the corresponding status bit
           PlaySound(50, "0_13.snd");
           RemoveBlinkLamp(Command);
           TurnOnLamp(Command);
-          LitShuttle[Player] = LitShuttle[Player] | (1 >> (Command - 18));  // set the corresponding status bit
-          if (LitShuttle[Player] == 127) {            // all targets hit
-            LitShuttle[Player] = 0;
+          LitShuttle[Player-1] |= 1 << (Command - 18);  // set the corresponding status bit
+          if (LitShuttle[Player-1] == 127) {            // all targets hit
+            LitShuttle[Player-1] = 0;
             for (byte i=18;i<25;i++) {
               TurnOffLamp(i);
               AddBlinkLamp(i, 180);}
@@ -1479,13 +1488,13 @@ void SS_HandleShSt(byte Command) {                    // handles the Shuttle/Sta
             // shuffle
           }}}
       else {                                          // station target
-        if (!((LitStation[Player] >> (Command - 25)) & 1)) { // check the corresponding status bit
+        if (!((LitStation[Player-1] & 1 << (Command - 25)))) { // check the corresponding status bit
           PlaySound(50, "0_13.snd");
           RemoveBlinkLamp(Command);
           TurnOnLamp(Command);
-          LitStation[Player] = LitStation[Player] | (1 >> (Command - 25));  // set the corresponding status bit
-          if (LitStation[Player] == 127) {            // all targets hit
-            LitStation[Player] = 0;
+          LitStation[Player-1] |= 1 << (Command - 25);  // set the corresponding status bit
+          if (LitStation[Player-1] == 127) {            // all targets hit
+            LitStation[Player-1] = 0;
             for (byte i=18;i<25;i++) {
               TurnOffLamp(i);
               AddBlinkLamp(i, 180);}
