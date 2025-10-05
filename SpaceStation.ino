@@ -844,6 +844,9 @@ const struct LampPat SS_AttractPat9[136] ={
 const struct LampFlow SS_AttractFlow[13] = {{2,SS_AttractPat1},{5,SS_AttractPat2},{5,SS_AttractPat3},{2,SS_AttractPat1},{3,SS_AttractPat2},{2,SS_AttractPat4},{1,SS_AttractPat5},{2,SS_AttractPat6},{1,SS_AttractPat7},{3,SS_AttractPat1},{2,SS_AttractPat8},{1,SS_AttractPat9},{0,0}};
 
 const struct LampPat SS_GameStartPat[19] ={
+    // station shuttle blink 180
+    // lane lauf 180
+    // lauf 70 - 80 an Zeit
       {50,0b00000000,0b10000100,0b00000001,0b11111000,0b10000000,0b00000000,0b10000000,0b00000010},
       {50,0b00000000,0b10000000,0b00000001,0b11111000,0b10000000,0b00000000,0b01000000,0b00000110},
       {50,0b10000000,0b01001001,0b11111111,0b10000111,0b01000000,0b00000000,0b01000001,0b00000100},
@@ -1097,6 +1100,7 @@ void SS_AttractModeSW(byte Button) {                  // Attract Mode switch beh
         digitalWrite(VolumePin,HIGH);}                // turn off the digital volume control
       for (byte i=0; i< 8; i++) {                     // turn off all lamps
         LampColumns[i] = 0;}
+      LampPattern = LampColumns;                      // switch to normal lamp control
       NoPlayers = 0;
       WriteUpper("                ");
       WriteLower("                ");
@@ -1131,15 +1135,150 @@ void SS_CheckForLockedBalls(byte Event) {             // check if balls are lock
   }                                                   // add the locks of your game here
 
 void SS_StartBallAnimation(byte Command) {            // shows the lamp animation for every new ball
-  if (Command) {
-    PatPointer = SS_GameStartPat;                     // set the pointer to the current series
-    FlowRepeat = 250;                                 // set the repetitions
-    LampReturn = SS_StartBallAnimation;
-    ShowLampPatterns(1);}
-  else {
-    ShowLampPatterns(0);
-    LampReturn = 0;
-    LampPattern = LampColumns;}}                      // lamps are not controlled by a fixed pattern any more
+  static byte Timer1 = 0;
+  static byte Timer2 = 0;
+  switch (Command) {
+  case 0:                                             // stop start animation
+    if (Timer1) {
+      KillTimer(Timer1);
+      Timer1 = 0;}
+    if (Timer2) {
+      KillTimer(Timer2);
+      Timer2 = 0;}
+    for (byte i=50;i<65;i++) {                        // turn off center lamps
+      TurnOffLamp(i);}
+    for (byte i=11;i<17;i++) {                        // turn off bonus and USA lamps
+      TurnOffLamp(i);}
+    for (byte i=38;i<41;i++) {                        // turn off top lane lamps
+      TurnOffLamp(i);}
+    break;
+  case 1:
+    if (!Timer1) {
+      for (byte i=18;i<32;i++) {                      // blink shuttle/station targets
+        AddBlinkLamp(i, 180);}
+      Timer1 = ActivateTimer(10, 20, SS_StartBallAnimation);
+      Timer2 = ActivateTimer(10, 40, SS_StartBallAnimation);}
+    break;
+  case 20:                                            // shuttle/station goodie lamps
+    TurnOnLamp(50);
+    TurnOnLamp(64);
+    TurnOffLamp(51);
+    TurnOffLamp(63);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 21:
+    TurnOnLamp(51);
+    TurnOnLamp(63);
+    TurnOffLamp(50);
+    TurnOffLamp(64);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 22:
+    TurnOnLamp(52);
+    TurnOnLamp(62);
+    TurnOffLamp(51);
+    TurnOffLamp(63);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 23:
+    TurnOnLamp(53);
+    TurnOnLamp(61);
+    TurnOffLamp(52);
+    TurnOffLamp(62);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 24:
+    TurnOnLamp(54);
+    TurnOnLamp(60);
+    TurnOffLamp(53);
+    TurnOffLamp(61);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 25:
+    TurnOnLamp(55);
+    TurnOnLamp(59);
+    TurnOffLamp(54);
+    TurnOffLamp(60);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 26:
+    TurnOnLamp(56);
+    TurnOnLamp(58);
+    TurnOffLamp(55);
+    TurnOffLamp(59);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 27:
+    TurnOnLamp(55);
+    TurnOnLamp(59);
+    TurnOffLamp(56);
+    TurnOffLamp(58);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 28:
+    TurnOnLamp(54);
+    TurnOnLamp(60);
+    TurnOffLamp(55);
+    TurnOffLamp(59);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 29:
+    TurnOnLamp(53);
+    TurnOnLamp(61);
+    TurnOffLamp(54);
+    TurnOffLamp(60);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 30:
+    TurnOnLamp(52);
+    TurnOnLamp(62);
+    TurnOffLamp(53);
+    TurnOffLamp(61);
+    Timer1 = ActivateTimer(70, Command+1, SS_StartBallAnimation);
+    break;
+  case 31:
+    TurnOnLamp(51);
+    TurnOnLamp(63);
+    TurnOffLamp(52);
+    TurnOffLamp(62);
+    Timer1 = ActivateTimer(70, 20, SS_StartBallAnimation);
+    break;
+  case 40:
+    TurnOnLamp(11);
+    TurnOnLamp(14);
+    TurnOnLamp(38);
+    TurnOffLamp(12);
+    TurnOffLamp(15);
+    TurnOffLamp(39);
+    Timer2 = ActivateTimer(180, Command+1, SS_StartBallAnimation);
+    break;
+  case 41:
+    TurnOnLamp(12);
+    TurnOnLamp(15);
+    TurnOnLamp(39);
+    TurnOffLamp(11);
+    TurnOffLamp(14);
+    TurnOffLamp(38);
+    Timer2 = ActivateTimer(180, Command+1, SS_StartBallAnimation);
+    break;
+  case 42:
+    TurnOnLamp(13);
+    TurnOnLamp(16);
+    TurnOnLamp(40);
+    TurnOffLamp(12);
+    TurnOffLamp(15);
+    TurnOffLamp(39);
+    Timer2 = ActivateTimer(180, Command+1, SS_StartBallAnimation);
+    break;
+  case 43:
+    TurnOnLamp(12);
+    TurnOnLamp(15);
+    TurnOnLamp(39);
+    TurnOffLamp(13);
+    TurnOffLamp(16);
+    TurnOffLamp(40);
+    Timer2 = ActivateTimer(180, 40, SS_StartBallAnimation);
+    break;}}
 
 void SS_NewBall(byte Balls) {                         // release ball (Event = expected balls on ramp)
   ShowAllPoints(0);
@@ -1285,6 +1424,11 @@ void SS_GameMain(byte Event) {                        // game switch events
     StopPlayingMusic();
     StopPlayingSound();
     break;
+  case 10:                                            // outhole
+    if (!BlockOuthole) {
+      BlockOuthole = true;                            // block outhole until this ball has been processed
+      ActivateTimer(200, 0, SS_ClearOuthole);}             // check again in 200ms
+    break;
   case 35:                                            // change shuttle/station score
     SS_HandleShSt(55);                                // shuffle new score
     break;
@@ -1349,13 +1493,11 @@ void SS_HandleShSt(byte Command) {                    // handles the Shuttle/Sta
       TurnOnLamp(50+SelectShuttle);}
     SelectStation = random(7);                        // select station goodie
     if (SelectStation < 3) {                          // Extra ball or Special?
-      AddBlinkLamp(50+SelectStation, 80);}            // those need to blink
+      AddBlinkLamp(58+SelectStation, 80);}            // those need to blink
     else {
-      TurnOnLamp(50+SelectStation);}
+      TurnOnLamp(58+SelectStation);}
     LitShuttle[Player-1] = 0;
     LitStation[Player-1] = 0;
-    for (byte i=18;i<32;i++) {
-      AddBlinkLamp(i, 180);}
     break;
   case 2:                                             // left flipper
   case 3:                                             // right flipper
