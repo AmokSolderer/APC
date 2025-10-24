@@ -90,6 +90,9 @@ const byte EX_RollerGamesProperties[13] = {
 const byte EX_TimeWarpProperties[13] = {
     9, 0, 0, 0, 0, 40, 39, 0, 0, 0, 1, 0, 38};
 
+const byte EX_TriZoneProperties[13] = {
+    9, 0, 0, 0, 0, 28, 22, 0, 0, 0, 1, 0, 31};
+
 const byte *EX_Machine;                               // machine specific settings (optional)
 byte USB_SerialBuffer[128];                           // received command arguments
 char USB_RepeatSound[13];                             // name of the sound file to be repeated
@@ -439,6 +442,46 @@ byte EX_Flash(byte Type, byte Command){
       char FileName[13] = "0_0f_000.snd";             // generate base filename
       FileName[7] = 48 + random(8) + 1;               // change the counter according to random number
       PlaySound(51, (char*) FileName);}               // play the corresponding sound file
+    else {                                            // standard sound
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}
+    return(0);                                        // return number not relevant for sounds
+  default:
+    return(0);}}
+
+byte EX_TriZone(byte Type, byte Command){
+  static byte SoundSeries;                            // buffer to handle pre system11 sound series
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (Command == 31) { }                            // ignore sound command 0x1f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
+    else if (Command == 12) {                         // sound command 0x0c - stop sound
+      AfterSound = 0;
+      SoundSeries = 0;                                // Reset BG sound
+      StopPlayingMusic();
+      StopPlayingSound();}
+    else if (Command == 13) {                         // sound command 0x0d - increase pitch of background sound
+      if (!game_settings[USB_BGmusic]) {              // use MUSIC.SND instead of BG sound
+        if (SoundSeries < 25 )                        // this sound has 31 pitches
+          SoundSeries++;                              // every call of this sound proceeds with next pitch
+        char FileName[13] = "0_0e_000.snd";
+        FileName[7] = 48 + (SoundSeries % 10);        // change the 7th character of filename according to current pitch
+        FileName[6] = 48 + (SoundSeries % 100) / 10;  // the same with the 6th character
+        for (byte i=0; i<12; i++) {                   // prepare the filename
+          USB_RepeatSound[i] = FileName[i];}
+        QueueNextSound(USB_RepeatSound);              // select this sound to be repeated
+        PlaySound(51, (char*) FileName);}}
+    else if (Command == 14) {                         // sound command 0x0e - background sound - sound series
+      if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
+        PlayMusic(50, "MUSIC.snd");                   // play music track
+        QueueNextMusic("MUSIC.snd");}                 // and loop it
+      else {
+        SoundSeries = 1;
+        PlaySound(51, "0_0e_001.snd");                // play BG sound
+        QueueNextSound("0_0e_001.snd");}}             // select this sound to be repeated
     else {                                            // standard sound
       char FileName[9] = "0_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
@@ -1477,6 +1520,10 @@ void EX_Init(byte GameNumber) {
     SolRecycleTime[5-1] = 250;                        // set recycle time for eject hole to prevent double kicking
     PinMameException = EX_Flash;                      // use exception rules for Flash
     EX_Machine = EX_FlashProperties;                  // machine properties for ball saver
+    break;
+  case 8:                                             // TriZone
+    PinMameException = EX_TriZone;                    // use exception rules for Flash
+    EX_Machine = EX_TriZoneProperties;                // machine properties for ball saver
     break;
   case 10:                                            // Time Warp
     PinMameException = EX_TimeWarp;                   // use exception rules for Time Warp

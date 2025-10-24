@@ -1,5 +1,11 @@
 # APC News and Changelog
 
+## TBD
+
+### New SW Version V1.04
+
+* Exception rules for System 6 Tri Zone have been added. [Sound files for Tri Zone are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+
 ## June 2025
 
 ### New SW Version V1.03
