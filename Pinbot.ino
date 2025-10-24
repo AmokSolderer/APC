@@ -442,22 +442,6 @@ void PB_AttractMode() {
   PB_AttractLampCycle(1);
   PB_AttractDisplayCycle(1);}
 
-void PB_ShowBigScores(byte Row, unsigned int Score) {
-  byte Buffer;
-  byte i = 0;
-  Score = Score / 1000000;
-  while (Score && i<3) {
-    Buffer = Score % 10;
-    Score = (Score-Buffer)/10;
-    Buffer = 32+2*Buffer;
-    if (Row) {
-      *(DisplayUpper2+2*(23-i)) = DispPattern1[Buffer];
-      *(DisplayUpper2+2*(23-i)+1) = DispPattern1[Buffer+1];}
-    else {
-      *(DisplayUpper2+2*(7-i)) = DispPattern1[Buffer];
-      *(DisplayUpper2+2*(7-i)+1) = DispPattern1[Buffer+1];}
-    i++;}}
-
 void PB_AttractDisplayCycle(byte Step) {
   static byte Count = 0;
   static byte Timer0 = 0;

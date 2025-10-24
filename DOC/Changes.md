@@ -5,6 +5,8 @@
 ### New SW Version V1.04
 
 * Exception rules for System 6 Tri Zone have been added. [Sound files for Tri Zone are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+* Native Pinbot code shows points >= 10M in highscore list if 4 Aplha + Credit display is installed
+* Native Black Knight code shows points >= 10M in highscore list if 4 Aplha + Credit display is installed
 
 ## June 2025
 
