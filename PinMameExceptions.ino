@@ -1336,6 +1336,55 @@ byte EX_SpaceStation(byte Type, byte Command){
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
+byte EX_Whirlwind(byte Type, byte Command){
+  //  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+  //    if (EX_BallSaver(Type, Command)) {                // include ball saver
+  //      return(1);}}                                    // omit command if ball saver says so
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (!Command){                                    // sound command 0x00 - stop sound
+      AfterSound = 0;
+      StopPlayingSound();}
+    //    else if (Command == 52) { }                       // ignore sound command 0x34
+    else if (Command == 85) { }                       // ignore sound command 0x55
+    else if (Command == 170) { }                      // ignore sound command 0xaa
+    else if (Command == 255) { }                      // ignore sound command 0xff
+    else {                                            // proceed with standard sound handling
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        if (Command < 128) {                          // play speech with a higher priority
+          PlaySound(50, (char*) FileName);}
+        else {
+          PlaySound(51, (char*) FileName);}}}
+    return(0);                                        // return number not relevant for sounds
+  case SoundCommandCh2:                               // sound commands for channel 2
+    if (Command < 32) {                               // commands 0x00 - 0x1f are for the Sound Overlay Solenoid Board
+      if (APC_settings[SolenoidExp]) {                // Sol Exp Board used?
+        WriteToHwExt(~Command, 128+4);                // invert the solenoid pattern
+        WriteToHwExt(~Command, 4);}
+      else {                                          // Sound Overlay Solenoid Board used
+        WriteToHwExt(Command, 128+4);                 // this board does invert the solenoid patterns
+        WriteToHwExt(Command, 4);}}
+    else if (Command == 32) {                         // sound command 0x20 - stop music
+      AfterMusic = 0;
+      RestoreMusicVolume(100);
+      StopPlayingMusic();}
+    //    else if (Command == 66) { }                       // ignore sound command 0x42
+    else if (Command == 255) { }                      // ignore sound command 0xff
+    else if (Command < 64) {                          // music track
+      char FileName[9] = "1_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+        PlayMusic(50, (char*) FileName);}}            // play on the sound channel
+    else if (Command > 95 && Command < 104) {         // music volume command 0x6X
+      MusicVolume = Command - 96;}
+    else {
+      char FileName[9] = "1_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(50, (char*) FileName);}}            // play on the sound channel
+    return(0);                                        // return number not relevant for sounds
+  default:                                            // use default treatment for undefined types
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
+
 byte EX_Rollergames(byte Type, byte Command){
   static byte LastMusic;
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
@@ -1579,6 +1628,10 @@ void EX_Init(byte GameNumber) {
   case 48:                                            // Space Station
     PinMameException = EX_SpaceStation;               // use exception rules for Space Station
     EX_Machine = EX_SpaceStationProperties;           // machine properties for ball saver
+    break;
+  case 64:                                            // Whirlwind
+    PinMameException = EX_Whirlwind;                  // use exception rules for Whirlwind
+    //EX_Machine = EX_WhirlwindProperties;            // machine properties for ball saver
     break;
   case 67:                                            // Rollergames
     PinMameException = EX_Rollergames;                // use exception rules for Rollergames
