@@ -12,6 +12,7 @@ You can download the audio files from the links in the table below. Thanks to ho
 |--|--|--|--|
 |3|Disco Fever| in work | PinMameExceptions might still need some finetuning |
 |4|Flash| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Flash-sounds.zip)| Ball saver and alternate music mode implemented for this machine |
+|6|Tri Zone| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Tri-Zone-sounds.zip) | Ball saver and alternate music mode implemented for this machine |
 |6|Time Warp| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Time-Warp-sounds.zip) | Ball saver and alternate music mode implemented for this machine |
 |6|Gorgar| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Gorgar-sounds.zip) | Ball saver and alternate music mode implemented for this machine |
 |6|Firepower| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Firepower-sounds.zip) thanks to Matiou | PinMameExceptions also done by Matiou / Ball saver and alternate music mode implemented for this machine / [Throttle value](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md#emulation-speed) needs to be changed to 110|
@@ -24,6 +25,7 @@ You can download the audio files from the links in the table below. Thanks to ho
 |11a|Pinbot| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Pinbot-sounds.zip)| Ball saver implemented for this machine |
 |11a|F-14 Tomcat| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/F14-Tomcat-sounds.zip) thanks to Snux | PinMameExceptions also done by Snux / Ball saver implemented for this machine|
 |11b|Space Station| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Space-Station-sounds.zip)| Ball saver implemented for this machine |
+|11b|Whirlwind| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Whirlwind-sounds.zip)| Ball saver implemented for this machine / Sounds still need some finetuning / The Sound Overlay Solenoid Board needs to be connected to the HW_ext interface (P11/Sys11_J21)|
 |11c|Rollergames| available on request| There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. The issue doesn't seem to affect the Windows version of PinMame. Please contact me if you have any idea what the root cause might be. |
 
 # What needs to be done

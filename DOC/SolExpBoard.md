@@ -12,6 +12,11 @@ Currently the use of only one board is supported by the SW, but this could be ch
 This board must be activated by setting the 'Sol Exp Board' setting in the 'System Settings' menu to 'yes'.  
 Solenoids connected to the pins 1 to 8 of the P2 connector of the expander board are then mapped to the APC solenoid numbers 26 - 33.
 
+### Use in Whirlwind
+
+The System11b Whirlwind uses a Sound Overlay Solenoid Board to have 5 additional solenoid drivers. You may use the APC solenoid expansion board instead, but be sure to activate the 'Sol Exp Board' setting in the 'System Settings' menu before you start PinMame.  
+The reason is that the Sound Overlay Solenoid Board inverts all solenoid signals, but the APC solenoid expansion board doesn't. Hence PinMame sends inverted commands for the 5 additional solenoid drivers and the APC needs to know that the APC solenoid expansion board is used to correct this.
+
 ## Hardware
 
 The hardware just consists of a latch and some power MOSFET drivers. The latch is controlled by the Sel7 signal of the APC and is automatically reset when the blanking signal is active. The board is only suited for use with an own power supply. Connect the ground of this supply to P3 (Sol_GND).

@@ -45,6 +45,9 @@ const byte EX_SpaceStationProperties[13] = {          // machine properties for 
     2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
     42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
+const byte EX_WhirlwindProperties[13] = {
+    10, 13, 12, 11, 0, 17, 16, 12, 0, 0, 1, 2, 57};
+
 const byte EX_GorgarProperties[13] = {
     9, 0, 0, 0, 0, 10, 34, 0, 0, 0, 1, 0, 1};
 
@@ -1631,7 +1634,8 @@ void EX_Init(byte GameNumber) {
     break;
   case 64:                                            // Whirlwind
     PinMameException = EX_Whirlwind;                  // use exception rules for Whirlwind
-    //EX_Machine = EX_WhirlwindProperties;            // machine properties for ball saver
+    REG_PIOC_SODR = Sel14;                            // enable the HW_ext_latch for Sound Overlay Solenoid Board
+    EX_Machine = EX_WhirlwindProperties;              // machine properties for ball saver
     break;
   case 67:                                            // Rollergames
     PinMameException = EX_Rollergames;                // use exception rules for Rollergames

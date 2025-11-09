@@ -257,7 +257,6 @@ byte AppByte2;                                        // general purpose applica
 byte AppByte3;                                        // general purpose application buffer
 bool AppBool = false;                                 // general purpose application bool
 
-
 void setup() {
   pinMode(Blanking, OUTPUT);                          // initialize blanking pin
   pinMode(VolumePin, OUTPUT);                         // initialize volume PWM pin
@@ -265,7 +264,6 @@ void setup() {
   digitalWrite(Blanking, LOW);                        // and activate the blanking
   digitalWrite(VolumePin, HIGH);                      // set volume to 0
   pinMode(UpDown, INPUT);                             // initialize Up/Down pin
-  //Serial.begin(115200);                               // needed for USB and serial communication
   SPI.begin();                                        // needed for SD card handling
   REG_PIOC_PER = 871363582;                           // set required Port C pins to controlled In/Out
   REG_PIOC_PUDR = 871363582;                          // disable Pull-ups
@@ -322,19 +320,19 @@ void setup() {
   LampPattern = NoLamps;
   Switch_Pressed = DummyProcess;
   Switch_Released = DummyProcess;
+  REG_PIOC_SODR = Sel14;                              // enable the HW_ext_latch
+  WriteToHwExt(31, 128+4);                            // send 0b11111 in case Sound Overlay Solenoid Board is used
+  WriteToHwExt(31, 4);                                // Sol Exp Board will ignore it since it's still in reset
+  REG_PIOC_CODR = Sel14;                              // disable the HW_ext_latch
   digitalWrite(Blanking, HIGH);                       // Release the blanking
   if (SD.begin(52, SD_SCK_MHZ(20))) {                 // look for an SD card and set max SPI clock to 20MHz
     WriteUpper("SD CARD FOUND   ");
     SDfound = true;}
   else {
     WriteUpper(" NO SD  CARD    ");}
-  Init_System();}
-
-void Init_System() {
   if (SDfound) {                                      // SD card found?
     File Settings = SD.open(APC_set_file_name);       // look for system settings
     if (!Settings) {
-      WriteLower("NO SYS SETTNGS  ");                 // if no system settings
       for(byte i=0;i<64;i++) {                        // use default settings
         APC_settings[i] = APC_defaults[i];}}
     else {                                            // if system settings found
@@ -367,8 +365,7 @@ void Init_System() {
     *(DisplayLower+26) = ConvertNumLower((byte) APC_Version[4]-48,(byte) *(DisplayLower+30));
     *(DisplayLower+28) = ConvertNumLower((byte) 10,(byte) *(DisplayLower+24));
     *(DisplayLower+30) = ConvertNumLower((byte) 10,(byte) *(DisplayLower+24));}
-  delay(2000);
-  Init_System2(0);}
+  ActivateTimer(2000, 0, Init_System2);}
 
 void Init_System2(byte State) {                       // state = 0 will restore the settings if no card is found
   if (APC_settings[ActiveGame] == 3) {                // Remote Control selected?
