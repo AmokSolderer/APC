@@ -929,11 +929,10 @@ void USB_SerialCommand() {
         SolBuffer[1] = SolBuffer[1] & 224;            // turn off sound related solenoids
         SolBuffer[1] = SolBuffer[1] | (~USB_SerialBuffer[1] & 31);} // write sound number to solenoids 9 - 13
       else if (game_settings[USB_PinMameGame] < 40) { // Sys 7 - 9 game
-        WriteToHwExt(USB_SerialBuffer[1], 128+16);    // turn on Sel14
-        WriteToHwExt(USB_SerialBuffer[1], 16);}       // turn off Sel14
+        WriteToHwExt(USB_SerialBuffer[1], 0);}        // write to HW ext interface
       else {                                          // Sys 11 game
         WriteToHwExt(USB_SerialBuffer[1], 4);         // turn off Sel7
-        WriteToHwExt(USB_SerialBuffer[1], 128+4+16);}} // turn on Sel7 + Sel14
+        WriteToHwExt(USB_SerialBuffer[1], 128+4);}}   // turn on Sel7
     else {                                            // use APC sound HW
       if (USB_SerialBuffer[0] == 1) {                 // channel 1?
         PinMameException(SoundCommandCh1, USB_SerialBuffer[1]);}

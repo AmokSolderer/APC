@@ -277,13 +277,9 @@ void setup() {
   REG_PIOD_ODR = 32;                                  // set RX3 to input
   REG_PIOD_OER = 15;                                  // set pins to outputs
   REG_PIOD_CODR = 15;                                 // clear strobe select signals
-  REG_PIOC_CODR = AllSelects;                         // clear all select signals
-  REG_PIOC_SODR = AllData;                            // set all pins of the HW_ext bus to high to suppress sounds from Sys7 sound boards
-  REG_PIOC_SODR = Sel13 + Sel14;                      // set the special switch select (Sel13 - low active) and the HW_ext_latch (Sel14)
-  REG_PIOC_CODR = Sel14;                              // deselect the HW_ext_latch
   REG_PIOC_CODR = AllSelects + AllData;               // clear all select signals and the data bus
   REG_PIOC_SODR = AllData - SwDrvMask;                // put select pattern on data bus
-  REG_PIOC_SODR = 32768;                              // use Sel12
+  REG_PIOC_SODR = 32768 + Sel13;                      // use Sel12 and Sel13 to set the special switch select (Sel13 - low active)
   REG_PIOC_CODR = AllSelects + AllData;               // clear all select signals and the data bus
   REG_PIOC_SODR = 16777216;                           // use Sel2
   REG_PIOC_CODR = AllSelects + AllData;               // clear all select signals and the data bus
@@ -320,10 +316,9 @@ void setup() {
   LampPattern = NoLamps;
   Switch_Pressed = DummyProcess;
   Switch_Released = DummyProcess;
-  REG_PIOC_SODR = Sel14;                              // enable the HW_ext_latch
   WriteToHwExt(31, 128+4);                            // send 0b11111 in case Sound Overlay Solenoid Board is used
   WriteToHwExt(31, 4);                                // Sol Exp Board will ignore it since it's still in reset
-  REG_PIOC_CODR = Sel14;                              // disable the HW_ext_latch
+  delay(10);                                          // wait for the HW ext interface to be updated
   digitalWrite(Blanking, HIGH);                       // Release the blanking
   if (SD.begin(52, SD_SCK_MHZ(20))) {                 // look for an SD card and set max SPI clock to 20MHz
     WriteUpper("SD CARD FOUND   ");
@@ -424,12 +419,9 @@ void Init_System2(byte State) {                       // state = 0 will restore 
         game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
   digitalWrite(VolumePin,HIGH);                       // turn off the digital volume control
   if (APC_settings[SolenoidExp]) {                    // solenoid exp board selected?
-    REG_PIOC_SODR = Sel14;                            // enable the HW_ext_latch
     SolMax = 33;}                                     // enable 8 more solenoids
   else {
     SolMax = 25;}
-  if (APC_settings[LEDsetting]) {
-    REG_PIOC_SODR = Sel14;}                           // enable the HW_ext_latch
   if (State) {
     if(APC_settings[LEDsetting]) {                    // LEDs selected?
       LEDinit();}                                     // set them up
@@ -680,6 +672,7 @@ void TC7_Handler() {                                  // interrupt routine - run
     REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
     c = HwExt_Buf[HwExtIRQpos][0];                    // get data byte
     REG_PIOC_SODR = c<<1;                             // and put it on the data bus
+    REG_PIOC_SODR = Sel14;                            // enable the HW_ext_latch
     if (HwExt_Buf[HwExtIRQpos][1] & 128) {            // rising select edge requested?
       for (i=0;i<5;i++) {                             // for all HwExt selects
         if (HwExt_Buf[HwExtIRQpos][1] & 1) {          // is the corresponding bit set?
@@ -689,7 +682,8 @@ void TC7_Handler() {                                  // interrupt routine - run
       for (i=0;i<5;i++) {                             // for all HwExt selects
         if (HwExt_Buf[HwExtIRQpos][1] & 1) {          // is the corresponding bit set?
           REG_PIOC_CODR = HwExtSelMask[i];}           // generate a falling edge
-        HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}}  // shift to the next bit
+        HwExt_Buf[HwExtIRQpos][1] = HwExt_Buf[HwExtIRQpos][1]>>1;}}  // shift to the next bit
+    REG_PIOC_CODR = Sel14;}                           // disable the HW_ext_latch
 
   // Sound
 

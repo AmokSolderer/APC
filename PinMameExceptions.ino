@@ -1363,8 +1363,8 @@ byte EX_Whirlwind(byte Type, byte Command){
   case SoundCommandCh2:                               // sound commands for channel 2
     if (Command < 32) {                               // commands 0x00 - 0x1f are for the Sound Overlay Solenoid Board
       if (APC_settings[SolenoidExp]) {                // Sol Exp Board used?
-        WriteToHwExt(~Command, 128+4);                // invert the solenoid pattern
-        WriteToHwExt(~Command, 4);}
+        WriteToHwExt((~Command) & 31, 128+4);         // invert the solenoid pattern but keep the 3 MSBs low
+        WriteToHwExt((~Command) & 31, 4);}
       else {                                          // Sound Overlay Solenoid Board used
         WriteToHwExt(Command, 128+4);                 // this board does invert the solenoid patterns
         WriteToHwExt(Command, 4);}}
@@ -1634,7 +1634,6 @@ void EX_Init(byte GameNumber) {
     break;
   case 64:                                            // Whirlwind
     PinMameException = EX_Whirlwind;                  // use exception rules for Whirlwind
-    REG_PIOC_SODR = Sel14;                            // enable the HW_ext_latch for Sound Overlay Solenoid Board
     EX_Machine = EX_WhirlwindProperties;              // machine properties for ball saver
     break;
   case 67:                                            // Rollergames
