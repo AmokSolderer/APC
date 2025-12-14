@@ -119,7 +119,7 @@ byte EX_BallSaver(byte Type, byte Command){
   switch(Type){
   case SwitchActCommand:                              // activated switches
     if (EX_BallSaveMonitor) {
-      if (Command == EX_Machine[SwTrunk1] || Command == EX_Machine[SwTrunk2] || Command == EX_Machine[SwTrunk3]) { // hide trunk switches while ball saver is active
+      if (Command == EX_Machine[SwTrunk1] || Command == EX_Machine[SwTrunk2] || Command == EX_Machine[SwTrunk3] || Command == EX_Machine[SwTrunk4]) { // hide trunk switches while ball saver is active
         return (1);}}
     if (EX_BallSaveActive) {                          // hide switches from PinMame
       if (Command == EX_Machine[SwLeftOutlane] || Command == EX_Machine[SwRightOutlane]) { // We hide the switches of the outlanes and trunk
@@ -1150,13 +1150,9 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
       return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SwitchActCommand:                              // Check for switches
-    if (Command > 64 && Command < 72) {               // If special solenoid switch
-      if (QuerySolenoid(24))                          // Check if the flippers are active
-        return(0);                                    // If they are active then permit the switch
-      else
-        return(1);}                                   // otherwise block it, standard Sys11 behaviour
-    else
-      return (0);
+    if (Command == 55 && QuerySolenoid(24)) {         // Line of death kickback triggered?
+      ActivateSolenoid(40, 12);}
+    return (0);
   case SoundCommandCh1:                               // sound commands for channel 1
     if (!Command){                                    // sound command 0x00 - stop sound
       AfterSound = 0;
@@ -1173,7 +1169,7 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
       if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
         AfterSound = 0;                               // needed this to shut the looping sound up.
         StopPlayingSound();
-        if (Command < 128) {                          // play speech with a higher priority
+        if (Command < 175) {                          // play speech with a higher priority
           PlaySound(50, (char*) FileName);}
         else {
           PlaySound(51, (char*) FileName);}}}
@@ -1192,7 +1188,7 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
     else if (Command == 123) { }                      // ignore unknown 0x7b during multiball start
     else if (Command == 255) { }                      // ignore unknown sound command 0xff
     else if (Command > 95 && Command < 112) {         // music volume command 0x6X
-      MusicVolume = (Command - 96) / 4;}
+      MusicVolume = (Command - 96);}
     else if (Command == 1) {                          // music track 1
       PlayMusic(50, "1_01.snd");                      // play music track
       QueueNextMusic("1_01.snd");}                    // track is looping so queue it also
