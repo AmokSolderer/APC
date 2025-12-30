@@ -1145,6 +1145,7 @@ byte EX_Pinbot(byte Type, byte Command){
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
 byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tomcat, thanks to Snux for sending me this code
+  static bool LastSoundBoard;
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
       return(1);}}                                    // omit command if ball saver says so
@@ -1162,13 +1163,14 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
     else if (Command == 170) { }                      // ignore
     else if (Command == 255) { }                      // ignore sound command 0xff
     else if (Command == 206) {                        // ball waiting in shooter lane
+      LastSoundBoard = false;                         // current sound belongs to the sound board
       PlaySound(50, "0_CE.snd");                      // start sound
       QueueNextSound("0_CF.snd");}                    // loop that high pitch noise
     else {                                            // proceed with standard sound handling
+      LastSoundBoard = false;                         // current sound belongs to the sound board
       char FileName[9] = "0_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
         AfterSound = 0;                               // needed this to shut the looping sound up.
-        StopPlayingSound();
         if (Command < 175) {                          // play speech with a higher priority
           PlaySound(50, (char*) FileName);}
         else {
@@ -1177,17 +1179,19 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
   case SoundCommandCh2:                               // sound commands for channel 2
     if (!Command) {                                   // sound command 0x00 - stop music
       AfterMusic = 0;
+      if (LastSoundBoard) {                           // current sound belongs to the music board
+        StopPlayingSound();}                          // stop command is valid for this sound also
       RestoreMusicVolume(100);                        // reset music volume in case it was made quieter earlier
       StopPlayingMusic();}
-    else if (Command == 127) {                        // sound command 0x7f - stop sound
-      AfterSound = 0;
-      StopPlayingSound();}
     else if (Command > 7 && Command < 80){ }          // ignore unknown sound commands 0x1d to 0x30
     else if (Command > 84 && Command < 96) { }        // ignore unknown sound commands 0x4f to 0x59
+    else if (Command == 127) { }                      // ignore unknown sound command 0x7f
     else if (Command == 170) { }                      // ignore unknown sound command 0xaa
     else if (Command == 123) { }                      // ignore unknown 0x7b during multiball start
     else if (Command == 255) { }                      // ignore unknown sound command 0xff
     else if (Command > 95 && Command < 112) {         // music volume command 0x6X
+      if (Command == 98) {
+        ActivateTimer(10000, 100, RestoreMusicVolume);} // restore music volume after 10s
       MusicVolume = (Command - 96);}
     else if (Command == 1) {                          // music track 1
       PlayMusic(50, "1_01.snd");                      // play music track
@@ -1198,21 +1202,23 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
     else if (Command == 3) {                          // music track 3
       PlayMusic(50, "1_03.snd");                      // play non looping part of music track
       QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
-    else if (Command == 4) {                          // music track 2
-      PlayMusic(50, "1_04L.snd");}                    // play non looping part of music track
     else if (Command == 6) {                          // music track 6
       PlayMusic(50, "1_06.snd");                      // play non looping part of music track
       QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
     else if (Command == 7) {                          // music track 7
       PlayMusic(50, "1_07.snd");                      // play non looping part of music track
       QueueNextMusic("1_07L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 152) {                        // Yagov's death sound sequence
+      PlaySound(55, "1_98.snd");}                     // play with higher priority
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
-        if (Command < 8  || Command == 128) {         // play only music on the music channel except 128 which is multiball alert
+        if (Command < 8  || Command == 128) {         // play only music on the music channel except 128 which is multiball alert and 134 (bonus count sound)
           AfterMusic = 0;                             // stop looping music
+          RestoreMusicVolume(100);                    // reset music volume in case it was made quieter earlier
           PlayMusic(50, (char*) FileName);}           // play on the music channel
         else {
+          LastSoundBoard = true;                      // current sound belongs to the music board
           PlaySound(50, (char*) FileName);}}}         // play on the sound channel
     return(0);                                        // return number not relevant for sounds
   default:                                            // use default treatment for undefined types

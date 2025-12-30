@@ -202,7 +202,7 @@ const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{" 
 const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
 const char TxTDisplaySelect[9][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{" DATA EAST 2X16 "},{"123456123456    "},{"12345671234567  "}};
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
-const char TxTDebugSelect[4][17] = {{"        OFF     "},{"        USB ON  "},{"        USB LOG "},{"         SD LOG "}};
+const char TxTDebugSelect[4][17] = {{"        OFF     "},{"       USB ON   "},{"       USB LOG  "},{"        SD LOG  "}};
 const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "},{"        NONE    "}};
 
 const struct SettingTopic APC_setList[16] = {
@@ -216,7 +216,7 @@ const struct SettingTopic APC_setList[16] = {
     {"  LED   LAMPS   ",HandleTextSetting,&TxTLEDSelect[0][0],0,3},
     {" NO OF   LEDS   ",HandleNumSetting,0,1,192},
     {"SOL EXP BOARD   ",HandleBoolSetting,0,0,0},
-    {" DEBUG MODE     ",HandleTextSetting,&TxTDebugSelect[0][0],0,2},
+    {" DEBUG MODE     ",HandleTextSetting,&TxTDebugSelect[0][0],0,3},
     {"BACKBOX LAMPS   ",HandleTextSetting,&TxTLampColSelect[0][0],0,2},
     {"CONNECTSTARTUP  ",HandleBoolSetting,0,0,0},
     {"RESTOREDEFAULT  ",RestoreDefaults,0,0,0},
