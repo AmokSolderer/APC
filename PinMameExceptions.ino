@@ -1213,7 +1213,7 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
     else if (Command == 153) {                        // Extra Ball sound sequence
       PlaySound(51, "1_99.snd");}                     // play with higher priority
     else if (Command == 156) {                        // Fighter Jackpot march
-      PlayMusic(50, "1_9C.snd");}                     // play on music channel, keep looping music
+      PlayMusic(51, "1_9C.snd");}                     // play on music channel, keep looping music
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
@@ -1631,6 +1631,8 @@ void EX_Init(byte GameNumber) {
     EX_Machine = EX_PinbotProperties;                 // machine properties for ball saver
     break;
   case 44:                                            // F-14 Tomcat
+    SolRecycleTime[17-1] = 250;                       // prevent machine gunning of sling shots
+    SolRecycleTime[18-1] = 250;
     PinMameException = EX_F14Tomcat;                  // use exception rules for Tomcat
     EX_Machine = EX_F14Properties;                    // machine properties for ball saver
     break;
