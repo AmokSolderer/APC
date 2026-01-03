@@ -3,6 +3,7 @@ SdFat SD;
 #include <SPI.h>
 #include "Arduino.h"
 #include "Sound.h"
+#define DebugState 0                                  // set this value to 2 and remove SD card for USB debug log
 #define UpDown 53                                     // arduino pin connected to the auto/up - manual/Down button
 #define Blanking  22                                  // arduino pin to control the blanking signal
 #define VolumePin 13                                  // arduino pin to control the sound volume
@@ -374,6 +375,10 @@ void Init_System2(byte State) {                       // state = 0 will restore 
       ComState = APC_settings[ConnType];}}
   else {
     ComState = 0;}
+  if (DebugState) {                                   // debug state selected
+    APC_settings[DebugMode] = DebugState;}            // enforce it, no matter what the SD card says
+  if (APC_settings[DebugMode] && ComState == 2) {     // USB conflict?
+    ComState = 0;}                                    // reserve the USB port for the debug log only
   switch(APC_settings[ActiveGame]) {                  // init calls for all valid games
   case 0:
     BC_init();
@@ -419,6 +424,15 @@ void Init_System2(byte State) {                       // state = 0 will restore 
       for(byte i=0;i<64;i++) {
         game_settings[i] = *(GameDefinition.GameDefaultsPointer+i);}}}
   digitalWrite(VolumePin,HIGH);                       // turn off the digital volume control
+  if (APC_settings[DebugMode] == 2) {                 // USB LOG selected
+    Serial.print("This is the APC SW revision ");
+    Serial.println(APC_Version);
+    Serial.println("---");
+    ListSettings(0);                                  // list System Settings
+    Serial.println("---");
+    ListSettings(1);                                  // list Game Settings
+    Serial.println("---");
+    Serial.println("USB log active");}
   if (APC_settings[SolenoidExp]) {                    // solenoid exp board selected?
     SolMax = 33;}                                     // enable 8 more solenoids
   else {
@@ -2202,6 +2216,9 @@ void ShowFileNotFound(String Filename) {              // show file not found mes
   Filename.toUpperCase();                             // convert filename to upper case characters
   char NameBuffer[14];                                // create a temporary buffer
   Filename.toCharArray(NameBuffer, 14);               // fill buffer with filename
+  if (APC_settings[DebugMode] == 2) {                 // USB LOG selected
+    Serial.print(NameBuffer);
+    Serial.println(" not found");}
   WriteUpper2(NameBuffer);                            // write filename to message buffer
   WriteLower2(" NOT    FOUND   ");
   ShowMessage(5);}                                    // switch to message buffer for 5 seconds
@@ -2461,6 +2478,8 @@ void SelectSettings(byte Switch) {                    // select system or game s
   case 0:                                             // for the initial call
     WriteUpper("SYSTEM SETTNGS  ");
     WriteLower("                ");
+    if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+      Serial.println("SYSTEM SETTNGS ");}
     if ((APC_settings[DisplayType] < 3) || (APC_settings[DisplayType] > 6)) { // not a 2x16 character display
       byte CreditBuffer[4];
       CreditBuffer[0] = 48;
@@ -2486,6 +2505,8 @@ void SelectSettings(byte Switch) {                    // select system or game s
     if (AppByte) {                                    // switch between game and system settings
       WriteUpper("SYSTEM SETTNGS  ");
       WriteLower("                ");
+      if (APC_settings[DebugMode] == 2) {             // USB LOG selected
+        Serial.println("SYSTEM SETTNGS ");}
       if ((APC_settings[DisplayType] < 3) || (APC_settings[DisplayType] > 6)) { // not a 2x16 character display
         byte CreditBuffer[4];
         CreditBuffer[0] = 48;
@@ -2497,6 +2518,8 @@ void SelectSettings(byte Switch) {                    // select system or game s
     else {
       WriteUpper("  GAME SETTNGS  ");
       WriteLower("                ");
+      if (APC_settings[DebugMode] == 2) {             // USB LOG selected
+        Serial.println("GAME SETTNGS ");}
       if ((APC_settings[DisplayType] < 3) || (APC_settings[DisplayType] > 6)) { // not a 2x16 character display
         byte CreditBuffer[4];
         CreditBuffer[0] = 48;
@@ -2541,6 +2564,8 @@ void SelSetting(byte Switch) {                        // Switch mode of the sett
     /* no break */
   case 0:                                             // show the current setting
     WriteUpper( SettingsList[AppByte].Text);          // show the text
+    if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+      Serial.println(SettingsList[AppByte].Text);}    // write the text to USB
     if ((APC_settings[DisplayType] < 3) || (APC_settings[DisplayType] > 6)) { // not a 2x16 character display
       if (APC_settings[DisplayType] == 7) {           // Sys6 display
         *(DisplayLower+12) = ConvertNumUpper((byte) AppByte / 10,(byte) *(DisplayLower+12));
@@ -2569,6 +2594,8 @@ void HandleBoolSetting(bool change) {                 // handling method for boo
     else {
       SettingsPointer[AppByte] = 1;}}
   if (SettingsPointer[AppByte]) {                     // show the current state of the setting
+    if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+      Serial.println("YES");}
     if (APC_settings[DisplayType] == 7) {             // Sys6 display?
       WritePlayerDisplay((char*)":::::1", 4);}
     else if (APC_settings[DisplayType] == 8) {        // Sys7 display?
@@ -2576,6 +2603,8 @@ void HandleBoolSetting(bool change) {                 // handling method for boo
     else {                                            // Sys11 display
       WriteLower("           YES  ");}}
   else {
+    if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+      Serial.println("NO");}
     if (APC_settings[DisplayType] == 7) {             // Sys6 display?
       WritePlayerDisplay((char*)":::::0", 4);}
     else if (APC_settings[DisplayType] == 8) {        // Sys7 display?
@@ -2592,8 +2621,12 @@ void RestoreDefaults(bool change) {                   // restore the default set
     else {                                            // game settings mode
       for(byte i=0;i<64;i++) {                        // change all settings to their default values
         *(SettingsPointer+i) = *(GameDefinition.GameDefaultsPointer+i);}}
+    if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+      Serial.println("SETTNGS DONE    ");}
     WriteLower("SETTNGS DONE    ");}
   else {
+    if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+      Serial.println("SETTNGS");}
     WriteLower("SETTNGS         ");}}
 
 void ExitSettings(bool change) {                      // exit settings and save them if necessary
@@ -2608,10 +2641,16 @@ void ExitSettings(bool change) {                      // exit settings and save 
         File HighScore = SD.open(SettingsFileName,FILE_WRITE);  // open the settings file on the SD card
         HighScore.write((byte*) SettingsPointer, sizeof game_settings); // and write the settings array
         HighScore.close();
+        if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+          Serial.println("SETTNGS SAVED");}
         WriteUpper("SETTNGS SAVED   ");}
       else {
+        if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+          Serial.println("  NO   SD CARD");}
         WriteUpper("  NO   SD CARD  ");}}
     else {                                            // change indicator has not been set
+      if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+        Serial.println("NO CHANGES");}
       WriteUpper("  NO   CHANGES  ");}
     *(DisplayUpper) = 0;                              // clear leftmost credit displays
     *(DisplayUpper+16) = 0;
@@ -2627,6 +2666,8 @@ void HandleNumSetting(bool change) {                  // handling method for num
       if (SettingsPointer[AppByte] != SettingsList[AppByte].LowerLimit) { // lower numeric limit reached?
         SettingsPointer[AppByte]--;}}}                // if limit not reached just decrease the numeric value
   WriteLower("                ");
+  if (APC_settings[DebugMode] == 2) {                 // USB LOG selected
+    Serial.println(SettingsPointer[AppByte]);}
   DisplayScore(4,SettingsPointer[AppByte]);}          // show the current value
 
 void HandleDisplaySetting(bool change) {              // handling method for display settings
@@ -2646,6 +2687,8 @@ void HandleDisplaySetting(bool change) {              // handling method for dis
       DispPattern2 = NumLower;}                       // use patterns for num displays
     else {
       DispPattern2 = AlphaLower;}}
+  if (APC_settings[DebugMode] == 2) {                 // USB LOG selected
+    Serial.println(SettingsList[AppByte].TxTpointer+17*SettingsPointer[AppByte]);}
   if (APC_settings[DisplayType] > 6) {                // numerical display?
     WriteLower("                ");
     DisplayScore(4,SettingsPointer[AppByte]);}
@@ -2665,6 +2708,8 @@ void HandleTextSetting(bool change) {                 // handling method for tex
         SettingsPointer[AppByte] = SettingsList[AppByte].UpperLimit;} // go to the last entry
       else {
         SettingsPointer[AppByte]--;}}}                // if limit not reached just choose the previous entry
+  if (APC_settings[DebugMode] == 2) {                 // USB LOG selected
+    Serial.println(SettingsList[AppByte].TxTpointer+17*SettingsPointer[AppByte]);}
   if (APC_settings[DisplayType] > 6) {                // numerical display?
     WriteLower("                ");
     DisplayScore(4,SettingsPointer[AppByte]);}
@@ -2697,3 +2742,18 @@ byte HandleHighScores(unsigned int Score) {
     WriteUpper("  NO   SD CARD  ");
     delay(2000);}
   return Position;}
+
+void ListSettings(byte Mode) {                        // write settings to USB
+  AppByte = 0;
+  if (!Mode) {                                        // System Settings requested?
+    Serial.println("Listing all System Settings:");
+    SettingsPointer = APC_settings;                   // set pointer to the stored system setting values
+    SettingsList = APC_setList;}                      // set pointer to the list of menu topics
+  else {                                              // Game Settings requested
+    Serial.println("Listing all Game Settings:");
+    SettingsPointer = game_settings;                  // set pointer to the stored game setting values
+    SettingsList = GameDefinition.GameSettingsList;}  // set pointer to the list of menu topics
+  while (SettingsList[AppByte].EventPointer) {        // search for the end marker of the settings list
+    Serial.print(SettingsList[AppByte].Text);
+    SettingsList[AppByte].EventPointer(false);        // call the corresponding method and indicate no changes
+    AppByte++;}}

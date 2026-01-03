@@ -1190,9 +1190,9 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
     else if (Command == 123) { }                      // ignore unknown 0x7b during multiball start
     else if (Command == 255) { }                      // ignore unknown sound command 0xff
     else if (Command > 95 && Command < 112) {         // music volume command 0x6X
-      if (Command == 98) {
-        ActivateTimer(10000, 100, RestoreMusicVolume);} // restore music volume after 10s
-      MusicVolume = (Command - 96);}
+      //if (Command == 98) {
+      //  ActivateTimer(5000, 100, RestoreMusicVolume);} // restore music volume after 10s
+      MusicVolume = (Command - 96)/2;}
     else if (Command == 1) {                          // music track 1
       PlayMusic(50, "1_01.snd");                      // play music track
       QueueNextMusic("1_01.snd");}                    // track is looping so queue it also
@@ -1210,6 +1210,10 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
       QueueNextMusic("1_07L.snd");}                   // queue looping part as next music to be played
     else if (Command == 152) {                        // Yagov's death sound sequence
       PlaySound(55, "1_98.snd");}                     // play with higher priority
+    else if (Command == 153) {                        // Extra Ball sound sequence
+      PlaySound(51, "1_99.snd");}                     // play with higher priority
+    else if (Command == 156) {                        // Fighter Jackpot march
+      PlayMusic(50, "1_9C.snd");}                     // play on music channel, keep looping music
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
