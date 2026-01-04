@@ -4,7 +4,8 @@
 
 ### New SW Version V1.04
 
-* Debug logs can be written to USB and SD card
+* Some finetuning of the sound files and PinMameExceptions for F-14 done
+* Debug logs can now be written to USB
 * Special Solenoids are not longer active during attract mode
 * Exception rules for System 11 Whirlwind have been added. [Sound files for Whirlwind are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
 * Exception rules for System 6 Tri Zone have been added. [Sound files for Tri Zone are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
