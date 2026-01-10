@@ -14,7 +14,7 @@ There's a main debug mode available which can be activated in the [System Settin
 at the top of the APC.ino file. In the latter case you have to recompile the SW afterwards and upload it again to the Arduino. If greater that zero, this definition will overrule the selected value in the System Settings.
 
 A setting different from zero will activate a serial interface at the USB (programming) port of the DUE. You can use the serial monitor of your Arduino IDE or any serial terminal program to display the messages.  
-Note that you cannot control your APC via USB (e.g. with MPF) while the USB debug mode is enabled.
+Note that you cannot control your APC via USB (e.g. with MPF) while the USB debug mode is enabled. It might also slow down your system, so only turn it on for as long as it's needed. 
 
 * A setting of 1 will display critical error messages and halt the system afterwards, but you're free to use this interface from your own code with e.g. the Serial.print command
 
