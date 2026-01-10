@@ -1631,8 +1631,6 @@ void EX_Init(byte GameNumber) {
     EX_Machine = EX_PinbotProperties;                 // machine properties for ball saver
     break;
   case 44:                                            // F-14 Tomcat
-    SolRecycleTime[17-1] = 250;                       // prevent machine gunning of sling shots
-    SolRecycleTime[18-1] = 250;
     PinMameException = EX_F14Tomcat;                  // use exception rules for Tomcat
     EX_Machine = EX_F14Properties;                    // machine properties for ball saver
     break;

@@ -77,7 +77,9 @@ Enter the game settings and do your changes. When you're done, just select menu 
 | 7 |  | 3 | PlayfldBackbox | - | The APC_LED_exp board is used for the lamps 1 - 64 |
 | 8 | No of LEDs | - | - | 64 | Numerical setting - range 1 - 192 / The length of the LED stripe. Setting is only effective when 'Additional' is selected as 'LED lamps' setting|
 | 9 | Sol Exp Board | - | - | No | Bool setting - will use the solenoid expander board for solenoids 26 - 33 if set
-| 10 | Debug Mode | - | - | No | Bool setting - Active debug mode will show the number of active timers in the credit display and will stop the game on error |
+| 10 | Debug Mode | 0 | Off | X | APC debug mode disabled |
+| 10 |  | 1 | USB on | - | The number of active timers is shown in the credit display, game will stop on error and communication is active for the USB programming port |
+| 10 |  | 2 | USB log | - | USB debug log is active |
 | 11 | Backbox Lamps | 0| Column 1 | X | Backbox lamps are in lamp column 1 |
 | 11 |  | 1 | Column 8 | - | Backbox lamps are in lamp column 8 |
 | 11 |  | 2 | None | - | game has no controlled backbox lamps |
@@ -104,7 +106,11 @@ These game settings are only visible if 'Remote Control' is selected as the 'Act
 | 6 | Ball Saver Time | - | - | 20 | Numerical setting - range 5 - 250 / Active time of the Ball Saver |
 | 7 | BG Music | 0 | PinMame default | X | Normal BG music |
 | 7 |  | 1 | Music snd | - | Uses the MUSIC.SND file as BG music |
-| 8 - 45 | Setting Unused | - | – | - | They behave like boolean settings, but they have no effect |
+| 8 | Recycle Sol 1 | - | - | 0 | Numerical setting - Sets a recycle time of 250ms for the selected solenoid. Useful e.g. for slingshots to preventmachine gunning |
+| 9 | Recycle Sol 2 | - | - | 0 | Same as above |
+| 10| Recycle Sol 3 | - | - | 0 | Same as above |
+| 11| Recycle Sol 4 | - | - | 0 | Same as above |
+| 12- 45 | Setting Unused | - | – | - | They behave like boolean settings, but they have no effect |
 | 46 | System3 Set 1 | - | - | - | Use this to change the 1st setting of system 3 games |
 | 47 | System3 Set 2 | - | - | - | Use this to change the 2nd setting of system 3 games |
 | 48 | System3 Set 3 | - | - | - | Use this to change the 3rd setting of system 3 games |

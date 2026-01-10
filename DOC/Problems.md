@@ -5,8 +5,19 @@
 On some System 9 and 11 machines the APC doesn't boot sometimes. Usually it is enough to powercycle your machine or to press the reset button of the Arduino DUE to make it work.  
 If it happens frequently then you could swap C14 from a 10µF to a 22µF capacitor. Boards fabricated after [December 2023](https://github.com/AmokSolderer/APC/blob/master/DOC/Changes.md#hw-1) should already have this fix.
 
-## How to enable the debug log
+## The debug mode
 
+There's a main debug mode available which can be activated in the [System Settings](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/Settings.md#system-settings) or by changing
+
+    #define DebugState 0    // set this value to 2 and remove SD card for USB debug log
+
+at the top of the APC.ino file. In the latter case you have to recompile the SW afterwards and upload it again to the Arduino.
+A settings different from zero will activate a serial interface at the USB (programming) port of the DUE. You can use the serial monitor of your Arduino IDE or any serial terminal program to display the messages.  
+Note that you cannot control your APC via USB (e.g. with MPF) while the USB debug mode is enabled.
+
+* A setting of 1 will display critical error messages and halt the system afterwards, but you're free to use this interface from your own code with e.g. the Serial.print command.
+
+* Setting this to 2 is useful if you have pure numerical displays and you want to see the settings menus or error messages in full text. After startup the APC will then list all settings in full text. If you enter the settings, then the APC will show the name and value of the current setting, just like you'd see them on an alphanumerical display
 
 ## Sound stuttering
 

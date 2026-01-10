@@ -23,6 +23,10 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 //#define USB_BallSave 5                              // optional ball saver -> this option is defined in PinMameExceptions.ino
 //#define USB_BallSaveTime 6                          // activation time for the optional ball saver -> this option is defined in PinMameExceptions.ino
 //#define USB_BGmusic 7                               // to select an own BG music -> this option is defined in PinMameExceptions.ino
+#define USB_RecycleSolenoid1 8                        // number of the solenoid to select a recycling time of 250ms for
+#define USB_RecycleSolenoid2 9
+#define USB_RecycleSolenoid3 10
+#define USB_RecycleSolenoid4 11
 
 const byte USB_defaults[64] = {0,0,0,255,0,0,20,0,    // game default settings
                               0,0,0,0,0,0,0,0,
@@ -56,10 +60,10 @@ const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting
     {" BALL   SAVER   ",HandleTextSetting,&TXTUSB_BallSave[0][0],0,1},
     {"B SAVER  TIME   ",HandleNumSetting,0,5,250},
     {"   BG   MUSIC   ",HandleTextSetting,&TxtUSB_Music[0][0],0,1},
-    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
-    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
-    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
-    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"RECYCLE SOL 1   ",HandleNumSetting,0,1,22},
+    {"RECYCLE SOL 2   ",HandleNumSetting,0,1,22},
+    {"RECYCLE SOL 3   ",HandleNumSetting,0,1,22},
+    {"RECYCLE SOL 4   ",HandleNumSetting,0,1,22},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
@@ -149,6 +153,9 @@ void USB_AttractMode() {                              // Attract Mode
   Switch_Pressed = USB_SwitchHandler;
   Switch_Released = USB_ReleasedSwitches;
   EX_Init(game_settings[USB_PinMameGame]);            // set exceptions for selected game
+  for (byte i=0; i<4; i++) {                          // set solenoid recycle times
+    if (game_settings[USB_RecycleSolenoid1+i]) {      // is a solenoid selected?
+      SolRecycleTime[game_settings[USB_RecycleSolenoid1+i]-1] = 250;}} // define a recycle time of 250ms for it
   USB_ReleasedSwitches(72);                           // tell Lisy to start PinMame
   for (byte i=0; i<5; i++) {
     USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
