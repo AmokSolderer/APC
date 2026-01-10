@@ -16,6 +16,10 @@ I did two videos to show what I've described above:
 
 Note that the menus have changed since these videos have been made. So use them only to see how it works in general, but use the tables below as a reference for the settings.
 
+### Using the debug mode
+
+If you're not able to select the correct setting for your display you might want to use the [debug mode](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/Problems.md#the-debug-mode) to be able to see the settings menu in full text.
+
 ## Using the settings menu
 
 To enter the APC settings you have to press the Advance button at the coin door with the Up/Down switch in 'up' position. If you're in Remote Control mode you have to keep it pressed for more than 1s.
@@ -106,7 +110,7 @@ These game settings are only visible if 'Remote Control' is selected as the 'Act
 | 6 | Ball Saver Time | - | - | 20 | Numerical setting - range 5 - 250 / Active time of the Ball Saver |
 | 7 | BG Music | 0 | PinMame default | X | Normal BG music |
 | 7 |  | 1 | Music snd | - | Uses the MUSIC.SND file as BG music |
-| 8 | Recycle Sol 1 | - | - | 0 | Numerical setting - Sets a recycle time of 250ms for the selected solenoid. Useful e.g. for slingshots to preventmachine gunning |
+| 8 | Recycle Sol 1 | - | - | 0 | Numerical setting - Sets a recycle time of 250ms for the selected solenoid. Useful e.g. for slingshots to prevent machine gunning |
 | 9 | Recycle Sol 2 | - | - | 0 | Same as above |
 | 10| Recycle Sol 3 | - | - | 0 | Same as above |
 | 11| Recycle Sol 4 | - | - | 0 | Same as above |
@@ -131,3 +135,9 @@ These game settings are only visible if 'Remote Control' is selected as the 'Act
 | 63 | System3 Set 18 | - | - | - | Use this to change the 18th setting of system 3 games |
 | 64 | Restore Default | - | - | - | No setting - restores the default settings |
 | 65 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+
+## The setting files
+
+You can edit the settings directly in the settings files on your SD card (the APC one which also contains the audio files), e.g. if you have problems selecting the correct display.  
+The name of the APC settings file is APC_SET.BIN, for the game settings of the Remote Control game (which you'd use for MPF and PinMame) it is USB_SET.BIN. They're 64 byte long and every byte belongs to a setting. The display setting for example is the first System Setting, it's value is therefore stored in the first byte of APC_SET.BIN.  
+You can use a binary editor to change the values according to the settings table above.
