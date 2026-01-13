@@ -2641,19 +2641,20 @@ void ExitSettings(bool change) {                      // exit settings and save 
         File HighScore = SD.open(SettingsFileName,FILE_WRITE);  // open the settings file on the SD card
         HighScore.write((byte*) SettingsPointer, sizeof game_settings); // and write the settings array
         HighScore.close();
-        if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+        if (APC_settings[DebugMode] == 2) {           // USB LOG selected
           Serial.println("SETTNGS SAVED");}
         WriteUpper("SETTNGS SAVED   ");}
       else {
-        if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+        if (APC_settings[DebugMode] == 2) {           // USB LOG selected
           Serial.println("  NO   SD CARD");}
         WriteUpper("  NO   SD CARD  ");}}
     else {                                            // change indicator has not been set
-      if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+      if (APC_settings[DebugMode] == 2) {             // USB LOG selected
         Serial.println("NO CHANGES");}
       WriteUpper("  NO   CHANGES  ");}
-    *(DisplayUpper) = 0;                              // clear leftmost credit displays
-    *(DisplayUpper+16) = 0;
+    if (APC_settings[DisplayType] < 2 || APC_settings[DisplayType] > 6) {
+      *(DisplayUpper) = 0;                            // clear leftmost credit displays
+      *(DisplayUpper+16) = 0;}
     Init_System2(1);}}                                // and quit to Attract Mode
 
 void HandleNumSetting(bool change) {                  // handling method for numeric settings
