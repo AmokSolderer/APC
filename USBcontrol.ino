@@ -163,16 +163,16 @@ void USB_AttractMode() {                              // Attract Mode
     USB_WatchdogHandler(1);}                          // initiate reset and start watchdog
   if (ComState) {
     if (ComState == 1) {
-      if (APC_settings[DebugMode] == 2) {             // USB LOG selected
+      if (USBlog) {             // USB LOG selected
         Serial.println("BOOTING  LISY   ");}
       WriteUpper("BOOTING  LISY   ");}
     else {
-      if (APC_settings[DebugMode] == 2) {             // USB LOG selected
+      if (USBlog) {             // USB LOG selected
         Serial.println("  USB  CONTROL  ");}
       WriteUpper("  USB  CONTROL  ");}}
   else {
     WriteUpper("NO CONNSELECTED ");
-    if (APC_settings[DebugMode] == 2) {               // USB LOG selected
+    if (USBlog) {               // USB LOG selected
       Serial.println("NO CONNSELECTED ");}}
   WriteLower("                ");}
 
@@ -206,7 +206,7 @@ void USB_WatchdogHandler(byte Event) {                // Arg = 0->Reset WD / 1->
           USB_WatchdogTimer = 0;
           return;}                                    // then leave
         WriteUpper2(" USB WATCHDOG   ");
-        if (APC_settings[DebugMode] == 2) {           // USB LOG selected
+        if (USBlog) {           // USB LOG selected
           Serial.println(" USB WATCHDOG   ");}
         WriteLower2("                ");
         ShowMessage(3);}
@@ -1158,7 +1158,7 @@ void USB_SerialCommand() {
       WriteUpper2("UNKNOWN COMMAND ");}
     else {
       WriteUpper2("UNKNOWNCOMMAND  ");}
-    if (APC_settings[DebugMode] == 2) {                 // USB LOG selected
+    if (USBlog) {                                     // USB LOG selected
       Serial.println("UNKNOWN COMMAND ");}
     WriteLower2("                ");
     ShowNumber(31, Command);                          // show command number
