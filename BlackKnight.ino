@@ -277,7 +277,7 @@ void BK_AddScrollUpper(byte Step) {                   // shifts Step times and a
   static byte Position = 0;                           // stores the position in DisplayUpper2
   byte Buffer1 = DisplayUpper[18];                    // get the leftmost character of the right display
   byte Buffer2 = DisplayUpper[19];
-  for (byte i=1; i<8; i++) {                          // left display
+  for (byte i=1; i<7; i++) {                          // left display
     DisplayUpper[2*i] = DisplayUpper[2*i+2];
     DisplayUpper[2*i+1] = DisplayUpper[2*i+3];
     DisplayUpper[2*i+16] = DisplayUpper[2*i+18];

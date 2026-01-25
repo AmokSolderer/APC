@@ -567,16 +567,16 @@ byte EX_Gorgar(byte Type, byte Command){
       SoundSeries[0] = 0;
       SoundSeries[1] = 0;
       if (game_settings[USB_BGmusic]) {               // use MUSIC.SND instead of BG sound
-        if (!SoundSeries[2]) {                        // don't restart if next pitch is requested
+        if (!SoundSeries[0]) {                        // don't restart if next pitch is requested
           PlayMusic(50, "MUSIC.snd");                 // play music track
           QueueNextMusic("MUSIC.snd");                // and loop it
-          SoundSeries[2] = 1;}}
+          SoundSeries[0] = 1;}}
       else {
-        if (SoundSeries[2] < 30 )                     // this sound has 36 pitches
-          SoundSeries[2]++;                           // every call of this sound proceeds with next pitch
+        if (SoundSeries[0] < 30 )                     // this sound has 36 pitches
+          SoundSeries[0]++;                           // every call of this sound proceeds with next pitch
         char FileName[13] = "0_0e_000.snd";           // generate base filename
-        FileName[7] = 48 + (SoundSeries[2] % 10);     // change the 7th character of filename according to current pitch
-        FileName[6] = 48 + (SoundSeries[2] % 100) / 10; // the same with the 6th character
+        FileName[7] = 48 + (SoundSeries[0] % 10);     // change the 7th character of filename according to current pitch
+        FileName[6] = 48 + (SoundSeries[0] % 100) / 10; // the same with the 6th character
         for (byte i=0; i<12; i++) {                   // store the name of this sound
           USB_RepeatSound[i] = FileName[i];}
         QueueNextSound(USB_RepeatSound);              // select this sound to be repeated

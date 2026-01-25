@@ -292,7 +292,7 @@ void setup() {
   MusicBuffer = (uint16_t *) malloc(2048 * 2);
   SoundBuffer = (uint16_t *) malloc(2048 * 2);
   for (byte i=0; i<8; i++) {                          // initialize lamp status
-    LampColumns[i+1] = 0; }
+    LampColumns[i] = 0; }
   for (byte i=0; i< 8; i++) {                         // initialize switch input pins
     pinMode(54 + i, INPUT); }
   g_Sound.begin(44100, 100);                          // initialize sound
