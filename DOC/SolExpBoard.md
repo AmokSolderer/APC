@@ -1,7 +1,7 @@
-# APC solenoid expansion board (for use with loads having an additional power supply)
+# APC solenoid expansion board (without ground separation)
 
 This board can be connected to the Hardware Extensions Interface of the APC and increases the number of controlled solenoids by 8.  
-Note that this is a simple board without ground separation. This means you can only use this board with an own power supply. A typical application would be a shaker motor which usually needs 24V and therefore comes with an own 24V power supply. Connect the ground of this power supply to the Sol_GND connector of the Solenoid Expansion Board and not to the Solenoid Ground connector of the APC.
+Note that this is a simple board without ground separation. This means you can only use this board for smaller load currents or for loads with an own power supply. A typical application would be a shaker motor which usually needs 24V and therefore comes with an own 24V power supply. Connect the ground of this power supply to the Sol_GND connector of the Solenoid Expansion Board and not to the Solenoid Ground connector of the APC.
 
 The prototype of the Solenoid Expansion Board looks like this. The final board looks slightly different.
 
@@ -23,6 +23,17 @@ The hardware just consists of a latch and some power MOSFET drivers. The latch i
 
 The schematic, Gerber (and drilling) are located in the [APC_Solenoid_exp](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_Solenoid_exp) folder.
 
-# APC solenoid expansion board with separated grounds (for use with loads using the pinball's power supply)
+# APC solenoid expansion board 2 with separated grounds (with ground separation)
 
-Still to come.
+This board can be connected to the Hardware Extensions Interface of the APC and increases the number of controlled solenoids by 8.  
+Other than the board above, this one has a ground separation. That means the signal ground (coming from the APC) is separated from the load ground. Hence this board should be used if you want to control additional solenoids which share the normal solenoid ground of your pinball machine.  
+In this case connect the Sol_GND ground (J2 on this board) to the Solenoid Ground connector of the APC (sys7_2J10/sys11_1J13). The signal ground is provided by the Hardware Extensions Interface of the APC.
+
+![SolExpBoard2](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/PICS/SolExpBoard2.png)
+
+## Hardware
+
+The hardware is very similar to the Solenoid Expansion board described above, but every solenoid driver features an additional ground shifting stage. It consists of an ULN2803 providing a control current to the signal ground and a PNP transistor using this current to provide a second current to the power ground. This current is used by a 4.7K resistor to generate the gate source voltage for the power MOSFET.  
+Connect the Sol_GND (J2) of this board to the ground of your load.
+
+The schematic, Gerber (and drilling) are located in the [APC_Solenoid_exp2](https://github.com/AmokSolderer/APC/tree/V01.04/DOC/Hardware/APC_Solenoid_exp2) folder.

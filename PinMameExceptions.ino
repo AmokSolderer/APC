@@ -372,6 +372,11 @@ byte EX_DiscoFever(byte Type, byte Command){
     if (Command == 2 || Command == 3) {               // ignore turn-off commands for drop target solenoids
       return(1);}                                     // ignore it
     return(0);
+  case SoundCommandCh1:                               // sound commands for channel 1
+    {char FileName[9] = "0_00.snd";                    // handle standard sound
+    if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+      PlaySound(51, (char*) FileName);}}
+    return(0);
   default:
     return(0);}}
 

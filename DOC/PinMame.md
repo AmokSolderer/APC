@@ -22,6 +22,7 @@ You can download the audio files from the links in the table below. Thanks to ho
 |7|Jungle Lord| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Jungle-Lord-sounds.zip)| Ball saver and alternate music mode implemented for this machine |
 |7|Pharaoh| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Pharaoh-sounds.zip)| PinMameExceptions done by Grangeomatic / Ball saver and alternate music mode implemented for this machine|
 |9|Comet|[available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Comet-sounds.zip)| Ball saver and alternate music mode implemented for this machine |
+|11|High Speed| |Ball saver implemented for this machine / Sounds still need some finetuning|
 |11a|Pinbot| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Pinbot-sounds.zip)| Ball saver implemented for this machine |
 |11a|F-14 Tomcat| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/F14-Tomcat-sounds.zip) thanks to Snux | PinMameExceptions also done by Snux / Ball saver implemented for this machine / [Throttle value](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md#emulation-speed) needs to be changed to 110|
 |11b|Space Station| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Space-Station-sounds.zip)| Ball saver implemented for this machine |
