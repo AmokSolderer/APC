@@ -23,7 +23,7 @@ The hardware just consists of a latch and some power MOSFET drivers. The latch i
 
 The schematic, Gerber (and drilling) are located in the [APC_Solenoid_exp](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_Solenoid_exp) folder.
 
-# APC solenoid expansion board 2 with separated grounds (with ground separation)
+# APC solenoid expansion board 2 (with ground separation)
 
 This board can be connected to the Hardware Extensions Interface of the APC and increases the number of controlled solenoids by 8.  
 Other than the board above, this one has a ground separation. That means the signal ground (coming from the APC) is separated from the load ground. Hence this board should be used if you want to control additional solenoids which share the normal solenoid ground of your pinball machine.  
