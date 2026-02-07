@@ -3,7 +3,7 @@ SdFat SD;
 #include <SPI.h>
 #include "Arduino.h"
 #include "Sound.h"
-#define DebugState 0                                  // set this value to 2 and remove SD card for USB debug log
+#define DebugState 0                                  // set this value to 2 for USB debug log
 #define UpDown 53                                     // arduino pin connected to the auto/up - manual/Down button
 #define Blanking  22                                  // arduino pin to control the blanking signal
 #define VolumePin 13                                  // arduino pin to control the sound volume
