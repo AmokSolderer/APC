@@ -2,7 +2,7 @@
 
 ## Selecting the correct display
 
-The preselected display setting is set for early System11 displays. That means if you have a pre System11 (numbers only) display or a Black Knight 2000 (BK2K / 2 x 16 alphanumeric) you have to adjust the display setting first. In order to get there blindly, the display setting is the very first one.  
+The preselected display setting is set for the [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) which is readable on early System11 displays. However, you'd still need to adjust the display setting and if you have a pre System11 (numbers only) display or a Black Knight 2000 (BK2K / 2 x 16 alphanumeric) you have to get there blindly. To make it easier, the display setting is the very first one.  
 To get there you have to keep the Advance key pressed for more than 1s with the Up/Down key being in up position. Wait 4s and then press the Game Start button slowly but repeatedly until you can read the display contents. Pre Sys11 displays cannot show any text, so for the 6 digit displays (Sys3 - 6) a single 7 is shown on the player 4 display. For 7 digit displays (Sys7 and 9) it's an 8.  
 After the correct display is selected, press Up/Down to get it down and Game Start to go back one setting to 'Exit Settings'. Now release the Up/Down button and press Game Start again to save the settings and return to the attract mode.
 
@@ -16,9 +16,47 @@ I did two videos to show what I've described above:
 
 Note that the menus have changed since these videos have been made. So use them only to see how it works in general, but use the tables below as a reference for the settings.
 
+### Using the defaults
+
+Another option is to change the defaults of the settings and remove the corresponding settings file from the SD card.  
+To change the display default for example, locate the APC_defaults[64] array in APC.ino which defines the defaults of the 'System Settings':
+
+    const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
+        64,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0};
+
+Every setting is one byte long and they are stored in the same order as listed in the 'System Settings' table below. Hence, if you want to change the 'Display Setting' to a System 3-6 display you would have to change the first byte (number 0) to 7:
+
+    const byte APC_defaults[64] =  {7,3,3,1,2,0,0,0,      // system default settings
+
+The defaults are only used when no settings file is found on the SD card, so you'd have to delete the APC_SET.BIN file if present. 
+
+It works the same way for the Game Settings. The defaults for the game settings in 'Remote Control' mode are located in USBcontrol.ino and the name of the settings file is USB_SET.BIN.
+
+    const byte USB_defaults[64] = {0,0,0,255,0,0,20,0,    // game default settings
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0};
+                                                        
+Of course you have to re-compile your code and upload it to the Arduino DUE for the new defaults to become effective.
+
+### Using the settings files
+
+The APC will create the above mentioned settings files when you use the settings menu to change the settings from the defaults. That means you can use a binary editor to change the values in the files on the SD card without having to change and re-compile your code.
+
 ### Using the debug mode
 
-If you're not able to select the correct setting for your display you might want to use the [debug mode](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/Problems.md#the-debug-mode) to be able to see the settings menu in full text.
+If you have problems browsing the settings, you might want to use the [debug mode](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/Problems.md#the-debug-mode) to be able to see the settings menu in full text.  
+You may use the defaults or settings file to activate the debug mode (as described above).
 
 ## Using the settings menu
 
@@ -136,8 +174,3 @@ These game settings are only visible if 'Remote Control' is selected as the 'Act
 | 64 | Restore Default | - | - | - | No setting - restores the default settings |
 | 65 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
-## The setting files
-
-You can edit the settings directly in the settings files on your SD card (the APC one which also contains the audio files), e.g. if you have problems selecting the correct display.  
-The name of the APC settings file is APC_SET.BIN, for the game settings of the Remote Control game (which you'd use for MPF and PinMame) it is USB_SET.BIN. They're 64 byte long and every byte belongs to a setting. The display setting for example is the first System Setting, it's value is therefore stored in the first byte of APC_SET.BIN.  
-You can use a binary editor to change the values according to the settings table above.
