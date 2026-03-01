@@ -361,21 +361,28 @@ byte EX_DiscoFever(byte Type, byte Command){
       return(1);}}                                    // omit command if ball saver says so
   switch(Type){
   case SolenoidActCommand:
-    if (Command == 2) {                               // ball release
-      ActivateSolenoid(80, 2);                        // FEV drop target reset
+    if (Command == 2) {                               // FEV drop target reset
+      ActivateSolenoid(80, 2);
       return(1);}
     else if (Command == 3) {                          // ER drop target reset
       ActivateSolenoid(60, 3);                        // Fix to increase the strength of the ball release
       return(1);}
+    else if ((Command == 24) && game_settings[USB_BGmusic]) { // use MUSIC.SND instead of BG sound
+      PlayMusic(50, "MUSIC.snd");                     // play music track
+      QueueNextMusic("MUSIC.snd");}                   // and loop it
     return(0);
   case SolenoidRelCommand:
     if (Command == 2 || Command == 3) {               // ignore turn-off commands for drop target solenoids
       return(1);}                                     // ignore it
+    else if (Command == 24) {
+      StopPlayingMusic();}
     return(0);
   case SoundCommandCh1:                               // sound commands for channel 1
-    {char FileName[9] = "0_00.snd";                    // handle standard sound
-    if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
-      PlaySound(51, (char*) FileName);}}
+    if (Command == 31) { }                            // ignore sound command 0x1f - audio bus init - not relevant for APC sound / also ignore 0xff whatever it is
+    else {
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(51, (char*) FileName);}}
     return(0);
   default:
     return(0);}}
