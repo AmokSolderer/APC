@@ -23,7 +23,7 @@ The LED_exp board which is connected here is also not needed.
 
 ## How to set up this game
 
-You need to have the audio files for this game. [Contact me](https://github.com/AmokSolderer/APC/tree/master#feedback) to get the corresponding sound file package.  
+You need to have the audio files for this game. I have added the multiball music file to the Black Knight sound package. You can download it from the [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page.  
 
 If you want to use the Multiball Jackpot feature you need to pick a music track to be played during Multi Ball. Take a track of your choice, convert it to the APC sound format and rename it to BK_M01.snd.  
 The same needs to be done for the High Score table feature. In this case the name of the music track has to be BK_M02.snd. As already mentioned, the High Score table is only available when alphanumeric displays are used.

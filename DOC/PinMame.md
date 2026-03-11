@@ -6,11 +6,12 @@ If you're lucky then your machine is listed below which means that someone else 
 # Available Sounds
 
 At the moment the list of available sound packages is still quite short, but we hope that some of you will do this for their machines also. Of course it would be great if you'd share your sound package with the rest of us.  
-If the sound files for your machine are marked as 'available', the corrsponding ZIP file can be downloaded [here](https://drive.google.com/drive/folders/1NDCfrecSSClfyiHb7cRy5wmoFfd4UPNM?usp=sharing).
+If the sound files for your machine are marked as 'available', the corresponding ZIP file can be downloaded [here](https://drive.google.com/drive/folders/1NDCfrecSSClfyiHb7cRy5wmoFfd4UPNM?usp=sharing). Most of these ZIP files also contain the settings files to make the corresponding machine work.__
+There's also a MUSIC.snd file available which is played during the music test of the Basecode and while the volume setting is selected.
 
 |System|Game| Sound Files |Comments|
 |--|--|--|--|
-|3|Disco Fever| available | Only files for one audio board mode avaiable. Ball saver and alternate music mode implemented for this machine |
+|3|Disco Fever| available | Only files for one audio board mode available. Ball saver and alternate music mode implemented for this machine |
 |4|Flash| available | Ball saver and alternate music mode implemented for this machine |
 |6|Tri Zone| available | Ball saver and alternate music mode implemented for this machine |
 |6|Time Warp| available | Ball saver and alternate music mode implemented for this machine |

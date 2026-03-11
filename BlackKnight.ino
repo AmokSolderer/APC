@@ -654,7 +654,8 @@ byte BK_BallSaver(byte Event) {                       // 0 - stop, 1 - start, de
 void BK_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 45) {                                 // shooter lane switch released?
     Switch_Released = DummyProcess;
-    StopPlayingMusic();
+    if (!game_settings[BK_BGmusic]) {
+      StopPlayingMusic();}
     PlaySound(50, "0_33.snd");
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, BK_SearchBall);}}}
@@ -1484,7 +1485,8 @@ void BK_HandleLock(byte Event) {
     BK_GiveMultiballs(1);}                            // eject balls
   else {                                              // no multiball running
     if (LockCount > InLock) {                         // more than before?
-      StopPlayingMusic();
+      if (!game_settings[BK_BGmusic]) {
+        StopPlayingMusic();}
       PlaySound(51, "0_3c.snd");
       Points[Player] += 5000;
       ShowPoints(Player);
@@ -1579,7 +1581,10 @@ void BK_HandleDropTargets(byte Event) {
   else {                                              // not all targets cleared
     if (QuerySwitch(BK_DropTargets[Event]) || (QuerySwitch(BK_DropTargets[Event]+1)) || (QuerySwitch(BK_DropTargets[Event]+2))) { // any target down? (or false alarm)
       if (!BK_DropTimer[Event]) {                     // no timer running for this bank already?
-        PlayMusic(49, "BK_E14.snd");
+        if (!game_settings[BK_BGmusic]) {
+          PlayMusic(49, "BK_E14.snd");}
+        else {
+          PlaySound(50, "BK_E14.snd");}
         BK_DropTimer[Event] = ActivateTimer(6000, Event, BK_BlinkFaster); // start one
         AddBlinkLamp(BK_DropLamp+Event, 500);}}}}     // and let the bank lamp blink
 
