@@ -889,7 +889,7 @@ void BK_GameMain(byte Event) {                        // game switch events
       AddBlinkLamp(12, 150);}
     else {
       if (Multiballs == 1) {                          // not during multiball
-        StopPlayingMusic();
+        BK_PlayBgMusic(3);                            // stop music
         PlaySound(61, "0_29.snd");}}                  // BK laughing
     break;
   case 13:                                            // spinner
@@ -1179,7 +1179,11 @@ void BK_BallEnd(byte Event) {
         BK_Jackpot(0);
         if (APC_settings[Volume]) {
           analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
-        FadeOutMusic(50);
+        if (game_settings[BK_BGmusic]) {                  // MUSIC.snd selected?
+          BK_PlayBgMusic(3);
+          ActivateTimer(1000, 1, BK_PlayBgMusic);}
+        else {
+          FadeOutMusic(50);}
         PlaySound(60, "0_28.snd");}
       if (BallsInTrunk == 3) {                        // 3 balls in trunk?
         ActivateTimer(1000, 0, BK_BallEnd);}
@@ -1218,7 +1222,7 @@ void BK_BallEnd(byte Event) {
         BK_CycleSwordLights(0);
         AfterSound = 0;
         AfterMusic = 0;
-        StopPlayingMusic();
+        //StopPlayingMusic();
         PlaySound(60, "0_34_001.snd");                // play bonus count sound
         BK_CountBonus(BallsInTrunk);}}}}
 
@@ -1737,7 +1741,7 @@ void BK_StartMultiball() {
 void BK_Multiball2(byte Step) {
   static byte Counter;
   if (!Step) {
-    StopPlayingMusic();
+    BK_PlayBgMusic(3);
     AfterSound = 0;
     PlaySound(55, "0_38_001.snd");
     Counter = 0;
