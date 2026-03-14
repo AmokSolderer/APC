@@ -20,17 +20,21 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 #define USB_PinMameSound 2                            // use APC sound HW or old sound board?
 #define USB_PinMameGame 3                             // number of the game to be run in PinMame
 #define USB_LisyDebug 4                               // selected debug mode
-//#define USB_BallSave 5                                // optional ball saver
-//#define USB_BallSaveTime 6                            // activation time for the optional ball saver
-//#define USB_BGmusic 7                                 // to select an own BG music
-//#define LED_red 8                                     // to change the color of the LED GI
-//#define LED_green 9
-//#define LED_blue 10
-//#define USB_CustomText 11                             // to select a custom text to be shown during attract mode
-//#define USB_Option1 12                                // an option for own PinMame exceptions
+//#define USB_BallSave 5                              // optional ball saver -> this option is defined in PinMameExceptions.ino
+//#define USB_BallSaveTime 6                          // activation time for the optional ball saver -> this option is defined in PinMameExceptions.ino
+//#define USB_BGmusic 7                               // to select an own BG music -> this option is defined in PinMameExceptions.ino
+#define USB_RecycleSolenoid1 8                        // number of the solenoid to select a recycling time of 250ms for
+#define USB_RecycleSolenoid2 9
+#define USB_RecycleSolenoid3 10
+#define USB_RecycleSolenoid4 11
+//#define LED_red 12                                     // to change the color of the LED GI
+//#define LED_green 13
+//#define LED_blue 14
+//#define USB_CustomText 15                             // to select a custom text to be shown during attract mode
+//#define USB_Option1 16                                // an option for own PinMame exceptions
 
 const byte USB_defaults[64] = {0,0,0,255,0,0,20,0,    // game default settings
-                              200,200,200,0,0,0,0,0,
+                              0,0,0,0,200,200,200,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
@@ -61,14 +65,14 @@ const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting
     {" BALL   SAVER   ",HandleTextSetting,&TXTUSB_BallSave[0][0],0,1},
     {"B SAVER  TIME   ",HandleNumSetting,0,5,250},
     {"   BG   MUSIC   ",HandleTextSetting,&TxtUSB_Music[0][0],0,1},
+    {"RECYCLE SOL 1   ",HandleNumSetting,0,1,22},
+    {"RECYCLE SOL 2   ",HandleNumSetting,0,1,22},
+    {"RECYCLE SOL 3   ",HandleNumSetting,0,1,22},
+    {"RECYCLE SOL 4   ",HandleNumSetting,0,1,22},
     {" LED GI  RED    ",HandleColorSetting,0,0,255},
     {" LED GI  GREEN  ",HandleColorSetting,0,0,255},
     {" LED GI  BLUE   ",HandleColorSetting,0,0,255},
     {" CUSTOM TEXT  ",HandleBoolSetting,0,0,0},
-    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
-    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
-    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
-    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
@@ -154,6 +158,9 @@ void USB_AttractMode() {                              // Attract Mode
   Switch_Pressed = USB_SwitchHandler;
   Switch_Released = USB_ReleasedSwitches;
   EX_Init(game_settings[USB_PinMameGame]);            // set exceptions for selected game
+  for (byte i=0; i<4; i++) {                          // set solenoid recycle times
+    if (game_settings[USB_RecycleSolenoid1+i]) {      // is a solenoid selected?
+      SolRecycleTime[game_settings[USB_RecycleSolenoid1+i]-1] = 250;}} // define a recycle time of 250ms for it
   USB_ReleasedSwitches(72);                           // tell Lisy to start PinMame
   for (byte i=0; i<5; i++) {
     USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
@@ -161,11 +168,17 @@ void USB_AttractMode() {                              // Attract Mode
     USB_WatchdogHandler(1);}                          // initiate reset and start watchdog
   if (ComState) {
     if (ComState == 1) {
+      if (USBlog) {             // USB LOG selected
+        Serial.println("BOOTING  LISY   ");}
       WriteUpper("BOOTING  LISY   ");}
     else {
+      if (USBlog) {             // USB LOG selected
+        Serial.println("  USB  CONTROL  ");}
       WriteUpper("  USB  CONTROL  ");}}
   else {
-    WriteUpper("NO CONNSELECTED ");}
+    WriteUpper("NO CONNSELECTED ");
+    if (USBlog) {               // USB LOG selected
+      Serial.println("NO CONNSELECTED ");}}
   WriteLower("                ");}
 
 void USB_WatchdogHandler(byte Event) {                // Arg = 0->Reset WD / 1-> Reset & start WD / 2-> WD has run out / 3-> stop WD
@@ -198,6 +211,8 @@ void USB_WatchdogHandler(byte Event) {                // Arg = 0->Reset WD / 1->
           USB_WatchdogTimer = 0;
           return;}                                    // then leave
         WriteUpper2(" USB WATCHDOG   ");
+        if (USBlog) {           // USB LOG selected
+          Serial.println(" USB WATCHDOG   ");}
         WriteLower2("                ");
         ShowMessage(3);}
       ReleaseAllSolenoids();                          // switch off all coils
@@ -224,14 +239,15 @@ void USB_SwitchHandler(byte Switch) {
         USB_Enter_TestmodeTimer = ActivateTimer(1000, 0, USB_Testmode);}  // look again in 1s
       break;
     default:
-      while (USB_HWrule_ActSw[i][0]) {                // check for HW rules for this switch
-        if (USB_HWrule_ActSw[i][0] == Switch) {
-          if (USB_HWrule_ActSw[i][2]) {               // duration != 0 ?
-            ActivateSolenoid((byte) USB_HWrule_ActSw[i][2], USB_HWrule_ActSw[i][1]);}
-          else {
-            ReleaseSolenoid(USB_HWrule_ActSw[i][1]);}
-          break;}
-        i++;}
+      if (game_settings[USB_PinMameGame] > 47 || QuerySolenoid(24)) { // games prior to SpaceStation need to have the special solenoids disabled when the flipper relay is off
+        while (USB_HWrule_ActSw[i][0]) {              // check for HW rules for this switch
+          if (USB_HWrule_ActSw[i][0] == Switch) {
+            if (USB_HWrule_ActSw[i][2]) {             // duration != 0 ?
+              ActivateSolenoid((byte) USB_HWrule_ActSw[i][2], USB_HWrule_ActSw[i][1]);}
+            else {
+              ReleaseSolenoid(USB_HWrule_ActSw[i][1]);}
+            break;}
+          i++;}}
       i = 0;                                          // add switch number to list of changed switches
       while (USB_ChangedSwitches[i] && (i<63)) {
         i++;}
@@ -934,11 +950,10 @@ void USB_SerialCommand() {
         SolBuffer[1] = SolBuffer[1] & 224;            // turn off sound related solenoids
         SolBuffer[1] = SolBuffer[1] | (~USB_SerialBuffer[1] & 31);} // write sound number to solenoids 9 - 13
       else if (game_settings[USB_PinMameGame] < 40) { // Sys 7 - 9 game
-        WriteToHwExt(USB_SerialBuffer[1], 128+16);    // turn on Sel14
-        WriteToHwExt(USB_SerialBuffer[1], 16);}       // turn off Sel14
+        WriteToHwExt(USB_SerialBuffer[1], 0);}        // write to HW ext interface
       else {                                          // Sys 11 game
         WriteToHwExt(USB_SerialBuffer[1], 4);         // turn off Sel7
-        WriteToHwExt(USB_SerialBuffer[1], 128+4+16);}} // turn on Sel7 + Sel14
+        WriteToHwExt(USB_SerialBuffer[1], 128+4);}}   // turn on Sel7
     else {                                            // use APC sound HW
       if (USB_SerialBuffer[0] == 1) {                 // channel 1?
         PinMameException(SoundCommandCh1, USB_SerialBuffer[1]);}
@@ -1148,6 +1163,8 @@ void USB_SerialCommand() {
       WriteUpper2("UNKNOWN COMMAND ");}
     else {
       WriteUpper2("UNKNOWNCOMMAND  ");}
+    if (USBlog) {                                     // USB LOG selected
+      Serial.println("UNKNOWN COMMAND ");}
     WriteLower2("                ");
     ShowNumber(31, Command);                          // show command number
     ShowMessage(3);}}                                 // indicate that the command is complete

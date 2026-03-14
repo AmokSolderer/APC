@@ -1,5 +1,19 @@
 # APC News and Changelog
 
+## March 2026
+
+### New SW Version V1.04
+
+* You can now select up to 4 solenoids to have a recycle time of 250ms in the [game settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode). This comes in handy e.g. to prevent machine gunning of slingshots 
+* Some finetuning of the sound files and PinMameExceptions for F-14 done
+* [Debug logs](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md#the-debug-mode) can now be written to USB
+* Special Solenoids are not longer active during attract mode
+* Exception rules for System 11 Whirlwind have been added. [Sound files for Whirlwind are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+* Exception rules for System 6 Tri Zone have been added. [Sound files for Tri Zone are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+* Native Pinbot code shows points >= 10M in highscore list if 4 Aplha + Credit display is installed
+* Native Black Knight code shows points >= 10M in highscore list if 4 Aplha + Credit display is installed
+* Ball Saver and alternative music implemented in native Black Knight code.
+
 ## June 2025
 
 ### New SW Version V1.03
@@ -102,7 +116,7 @@ The purpose of this is to enable state machines that are initially called from t
 
 ### Misc
 
-* Due to the recent problems with the availability of the 74HCT273 at JLCPCB, I have split up the fabrication files section into two parts, one with the 74HCT273 in an [SOIC package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SOIC) and one with a [SSOP package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SSOP). Both folders contain all the required data to build a board, just the package of the 74HCT273 is different.
+* Due to the recent problems with the availability of the 74HCT273 at JLCPCB, I have split up the fabrication files section into two parts, one with the 74HCT273 in an [SOIC package](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_FabricationFiles_SOIC) and one with a [SSOP package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SSOP). Both folders contain all the required data to build a board, just the package of the 74HCT273 is different.
 * The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
 * My [APC Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) game code has been updated.
 * My Pinbot code has also improved a lot, but I don't have an own section for it yet.
@@ -164,7 +178,7 @@ APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJ
 ### Misc
 
 * Sound files for Black Knight and Jungle Lord are available on request. They can be used with PinMame or as a basis for own games.
-* A summary of the [Documentation contents](https://github.com/AmokSolderer/APC/tree/master#documentation-contents) has been added at the end of the main page to provide a better overview about the documentation.
+* A summary of the [Documentation contents](https://github.com/AmokSolderer/APC/blob/master#documentation-contents) has been added at the end of the main page to provide a better overview about the documentation.
 
 ## April 2020
 
@@ -178,7 +192,7 @@ Watch the
 
 video to see my old Pinbot under PinMame control.
 
-There's still some work to be done, but with this setup you can do much more than just playing the original game. See my [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md) for details.
+There's still some work to be done, but with this setup you can do much more than just playing the original game. See my [PinMame page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) for details.
 
 ### New SW Version V0.13
 

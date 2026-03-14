@@ -7,7 +7,7 @@ In this section we'll focus on exceptions that change a game. This can be just t
 
 ## How it works
 
-PinMame controls the APC by sending commands over the serial interface. Each of these commands triggers the APC SW to fullfill a specific task, e.g. turning on a lamp, report the latest activated switch and so on. Normally the APC does exactly what it has been told to do, but you can use the [APC SW framework](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) to program game specific exceptions which are collected in the file PinMameExceptions.ino.  
+PinMame controls the APC by sending commands over the serial interface. Each of these commands triggers the APC SW to fullfill a specific task, e.g. turning on a lamp, report the latest activated switch and so on. Normally the APC does exactly what it has been told to do, but you can use the [APC SW framework](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) to program game specific exceptions which are collected in the file PinMameExceptions.ino.  
 
 ### Adding exceptions for your machine
 

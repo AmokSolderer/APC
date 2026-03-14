@@ -2,7 +2,7 @@
 
 ## Selecting the correct display
 
-The preselected display setting is set for early System11 displays. That means if you have a pre System11 (numbers only) display or a Black Knight 2000 (BK2K / 2 x 16 alphanumeric) you have to adjust the display setting first. In order to get there blindly, the display setting is the very first one.  
+The preselected display setting is set for the [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) which is readable on early System11 displays. However, you'd still need to adjust the display setting and if you have a pre System11 (numbers only) display or a Black Knight 2000 (BK2K / 2 x 16 alphanumeric) you have to get there blindly. To make it easier, the display setting is the very first one.  
 To get there you have to keep the Advance key pressed for more than 1s with the Up/Down key being in up position. Wait 4s and then press the Game Start button slowly but repeatedly until you can read the display contents. Pre Sys11 displays cannot show any text, so for the 6 digit displays (Sys3 - 6) a single 7 is shown on the player 4 display. For 7 digit displays (Sys7 and 9) it's an 8.  
 After the correct display is selected, press Up/Down to get it down and Game Start to go back one setting to 'Exit Settings'. Now release the Up/Down button and press Game Start again to save the settings and return to the attract mode.
 
@@ -15,6 +15,48 @@ I did two videos to show what I've described above:
 [Adjusting the display settings for 2x16 segment System11 displays](https://www.youtube.com/watch?v=XqPWbm-HWM8)
 
 Note that the menus have changed since these videos have been made. So use them only to see how it works in general, but use the tables below as a reference for the settings.
+
+### Using the defaults
+
+Another option is to change the defaults of the settings and remove the corresponding settings file from the SD card.  
+To change the display default for example, locate the APC_defaults[64] array in APC.ino which defines the defaults of the 'System Settings':
+
+    const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
+        64,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0};
+
+Every setting is one byte long and they are stored in the same order as listed in the 'System Settings' table below. Hence, if you want to change the 'Display Setting' to a System 3-6 display you would have to change the first byte (number 0) to 7:
+
+    const byte APC_defaults[64] =  {7,3,3,1,2,0,0,0,      // system default settings
+
+The defaults are only used when no settings file is found on the SD card, so you'd have to delete the APC_SET.BIN file if present. 
+
+It works the same way for the Game Settings. The defaults for the game settings in 'Remote Control' mode are located in USBcontrol.ino and the name of the settings file is USB_SET.BIN.
+
+    const byte USB_defaults[64] = {0,0,0,255,0,0,20,0,    // game default settings
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0};
+                                                        
+Of course you have to re-compile your code and upload it to the Arduino DUE for the new defaults to become effective.
+
+### Using the settings files
+
+The APC will create the above mentioned settings files when you use the settings menu to change the settings from the defaults. That means you can use a binary editor to change the values in the files on the SD card without having to change and re-compile your code.
+
+### Using the debug mode
+
+If you have problems browsing the settings, you might want to use the [debug mode](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md#the-debug-mode) to be able to see the settings menu in full text.  
+You may use the defaults or settings file to activate the debug mode (as described above).
 
 ## Using the settings menu
 
@@ -77,7 +119,9 @@ Enter the game settings and do your changes. When you're done, just select menu 
 | 7 |  | 3 | PlayfldBackbox | - | The APC_LED_exp board is used for the lamps 1 - 64 |
 | 8 | No of LEDs | - | - | 64 | Numerical setting - range 1 - 192 / The length of the LED stripe. Setting is only effective when 'Additional' is selected as 'LED lamps' setting|
 | 9 | Sol Exp Board | - | - | No | Bool setting - will use the solenoid expander board for solenoids 26 - 33 if set
-| 10 | Debug Mode | - | - | No | Bool setting - Active debug mode will show the number of active timers in the credit display and will stop the game on error |
+| 10 | Debug Mode | 0 | Off | X | APC debug mode disabled |
+| 10 |  | 1 | USB on | - | The number of active timers is shown in the credit display, game will stop on error and communication is active for the USB programming port |
+| 10 |  | 2 | USB log | - | USB debug log is active |
 | 11 | Backbox Lamps | 0| Column 1 | X | Backbox lamps are in lamp column 1 |
 | 11 |  | 1 | Column 8 | - | Backbox lamps are in lamp column 8 |
 | 11 |  | 2 | None | - | game has no controlled backbox lamps |
@@ -104,7 +148,11 @@ These game settings are only visible if 'Remote Control' is selected as the 'Act
 | 6 | Ball Saver Time | - | - | 20 | Numerical setting - range 5 - 250 / Active time of the Ball Saver |
 | 7 | BG Music | 0 | PinMame default | X | Normal BG music |
 | 7 |  | 1 | Music snd | - | Uses the MUSIC.SND file as BG music |
-| 8 - 45 | Setting Unused | - | – | - | They behave like boolean settings, but they have no effect |
+| 8 | Recycle Sol 1 | - | - | 0 | Numerical setting - Sets a recycle time of 250ms for the selected solenoid. Useful e.g. for slingshots to prevent machine gunning |
+| 9 | Recycle Sol 2 | - | - | 0 | Same as above |
+| 10| Recycle Sol 3 | - | - | 0 | Same as above |
+| 11| Recycle Sol 4 | - | - | 0 | Same as above |
+| 12- 45 | Setting Unused | - | – | - | They behave like boolean settings, but they have no effect |
 | 46 | System3 Set 1 | - | - | - | Use this to change the 1st setting of system 3 games |
 | 47 | System3 Set 2 | - | - | - | Use this to change the 2nd setting of system 3 games |
 | 48 | System3 Set 3 | - | - | - | Use this to change the 3rd setting of system 3 games |
@@ -125,3 +173,4 @@ These game settings are only visible if 'Remote Control' is selected as the 'Act
 | 63 | System3 Set 18 | - | - | - | Use this to change the 18th setting of system 3 games |
 | 64 | Restore Default | - | - | - | No setting - restores the default settings |
 | 65 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+
