@@ -360,6 +360,16 @@ byte EX_DiscoFever(byte Type, byte Command){
     if (EX_BallSaver(Type, Command)) {                // include ball saver
       return(1);}}                                    // omit command if ball saver says so
   switch(Type){
+  case WriteToDisplay1:                               // Disco Fever's player displays have all strobes swapped
+  case WriteToDisplay2:
+  case WriteToDisplay3:
+  case WriteToDisplay4:                               // so for every player display
+    { byte Buffer[6];
+    for (byte i=0; i<6; i++) {                        // store the data
+      Buffer[i] = USB_SerialBuffer[i];}
+    for (byte i=0; i<6; i++) {                        // and apply it in reversed order
+      USB_SerialBuffer[i] = Buffer[5-i];}}
+    return(0);
   case SolenoidActCommand:
     if (Command == 2) {                               // FEV drop target reset
       ActivateSolenoid(80, 2);
