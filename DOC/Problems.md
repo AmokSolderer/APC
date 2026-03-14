@@ -7,7 +7,7 @@ If it happens frequently then you could swap C14 from a 10µF to a 22µF capacit
 
 ## The debug mode
 
-There's a main debug mode available which can be activated in the [System Settings](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/Settings.md#system-settings) or by changing
+There's a main debug mode available which can be activated in the [System Settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#system-settings) or by changing
 
     #define DebugState 0    // set this value to 2 and remove SD card for USB debug log
 
@@ -53,14 +53,14 @@ The meaning of the LEDs is:
 
 * After the machine has been switched on, all LEDs are off while the Raspi is booting. If you have alphanumeric displays they should show 'Booting Lisy'. If they show 'USB control instead, read the 'red LED' part below. 
 * When the Raspi has finished booting, the yellow LED will be lit to show that it is trying to reach the DUE. If the yellow LED does not light up, then something is wrong with your Raspberry Pi. There is an LED on the Pi which will flicker while the Pi is reading data from the SD card (e.g. while booting). If this LED stays dark, check your SD card and be sure to have Lisy installed correctly. Note that [Lisy Embedded](https://lisy.dev/lisy_embedded.html) will only work on the correct hardware.
-* If the green LED is lit, the communication works. If the game still doesn't work correctly, check the [settings for PinMame use](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/RunGame.md#pinmame) like the PinMame game number.
+* If the green LED is lit, the communication works. If the game still doesn't work correctly, check the [settings for PinMame use](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md#pinmame) like the PinMame game number.
 * A red LED shows that the communication has failed. Check that 'Active game' (setting 1  of the System settings) is set to 'Remote Control' and 'Connect Type' (setting 4) is set to 'On board'. This will select the Raspi located on the APC board for communication.  
 
 ## Fixing a dead APC
 
 If neither switches, lamps, solenoids nor displays work any more, you might have a damaged data bus on your APC. In this case the green LED will still be lit after startup when you're in 'Remote Control' game mode and have a Raspberry Pi on board, but except of the sound nothing will work. Pre System11 displays will probably show all zeros and BK2K style displays will look like this:
 
-![DeadAPC](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/PICS/DeadAPC.jpg)
+![DeadAPC](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/DeadAPC.jpg)
 
 If you have none of the display types mentioned above, they'll just be dead and you have to use a logic probe or an oscilloscope to check the display strobe signals (Sys11_1J1 and Sys11_1J2) for activity. If those signals are pulsing, you should check the pins (12 to 19) of U2. If they're static (like in the picture) your data bus is dead.  
 You should now check the input signals (pins 2 to 9) of U2. However, these are 3.3V signals so be sure that your logic probe can handle those or use an oscilloscope. If the input signals are also static you should check your Arduino DUE, otherwise you can locate the problem as follows:  

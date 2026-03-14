@@ -2052,9 +2052,10 @@ void BK_PlayBgMusic(byte State) {
   char Filename[13] = {"0_2e_001.snd"};
   switch (State) {
   case 0:                                             // Resume BgMusic
-    Filename[7] = (CurrentBgMusic % 10) + 48;
-    Filename[6] = (CurrentBgMusic / 10) + 48;
-    PlayMusic(48, Filename);
+    if (CurrentBgMusic) {
+      Filename[7] = (CurrentBgMusic % 10) + 48;
+      Filename[6] = (CurrentBgMusic / 10) + 48;
+      PlayMusic(48, Filename);}
     break;
   case 1:                                             // Start BgMusic
     if (game_settings[BK_BGmusic]) {                  // MUSIC.snd selected?
@@ -2075,7 +2076,8 @@ void BK_PlayBgMusic(byte State) {
     if (TimerNo) {
       KillTimer(TimerNo);
       TimerNo = 0;}
-    CurrentBgMusic = 0;
+    if (game_settings[BK_BGmusic]) {                  // MUSIC.snd selected?
+      CurrentBgMusic = 0;}
     StopPlayingMusic();}}
 
 void BK_EndRightMagna(byte Event) {

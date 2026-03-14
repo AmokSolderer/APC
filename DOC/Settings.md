@@ -55,7 +55,7 @@ The APC will create the above mentioned settings files when you use the settings
 
 ### Using the debug mode
 
-If you have problems browsing the settings, you might want to use the [debug mode](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/Problems.md#the-debug-mode) to be able to see the settings menu in full text.  
+If you have problems browsing the settings, you might want to use the [debug mode](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md#the-debug-mode) to be able to see the settings menu in full text.  
 You may use the defaults or settings file to activate the debug mode (as described above).
 
 ## Using the settings menu

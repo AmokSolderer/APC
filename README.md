@@ -199,10 +199,10 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 6.4. [Installation frames](https://github.com/AmokSolderer/APC/blob/master/DOC/Frames.md) - to mount the APC in your backbox  
 
 7. Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
-7.1. [System 7 LED display](https://github.com/AmokSolderer/APC/tree/V01.04/DOC/DispSys7.md) - an LED replacement display for System 7, purely numerical  
-7.2. [System 11 LED display](https://github.com/AmokSolderer/APC/tree/V01.04/DOC/DispSys11.md) - an LED replacement display for System 11  
-7.3. [System 11a LED display](https://github.com/AmokSolderer/APC/tree/V01.04/DOC/DispSys11a.md) - an LED replacement display for System 11a and early 11b  
-7.4. [System 11b LED display](https://github.com/AmokSolderer/APC/tree/V01.04/DOC/DispSys11b.md) - an LED replacement display for later System 11b and 11c  
+7.1. [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/DispSys7.md) - an LED replacement display for System 7, purely numerical  
+7.2. [System 11 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/DispSys11.md) - an LED replacement display for System 11  
+7.3. [System 11a LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/DispSys11a.md) - an LED replacement display for System 11a and early 11b  
+7.4. [System 11b LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/DispSys11b.md) - an LED replacement display for later System 11b and 11c  
 
 8. APC games - Complete games running natively on the APC or games that run in PinMame but have been changed  
 8.1. [Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) - Complete game code with some additional features  

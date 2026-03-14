@@ -4,9 +4,9 @@
 
 ### New SW Version V1.04
 
-* You can now select up to 4 solenoids to have a recycle time of 250ms in the [game settings](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/Settings.md#game-settings-in-remote-control-mode). This comes in handy e.g. to prevent machine gunning of slingshots 
+* You can now select up to 4 solenoids to have a recycle time of 250ms in the [game settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode). This comes in handy e.g. to prevent machine gunning of slingshots 
 * Some finetuning of the sound files and PinMameExceptions for F-14 done
-* [Debug logs](https://github.com/AmokSolderer/APC/blob/V01.04/DOC/Problems.md#the-debug-mode) can now be written to USB
+* [Debug logs](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md#the-debug-mode) can now be written to USB
 * Special Solenoids are not longer active during attract mode
 * Exception rules for System 11 Whirlwind have been added. [Sound files for Whirlwind are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
 * Exception rules for System 6 Tri Zone have been added. [Sound files for Tri Zone are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
