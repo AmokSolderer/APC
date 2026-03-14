@@ -26,7 +26,7 @@ Watch [this video](https://youtu.be/JbgMa_pn0Lo) to see how the ball saver works
 
 ## How to set up this game
 
-* You need to have the audio files for this game. [Contact me](https://github.com/AmokSolderer/APC/tree/master#feedback) to get the corresponding sound file package.
+* You need to have the audio files for this game. You can get the corresponding sound file package from the [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page
 * Use the 'AmokPrivate' branch of GitHub to get the additional features. The normal 'master' branch just supports Comet without any special features.
 * For the GI LED animations you need to install the necessary HW of course, but the other features work without it. The same applies for the alphanumeric displays.
 

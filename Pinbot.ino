@@ -442,22 +442,6 @@ void PB_AttractMode() {
   PB_AttractLampCycle(1);
   PB_AttractDisplayCycle(1);}
 
-void PB_ShowBigScores(byte Row, unsigned int Score) {
-  byte Buffer;
-  byte i = 0;
-  Score = Score / 1000000;
-  while (Score && i<3) {
-    Buffer = Score % 10;
-    Score = (Score-Buffer)/10;
-    Buffer = 32+2*Buffer;
-    if (Row) {
-      *(DisplayUpper2+2*(23-i)) = DispPattern1[Buffer];
-      *(DisplayUpper2+2*(23-i)+1) = DispPattern1[Buffer+1];}
-    else {
-      *(DisplayUpper2+2*(7-i)) = DispPattern1[Buffer];
-      *(DisplayUpper2+2*(7-i)+1) = DispPattern1[Buffer+1];}
-    i++;}}
-
 void PB_AttractDisplayCycle(byte Step) {
   static byte Count = 0;
   static byte Timer0 = 0;
@@ -542,8 +526,8 @@ void PB_AttractDisplayCycle(byte Step) {
       for (byte i=0; i<3; i++) {
         *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
         *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-        *(DisplayLower2+6+2*i) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2];
-        *(DisplayLower2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[3+i]-32)*2+1];}
+        *(DisplayLower2+6+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
+        *(DisplayLower2+6+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
       ShowNumber(15, HallOfFame.Scores[0]);
       ShowNumber(31, HallOfFame.Scores[1]);
       if (HallOfFame.Scores[0] >= 10000000) {         // expand scores > 10M to the left display
@@ -573,8 +557,8 @@ void PB_AttractDisplayCycle(byte Step) {
       for (byte i=0; i<3; i++) {
         *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
         *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-        *(DisplayLower2+6+2*i) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2];
-        *(DisplayLower2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[9+i]-32)*2+1];}
+        *(DisplayLower2+6+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
+        *(DisplayLower2+6+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
       ShowNumber(15, HallOfFame.Scores[2]);
       ShowNumber(31, HallOfFame.Scores[3]);
       if (HallOfFame.Scores[0] >= 10000000) {
@@ -2313,8 +2297,10 @@ void PB_Multiball_RestoreLamps(byte Dummy) {
 void PB_MballDisplay(byte Step) {
   const byte PB_2MballDispUpper[78] = {17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,17,0,81,4,85,4,93,4,92,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during 2 ball multiball
   const byte PB_2MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,96,0,98,0,106,0,122,0,90,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  const byte PB_2MballDispLower2[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,96,0,98,2,106,2,122,2,90,2,26,2,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   const byte PB_3MballDispUpper[78] = {3,0,67,4,71,4,79,4,78,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,0,67,4,71,4,79,4,78,4,76,4,12,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // display pattern during 3 ball multiball
   const byte PB_3MballDispLower[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,160,0,162,0,170,0,186,0,154,0,26,0,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  const byte PB_3MballDispLower2[78] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,160,0,162,2,170,2,186,2,154,2,26,2,24,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   static byte Timer = 0;
   byte *PB_MballDispUpper;
   byte *PB_MballDispLower;
@@ -2325,10 +2311,16 @@ void PB_MballDisplay(byte Step) {
       Step = 24;}}
   if (Multiballs == 3) {
     PB_MballDispUpper = (byte* ) PB_3MballDispUpper;
-    PB_MballDispLower = (byte* ) PB_3MballDispLower;}
+    if (APC_settings[DisplayType]) {                  // normal display?
+      PB_MballDispLower = (byte* ) PB_3MballDispLower;}
+    else {                                            // lower row alphanumeric
+      PB_MballDispLower = (byte* ) PB_3MballDispLower2;}}
   else {
     PB_MballDispUpper = (byte* ) PB_2MballDispUpper;
-    PB_MballDispLower = (byte* ) PB_2MballDispLower;}
+    if (APC_settings[DisplayType]) {                  // normal display
+      PB_MballDispLower = (byte* ) PB_2MballDispLower;}
+    else {                                            // lower row alphanumeric
+      PB_MballDispLower = (byte* ) PB_2MballDispLower2;}}
   if (!Step) {
     if (Timer) {
       KillTimer(Timer);

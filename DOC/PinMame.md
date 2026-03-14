@@ -6,25 +6,29 @@ If you're lucky then your machine is listed below which means that someone else 
 # Available Sounds
 
 At the moment the list of available sound packages is still quite short, but we hope that some of you will do this for their machines also. Of course it would be great if you'd share your sound package with the rest of us.  
-You can download the audio files from the links in the table below. Thanks to hotsoupkilz who is hosting them.
+If the sound files for your machine are marked as 'available', the corresponding ZIP file can be downloaded [here](https://drive.google.com/drive/folders/1NDCfrecSSClfyiHb7cRy5wmoFfd4UPNM?usp=sharing). Most of these ZIP files also contain the settings files to make the corresponding machine work.__
+There's also a MUSIC.snd file available which is played during the music test of the Basecode and while the volume setting is selected.
 
 |System|Game| Sound Files |Comments|
 |--|--|--|--|
-|3|Disco Fever| in work | PinMameExceptions might still need some finetuning |
-|4|Flash| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Flash-sounds.zip)| Ball saver and alternate music mode implemented for this machine |
-|6|Time Warp| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Time-Warp-sounds.zip) | Ball saver and alternate music mode implemented for this machine |
-|6|Gorgar| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Gorgar-sounds.zip) | Ball saver and alternate music mode implemented for this machine |
-|6|Firepower| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Firepower-sounds.zip) thanks to Matiou | PinMameExceptions also done by Matiou / Ball saver and alternate music mode implemented for this machine / [Throttle value](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md#emulation-speed) needs to be changed to 110|
-|6|Alien Poker| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Alien-Poker-sounds.zip) | Ball saver and alternate music mode implemented for this machine |
-|7|Barracora| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Barracora-sounds.zip) | Ball saver and alternate music mode implemented for this machine |
-|7|Black Knight| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Black-Knight-APC-sounds.zip)| Including the multiballsound for the APC Black Knight game |
-|7|Jungle Lord| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Jungle-Lord-sounds.zip)| Ball saver and alternate music mode implemented for this machine |
-|7|Pharaoh| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Pharaoh-sounds.zip)| PinMameExceptions done by Grangeomatic / Ball saver and alternate music mode implemented for this machine|
-|9|Comet|[available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Comet-sounds.zip)| Ball saver and alternate music mode implemented for this machine |
-|11a|Pinbot| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Pinbot-sounds.zip)| Ball saver implemented for this machine |
-|11a|F-14 Tomcat| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/F14-Tomcat-sounds.zip) thanks to Snux | PinMameExceptions also done by Snux / Ball saver implemented for this machine|
-|11b|Space Station| [available](https://storage.googleapis.com/hotsoup-public/APC/sound-packages/Space-Station-sounds.zip)| Ball saver implemented for this machine |
-|11c|Rollergames| available on request| There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. The issue doesn't seem to affect the Windows version of PinMame. Please contact me if you have any idea what the root cause might be. |
+|3|Disco Fever| available | Only files for one audio board mode available. Ball saver and alternate music mode implemented for this machine |
+|4|Flash| available | Ball saver and alternate music mode implemented for this machine |
+|6|Tri Zone| available | Ball saver and alternate music mode implemented for this machine |
+|6|Time Warp| available | Ball saver and alternate music mode implemented for this machine |
+|6|Gorgar| available | Ball saver and alternate music mode implemented for this machine |
+|6|Firepower| available thanks to Matiou | PinMameExceptions also done by Matiou / Ball saver and alternate music mode implemented for this machine / [Throttle value](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md#emulation-speed) needs to be changed to 110|
+|6|Alien Poker| available | Ball saver and alternate music mode implemented for this machine |
+|7|Barracora| available | Ball saver and alternate music mode implemented for this machine |
+|7|Black Knight| available | Including the multiballsound for the APC Black Knight game |
+|7|Jungle Lord| available | Ball saver and alternate music mode implemented for this machine |
+|7|Pharaoh| available | PinMameExceptions done by Grangeomatic / Ball saver and alternate music mode implemented for this machine|
+|9|Comet| available | Ball saver and alternate music mode implemented for this machine |
+|11|High Speed| available thanks to jejepinside |Ball saver implemented for this machine / PinMameExceptions still need to be implemented|
+|11a|Pinbot| available | Ball saver implemented for this machine |
+|11a|F-14 Tomcat| available thanks to Snux | PinMameExceptions also done by Snux / Ball saver implemented for this machine / [Throttle value](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md#emulation-speed) needs to be changed to 110|
+|11b|Space Station| available | Ball saver implemented for this machine |
+|11b|Whirlwind| available | Ball saver implemented for this machine / Sounds still need some finetuning / The Sound Overlay Solenoid Board needs to be connected to the HW_ext interface (P11/Sys11_J21)|
+|11c|Rollergames| available | There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. This probably need to be fixed in the PinMameExceptions |
 
 # What needs to be done
 
