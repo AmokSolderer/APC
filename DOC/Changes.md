@@ -116,7 +116,7 @@ The purpose of this is to enable state machines that are initially called from t
 
 ### Misc
 
-* Due to the recent problems with the availability of the 74HCT273 at JLCPCB, I have split up the fabrication files section into two parts, one with the 74HCT273 in an [SOIC package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SOIC) and one with a [SSOP package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SSOP). Both folders contain all the required data to build a board, just the package of the 74HCT273 is different.
+* Due to the recent problems with the availability of the 74HCT273 at JLCPCB, I have split up the fabrication files section into two parts, one with the 74HCT273 in an [SOIC package](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_FabricationFiles_SOIC) and one with a [SSOP package](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/APC_FabricationFiles_SSOP). Both folders contain all the required data to build a board, just the package of the 74HCT273 is different.
 * The [4 Alpha + Credit display](https://github.com/AmokSolderer/APC/blob/master/DOC/Sys7Alpha.md) has been updated to support also System7 display cables with edge connectors.
 * My [APC Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) game code has been updated.
 * My Pinbot code has also improved a lot, but I don't have an own section for it yet.
@@ -178,7 +178,7 @@ APC 3.0 is released. See my [APC 3 video](https://www.youtube.com/watch?v=4EgOTJ
 ### Misc
 
 * Sound files for Black Knight and Jungle Lord are available on request. They can be used with PinMame or as a basis for own games.
-* A summary of the [Documentation contents](https://github.com/AmokSolderer/APC/tree/master#documentation-contents) has been added at the end of the main page to provide a better overview about the documentation.
+* A summary of the [Documentation contents](https://github.com/AmokSolderer/APC/blob/master#documentation-contents) has been added at the end of the main page to provide a better overview about the documentation.
 
 ## April 2020
 
@@ -192,7 +192,7 @@ Watch the
 
 video to see my old Pinbot under PinMame control.
 
-There's still some work to be done, but with this setup you can do much more than just playing the original game. See my [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md) for details.
+There's still some work to be done, but with this setup you can do much more than just playing the original game. See my [PinMame page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) for details.
 
 ### New SW Version V0.13
 
