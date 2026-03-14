@@ -33,7 +33,7 @@ Like the original Pinbot, the APC SW also explains the rules if the machine is i
 
 ## How to set up this game
 
-You need to have the audio files for this game. [Contact me](https://github.com/AmokSolderer/APC/tree/master#feedback) to get the corresponding sound file package.
+You need to have the audio files for this game. The game works with the standard sounds, so you can get the corresponding sound file package from the [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page.
 
 If you want to use the 3 ball Multiball you have to add a third ball apparently. Don't forget to remove it when you switch back to 2 ball mode.
 

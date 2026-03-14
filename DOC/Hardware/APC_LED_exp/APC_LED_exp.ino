@@ -3,7 +3,7 @@
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
-#define PIN            12
+#define PIN            12                               // change to 16 for Arduino Nano
 
 byte RecByte = 0;                                       // received byte
 bool RecFlag;
@@ -27,19 +27,18 @@ void setup() {
   pixels.begin();
   for (byte i=0;i<9;i++) {
     pinMode(i, INPUT_PULLUP);}
-  pinMode(12, OUTPUT);
   pinMode(13, OUTPUT);
   pinMode(10, OUTPUT);
-  digitalWrite(12, LOW);
   for (byte i=0;i<64;i++) {
     for (byte c=0;c<3;c++) {
       LampMax[i][c] = 255;}}
   RecFlag = PINB && 1;}
 
 void loop() {
-  if ((PINB && 1) != RecFlag) {                         // get byte
+  if ((PINB & 1) != RecFlag) {                          // get byte
     RecByte = PIND;                                     // store it
     RecFlag = !RecFlag;
+    digitalWrite(13, RecFlag);
     if (Sync < NumOfLEDbytes) {                         // still LED pattern bytes to transfer?
       if (Mode < 2) {                                   // LEDs fade on and off
         for (byte c=0;c<5;c++) {                        // for 5 brightness levels

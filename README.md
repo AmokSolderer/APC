@@ -69,7 +69,7 @@ I did a short video with some basic [MPF setup](https://github.com/AmokSolderer/
 ### C code
 
 If you're familiar with C you can also program the APC directly. This SW would then run on the Arduino itself with no need for an additional PC or Raspberry Pi.  
-For this the APC software offers an [API](https://github.com/AmokSolderer/APC/tree/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to control a pinball machine. It's still a lot of effort to program a game completely from scratch, but you could even run your game in PinMame and only use the API to do changes or extensions to the original rules.
+For this the APC software offers an [API](https://github.com/AmokSolderer/APC/blob/master/DOC/Software/APC_SW_reference.pdf) providing the necessary commands to control a pinball machine. It's still a lot of effort to program a game completely from scratch, but you could even run your game in PinMame and only use the API to do changes or extensions to the original rules.
 
 You don't necessarily have to do the code from scratch. There is a [Base Code](https://github.com/AmokSolderer/APC/blob/master/BaseCode.ino) which covers the basics of a pinball machine and can be used as a starting point.  
 Furthermore there're the above mentioned [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md) which can change a game dramatically with just a few lines of code.
@@ -77,7 +77,7 @@ Furthermore there're the above mentioned [PinMameExceptions](https://github.com/
 ## Hardware
 
 The APC hardware status is mature. I have version 2.0 in use since January 2018 without anything to complain about. Since then the HW has basically stayed the same, just some features have been added and the board has been prepared for automatic assembly.
-You can find the schematics, BOM and layout data in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware). There have been some minor HW updates which are explained in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md).
+You can find the schematics, BOM and layout data in the [hardware section](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware). There have been some minor HW updates which are explained in the [Changelog](https://github.com/AmokSolderer/APC/blob/master/DOC/Changes.md).
 
 The APC features an HW extensions interface which is an 8 bit bus with several enable signals. At the moment there're two extension board available, but you could use it for all kinds of additional hardware.
 
@@ -99,7 +99,7 @@ I use [special alphanumerical displays](https://github.com/AmokSolderer/APC/blob
 
 The following table gives an overview about the various system generations the APC can be used with and if at least one machine of each generation has been confirmed to work with it. Additionally you can see whether PinMame or [MPF](http://missionpinball.org/) have been tested with at least one machine of this generation and whether some special preparation like additional cables are required. Details about these cables can be found [here](https://github.com/AmokSolderer/APC/blob/master/DOC/HowToStart.md#cable-extensions)
 
-The PinMame support is still under development and even if a generation is basically supported you still need the audio files for your particular game. A list of available audio files and a description how to extract your own files can be found on the [PinMame page](https://github.com/AmokSolderer/APC/tree/master/DOC/PinMame.md).
+The PinMame support is still under development and even if a generation is basically supported you still need the audio files for your particular game. A list of available audio files and a description how to extract your own files can be found on the [PinMame page](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md).
 
 | Williams System | Tested  | PinMame support | MPF support | Comment |
 |--|--|--|--|--|
@@ -123,7 +123,7 @@ The following Data East MPUs are almost identical to their counterparts from Wil
 
 ## Changes / What's new?
 
-A history of the recent changes can be found in the [Changelog](https://github.com/AmokSolderer/APC/tree/master/DOC/Changes.md)
+A history of the recent changes can be found in the [Changelog](https://github.com/AmokSolderer/APC/blob/master/DOC/Changes.md)
 
 ## Known issues
 
@@ -171,7 +171,7 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 2.3. [APC settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md) - a table of the settings and how to use them  
 2.4. [APC schematics](https://github.com/AmokSolderer/APC/blob/master/DOC/Hardware/APC_schematics.pdf) - just in case you want to know what you're about to build  
 2.5. [If things don't work](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md) - If you have a problem, check here first  
-2.6. [APC specialties](https://github.com/AmokSolderer/APC/blob/V01.03/DOC/Specialties.md) - How special switches and the flipper relay are handled by the APC
+2.6. [APC specialties](https://github.com/AmokSolderer/APC/blob/master/DOC/Specialties.md) - How special switches and the flipper relay are handled by the APC
 
 3. Writing my own game code - You want to program your own game in C? Then read this.  
 3.1. [Game code tutorial](https://github.com/AmokSolderer/APC/blob/master/DOC/GameCodeTutorial.md) - A step by step introduction to writing your own game code  
@@ -199,8 +199,10 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 6.4. [Installation frames](https://github.com/AmokSolderer/APC/blob/master/DOC/Frames.md) - to mount the APC in your backbox  
 
 7. Additional non APC hardware - just some stuff I designed over the years. Can also be used without the APC  
-7.1. [System 7 LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys7_Display) - an LED replacement display for System 7, purely numerical  
-7.2. [System 11a LED display](https://github.com/AmokSolderer/APC/tree/master/DOC/Hardware/Sys11a_Display) - an LED replacement display for System 11a
+7.1. [System 7 LED display](https://github.com/AmokSolderer/APC/blob/master/DOC/DispSys7.md) - an LED replacement display for System 7, purely numerical  
+7.2. [System 11 LED display](https://github.com/AmokSolderer/APC/blob/master/DOC/DispSys11.md) - an LED replacement display for System 11  
+7.3. [System 11a LED display](https://github.com/AmokSolderer/APC/blob/master/DOC/DispSys11a.md) - an LED replacement display for System 11a and early 11b  
+7.4. [System 11b LED display](https://github.com/AmokSolderer/APC/blob/master/DOC/DispSys11b.md) - an LED replacement display for later System 11b and 11c  
 
 8. APC games - Complete games running natively on the APC or games that run in PinMame but have been changed  
 8.1. [Black Knight](https://github.com/AmokSolderer/APC/blob/master/DOC/BlackKnight.md) - Complete game code with some additional features  

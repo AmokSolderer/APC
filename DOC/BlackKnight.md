@@ -23,7 +23,7 @@ The LED_exp board which is connected here is also not needed.
 
 ## How to set up this game
 
-You need to have the audio files for this game. [Contact me](https://github.com/AmokSolderer/APC/tree/master#feedback) to get the corresponding sound file package.  
+You need to have the audio files for this game. I have added the multiball music file to the Black Knight sound package. You can download it from the [PinMame Sound](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) page.  
 
 If you want to use the Multiball Jackpot feature you need to pick a music track to be played during Multi Ball. Take a track of your choice, convert it to the APC sound format and rename it to BK_M01.snd.  
 The same needs to be done for the High Score table feature. In this case the name of the music track has to be BK_M02.snd. As already mentioned, the High Score table is only available when alphanumeric displays are used.
@@ -43,12 +43,14 @@ The same needs to be done for the High Score table feature. In this case the nam
 | 2 |  | 3 | 1000000 | - | Set 1 million as multiball jackpot |
 | 3 | Multiball volume | - | - | 0 | Numerical setting - range 0 - 30 / can be used to increase the volume during multiball. Does only work when the digital volume control of the APC is used and not the old volume pot |
 | 4 | High Score volume | - | - | 0 | Numerical setting - range 0 - 30 / can be used to increase the volume during high score entry. Does only work when the digital volume control of the APC is used and not the old volume pot |
-| 5 | Ball eject strength  | - | - | 30 | Numerical setting - range 0 - 30 / activation time of the ball ramp thrower (solenoid 6) in ms. Adjust this to avoid that the ball is bouncing back into the trunk
-| 6 | Reset High | - | - | - | No setting - resets the high scores for this game |
-| 7 | Restore Default | - | - | - | No setting - restores the default settings |
-| 8 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 5 | Ball eject strength  | - | - | 30 | Numerical setting - range 0 - 30 / activation time of the ball ramp thrower (solenoid 6) in ms. Adjust this to avoid that the ball is bouncing back into the trunk|
+| 6 | Ball Saver | 0 | Off | X | The optional ball saver is not active |
+| 6 |  | 1 | On | - | The ball saver is active for all drained balls |
+| 7 | Ball Saver Time | - | - | 20 | Numerical setting - range 5 - 250 / Active time of the Ball Saver |
+| 8 | BG Music | 0 | default | X | Normal BG sounds |
+| 8 |  | 1 | Music snd | - | Uses the MUSIC.SND file as BG music |
+| 9 | Reset High | - | - | - | No setting - resets the high scores for this game |
+| 10 | Restore Default | - | - | - | No setting - restores the default settings |
+| 11 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 Check the [settings page](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#using-the-settings-menu) if you're not sure how to use these game settings.
-## Things to do
-
-* The Jackpot still needs some sound effects.

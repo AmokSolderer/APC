@@ -32,6 +32,9 @@ const char BK_TestSounds[16][15] = {{"0_2f.snd"},{"0_30.snd"},{"0_31.snd"},{"0_3
 #define BK_MultiballVolume 3                          // increase volume during multiball when digital volume control is used
 #define BK_HighScoreVolume 4                          // increase volume during high score entry when digital volume control is used
 #define BK_BallEjectStrength 5                        // activation time of the ball ramp thrower (solenoid 6) in ms
+#define BK_BallSave 6                                 // optional ball saver
+#define BK_BallSaveTime 7                             // activation time for the optional ball saver
+#define BK_BGmusic 8                                  // to select an own BG music
 
 const byte BK_defaults[64] = {0,0,0,0,0,30,0,0,       // game default settings
                               0,0,0,0,0,0,0,0,
@@ -44,13 +47,18 @@ const byte BK_defaults[64] = {0,0,0,0,0,30,0,0,       // game default settings
 
 const char BK_TxTJackpot[4][17] = {{"           OFF  "},{"        500000  "},{"        750000  "},{"       1000000  "}};
 const char BK_TxTReplayScore[4][17] = {{"       1000000  "},{"       1500000  "},{"       2000000  "},{"       2500000  "}};
+const char BK_TXTBallSave[2][17] = {{"          OFF   "},{"           ON   "}};
+const char BK_TxtMusic[2][17] = {{"       DEFAULT  "},{"  MUSICSND      "}};
 
-const struct SettingTopic BK_setList[10] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
+const struct SettingTopic BK_setList[13] = {{" TIMED  MAGNA ",HandleBoolSetting,0,0,0},
                                     {" REPLAY SCORE ",HandleTextSetting,&BK_TxTReplayScore[0][0],0,3},
                                     {" MBALL JACKPOT",HandleTextSetting,&BK_TxTJackpot[0][0],0,3},
                                     {"MULTBALVOLUME ",BK_HandleVolumeSetting,0,0,30},
                                     {" HSCOREVOLUME ",BK_HandleVolumeSetting,0,0,30},
                                     {" EJECT STRNGTH",HandleNumSetting,0,10,50},
+                                    {" BALL   SAVER   ",HandleTextSetting,&BK_TXTBallSave[0][0],0,1},
+                                    {"B SAVER  TIME   ",HandleNumSetting,0,5,250},
+                                    {"   BG   MUSIC   ",HandleTextSetting,&BK_TxtMusic[0][0],0,1},
                                     {" RESET  HIGH  ",BK_ResetHighScores,0,0,0},
                                     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
                                     {"  EXIT SETTNGS",ExitSettings,0,0,0},
@@ -277,7 +285,7 @@ void BK_AddScrollUpper(byte Step) {                   // shifts Step times and a
   static byte Position = 0;                           // stores the position in DisplayUpper2
   byte Buffer1 = DisplayUpper[18];                    // get the leftmost character of the right display
   byte Buffer2 = DisplayUpper[19];
-  for (byte i=1; i<8; i++) {                          // left display
+  for (byte i=1; i<7; i++) {                          // left display
     DisplayUpper[2*i] = DisplayUpper[2*i+2];
     DisplayUpper[2*i+1] = DisplayUpper[2*i+3];
     DisplayUpper[2*i+16] = DisplayUpper[2*i+18];
@@ -361,7 +369,7 @@ void BK_AttractDisplayCycle(byte Step) {
     RemoveBlinkLamp(6);
     return;
   case 1:                                             // attract mode title 'page'
-    if (Count == 40 && !APC_settings[DisplayType]) {  // only for alphanumeriscal displays
+    if (Count == 40 && !APC_settings[DisplayType]) {  // only for alphanumerical displays
       if (APC_settings[Volume]) {                     // system set to digital volume control?
         analogWrite(VolumePin,255-APC_settings[Volume]);} // adjust PWM to volume setting
       else {
@@ -403,12 +411,18 @@ void BK_AttractDisplayCycle(byte Step) {
     WriteUpper2("1>              ");
     WriteLower2("2>              ");
     for (byte i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
-      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
-      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
+      *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[i]-32)*2];
+      *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[i]-32)*2+1];
+      *(DisplayLower2+6+2*i) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2];
+      *(DisplayLower2+6+2*i+1) = DispPattern2[(HallOfFame.Initials[3+i]-32)*2+1];}
     ShowNumber(15, HallOfFame.Scores[0]);
     ShowNumber(31, HallOfFame.Scores[1]);
+    if (HallOfFame.Scores[0] >= 10000000) {         // expand scores > 10M to the left display
+      unsigned int Buffer = HallOfFame.Scores[0] / 10000000;
+      ShowNumber(7, Buffer);}
+    if (HallOfFame.Scores[1] >= 10000000) {
+      unsigned int Buffer = HallOfFame.Scores[1] / 10000000;
+      ShowNumber(23, Buffer);}
     Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, BK_AttractDisplayCycle);
     Step++;
@@ -418,12 +432,18 @@ void BK_AttractDisplayCycle(byte Step) {
     WriteUpper2("3>              ");
     WriteLower2("4>              ");
     for (byte i=0; i<3; i++) {
-      *(DisplayUpper2+8+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
-      *(DisplayUpper2+8+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
-      *(DisplayLower2+8+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
-      *(DisplayLower2+8+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
+      *(DisplayUpper2+6+2*i) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2];
+      *(DisplayUpper2+6+2*i+1) = DispPattern1[(HallOfFame.Initials[6+i]-32)*2+1];
+      *(DisplayLower2+6+2*i) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2];
+      *(DisplayLower2+6+2*i+1) = DispPattern2[(HallOfFame.Initials[9+i]-32)*2+1];}
     ShowNumber(15, HallOfFame.Scores[2]);
     ShowNumber(31, HallOfFame.Scores[3]);
+    if (HallOfFame.Scores[0] >= 10000000) {
+      unsigned int Buffer = HallOfFame.Scores[2] / 10000000;
+      ShowNumber(7, Buffer);}
+    if (HallOfFame.Scores[1] >= 10000000) {
+      unsigned int Buffer = HallOfFame.Scores[3] / 10000000;
+      ShowNumber(23, Buffer);}
     Timer1 = ActivateTimer(50, 5, BK_AttractDisplayCycle);
     Timer2 = ActivateTimer(900, 6, BK_AttractDisplayCycle);
     Step = 1;
@@ -600,15 +620,42 @@ void BK_NewBall(byte Balls) {                         // release ball (Balls = e
   Switch_Released = BK_CheckShooterLaneSwitch;
   if (!QuerySwitch(45)) {
     ActivateSolenoid(game_settings[BK_BallEjectStrength], 6); // release ball
+    if (game_settings[BK_BallSave] && (Balls < 5)) {  // ball saver selected but ball is not already saved?
+      BK_BallSaver(1);}
     Switch_Pressed = BK_BallReleaseCheck;             // set switch check to enter game
     CheckReleaseTimer = ActivateTimer(5000, Balls-1, BK_CheckReleasedBall);} // start release watchdog
   else {
     Switch_Pressed = BK_ResetBallWatchdog;}}
 
+byte BK_BallSaver(byte Event) {                       // 0 - stop, 1 - start, default - query
+  static byte BK_BallSaveTimer = 0;                   // Timer used by the ball saver
+  switch(Event) {
+  case 0:                                             // stop ball saver
+    if (BK_BallSaveTimer) {
+      KillTimer(BK_BallSaveTimer);}
+    else {
+      break;}
+    /* no break */
+  case 2:                                             // called by timer
+    BK_BallSaveTimer = 0;
+    RemoveBlinkLamp(47);
+    if (ExBalls) {
+      TurnOnLamp(47);}
+    else {
+      TurnOffLamp(47);}
+    break;
+  case 1:                                             // start ball saver
+    if (BK_BallSaveTimer) {
+      KillTimer(BK_BallSaveTimer);}
+    AddBlinkLamp(47, 150);
+    BK_BallSaveTimer = ActivateTimer(game_settings[BK_BallSaveTime]*1000, 2, (void(*)(byte))BK_BallSaver);}
+  return(BK_BallSaveTimer);}
+
 void BK_CheckShooterLaneSwitch(byte Switch) {
   if (Switch == 45) {                                 // shooter lane switch released?
     Switch_Released = DummyProcess;
-    StopPlayingMusic();
+    if (!game_settings[BK_BGmusic]) {
+      StopPlayingMusic();}
     PlaySound(50, "0_33.snd");
     if (!BallWatchdogTimer) {
       BallWatchdogTimer = ActivateTimer(30000, 0, BK_SearchBall);}}}
@@ -736,7 +783,7 @@ void BK_StopExballParty2(byte dummy){
   LampReturn = 0;
   LampPattern = LampColumns;
   ReleaseSolenoid(15);
-  if (!game_settings[BK_MultiballJackpot] || Multiballs == 1) {
+  if (!game_settings[BK_BGmusic] && (!game_settings[BK_MultiballJackpot] || Multiballs == 1)) {
     StopPlayingMusic();}
   PlaySound(61, "0_22.snd");}
 
@@ -842,7 +889,7 @@ void BK_GameMain(byte Event) {                        // game switch events
       AddBlinkLamp(12, 150);}
     else {
       if (Multiballs == 1) {                          // not during multiball
-        StopPlayingMusic();
+        BK_PlayBgMusic(3);                            // stop music
         PlaySound(61, "0_29.snd");}}                  // BK laughing
     break;
   case 13:                                            // spinner
@@ -878,13 +925,13 @@ void BK_GameMain(byte Event) {                        // game switch events
     else {
       AddBlinkLamp(13, 250);}                         // let the mystery lamp blink
     if (BK_RightAfterMagna) {                         // if it's right after using the right magna save
-      if (!game_settings[BK_MultiballJackpot] || Multiballs == 1) {
+      if (!game_settings[BK_BGmusic] && (!game_settings[BK_MultiballJackpot] || Multiballs == 1)) {
         StopPlayingMusic();}
       PlaySound(51, "BK_E20.snd");
       BK_AddBonus(5);
       Points[Player] += Multiballs * 10000;}          // add 10000 points
     else {
-      if (!game_settings[BK_MultiballJackpot] || Multiballs == 1) {
+      if (!game_settings[BK_BGmusic] && (!game_settings[BK_MultiballJackpot] || Multiballs == 1)) {
         StopPlayingMusic();}
       PlaySound(50, "0_33.snd");
       BK_AddBonus(2);
@@ -898,13 +945,13 @@ void BK_GameMain(byte Event) {                        // game switch events
     else {
       AddBlinkLamp(14, 250);}                         // let the mystery lamp blink
     if (BK_LeftAfterMagna) {                          // if it's right after using the right magna save
-      if (!game_settings[BK_MultiballJackpot] || Multiballs == 1) {
+      if (!game_settings[BK_BGmusic] && (!game_settings[BK_MultiballJackpot] || Multiballs == 1)) {
         StopPlayingMusic();}
       PlaySound(51, "BK_E20.snd");
       BK_AddBonus(5);
       Points[Player] += Multiballs * 10000;}          // add 10000 points
     else {
-      if (!game_settings[BK_MultiballJackpot] || Multiballs == 1) {
+      if (!game_settings[BK_BGmusic] && (!game_settings[BK_MultiballJackpot] || Multiballs == 1)) {
         StopPlayingMusic();}
       PlaySound(50, "0_33.snd");
       BK_AddBonus(2);
@@ -961,7 +1008,8 @@ void BK_GameMain(byte Event) {                        // game switch events
           else {
             BK_GiveMultiballs(1);}}                      // eject ball with some ado
         else {
-          StopPlayingMusic();}
+          if (!game_settings[BK_BGmusic]) {
+            StopPlayingMusic();}}
         PlaySound(50, "0_31.snd");
         ActivateTimer(1000, 8, DelaySolenoid);}}   // eject ball
     break;
@@ -1020,7 +1068,7 @@ void BK_GameMain(byte Event) {                        // game switch events
     Points[Player] += Multiballs * 5000;
     ShowPoints(Player);
     if (BK_UpperExBall[Player]) {                     // upper extra ball lit?
-      if (!game_settings[BK_MultiballJackpot] || Multiballs == 1) {
+      if (!game_settings[BK_BGmusic] && (!game_settings[BK_MultiballJackpot] || Multiballs == 1)) {
         StopPlayingMusic();}
       ActivateSolenoid(8000, 15);                     // ring the bell
       PatPointer = BK_ExBallPat;
@@ -1131,7 +1179,11 @@ void BK_BallEnd(byte Event) {
         BK_Jackpot(0);
         if (APC_settings[Volume]) {
           analogWrite(VolumePin,255-APC_settings[Volume]);} // reduce volume back to normal
-        FadeOutMusic(50);
+        if (game_settings[BK_BGmusic]) {                  // MUSIC.snd selected?
+          BK_PlayBgMusic(3);
+          ActivateTimer(1000, 1, BK_PlayBgMusic);}
+        else {
+          FadeOutMusic(50);}
         PlaySound(60, "0_28.snd");}
       if (BallsInTrunk == 3) {                        // 3 balls in trunk?
         ActivateTimer(1000, 0, BK_BallEnd);}
@@ -1148,6 +1200,12 @@ void BK_BallEnd(byte Event) {
             InLock++;}}
         ActivateTimer(1000, 0, BK_BallEnd);}
       else {
+        if (BK_BallSaver(5)) {                        // ball saver active?
+          ActivateTimer(2000, 0, BK_AfterExBallRelease);
+          ActivateTimer(1000, 5, BK_NewBall);         // save ball but don't start ball saver again
+          BlockOuthole = false;
+          BK_BallSaver(0);
+          return;}
         BK_PlayBgMusic(3);                            // disable BgMusic
         LockedBalls[Player] = 0;
         TurnOffLamp(24);                              // unlight lower lock
@@ -1164,7 +1222,7 @@ void BK_BallEnd(byte Event) {
         BK_CycleSwordLights(0);
         AfterSound = 0;
         AfterMusic = 0;
-        StopPlayingMusic();
+        //StopPlayingMusic();
         PlaySound(60, "0_34_001.snd");                // play bonus count sound
         BK_CountBonus(BallsInTrunk);}}}}
 
@@ -1431,7 +1489,8 @@ void BK_HandleLock(byte Event) {
     BK_GiveMultiballs(1);}                            // eject balls
   else {                                              // no multiball running
     if (LockCount > InLock) {                         // more than before?
-      StopPlayingMusic();
+      if (!game_settings[BK_BGmusic]) {
+        StopPlayingMusic();}
       PlaySound(51, "0_3c.snd");
       Points[Player] += 5000;
       ShowPoints(Player);
@@ -1458,7 +1517,7 @@ void BK_HandleLock(byte Event) {
 void BK_HandleDropTargets(byte Event) {
   BK_DropWait[Event] = false;
   if (QuerySwitch(BK_DropTargets[Event]) && (QuerySwitch(BK_DropTargets[Event]+1)) && (QuerySwitch(BK_DropTargets[Event]+2))) { // all drop targets hit?
-    if (!game_settings[BK_MultiballJackpot] || Multiballs == 1) {
+    if (!game_settings[BK_BGmusic] && (!game_settings[BK_MultiballJackpot] || Multiballs == 1)) {
       StopPlayingMusic();}
     PlaySound(51, "0_36.snd");
     BK_AddBonus(3);                                   // add 3K bonus
@@ -1526,7 +1585,10 @@ void BK_HandleDropTargets(byte Event) {
   else {                                              // not all targets cleared
     if (QuerySwitch(BK_DropTargets[Event]) || (QuerySwitch(BK_DropTargets[Event]+1)) || (QuerySwitch(BK_DropTargets[Event]+2))) { // any target down? (or false alarm)
       if (!BK_DropTimer[Event]) {                     // no timer running for this bank already?
-        PlayMusic(51, "BK_E14.snd");
+        if (!game_settings[BK_BGmusic]) {
+          PlayMusic(49, "BK_E14.snd");}
+        else {
+          PlaySound(50, "BK_E14.snd");}
         BK_DropTimer[Event] = ActivateTimer(6000, Event, BK_BlinkFaster); // start one
         AddBlinkLamp(BK_DropLamp+Event, 500);}}}}     // and let the bank lamp blink
 
@@ -1679,7 +1741,7 @@ void BK_StartMultiball() {
 void BK_Multiball2(byte Step) {
   static byte Counter;
   if (!Step) {
-    StopPlayingMusic();
+    BK_PlayBgMusic(3);
     AfterSound = 0;
     PlaySound(55, "0_38_001.snd");
     Counter = 0;
@@ -1990,15 +2052,20 @@ void BK_PlayBgMusic(byte State) {
   char Filename[13] = {"0_2e_001.snd"};
   switch (State) {
   case 0:                                             // Resume BgMusic
-    Filename[7] = (CurrentBgMusic % 10) + 48;
-    Filename[6] = (CurrentBgMusic / 10) + 48;
-    PlayMusic(50, Filename);
+    if (CurrentBgMusic) {
+      Filename[7] = (CurrentBgMusic % 10) + 48;
+      Filename[6] = (CurrentBgMusic / 10) + 48;
+      PlayMusic(48, Filename);}
     break;
   case 1:                                             // Start BgMusic
-    CurrentBgMusic = 2;
-    if (!TimerNo) {
-      PlayMusic(50, Filename);
+    if (game_settings[BK_BGmusic]) {                  // MUSIC.snd selected?
+      if (!CurrentBgMusic) {                          // already running?
+        PlayMusic(50, "MUSIC.snd");                   // play music track
+        QueueNextMusic("MUSIC.snd");}}                // and loop it
+    else if (!TimerNo) {
+      PlayMusic(48, Filename);
       TimerNo = ActivateTimer(30000, 2, BK_PlayBgMusic);}
+    CurrentBgMusic = 2;
     break;
   case 2:                                             // proceed to next track
     if (CurrentBgMusic < 28) {
@@ -2009,6 +2076,8 @@ void BK_PlayBgMusic(byte State) {
     if (TimerNo) {
       KillTimer(TimerNo);
       TimerNo = 0;}
+    if (game_settings[BK_BGmusic]) {                  // MUSIC.snd selected?
+      CurrentBgMusic = 0;}
     StopPlayingMusic();}}
 
 void BK_EndRightMagna(byte Event) {
