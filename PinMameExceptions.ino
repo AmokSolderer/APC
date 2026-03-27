@@ -45,6 +45,9 @@ const byte EX_SpaceStationProperties[13] = {          // machine properties for 
     2,                                                // number of the shooter lane feeder solenoid (set to 0 if machine has no shooter lane feeder (only one ball)
     42};                                              // number of the extra ball lamp (on the playfield) which is supposed to blink when ball saver is active
 
+const byte EX_FireProperties[13] = {
+    10, 56, 55, 54, 0, 33, 34, 12, 0, 0, 1, 2, 25};
+
 const byte EX_WhirlwindProperties[13] = {
     10, 13, 12, 11, 0, 17, 16, 12, 0, 0, 1, 2, 57};
 
@@ -355,7 +358,7 @@ byte EX_DummyProcess(byte Type, byte Command) {       // plays just the standard
       PlayMusic(51, (char*) FileName);}}
   return(0);}                                         // no exception rule found for this type so proceed as normal
 
-byte EX_DiscoFever(byte Type, byte Command){
+byte EX_DiscoFever(byte Type, byte Command){          // Exceptions code for Disco Fever
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
       return(1);}}                                    // omit command if ball saver says so
@@ -387,7 +390,7 @@ byte EX_DiscoFever(byte Type, byte Command){
   default:
     return(0);}}
 
-byte EX_Flash(byte Type, byte Command){
+byte EX_Flash(byte Type, byte Command){               // Exceptions code for Flash
   static byte SoundSeries[3];                         // buffer to handle pre system11 sound series
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
@@ -465,7 +468,7 @@ byte EX_Flash(byte Type, byte Command){
   default:
     return(0);}}
 
-byte EX_TriZone(byte Type, byte Command){
+byte EX_TriZone(byte Type, byte Command){             // Exceptions code for Tri Zone
   static byte SoundSeries;                            // buffer to handle pre system11 sound series
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
@@ -505,7 +508,7 @@ byte EX_TriZone(byte Type, byte Command){
   default:
     return(0);}}
 
-byte EX_TimeWarp(byte Type, byte Command){
+byte EX_TimeWarp(byte Type, byte Command){            // Exceptions code for Time Warp
   static byte SoundSeries;                            // buffer to handle pre system11 sound series
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
@@ -554,7 +557,7 @@ byte EX_TimeWarp(byte Type, byte Command){
   default:
     return(0);}}
 
-byte EX_Gorgar(byte Type, byte Command){
+byte EX_Gorgar(byte Type, byte Command){              // Exceptions code for Gorgar
   static byte SoundSeries[2] = {0, 0};                // buffer to handle pre system11 sound series
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
@@ -689,7 +692,7 @@ byte EX_Firepower(byte Type, byte Command){           // thanks to Matiou for se
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_AlienPoker(byte Type, byte Command){
+byte EX_AlienPoker(byte Type, byte Command){          // Exceptions code for Alien Poker
   static byte SoundSeries[3] = {0, 0, 0};             // buffer to handle pre system11 sound series
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
@@ -748,7 +751,7 @@ byte EX_AlienPoker(byte Type, byte Command){
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_JungleLord(byte Type, byte Command){
+byte EX_JungleLord(byte Type, byte Command){          // Exceptions code for Jungle Lord
   static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
@@ -882,7 +885,7 @@ byte EX_Pharaoh(byte Type, byte Command){             // thanks to Grangeomatic 
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_Barracora(byte Type, byte Command){
+byte EX_Barracora(byte Type, byte Command){           // Exceptions code for Barracora
   static byte SoundSeries[2];                         // buffer to handle pre system11 sound series
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
@@ -940,7 +943,7 @@ byte EX_Barracora(byte Type, byte Command){
   default:
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_BlackKnight(byte Type, byte Command){
+byte EX_BlackKnight(byte Type, byte Command){         // Exceptions code for Black Knight
   static byte SoundSeries[3];                         // buffer to handle pre system11 sound series
   static byte LastCh1Sound;                           // preSys11: stores the number of the last sound that has been played on Ch1
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
@@ -1033,7 +1036,7 @@ byte EX_BlackKnight(byte Type, byte Command){
   default:
     return(0);}}
 
-byte EX_Comet(byte Type, byte Command) {
+byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Comet
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
       return(1);}}                                    // omit command if ball saver says so
@@ -1077,7 +1080,7 @@ byte EX_HighSpeed(byte Type, byte Command) {          // plays just the standard
       PlayMusic(51, (char*) FileName);}}
   return(0);}                                         // no exception rule found for this type so proceed as normal
 
-byte EX_Pinbot(byte Type, byte Command){
+byte EX_Pinbot(byte Type, byte Command){              // Exceptions code for Pinbot
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
       return(1);}}                                    // omit command if ball saver says so
@@ -1240,7 +1243,58 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_SpaceStation(byte Type, byte Command){
+byte EX_Fire(byte Type, byte Command){                // Exceptions code for Fire
+  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
+    if (EX_BallSaver(Type, Command)) {                // include ball saver
+      return(1);}}                                    // omit command if ball saver says so
+  switch(Type){
+  case SoundCommandCh1:                               // sound commands for channel 1
+    if (!Command){                                    // sound command 0x00 - stop sound
+      StopPlayingSound();}
+    else if (Command == 255) { }                      // ignore sound command 0xff
+    else {                                            // proceed with standard sound handling
+      char FileName[9] = "0_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(1, Command, FileName)) { // create filename and check whether file is present
+        if (Command < 180) {                          // play speech with a higher priority
+          PlaySound(50, (char*) FileName);}
+        else {
+          PlaySound(51, (char*) FileName);}}}
+    return(0);                                        // return number not relevant for sounds
+  case SoundCommandCh2:                               // sound commands for channel 2
+    if (!Command) {                                   // sound command 0x00 - stop music
+      AfterMusic = 0;
+      RestoreMusicVolume(100);
+      StopPlayingMusic();}
+    else if (Command > 95 && Command < 104) {         // music volume command 0x6X
+      MusicVolume = Command - 96;}
+    else if (Command == 255) { }                      // ignore unknown sound command 0xff
+    else if (Command == 1) {                          // music track 1
+      PlayMusic(50, "1_01L.snd");                     // play music track
+      QueueNextMusic("1_01L.snd");}                   // track is looping so queue it also
+    else if (Command == 2) {                          // music track 2
+      PlayMusic(50, "1_02.snd");                      // play non looping part of music track
+      QueueNextMusic("1_02L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 3) {                          // music track 3
+      PlayMusic(50, "1_03.snd");                      // play non looping part of music track
+      QueueNextMusic("1_03L.snd");}                   // track is looping so queue it also
+    else if (Command == 4) {                          // music track 4
+      PlayMusic(50, "1_04.snd");                      // play non looping part of music track
+      QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 5) {                          // music track 5
+      PlayMusic(50, "1_05L.snd");                     // play music track
+      QueueNextMusic("1_05L.snd");}                   // track is looping so queue it also
+    else if (Command == 6) {                          // music track 6
+      PlayMusic(50, "1_06.snd");                      // play non looping part of music track
+      AfterMusic = 0;}                                // no looping
+    else {
+      char FileName[9] = "1_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+        PlaySound(50, (char*) FileName);}}            // play on the sound channel
+    return(0);                                        // return number not relevant for sounds
+  default:                                            // use default treatment for undefined types
+    return(0);}}                                      // no exception rule found for this type so proceed as normal
+
+byte EX_SpaceStation(byte Type, byte Command){        // Exceptions code for Space Station
   static byte LastMusic;
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
@@ -1357,7 +1411,7 @@ byte EX_SpaceStation(byte Type, byte Command){
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_Whirlwind(byte Type, byte Command){
+byte EX_Whirlwind(byte Type, byte Command){           // Exceptions code for Whirlwind
   //  if (game_settings[USB_BallSave]) {                  // ball saver set to active?
   //    if (EX_BallSaver(Type, Command)) {                // include ball saver
   //      return(1);}}                                    // omit command if ball saver says so
@@ -1406,7 +1460,7 @@ byte EX_Whirlwind(byte Type, byte Command){
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
-byte EX_Rollergames(byte Type, byte Command){
+byte EX_Rollergames(byte Type, byte Command){         // Exceptions code for Rollergames
   static byte LastMusic;
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
     if (EX_BallSaver(Type, Command)) {                // include ball saver
@@ -1645,6 +1699,10 @@ void EX_Init(byte GameNumber) {
   case 44:                                            // F-14 Tomcat
     PinMameException = EX_F14Tomcat;                  // use exception rules for Tomcat
     EX_Machine = EX_F14Properties;                    // machine properties for ball saver
+    break;
+  case 45:                                            // Fire
+    PinMameException = EX_Fire;                       // use exception rules for Tomcat
+    EX_Machine = EX_FireProperties;                    // machine properties for ball saver
     break;
   case 48:                                            // Space Station
     PinMameException = EX_SpaceStation;               // use exception rules for Space Station

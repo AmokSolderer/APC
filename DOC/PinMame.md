@@ -26,6 +26,7 @@ There's also a MUSIC.snd file available which is played during the music test of
 |11|High Speed| available thanks to jejepinside |Ball saver implemented for this machine / PinMameExceptions still need to be implemented|
 |11a|Pinbot| available | Ball saver implemented for this machine |
 |11a|F-14 Tomcat| available thanks to Snux | PinMameExceptions also done by Snux / Ball saver implemented for this machine / [Throttle value](https://github.com/AmokSolderer/APC/blob/master/DOC/RunGame.md#emulation-speed) needs to be changed to 110|
+|11a|Fire!| available | Ball saver implemented for this machine |
 |11b|Space Station| available | Ball saver implemented for this machine |
 |11b|Whirlwind| available | Ball saver implemented for this machine / Sounds still need some finetuning / The Sound Overlay Solenoid Board needs to be connected to the HW_ext interface (P11/Sys11_J21)|
 |11c|Rollergames| available | There're problem with this game. For some reason PinMame restarts random music tracks all 5 seconds. This probably need to be fixed in the PinMameExceptions |
