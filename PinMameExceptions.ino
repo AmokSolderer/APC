@@ -1517,6 +1517,16 @@ byte EX_Pinbot(byte Type, byte Command){
   default:                                            // use default treatment for undefined types
     return(0);}}                                      // no exception rule found for this type so proceed as normal
 
+void EX_F14_LED(byte State) {
+  if (!State) {
+    for (byte i=0;i<12;i++) {
+      TurnOffLamp(65+i);}
+    if (QuerySolenoid(24)) {
+      ActivateTimer(500, 1, EX_F14_LED);}}
+  else {
+    LEDhandling(6, 100);
+    LEDhandling(7, 0);}}
+
 byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tomcat, thanks to Snux for sending me this code
   static bool LastSoundBoard;
   if (game_settings[USB_BallSave]) {                  // ball saver set to active?
@@ -1527,6 +1537,23 @@ byte EX_F14Tomcat(byte Type, byte Command){           // Exceptions code for Tom
     if (Command == 55 && QuerySolenoid(24)) {         // Line of death kickback triggered?
       ActivateSolenoid(40, 12);}
     return (0);
+  case SolenoidActCommand:
+    if (APC_settings[LEDsetting]) {                   // if LED_exp board is used
+      if (Command == 8 && QuerySolenoid(14)) {        // center flasher
+        LEDhandling(6, 101);                          // turn off radar animation
+        LEDhandling(7, 0);
+        for (byte i=0;i<12;i++) {                     // turn on all lamps of the ring
+          TurnOnLamp(65+i);}
+        ActivateTimer(200, 0, EX_F14_LED);}           // keep them lit for 200ms
+      else if (Command == 24) {                       // flipper relay turned on
+        LEDhandling(6, 100);                          // start radar animation
+        LEDhandling(7, 0);}}
+    return(0);
+  case SolenoidRelCommand:
+    if (Command == 24 && APC_settings[LEDsetting]) {  // flipper relay turned off
+      LEDhandling(6, 101);                            // stop radar animation
+      LEDhandling(7, 0);}
+    return(0);
   case SoundCommandCh1:                               // sound commands for channel 1
     if (!Command){                                    // sound command 0x00 - stop sound
       AfterSound = 0;
@@ -2013,6 +2040,9 @@ void EX_Init(byte GameNumber) {
     break;
   case 44:                                            // F-14 Tomcat
     PinMameException = EX_F14Tomcat;                  // use exception rules for Tomcat
+    if (APC_settings[LEDsetting]) {
+      LEDsetColorMode(2);
+      LEDsetColor(255, 0, 0);}
     EX_Machine = EX_F14Properties;                    // machine properties for ball saver
     break;
   case 48:                                            // Space Station
