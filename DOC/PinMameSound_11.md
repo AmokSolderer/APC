@@ -30,9 +30,9 @@ Mokopin (from the Flippertreff forum) has also written some [Instructions for ex
 
 This decribes the [manual way of sound file preparation](https://github.com/AmokSolderer/APC/blob/master/DOC/SoundManual.md). I'd recommend to try the automatic way first, because it's much faster. However, the manual way explains what needs to be done and it can be used as a fallback solution, if the automatic way fails. This is usually happens for the music themes of System11 machines. The automatic extraction often truncates those, so these would have to be extracted manually. System11 music themes usually consist of an intro and a looping part, s I'd recommend to manually extract a long music file and use Audacity to split it up accordingly. The correct naming for such music themes will be handled the PinMameExceptions section below.
 
-## Automatic sound file preparation
+## Volume levels
 
-Most of this process can be automatized as explained by Mokopin in his [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md).
+Callouts are sensitive and need to be quite loud in order not to get lost in the music. Hence, it makes sense to load a music theme and a callout into Audacity and play them simultaneously. I usually amplify the callouts to +6dB (accepting the minor distortion caused by this) and choose the volume of the music themes as high as possible for the callout to still sound well. The other sounds can usually have the same volume level as the BG music.
 
 ## Audio file conversion
 

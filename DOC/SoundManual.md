@@ -5,7 +5,7 @@
 System 11 boards can handle 8 bit sound commands which leads to a possible number of 256 sounds per board minus some control commands, but only a part of these numbers are actually used by a game.  
 Most System11 machines have audio circuits on the CPU board (referred to as board 0) and a seperate audio board (board 1). With System11c Williams stopped populating the audio circuits on the CPU board, so these games only have the audio board 1.
 
-System 9 boards can handle 8 bit sound commands which leads to a possible number of 256 sounds minus some control commands, but only a part of these numbers are actually used by a game.
+System 9 boards can handle 8 bit sound commands which leads to a possible number of 256 sounds minus some control commands, but only a part of these numbers are actually used by a game. They have only one audio board, so the board prefix is always 0.
 
 With this manual method we have to extract and preprocess every sound by hand, so we try to keep the number of sounds as low as possible by just extracting those which are actually requested by PinMame.
 

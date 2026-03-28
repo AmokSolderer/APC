@@ -29,10 +29,6 @@ Mokopin (from the Flippertreff forum) has also written some [Instructions for ex
 
 This decribes the [manual way of sound file preparation](https://github.com/AmokSolderer/APC/blob/master/DOC/SoundManual.md). I'd recommend to try the automatic way first, because it's much faster. However, the manual way explains what needs to be done and it can be used as a fallback solution, if the automatic way fails.
 
-## Automatic sound file preparation
-
-Most of this process can be automatized as explained by Mokopin in his [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md).
-
 ## Audio file conversion
 
 Put all preprocessed WAV files in one folder, check that the names are correct and execute the [AudioSaveFolder.pl](https://github.com/AmokSolderer/APC/blob/master/DOC/UsefulSWtools.md) tool.  

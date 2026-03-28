@@ -6,11 +6,11 @@ In PinMame, press F4 to enter the 'Sound Command Mode' then press DEL for the Ma
 
 Now enter the audio command you want PinMame to start with, for audio board 0 this would be 000000000000 and 000000000100 for audio board 1. Press F6 to start the automatic extraction. PinMame will go through the audio command one by one and generate .wav files of them.  
 This should generate most of the sound files, but there're limits especially for System11. The music files for example are sometimes truncated, so you'd have to extract them manually. This is not a big deal because there're just a few of them, usually starting with the audio command 000000000101.  
-Another problem with early System11 is that PinMame cannot find all sounds for audio board 1. You could try to guide it by using additional start commands like 000000000160, but it's easier to just leave it for now and if you get an error message like 1_85.snd not found during your first games then you know that 000000000180 should do the trick.
+Another problem with early System11 is that PinMame cannot find all sounds for audio board 1. You could try to guide it by using additional start commands like 000000000160, but it's easier to just leave it for now and if you get an error message like '1_85.snd not found' during your first games then you know that starting another extraction with 000000000180 should do the trick.
 
 ## Automatic renaming
 
-Files generation with this method get names which include the audio command number and the machine name like 0x00A5-fire_l3.wav. However, we just need the board and the command number, so we have to get rid of the rest. With Linux you can just use the rename command which should be part of most distributions and is very powerful, Windows user would have to install some bulk renaming tool.  
+Files generated with this method get names which include the audio command number and the machine name (e.g. 0x00A5-fire_l3.wav). However, we just need the board and the command number, so we have to get rid of the rest. With Linux you can just use the rename command which should be part of most distributions and is very powerful. Windows users would have to install some bulk renaming tool.  
 On our case we need to use
 
     rename -v -n 's/0x00//' *         to remove the '0x00' at the start of the filename
@@ -22,7 +22,7 @@ The actions will be done for all files in the current directory. Note that the -
 
 ## Automatic processing with Audacity
 
-Basically you have to do the same steps as described in the [manual way of sound file preparation](https://github.com/AmokSolderer/APC/blob/master/DOC/SoundManual.md), but you'd use a macro to do so. An example macro for processing callouts would look like this:
+Basically you have to do the same steps as described in the [manual way of sound file preparation](https://github.com/AmokSolderer/APC/blob/master/DOC/SoundManual.md), but you'd use a macro to process all files in your working directory. An example macro for processing callouts would look like this:
 
     Select:End="0,15" Mode="Set" RelativeTo="ProjectStart" Start="0"
     Delete:
