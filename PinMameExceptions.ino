@@ -1286,6 +1286,8 @@ byte EX_Fire(byte Type, byte Command){                // Exceptions code for Fir
     else if (Command == 6) {                          // music track 6
       PlayMusic(50, "1_06.snd");                      // play non looping part of music track
       AfterMusic = 0;}                                // no looping
+    else if (Command == 85) { }                       // ignore unknown sound command 0x55
+    else if (Command == 170) { }                      // ignore unknown sound command 0xaa
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
