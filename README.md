@@ -186,7 +186,9 @@ If you're interested in using an APC, then be sure to follow the instructions gi
 4.6. [PinMameExceptions](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameExceptions.md) - change your game, but let PinMame do the main work  
 4.7. [PinMame game numbers](https://github.com/AmokSolderer/APC/blob/master/DOC/lisyminigames.csv) - list of the PinMame game numbers  
 4.8. [Controlling Lisy](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) - updating Lisy and using the debug mode  
-4.9. [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
+4.9. [Automatic sound file generation](https://github.com/AmokSolderer/APC/blob/master/DOC/SoundAuto.md)  
+5.0. [Manual sound file generation](https://github.com/AmokSolderer/APC/blob/master/DOC/SoundManual.md)  
+5.1. Another way [for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) - automatic extraction of sound files and the use of Audacity in more detail (by Mokopin)
 
 5. Using MPF  
 5.1. [MPF runs APC](https://www.youtube.com/watch?v=w4Po8OE5Zkw) - see my first humble MPF steps in this video  

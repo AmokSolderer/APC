@@ -10,8 +10,8 @@
 * Special Solenoids are not longer active during attract mode
 * Exception rules for System 11 Whirlwind have been added. [Sound files for Whirlwind are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
 * Exception rules for System 6 Tri Zone have been added. [Sound files for Tri Zone are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
-* Native Pinbot code shows points >= 10M in highscore list if 4 Aplha + Credit display is installed
-* Native Black Knight code shows points >= 10M in highscore list if 4 Aplha + Credit display is installed
+* Native Pinbot code shows points >= 10M in highscore list if 4 Alpha + Credit display is installed
+* Native Black Knight code shows points >= 10M in highscore list if 4 Alpha + Credit display is installed
 * Ball Saver and alternative music implemented in native Black Knight code.
 
 ## June 2025

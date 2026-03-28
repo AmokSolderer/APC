@@ -14,64 +14,22 @@ Comet uses the following audio commands which are not sounds:
 |2f|Background music|
 |ff|Stop Sound/Music|
 
-## Sound file preparation
+## Sound files
 
 There're multiple ways to obtain the original sounds for System 9 machines. Some can be found on the internet, directly recorded from your pinball machine or you can extract them from PinMame. What ever you do, the result should be a mono WAV file with 44.1KHz sampling rate and reasonable amplitude.  
 If you find the files on the internet you can proceed to the [Audio file conversion](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_9.md#audio-file-conversion) section, as you don't have to extract them from PinMame.
 
-The method decribed here is the the manual way, there're also more automatic solutions which might save some time. I've never tried them myself, but Mokopin (from the Flippertreff forum) has written some [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) which explain the automatic extraction of sound files and the use of Audacity in more detail.
+## Automatic sound file preparation
 
-### Which sounds are required?
+There're several methods to automatically extract WAV files from PinMame and batch process them to work with the APC. Using this, it just takes me 2 - 3 hours to generate the files for an early System11 machine  
+My way of doing this is described [here](https://github.com/AmokSolderer/APC/blob/master/DOC/SoundAuto.md). Since I'm using Linux, things might be a bit different for Windows users, as they additionally have to adjust the sample rate for example.  
+Mokopin (from the Flippertreff forum) has also written some [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md) which explain the automatic extraction of sound files and the use of Audacity for Windows users.
 
-System 9 boards can handle 8 bit sound commands which leads to a possible number of 256 sounds minus some control commands, but only a part of these numbers are actually used by a game.  
-With this manual method we have to extract and preprocess every sound by hand, so we try to keep the number of sounds as low as possible by just extracting those which are actually requested by PinMame.
+## Manual sound file preparation
 
-When you start from scratch you should play your game with Lisy being in Sound Debug Mode. Please read the [Controlling Lisy page](https://github.com/AmokSolderer/APC/blob/master/DOC/LisyDebug.md) to learn how to do this.
+This decribes the [manual way of sound file preparation](https://github.com/AmokSolderer/APC/blob/master/DOC/SoundManual.md). I'd recommend to try the automatic way first, because it's much faster. However, the manual way explains what needs to be done and it can be used as a fallback solution, if the automatic way fails.
 
-Now start a game and let Lisy log the sound commands. This will already give you the most common sound numbers to start with. Later you'll have to repeat this step or use the [Audio Debug Mode](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSound_9.md#finding-out-which-sounds-are-still-missing) of the APC to find the remaining missing sounds.
-
-When you're done press the shutdown switch SW1 on your APC board to make it exit the emulation and store the log file on the SD card. The file will be located on the Pi's SD card in the folder lisy/lisy_m/debug.
-
-In lisy_m_debug.txt playing a sound looks like
-
-    [461.372965][0.000064] LISY_W sound_handler: board:0 0x79 (121)
-    [461.372985][0.000020] play soundindex 121 on board 0 
-    [461.373005][0.000020] USB_write(3 bytes): 0x32 0x01 0x79
-
-In this case sound 0x79 shall be played which means you have to record the sound command 79 in PinMame.
-
-The Lisy sound debug log only tells you which sound numbers are needed for your game. Now it's time to extract the corresponding sound files.
-
-### Manual extraction from PinMame
-
-For this to work you have to install PinMame32 for Windows as the Unix version has severe sound issues.
-
-After PinMame is running, press F4 to enter the 'Sound Command Mode' then press DEL for the Manual / Command Mode.
-
-The following steps have to be repeated for every sound you want to record. That means you have to do it for every sound number you've found in the Lisy sound debug log.  
-Enter the hexadecimal sound number. Then press F5 to start the recording, SPACE to play the sound and F5 again to stop recording. The sound can be found in PinMame's 'wave' folder.  
-The sound command 00 stops the currently playing sound / music.  
-Not all sound numbers play a sound in PinMame, as some are just controlling the audio board. These commands have to be covered by PinMameExceptions and can be ignored for now.  
-Remember to rename the files immediately to the correct names to avoid confusion.
-
-### Preprocessing the WAV files with Audacity
-
-For some reason the PinMame sounds have a sampling rate of 48KHz and must therefore be converted to the normal sampling rate of 44.1KHz. You can use a free audio editor like Audacity (https://www.audacityteam.org) to adjust the start and end time of your sound sample as well as the sampling rate.  
-Furthermore, the volume of the sound and music files generated by PinMame differs quite a lot, which means you should also use Audacity to adjust those levels accordingly.
-
-![Audacity](https://github.com/AmokSolderer/APC/blob/master/DOC/PICS/Audacity.png)
-
-This is the manual way to preprocess a file recorded from PinMame.
-
-* Open the file with Audacity
-* Press the button for the Selection Tool (1) and select the part of the sound you want to use
-* Delete the rest (2)
-* Click inside the cyan box next to the waveform (3) to select the whole track
-* Select the 'Tracks -> Sampling rate' menu and set the sampling rate to 44100Hz
-* If you have a stereo track, use the 'Tracks -> Mix -> Mix Stereo Down to Mono' menu to get mono
-* Select the 'Effect -> Normalize' menu to open the window with the normalizing options
-* Select 'Remove DC offset' and 'Normalize peak amplitude to' 0dB.
-* Select the 'File -> Export -> Export Selected Audio...' and save it with the 'Signed 16-bit PCM' encoding
+## Automatic sound file preparation
 
 Most of this process can be automatized as explained by Mokopin in his [Instructions for extracting sound files](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMameSounds.md).
 

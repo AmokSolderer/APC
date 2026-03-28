@@ -53,6 +53,8 @@ Of course you have to re-compile your code and upload it to the Arduino DUE for 
 
 The APC will create the above mentioned settings files when you use the settings menu to change the settings from the defaults. That means you can use a binary editor to change the values in the files on the SD card without having to change and re-compile your code.
 
+Most sound packages do also contain the settings files to make this game work. So if your game is listed in the [available sounds](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md) list, you just need to copy the files to your SD card.
+
 ### Using the debug mode
 
 If you have problems browsing the settings, you might want to use the [debug mode](https://github.com/AmokSolderer/APC/blob/master/DOC/Problems.md#the-debug-mode) to be able to see the settings menu in full text.  
