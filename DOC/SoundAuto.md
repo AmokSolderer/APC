@@ -10,7 +10,7 @@ Another problem with early System11 is that PinMame cannot find all sounds for a
 
 ## Automatic renaming
 
-Files generated with this method get names which include the audio command number and the machine name (e.g. 0x00A5-fire_l3.wav). However, we just need the board and the command number, so we have to get rid of the rest. With Linux you can just use the rename command which should be part of most distributions and is very powerful. Windows users would have to install some bulk renaming tool.  
+Files generated with this method get names which include the audio command number and the machine name (e.g. 0x00A5-fire_l3.wav). However, the APC needs the names in the format [single digit board prefix]_[sound number in hex].wav, so the correct name for this sound would be 0_a5.wav. With Linux you can just use the rename command which should be part of most distributions and is very powerful. Windows users would have to install some bulk renaming tool.  
 On our case we need to use
 
     rename -v -n 's/0x00//' *         to remove the '0x00' at the start of the filename
