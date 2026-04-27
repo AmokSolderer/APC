@@ -1267,7 +1267,10 @@ byte EX_Fire(byte Type, byte Command){                // Exceptions code for Fir
       StopPlayingMusic();}
     else if (Command > 95 && Command < 104) {         // music volume command 0x6X
       MusicVolume = Command - 96;}
-    else if (Command == 255) { }                      // ignore unknown sound command 0xff
+    else if (Command == 127) { }                      // ignore unknown sound command 1x7f
+    else if (Command == 164) { }                      // ignore unknown sound command 1xa4
+    else if (Command == 247) { }                      // ignore unknown sound command 1xf7
+    else if (Command == 255) { }                      // ignore unknown sound command 1xff
     else if (Command == 1) {                          // music track 1
       PlayMusic(50, "1_01L.snd");                     // play music track
       QueueNextMusic("1_01L.snd");}                   // track is looping so queue it also
