@@ -149,7 +149,9 @@ void loop() {
                       else {                          // for the last level turn it completely off
                         pixels.setPixelColor(x*8+i,pixels.Color(0,0,0));}}
                     Mask = Mask << 1;}}
-                TurnOff[c][x] = TurnOff[c+1][x];}}}
+                TurnOff[c][x] = TurnOff[c+1][x];}
+              TurnOn[5][x] = 0;
+              TurnOff[5][x] = 0;}}
           if (OwnCommands) {                          // a good place to let an own command run once per refresh cycle
             if (OwnCommands & 1) {                    // check which command is meant
               if (!(OwnCommandStep % 5)) {            // only be active every 5th refresh cycle

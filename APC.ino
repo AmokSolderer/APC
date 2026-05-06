@@ -1005,8 +1005,9 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     for (byte i=0; i<NumOfLEDbytes/8+1; i++) {
       byte x = 1;
       byte Buffer = ChangedLEDs[i];
+      ChangedLEDs[i] =0;
       while (Buffer) {
-        if (Buffer | 1) {
+        if (Buffer & 1) {
           LEDhandleBuffer(1, i*8+x);
           LEDhandleBuffer(1, LEDstatus[i*8+x-1]);}
         Buffer = Buffer >> 1;
