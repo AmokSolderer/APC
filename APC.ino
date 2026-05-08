@@ -467,8 +467,11 @@ void TC7_Handler() {                                  // interrupt routine - run
   static byte DispCol = 0;                            // display column being illuminated at the moment
   static byte LampCol = 0;                            // lamp column being illuminated at the moment
   static byte LampWait = 1;                           // counter for lamp waiting time until next column is applied
+  static byte LED_Wait = 0;                           // LED command waiting to be sent
+  static byte LED_ToSend = 0;                         // number of bytes to send for current LED command
   static uint16_t LampColMask = 2;                    // mask for lamp column select
   const uint32_t HwExtSelMask[5] = {2097152, 536870912, 512, 67108864, 8192}; // mask for sel5, sel6, sel7, SPI_CS1, Sel14
+  const byte LED_ComLength[4][2] = {{192,3},{193,1},{195,1},{0,0}}; // amount of arguments of LED commands
   int i;                                              // general purpose counter
   uint32_t Buff;
   uint16_t c;
@@ -712,15 +715,44 @@ void TC7_Handler() {                                  // interrupt routine - run
   // LEDs
 
   if (LED_Counter) {
+    bool LED_Send = false;
     LED_Counter++;
     if (LED_Counter > 20 + LengthOfSyncCycle) {       // start over after sync is complete
+      ActivateTimer(1, 2, LEDtimer);                  // process lamp status
       LED_Counter = 1;}
-    if ((LED_BufferWrite != LED_BufferRead) || (LED_Counter == 20)) { // bytes left to read or time to sync?
+    if (LED_Counter == 20) {                          // time to Sync?
+      c = 170;
+      LED_Send = true;}
+    else {                                            // no sync
+      if (LED_Counter < 20) {                         // sync complete?
+        if (LED_Wait) {                               // command waiting?
+          if (LED_Counter ==1) {                      // wait for the first cycle
+            c = LED_Wait;                             // write to send buffer
+            LED_Send = true;                          // set send flag
+            LED_Wait = 0;}}
+        else {
+          if ((LED_BufferWrite != LED_BufferRead)) {  // bytes left to read?
+            if (LED_ToSend) {                         // still command arguments to be sent?
+              c =  LEDhandleBuffer(0,0);              // write to send buffer
+              LED_Send = true;                        // set send flag
+              LED_ToSend--;}                          // decrease bytes to be sent
+            else {                                    // new command
+              byte Buffer = LEDhandleBuffer(0,0);     // read it
+              if (Buffer) {                           // command != 0
+                if (Buffer <25) {                     // LED status command?
+                  LED_ToSend = 1;}                    // they have 1 argument
+                else {                                // different command
+                  byte i = 0;
+                  while (Buffer != LED_ComLength[i][0] && LED_ComLength[i][0]) { // look up command length
+                    i++;}
+                  LED_ToSend = LED_ComLength[i][1];}  // store number of arguments}
+                if (LED_ToSend < 20 - LED_Counter) {  // enough time to next sync?
+                  c = Buffer;                         // write to send buffer
+                  LED_Send = true;}                   // set send flag
+                else {                                // not enough time
+                  LED_Wait = Buffer;}}}}}}}           // let it wait
+    if (LED_Send) {                                   // bytes  to be sent?
       REG_PIOC_CODR = AllSelects - HwExtSels + AllData; // clear all select signals and the data bus
-      if (LED_Counter == 20) {                        // after 20ms
-        c = 170;}                                     // sync
-      else {
-        c =  LEDhandleBuffer(0,0);}                   // buffer empty
       REG_PIOC_SODR = c<<1;                           // and put it on the data bus
       REG_PIOC_SODR = Sel14;                          // enable the HW_ext_latch
       if (LED_Select_Polarity) {                      // sel5 has to toggle for each cycle
@@ -979,14 +1011,12 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static byte Timer = 0;                              // number of the LED timer
   switch(Command) {
   case 0:                                             // stop LEDhandling
-    if (Timer) {
-      KillTimer(Timer);
-      Timer = 0;
-      free(LEDstatus);                                // free memory
-      LEDhandleBuffer(1,196);}                        // write stop command to ringbuffer
+    free(LEDstatus);                                  // free memory
+    LEDhandleBuffer(1,196);                           // write stop command to ringbuffer
+    LED_Counter = 0;
     break;
   case 1:                                             // init
-    if (!Timer) {
+    if (!LED_Counter) {
       NumOfLEDbytes = APC_settings[NumOfLEDs] / 8;    // calculate the needed memory for LEDstatus
       if (APC_settings[NumOfLEDs] % 8) {
         NumOfLEDbytes++;}
@@ -998,21 +1028,19 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
         LengthOfSyncCycle++;}
       LEDhandleBuffer(1,193);                         // send number of LEDs to exp board
       LEDhandleBuffer(1,NumOfLEDbytes);
-      Timer = ActivateTimer(20, 2, LEDtimer);
       LED_Counter = 1;}
     break;
   case 2:                                             // timer call
-    for (byte i=0; i<NumOfLEDbytes/8+1; i++) {
+    for (byte i=0; i<NumOfLEDbytes/8+1; i++) {        // for all change bytes
       byte x = 1;
-      byte Buffer = ChangedLEDs[i];
-      ChangedLEDs[i] =0;
-      while (Buffer) {
-        if (Buffer & 1) {
-          LEDhandleBuffer(1, i*8+x);
-          LEDhandleBuffer(1, LEDstatus[i*8+x-1]);}
+      byte Buffer = ChangedLEDs[i];                   // process changed LEDstatus bytes
+      ChangedLEDs[i] = 0;
+      while (Buffer) {                                // for all changed LEDs
+        if (Buffer & 1) {                             // every bit stands for one LEDstatus byte
+          LEDhandleBuffer(1, i*8+x);                  // write the number of the status byte as LED command
+          LEDhandleBuffer(1, LEDstatus[i*8+x-1]);}    // write the content of the status byte
         Buffer = Buffer >> 1;
         x++;}}
-    Timer = ActivateTimer(20, 2, LEDtimer);
     break;
   case 3:                                             // turn on LED
     {byte Buffer = Arg / 8;
