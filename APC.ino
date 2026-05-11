@@ -733,11 +733,11 @@ void TC7_Handler() {                                  // interrupt routine - run
         else {
           if ((LED_BufferWrite != LED_BufferRead)) {  // bytes left to read?
             if (LED_ToSend) {                         // still command arguments to be sent?
-              c =  LEDhandleBuffer(0,0);              // write to send buffer
+              c =  LEDhandling(8,0);                  // write to send buffer
               LED_Send = true;                        // set send flag
               LED_ToSend--;}                          // decrease bytes to be sent
             else {                                    // new command
-              byte Buffer = LEDhandleBuffer(0,0);     // read it
+              byte Buffer = LEDhandling(8,0);         // read it
               if (Buffer) {                           // command != 0
                 if (Buffer <25) {                     // LED status command?
                   LED_ToSend = 1;}                    // they have 1 argument
@@ -1004,15 +1004,19 @@ void ReadSound() {                                    // same as above but for t
   SoundPrio = false;}
 
 byte LEDhandling(byte Command, byte Arg) {            // main LED handler
+  static byte LED_Buffer[50];                         // command bytes to be send to the LED exp board
+  static byte LED_TempWritePos = 0;                   // current write position in the LED_Buffer
   static byte *LEDstatus;                             // points to the status memory of the LEDs
   static const byte *LEDselected;                     // buffer to sync the change of an LEDpattern to the command execution
   static byte NumOfLEDbytes = 8;                      // stores the length of the LEDstatus memory
   static byte ChangedLEDs[4];
   static byte Timer = 0;                              // number of the LED timer
+  byte Buffer;
   switch(Command) {
   case 0:                                             // stop LEDhandling
     free(LEDstatus);                                  // free memory
-    LEDhandleBuffer(1,196);                           // write stop command to ringbuffer
+    LEDhandling(6,196);                               // write stop command to ringbuffer
+    LEDhandling(7,0);                                 // send buffer
     LED_Counter = 0;
     break;
   case 1:                                             // init
@@ -1026,9 +1030,10 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
       LengthOfSyncCycle = APC_settings[NumOfLEDs] / 24; // calculate the required length of the sync cycle
       if (APC_settings[NumOfLEDs] % 24) {
         LengthOfSyncCycle++;}
-      LEDhandleBuffer(1,193);                         // send number of LEDs to exp board
-      LEDhandleBuffer(1,NumOfLEDbytes);
-      LED_Counter = 1;}
+      LEDhandling(6,193);                             // send number of LEDs to exp board
+      LEDhandling(6,NumOfLEDbytes);
+      LED_Counter = 1;
+      LEDhandling(7,0);}                              // send buffer
     break;
   case 2:                                             // timer call
     for (byte i=0; i<NumOfLEDbytes/8+1; i++) {        // for all change bytes
@@ -1037,45 +1042,64 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
       ChangedLEDs[i] = 0;
       while (Buffer) {                                // for all changed LEDs
         if (Buffer & 1) {                             // every bit stands for one LEDstatus byte
-          LEDhandleBuffer(1, i*8+x);                  // write the number of the status byte as LED command
-          LEDhandleBuffer(1, LEDstatus[i*8+x-1]);}    // write the content of the status byte
+          LEDhandling(6, i*8+x);                      // write the number of the status byte as LED command
+          LEDhandling(6, LEDstatus[i*8+x-1]);         // write the content of the status byte
+          LEDhandling(7,0);}                          // send buffer
         Buffer = Buffer >> 1;
         x++;}}
     break;
   case 3:                                             // turn on LED
-    {byte Buffer = Arg / 8;
+    Buffer = Arg / 8;
     if (Buffer <= NumOfLEDbytes) {
       LEDstatus[Buffer] |= 1<<(Arg % 8);
-      ChangedLEDs[Buffer/8] |= 1<<(Buffer % 8);}}
+      ChangedLEDs[Buffer/8] |= 1<<(Buffer % 8);}
     break;
   case 4:                                             // turn off LED
-    {byte Buffer = Arg / 8;
+    Buffer = Arg / 8;
     if (Buffer <= NumOfLEDbytes) {
       LEDstatus[Buffer] &= 255-(1<<(Arg % 8));
-      ChangedLEDs[Buffer/8] |= 1<<(Buffer % 8);}}
+      ChangedLEDs[Buffer/8] |= 1<<(Buffer % 8);}
     break;
   case 5:                                             // query LED
-    return LEDstatus[Arg / 8] & 1<<(Arg % 8);}
-  return(0);}
-
-byte LEDhandleBuffer(byte RW, byte Command) { // RW = 0 -> read
-  static byte LED_Buffer[50];                          // command bytes to be send to the LED exp board
-  if (RW) {                                           // write
-    byte Buffer = LED_BufferWrite;
-    LED_Buffer[Buffer] = Command;
+    return LEDstatus[Arg / 8] & 1<<(Arg % 8);
+  case 6:                                             // write to LED transmit buffer
+    Buffer = LED_TempWritePos;
+    LED_Buffer[Buffer] = Arg;
     Buffer++;                                         // increase write pointer
     if (Buffer > 49) {                                // end of ringbuffer reached?
       Buffer = 0;}                                    // start over
-    LED_BufferWrite = Buffer;                         // write volatile pointer
+    LED_TempWritePos = Buffer;                        // write volatile pointer
     if (Buffer == LED_BufferRead) {                   // ringbuffer full?
-      return(1);}                                    // terminate write attempt
-    return(0);}
-  else {                                              // read
-    byte Buffer = LED_Buffer[LED_BufferRead];
+      return(1);}                                     // terminate write attempt
+    break;
+  case 7:
+    LED_BufferWrite = LED_TempWritePos;               // mark all bytes as sent
+    break;
+  case 8:                                             // read byte from buffer
+    Buffer = LED_Buffer[LED_BufferRead];
     LED_BufferRead++;                                 // increase the read counter for ringbuffer
     if (LED_BufferRead > 49) {                        // end reached?
-      LED_BufferRead = 0;}                           // start over
-    return(Buffer);}}
+      LED_BufferRead = 0;}                            // start over
+    return(Buffer);}
+  return(0);}
+
+//byte LEDhandleBuffer(byte RW, byte Command) { // RW = 0 -> read
+//  if (RW) {                                           // write
+//    byte Buffer = LED_BufferWrite;
+//    LED_Buffer[Buffer] = Command;
+//    Buffer++;                                         // increase write pointer
+//    if (Buffer > 49) {                                // end of ringbuffer reached?
+//      Buffer = 0;}                                    // start over
+//    LED_BufferWrite = Buffer;                         // write volatile pointer
+//    if (Buffer == LED_BufferRead) {                   // ringbuffer full?
+//      return(1);}                                    // terminate write attempt
+//    return(0);}
+//  else {                                              // read
+//    byte Buffer = LED_Buffer[LED_BufferRead];
+//    LED_BufferRead++;                                 // increase the read counter for ringbuffer
+//    if (LED_BufferRead > 49) {                        // end reached?
+//      LED_BufferRead = 0;}                           // start over
+//    return(Buffer);}}
 
 void LEDinit() {
   LEDhandling(1, 0);}
@@ -1084,20 +1108,23 @@ void LEDtimer(byte Step) {
   LEDhandling(2, Step);}
 
 void LEDsetColor(byte Red, byte Green, byte Blue) {   // set a new color
-  LEDhandleBuffer(1, 192);
-  LEDhandleBuffer(1, Red);
-  LEDhandleBuffer(1, Green);
-  LEDhandleBuffer(1, Blue);}
+  LEDhandling(6, 192);
+  LEDhandling(6, Red);
+  LEDhandling(6, Green);
+  LEDhandling(6, Blue);
+  LEDhandling(7,0);}
 
 void LEDsetColorMode(byte Mode) {                     // Mode 0 -> lamps being lit get the LEDsetColor / Mode 1 -> lamps keep their color
   if (Mode < 5) {                                     // Mode 2 -> lamps set in the following frame get the new color immediately / Mode 3 -> only the color of the LEDs is changed, but they're not turned on
-    LEDhandleBuffer(1, 64 + Mode);}}                        // Mode 4 -> LED state is frozen
+    LEDhandling(6, 64 + Mode);                        // Mode 4 -> LED state is frozen
+    LEDhandling(7,0);}}
 
 void LEDchangeColor(byte LED) {                       // the color of the selected LED is changed to LEDsetColor
-  LEDhandleBuffer(1, 195);
+  LEDhandling(6, 195);
   if (APC_settings[LEDsetting] == 1) {                // LEDsetting = Additional?
     LED = LED - 65;}                                  // additional LEDs are numbered from 65 upwards
-  LEDhandleBuffer(1, LED);}
+  LEDhandling(6, LED);
+  LEDhandling(7,0);}
 
 void SwitchPressed(int SwNumber) {
   Serial.print(" Switch pressed ");
