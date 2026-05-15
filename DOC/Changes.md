@@ -1,5 +1,11 @@
 # APC News and Changelog
 
+## TBD
+
+### New SW Version V1.05
+
+* Exception rules for System 11 Fire! have been added. [Sound files for FIRE! are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+
 ## March 2026
 
 ### New SW Version V1.04

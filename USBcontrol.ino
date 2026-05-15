@@ -8,7 +8,7 @@ const byte USB_CommandLength[110] = {0,0,0,0,0,0,0,1,0,0,   // Length of USB com
                               2,1,251,0,2,0,0,0,0,0,  // Length of USB commands from 50 - 59
                               10,0,0,0,2,3,0,0,0,0,   // Length of USB commands from 60 - 69
                               0,0,0,0,0,0,0,0,0,0,    // Length of USB commands from 70 - 79
-                              2,1,2,0,0,0,0,0,0,0,    // Length of USB commands from 80 - 89
+                              2,1,0,0,0,0,0,0,0,0,    // Length of USB commands from 80 - 89
                               0,0,0,0,0,0,0,0,0,0,    // Length of USB commands from 90 - 99
                               0,0,0,0,0,0,0,0,0,0};   // Length of USB commands from 100 - 109
 const byte USB_DisplayDigitNum[9][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
@@ -1138,7 +1138,7 @@ void USB_SerialCommand() {
     LEDhandling(6, USB_SerialBuffer[0]);
     break;
   case 82:                                            // send queue
-    LEDhandling(USB_SerialBuffer[0], USB_SerialBuffer[1]);
+    LEDhandling(7, 0);
     break;
   case 100:                                           // init
     USB_WatchdogHandler(1);
