@@ -1007,7 +1007,8 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static byte LED_TempWritePos = 0;                   // current write position in the LED_Buffer
   static byte *LEDstatus;                             // points to the status memory of the LEDs
   static byte NumOfLEDbytes = 8;                      // stores the length of the LEDstatus memory
-  static byte ChangedLEDs[4];
+  static byte ChangedLEDs[4];                         // every bit represents one byte in *LEDstatus
+  static byte LEDmode = 0;                            // current LED mode
   static byte Timer = 0;                              // number of the LED timer
   byte Buffer;
   const byte *ActValue;                               // buffer
@@ -1034,6 +1035,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
       LEDhandling(6,NumOfLEDbytes);
       LED_Counter = 1;
       LEDpattern = LEDstatus;                         // show standard LED pattern
+      LEDmode = 0;
       LEDhandling(7,0);}                              // send buffer
     break;
   case 2:                                             // timer call
@@ -1086,13 +1088,18 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     if (!Timer) {                                     // not already running
       LEDsetColor(*(LEDpointer+2), *(LEDpointer+3), *(LEDpointer+4)); // select the color
       LEDpattern = LEDpointer + 5;                    // set the pointer to the first LED pattern
-      for (byte i=0;i<*LEDpointer/8;i++) {            // set all change indicators
-        ChangedLEDs[i] = 255;}
-      byte x = 0;
-      for (byte i=0;i<*LEDpointer%8;i++) {
-        x = x<<1;
-        x |= 1;}
-      ChangedLEDs[*LEDpointer/8] = x;
+      if (LEDmode < 2) {                              // LEDs are turned on and off according to pattern
+        for (byte i=0;i<*LEDpointer/8;i++) {          // set all change indicators
+          ChangedLEDs[i] = 255;}
+        byte x = 0;
+        for (byte i=0;i<*LEDpointer%8;i++) {
+          x = x<<1;
+          x |= 1;}
+        ChangedLEDs[*LEDpointer/8] = x;}
+      else {                                          // unselected LEDs are not turned off
+        for (byte i=0;i<*LEDpointer;i++) {            // for all pattern bytes
+          if (*(LEDpointer+i+5)) {                    // check for lit LEDs
+            ChangedLEDs[i/8] |= 1<<(i % 8);}}}        // only indicate bytes with lit LEDs
       Timer = ActivateTimer(*(LEDpointer+1)*20, 1, LEDpatternTimer);}
     break;
   case 10:                                            // LED pattern timer call
@@ -1106,11 +1113,16 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
           LEDsetColor(*(ActValue),*(ActValue+1),*(ActValue+2)); // and update if necessary
           break;}
         i++;}
-      PrevValue = PrevValue + 3;                      // set address to LED pattern
-      ActValue = ActValue + 3;
-      for (i=0;i<*LEDpointer;i++) {                   // for all pattern bytes
-        if (*(PrevValue+i) != *(ActValue+i)) {        // check for changes
-          ChangedLEDs[i/8] |= 1<<(i % 8);}}           // indicate them
+      ActValue = ActValue + 3;                        // set address to LED pattern
+      if (LEDmode < 2) {                              // LEDs are turned on and off according to pattern
+        PrevValue = PrevValue + 3;                    // set address to LED pattern
+        for (i=0;i<*LEDpointer;i++) {                 // for all pattern bytes
+          if (*(PrevValue+i) != *(ActValue+i)) {      // check for changes
+            ChangedLEDs[i/8] |= 1<<(i % 8);}}}        // indicate them
+      else {                                          // unselected LEDs are not turned off
+        for (i=0;i<*LEDpointer;i++) {                 // for all pattern bytes
+          if (*(ActValue+i)) {                        // check for lit LEDs
+            ChangedLEDs[i/8] |= 1<<(i % 8);}}}        // only indicate bytes with lit LEDs
       LEDpattern = ActValue;                          // and set pointer for new pattern
       Timer = ActivateTimer(*(ActValue-4)*20, Arg+1, LEDpatternTimer);} // come back after duration value * 20ms
     else {                                            // end LED show
@@ -1123,7 +1135,12 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     if (Timer) {                                      // still running?
       KillTimer(Timer);                               // stop it
       Timer = 0;}
-    LEDpattern = LEDstatus;}                          // switch pattern back to normal
+    LEDpattern = LEDstatus;                           // switch pattern back to normal
+    break;
+  case 12:                                            // change LED mode
+    LEDmode = Arg;                                    // set mode
+    LEDhandling(6, 64 + Arg);                         // and send it to EXP board
+    LEDhandling(7,0);}
   return(0);}
 
 void LEDinit() {
@@ -1150,8 +1167,7 @@ void LEDsetColor(byte Red, byte Green, byte Blue) {   // set a new color
 
 void LEDsetColorMode(byte Mode) {                     // Mode 0 -> lamps being lit get the LEDsetColor / Mode 1 -> lamps keep their color
   if (Mode < 5) {                                     // Mode 2 -> lamps set in the following frame get the new color immediately / Mode 3 -> only the color of the LEDs is changed, but they're not turned on
-    LEDhandling(6, 64 + Mode);                        // Mode 4 -> LED state is frozen
-    LEDhandling(7,0);}}
+    LEDhandling(12, 64 + Mode);}}                     // Mode 4 -> LED state is frozen
 
 void LEDchangeColor(byte LED) {                       // the color of the selected LED is changed to LEDsetColor
   LEDhandling(6, 195);
