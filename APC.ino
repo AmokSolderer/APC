@@ -79,7 +79,6 @@ byte DisplayUpper[32];                                // changeable display buff
 byte DisplayLower[32];
 byte DisplayUpper2[32];                               // second changeable display buffer
 byte DisplayLower2[32];
-const uint16_t *LEDpatDuration;                       // sets the time until the next LED pattern is shown
 const byte *LEDpattern;                               // determines which LED pattern is to be shown (only active with 'LED lamps' = 'Additional' and depends on the 'No of LEDs' setting)
 const byte *LEDpointer;                               // Pointer to the LED flow to be shown
 void (*LEDreturn)(byte);                              // Pointer to the procedure to be executed after the LED flow has been shown
@@ -1007,11 +1006,12 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static byte LED_Buffer[50];                         // command bytes to be send to the LED exp board
   static byte LED_TempWritePos = 0;                   // current write position in the LED_Buffer
   static byte *LEDstatus;                             // points to the status memory of the LEDs
-  static const byte *LEDselected;                     // buffer to sync the change of an LEDpattern to the command execution
   static byte NumOfLEDbytes = 8;                      // stores the length of the LEDstatus memory
   static byte ChangedLEDs[4];
   static byte Timer = 0;                              // number of the LED timer
   byte Buffer;
+  const byte *ActValue;                               // buffer
+  const byte *PrevValue;                              // for pointers
   switch(Command) {
   case 0:                                             // stop LEDhandling
     free(LEDstatus);                                  // free memory
@@ -1033,17 +1033,18 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
       LEDhandling(6,193);                             // send number of LEDs to exp board
       LEDhandling(6,NumOfLEDbytes);
       LED_Counter = 1;
+      LEDpattern = LEDstatus;                         // show standard LED pattern
       LEDhandling(7,0);}                              // send buffer
     break;
   case 2:                                             // timer call
     for (byte i=0; i<NumOfLEDbytes/8+1; i++) {        // for all change bytes
       byte x = 1;
-      byte Buffer = ChangedLEDs[i];                   // process changed LEDstatus bytes
+      Buffer = ChangedLEDs[i];                        // process changed LEDstatus bytes
       ChangedLEDs[i] = 0;
       while (Buffer) {                                // for all changed LEDs
         if (Buffer & 1) {                             // every bit stands for one LEDstatus byte
           LEDhandling(6, i*8+x);                      // write the number of the status byte as LED command
-          LEDhandling(6, LEDstatus[i*8+x-1]);         // write the content of the status byte
+          LEDhandling(6, LEDpattern[i*8+x-1]);        // write the content of the status byte
           LEDhandling(7,0);}                          // send buffer
         Buffer = Buffer >> 1;
         x++;}}
@@ -1080,32 +1081,65 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     LED_BufferRead++;                                 // increase the read counter for ringbuffer
     if (LED_BufferRead > 49) {                        // end reached?
       LED_BufferRead = 0;}                            // start over
-    return(Buffer);}
+    return(Buffer);
+  case 9:                                             // start showing LED patterns
+    if (!Timer) {                                     // not already running
+      LEDsetColor(*(LEDpointer+2), *(LEDpointer+3), *(LEDpointer+4)); // select the color
+      LEDpattern = LEDpointer + 5;                    // set the pointer to the first LED pattern
+      for (byte i=0;i<*LEDpointer/8;i++) {            // set all change indicators
+        ChangedLEDs[i] = 255;}
+      byte x = 0;
+      for (byte i=0;i<*LEDpointer%8;i++) {
+        x = x<<1;
+        x |= 1;}
+      ChangedLEDs[*LEDpointer/8] = x;
+      Timer = ActivateTimer(*(LEDpointer+1)*20, 1, LEDpatternTimer);}
+    break;
+  case 10:                                            // LED pattern timer call
+    Buffer = *LEDpointer + 4;                         // calculate the length of each list entry (4 bytes for duration and color)
+    ActValue = LEDpointer+Buffer*Arg+2;               // address of color values of actual step
+    if (*(ActValue-1) && (Arg < 255)) {               // duration value = 0 or show too long?
+      byte i = 0;
+      PrevValue = LEDpointer+Buffer*(Arg-1)+2;        // address of color values of previous step
+      while (i < 3) {                                 // for all the color values
+        if (*(PrevValue+i) != *(ActValue+i)) {        // check if color has changed
+          LEDsetColor(*(ActValue),*(ActValue+1),*(ActValue+2)); // and update if necessary
+          break;}
+        i++;}
+      PrevValue = PrevValue + 3;                      // set address to LED pattern
+      ActValue = ActValue + 3;
+      for (i=0;i<*LEDpointer;i++) {                   // for all pattern bytes
+        if (*(PrevValue+i) != *(ActValue+i)) {        // check for changes
+          ChangedLEDs[i/8] |= 1<<(i % 8);}}           // indicate them
+      LEDpattern = ActValue;                          // and set pointer for new pattern
+      Timer = ActivateTimer(*(ActValue-4)*20, Arg+1, LEDpatternTimer);} // come back after duration value * 20ms
+    else {                                            // end LED show
+      Timer = 0;
+      LEDpattern = LEDstatus;                         // switch pattern back to normal
+      if (LEDreturn) {                                // anything to call after show has run out?
+        LEDreturn(0);}}
+    break;
+  case 11:                                            // stop showing LED patterns
+    if (Timer) {                                      // still running?
+      KillTimer(Timer);                               // stop it
+      Timer = 0;}
+    LEDpattern = LEDstatus;}                          // switch pattern back to normal
   return(0);}
-
-//byte LEDhandleBuffer(byte RW, byte Command) { // RW = 0 -> read
-//  if (RW) {                                           // write
-//    byte Buffer = LED_BufferWrite;
-//    LED_Buffer[Buffer] = Command;
-//    Buffer++;                                         // increase write pointer
-//    if (Buffer > 49) {                                // end of ringbuffer reached?
-//      Buffer = 0;}                                    // start over
-//    LED_BufferWrite = Buffer;                         // write volatile pointer
-//    if (Buffer == LED_BufferRead) {                   // ringbuffer full?
-//      return(1);}                                    // terminate write attempt
-//    return(0);}
-//  else {                                              // read
-//    byte Buffer = LED_Buffer[LED_BufferRead];
-//    LED_BufferRead++;                                 // increase the read counter for ringbuffer
-//    if (LED_BufferRead > 49) {                        // end reached?
-//      LED_BufferRead = 0;}                           // start over
-//    return(Buffer);}}
 
 void LEDinit() {
   LEDhandling(1, 0);}
 
 void LEDtimer(byte Step) {
   LEDhandling(2, Step);}
+
+void LEDshowPatterns(byte State) {                    // call with State = 1 to start and State = 0 to terminate
+  if (State) {                                        // LEDpointer needs to point to
+    LEDhandling(9, 0);}                               // NumOfBytes = Number of LEDs / 8
+  else {                                              // LEDpat(NumOfBytes, Duration/20ms, Red, Green, Blue, LED status bytes(NumOfBytes]
+    LEDhandling(11, 0);}}                             // set Duration = 0 to end the show
+
+void LEDpatternTimer(byte Step) {
+  LEDhandling(10, Step);}
 
 void LEDsetColor(byte Red, byte Green, byte Blue) {   // set a new color
   LEDhandling(6, 192);
@@ -1144,14 +1178,18 @@ bool QuerySwitch(byte Switch) {                       // return status of switch
 void TurnOnLamp(byte Lamp) {
   if (Lamp < 65) {                                    // is it a matrix lamp?
     Lamp--;
-    LampColumns[Lamp / 8] |= 1<<(Lamp % 8);}
+    LampColumns[Lamp / 8] |= 1<<(Lamp % 8);
+    if (APC_settings[LEDsetting] > 1) {               // playfield lamps to be mirrored by LEDs?
+      LEDhandling(3, Lamp);}}
   else {                                              // lamp numbers > 64 are additional LEDs
     LEDhandling(3, Lamp - 65);}}
 
 void TurnOffLamp(byte Lamp) {
   if (Lamp < 65) {                                    // is it a matrix lamp?
     Lamp--;
-    LampColumns[Lamp /8] &= 255-(1<<(Lamp % 8));}
+    LampColumns[Lamp /8] &= 255-(1<<(Lamp % 8));
+    if (APC_settings[LEDsetting] > 1) {               // playfield lamps to be mirrored by LEDs?
+      LEDhandling(4, Lamp);}}
   else {                                              // lamp numbers > 64 are additional LEDs
     LEDhandling(4, Lamp - 65);}}
 
@@ -2217,29 +2255,30 @@ void ShowFileNotFound(String Filename) {              // show file not found mes
   WriteLower2(" NOT    FOUND   ");
   ShowMessage(5);}                                    // switch to message buffer for 5 seconds
 
-void ShowLEDpatterns(byte Step) {                     // call with Step = 1 to start and Step = 0 to terminate
-  static byte Timer = 0;
-  if ((Step > 1) || (Step ==1 && !Timer)) {           // no kill signal
-    if (Step == 1) {
-      Step++;}
-    unsigned int Buffer = *(LEDpatDuration+Step-2);
-    byte NumOfBytes = APC_settings[NumOfLEDs] / 8 + 3;// calculate the length of each list entry
-    if (APC_settings[NumOfLEDs] % 8) {
-      NumOfBytes++;}
-    LEDsetColor(*(LEDpointer+NumOfBytes*(Step-2)), *(LEDpointer+NumOfBytes*(Step-2)+1), *(LEDpointer+NumOfBytes*(Step-2)+2)); // select the color
-    LEDpattern = LEDpointer+NumOfBytes*(Step-2)+3;    // apply the new pattern
-    Step++;
-    if (!(*(LEDpatDuration+Step-2))) {                // stop if Duration is zero
-      Timer = 0;
-      if (LEDreturn) {
-        LEDreturn(0);}
-      return;}
-    Timer = ActivateTimer(Buffer, Step, ShowLEDpatterns);}  // come back if not
-  else {
-    if (!Step) {                                      // kill signal received
-      if (Timer) {
-        KillTimer(Timer);
-        Timer = 0;}}}}
+//void ShowLEDpatterns(byte Step) {                     // call with Step = 1 to start and Step = 0 to terminate
+//  static byte Timer = 0;
+//  if ((Step > 1) || (Step ==1 && !Timer)) {           // no kill signal
+//    byte NumOfBytes = *LEDpointer + 4;                // calculate the length of each list entry (4 bytes for duration and color)
+//    if (Step == 1) {
+//      LEDsetColor(*(LEDpointer+1), *(LEDpointer+2), *(LEDpointer+3)); // select the color
+//
+//      Step++;}
+//    unsigned int Buffer = *(LEDpatDuration+Step-2);
+//
+//    LEDsetColor(*(LEDpointer+NumOfBytes*(Step-2)), *(LEDpointer+NumOfBytes*(Step-2)+1), *(LEDpointer+NumOfBytes*(Step-2)+2)); // select the color
+//    LEDpattern = LEDpointer+NumOfBytes*(Step-2)+3;    // apply the new pattern
+//    Step++;
+//    if (!(*(LEDpatDuration+Step-2))) {                // stop if Duration is zero
+//      Timer = 0;
+//      if (LEDreturn) {
+//        LEDreturn(0);}
+//      return;}
+//    Timer = ActivateTimer(Buffer, Step, ShowLEDpatterns);}  // come back if not
+//  else {
+//    if (!Step) {                                      // kill signal received
+//      if (Timer) {
+//        KillTimer(Timer);
+//        Timer = 0;}}}}
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being one - stop with step being zero
   static byte Timer = 0;
