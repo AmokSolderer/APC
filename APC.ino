@@ -1084,23 +1084,26 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     if (LED_BufferRead > 49) {                        // end reached?
       LED_BufferRead = 0;}                            // start over
     return(Buffer);
-  case 9:                                             // start showing LED patterns
-    if (!Timer) {                                     // not already running
+  case 9:                                             // start showing LED patterns Arg has to be the number of pattern bytes to be sent
+    if (!Arg) {                                       // called by LEDshowPatterns?
+      if (Timer) {                                    // not already running
+        break;}
+      Arg = *LEDpointer;
       LEDsetColor(*(LEDpointer+2), *(LEDpointer+3), *(LEDpointer+4)); // select the color
       LEDpattern = LEDpointer + 5;                    // set the pointer to the first LED pattern
-      if (LEDmode < 2) {                              // LEDs are turned on and off according to pattern
-        for (byte i=0;i<*LEDpointer/8;i++) {          // set all change indicators
-          ChangedLEDs[i] = 255;}
-        byte x = 0;
-        for (byte i=0;i<*LEDpointer%8;i++) {
-          x = x<<1;
-          x |= 1;}
-        ChangedLEDs[*LEDpointer/8] = x;}
-      else {                                          // unselected LEDs are not turned off
-        for (byte i=0;i<*LEDpointer;i++) {            // for all pattern bytes
-          if (*(LEDpointer+i+5)) {                    // check for lit LEDs
-            ChangedLEDs[i/8] |= 1<<(i % 8);}}}        // only indicate bytes with lit LEDs
       Timer = ActivateTimer(*(LEDpointer+1)*20, 1, LEDpatternTimer);}
+    if (LEDmode < 2) {                                // LEDs are turned on and off according to pattern
+      for (byte i=0;i<Arg/8;i++) {                    // set all change indicators
+        ChangedLEDs[i] = 255;}
+      byte x = 0;
+      for (byte i=0;i<Arg%8;i++) {
+        x = x<<1;
+        x |= 1;}
+      ChangedLEDs[Arg/8] = x;}
+    else {                                            // unselected LEDs are not turned off
+      for (byte i=0;i<Arg;i++) {                      // for all pattern bytes
+        if (*(LEDpattern+i)) {                        // check for lit LEDs
+          ChangedLEDs[i/8] |= 1<<(i % 8);}}}          // only indicate bytes with lit LEDs
     break;
   case 10:                                            // LED pattern timer call
     Buffer = *LEDpointer + 4;                         // calculate the length of each list entry (4 bytes for duration and color)
