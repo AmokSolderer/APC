@@ -81,7 +81,8 @@ byte DisplayUpper2[32];                               // second changeable displ
 byte DisplayLower2[32];
 const byte *LEDpattern;                               // determines which LED pattern is to be shown (only active with 'LED lamps' = 'Additional' and depends on the 'No of LEDs' setting)
 const byte *LEDpointer;                               // Pointer to the LED flow to be shown
-void (*LEDreturn)(byte);                              // Pointer to the procedure to be executed after the LED flow has been shown
+void (*LEDreturn)(byte) = LEDreturnDefault;           // Pointer to the procedure to be executed after the LED flow has been shown
+static byte *LEDstatus;                               // points to the status memory of the LEDs
 const byte *LampPattern;                              // determines which lamp pattern is to be shown (depends on the 'Backbox Lamps' setting)
 const byte *LampBuffer;
 byte LampColumns[8];                                  // stores the status of all lamp columns
@@ -718,7 +719,8 @@ void TC7_Handler() {                                  // interrupt routine - run
     bool LED_Send = false;
     LED_Counter++;
     if (LED_Counter > 20 + LengthOfSyncCycle) {       // start over after sync is complete
-      ActivateTimer(1, 2, LEDtimer);                  // process lamp status
+      if (LEDpattern == LEDstatus) {                  // standard lamp status memory used?
+        ActivateTimer(1, 2, LEDtimer);}               // process lamp status
       LED_Counter = 1;}
     if (LED_Counter == 20) {                          // time to Sync?
       c = 170;
@@ -1006,7 +1008,6 @@ void ReadSound() {                                    // same as above but for t
 byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   static byte LED_Buffer[50];                         // command bytes to be send to the LED exp board
   static byte LED_TempWritePos = 0;                   // current write position in the LED_Buffer
-  static byte *LEDstatus;                             // points to the status memory of the LEDs
   static byte NumOfLEDbytes = 8;                      // stores the length of the LEDstatus memory
   static byte ChangedLEDs[4];                         // every bit represents one byte in *LEDstatus
   static byte LEDmode = 0;                            // current LED mode
@@ -1017,8 +1018,8 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
   switch(Command) {
   case 0:                                             // stop LEDhandling
     free(LEDstatus);                                  // free memory
-    LEDhandling(6,196);                               // write stop command to ringbuffer
-    LEDhandling(7,0);                                 // send buffer
+    //LEDhandling(6,196);                               // write stop command to ringbuffer
+    //LEDhandling(7,0);                                 // send buffer
     LED_Counter = 0;
     break;
   case 1:                                             // init
@@ -1056,13 +1057,15 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     Buffer = Arg / 8;
     if (Buffer <= NumOfLEDbytes) {
       LEDstatus[Buffer] |= 1<<(Arg % 8);
-      ChangedLEDs[Buffer/8] |= 1<<(Buffer % 8);}
+      if (LEDstatus == LEDpattern) {                  // standard lamp status memory used?
+        ChangedLEDs[Buffer/8] |= 1<<(Buffer % 8);}}   // indicate changes
     break;
   case 4:                                             // turn off LED
     Buffer = Arg / 8;
     if (Buffer <= NumOfLEDbytes) {
       LEDstatus[Buffer] &= 255-(1<<(Arg % 8));
-      ChangedLEDs[Buffer/8] |= 1<<(Buffer % 8);}
+      if (LEDstatus == LEDpattern) {                  // standard lamp status memory used?
+        ChangedLEDs[Buffer/8] |= 1<<(Buffer % 8);}}   // indicate changes
     break;
   case 5:                                             // query LED
     return LEDstatus[Arg / 8] & 1<<(Arg % 8);
@@ -1105,6 +1108,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
       for (byte i=0;i<Arg;i++) {                      // for all pattern bytes
         if (*(LEDpattern+i)) {                        // check for lit LEDs
           ChangedLEDs[i/8] |= 1<<(i % 8);}}}          // only indicate bytes with lit LEDs
+    LEDhandling(2, 0);                                // process new pattern
     break;
   case 10:                                            // LED pattern timer call
     Buffer = *LEDpointer + 4;                         // calculate the length of each list entry (4 bytes for duration and color)
@@ -1128,6 +1132,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
           if (*(ActValue+i)) {                        // check for lit LEDs
             ChangedLEDs[i/8] |= 1<<(i % 8);}}}        // only indicate bytes with lit LEDs
       LEDpattern = ActValue;                          // and set pointer for new pattern
+      LEDhandling(2, 0);                              // process new pattern
       Timer = ActivateTimer(*(ActValue-4)*20, Arg+1, LEDpatternTimer);} // come back after duration value * 20ms
     else {                                            // end LED show
       Timer = 0;
@@ -1139,13 +1144,19 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
     if (Timer) {                                      // still running?
       KillTimer(Timer);                               // stop it
       Timer = 0;}
-    LEDpattern = LEDstatus;                           // switch pattern back to normal
     break;
   case 12:                                            // change LED mode
     LEDmode = Arg;                                    // set mode
     LEDhandling(6, 64 + Arg);                         // and send it to EXP board
-    LEDhandling(7,0);}
+    LEDhandling(7,0);
+    break;
+  case 13:
+    LEDpattern = LEDstatus;                           // switch pattern back to normal
+    LEDhandling(9, NumOfLEDbytes);}                   // process new pattern
   return(0);}
+
+void LEDreturnDefault(byte Dummy) {                   // restores the original LED pattern but not the LED colors
+  LEDhandling(13, 0);}
 
 void LEDinit() {
   LEDhandling(1, 0);}
