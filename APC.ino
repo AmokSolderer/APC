@@ -1133,7 +1133,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
             ChangedLEDs[i/8] |= 1<<(i % 8);}}}        // only indicate bytes with lit LEDs
       LEDpattern = ActValue;                          // and set pointer for new pattern
       LEDhandling(2, 0);                              // process new pattern
-      Timer = ActivateTimer(*(ActValue-4)*20, Arg+1, LEDpatternTimer);} // come back after duration value * 20ms
+      Timer = ActivateTimer(*(ActValue-4)*10, Arg+1, LEDpatternTimer);} // come back after duration value * 10ms
     else {                                            // end LED show
       Timer = 0;
       LEDpattern = LEDstatus;                         // switch pattern back to normal
@@ -1182,7 +1182,7 @@ void LEDsetColor(byte Red, byte Green, byte Blue) {   // set a new color
 
 void LEDsetColorMode(byte Mode) {                     // Mode 0 -> lamps being lit get the LEDsetColor / Mode 1 -> lamps keep their color
   if (Mode < 5) {                                     // Mode 2 -> lamps set in the following frame get the new color immediately / Mode 3 -> only the color of the LEDs is changed, but they're not turned on
-    LEDhandling(12, 64 + Mode);}}                     // Mode 4 -> LED state is frozen
+    LEDhandling(12, Mode);}}                          // Mode 4 -> LED state is frozen
 
 void LEDchangeColor(byte LED) {                       // the color of the selected LED is changed to LEDsetColor
   LEDhandling(6, 195);
