@@ -119,12 +119,17 @@ char USB_RepeatSound[13];                             // name of the sound file 
 byte EX_EjectSolenoid;                                // eject coil for improved ball release
 byte EX_CustomText[28];                               // stores the custom text read from SD card
 
-                            //LED number..00000000....11111110....22222111....33322222...43333333...44444444...55555554...66666555
-                              // Color....12345678....65432109....43210987....21098765...09876543...87654321...65432109...43210987
-const byte GI_Pattern[21] = {255, 0, 0, 0b01001001, 0b10010010, 0b00100100, 0b01001001,
-                             0, 255, 0, 0b10010010, 0b00100100, 0b01001001, 0b10010010,
-                             0, 0, 255, 0b00100100, 0b01001001, 0b10010010, 0b00100100};  // GI LEDs patterns
-const uint16_t GI_Duration[4] = {30, 30, 30, 0};
+                                  //LED number..00000000....11111110....22222111....33322222...43333333...44444444...55555554...66666555
+                                    // Color....12345678....65432109....43210987....21098765...09876543...87654321...65432109...43210987
+const byte GI_Pattern[74] = {4, 1, 255, 0, 0, 0b01001001, 0b10010010, 0b00100100, 0b01001001,
+                                1, 0, 255, 0, 0b10010010, 0b00100100, 0b01001001, 0b10010010,
+                               20, 0, 0, 255, 0b00100100, 0b01001001, 0b10010010, 0b00100100,
+                                1, 0, 0, 255, 0b01001001, 0b10010010, 0b00100100, 0b01001001,
+                                1, 255, 0, 0, 0b10010010, 0b00100100, 0b01001001, 0b10010010,
+                               20, 0, 255, 0, 0b00100100, 0b01001001, 0b10010010, 0b00100100,
+                                 1,0, 255, 0, 0b01001001, 0b10010010, 0b00100100, 0b01001001,
+                                1, 0, 0, 255, 0b10010010, 0b00100100, 0b01001001, 0b10010010,
+                               20, 255, 0, 0, 0b00100100, 0b01001001, 0b10010010, 0b00100100, 0};  // GI LEDs patterns
 
 const byte LEDflash[14] = {2,                       // 12 LEDs = 2 bytes
                               10,255,0,0,255,31,    // 200ms, red color (255,0,0), turn on 12 LEDs
@@ -1199,7 +1204,7 @@ void EX_AttractLEDeffects(byte State) {               // call with State = 1, st
       Timer = 0;}
     break;
   case 1:                                             // initialize
-    LEDinit();
+    //LEDinit();
     LEDsetColorMode(2);                               // to immediately apply the selected color to the GI
     LEDpattern = PME_GIallOn;                         // and turn on GI
     LEDhandling(9, 4);
@@ -1252,26 +1257,41 @@ void EX_AttractLEDeffects(byte State) {               // call with State = 1, st
       Timer = ActivateTimer(20, 7, EX_AttractLEDeffects);}
     else {
       Timer = ActivateTimer(20, 2, EX_AttractLEDeffects);}
-    break;}}
+    break;}
+  if (Timer) {
+    LEDhandling(9, 4);}}
 
 void EX_AttractLEDeffects2(byte State) {              // call with State = 1
+  static bool Running = 0;
   switch(State) {
-  case 0:                                             // after the colors have been set
-    LEDreturn = 0;
-    LEDsetColorMode(4);                               // freeze the LEDs
-    LEDhandling(6, 102);                              // write 102 to the command buffer
-    LEDhandling(7, 1);
+  case 0:                                             // called by LEDreturn
+    if (Running) {
+      LEDshowPatterns(1);}                            // restart pattern
+    else {
+      LEDsetColorMode(0);                             // turn off unwanted LEDs
+      LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
+      LEDpattern = PME_GIon;                          // set GI pattern
+      LEDhandling(9, 4);                              // apply changes
+      LEDsetColorMode(2);
+      LEDhandling(9, 4);}                             // re-send pattern
+
+    //    LEDreturn = 0;
+    //    LEDsetColorMode(4);                               // freeze the LEDs
+    //    LEDhandling(6, 102);                              // write 102 to the command buffer
+    //    LEDhandling(7, 1);
     break;
   case 1:
-//    LEDsetColorMode(2);
-//    LEDpointer = GI_Pattern;
-//    LEDpatDuration = GI_Duration;
-//    LEDreturn = EX_AttractLEDeffects2;                // come back after the colors are set
-//    ShowLEDpatterns(1);
+    Running = true;
+    //    LEDsetColorMode(2);
+    //    LEDpointer = GI_Pattern;
+    //    LEDpatDuration = GI_Duration;
+    //    LEDreturn = EX_AttractLEDeffects2;                // come back after the colors are set
+    //    ShowLEDpatterns(1);
     break;
   case 2:                                             // back to GI color
-    LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
-    LEDsetColorMode(2);
+    Running = false;
+    //    LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
+    //    LEDsetColorMode(2);
     break;}}
 
 byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Comet
@@ -1316,8 +1336,8 @@ byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Com
       LEDhandling(6, 103);                            // write 103 to stop the GI animation
       LEDhandling(7, 1);
       LEDsetColorMode(0);                             // turn off unwanted LEDs
-      LEDpattern = PME_GIon;                          // apply GI pattern
-      LEDhandling(9, 4);
+      LEDpattern = PME_GIon;                          // set GI pattern
+      LEDhandling(9, 4);                              // and apply it
       ActivateTimer(40, 2, EX_AttractLEDeffects2);}   // wait a cycle to apply GI color
     if (BlindPinmame) {                               // hide switches from PinMame
       if (Command == 31 || Command == 32 || Command == 44) {
@@ -1352,7 +1372,8 @@ byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Com
     if (Command == 11) {                              // GI relais?
       LEDsetColorMode(0);
       LEDsetColor(255, 255, 255);
-      LEDpattern = PME_GIoff;}                        // turn off GI
+      LEDpattern = PME_GIoff;                         // turn off GI
+      LEDhandling(9, 4);}                             // apply changes
     else if (QuerySolenoid(11)) {                     // use GI flash effects
       switch(Command) {
       case 7:
@@ -1366,12 +1387,14 @@ byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Com
         break;
       case 10:
         LEDpattern = PME_GI4;
-        break;}}
+        break;}
+      LEDhandling(9, 4);}                             // apply changes
     return(0);
   case SolenoidRelCommand:
     if (Command == 11) {                              // GI relais?
       LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
-      LEDpattern = PME_GIon;}                         // turn on GI
+      LEDpattern = PME_GIon;                          // turn on GI
+      LEDhandling(9, 4);}                             // apply changes
     return(0);
   case LampOnCommand:
     if (Command == 1) {                               // count the blinking of the game over lamp
@@ -1387,26 +1410,33 @@ byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Com
       case 700:
         EX_AttractLEDeffects(0);                      // and stop it
         BlockDisplay = false;                         // give display control back to PinMame
-        LEDhandling(6, 103);                          // write 103 to stop the GI animation
-        LEDhandling(7, 1);
+//        LEDhandling(6, 103);                          // write 103 to stop the GI animation
+//        LEDhandling(7, 1);
         LEDsetColorMode(0);                           // turn off unwanted LEDs
-        LEDpattern = PME_GIon;                        // apply GI pattern
-        ActivateTimer(40, 2, EX_AttractLEDeffects2);  // wait a cycle to apply GI color
+        LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
+        LEDpattern = PME_GIon;                        // set GI pattern
+        LEDhandling(9, 4);                            // apply changes
+        //ActivateTimer(40, 2, EX_AttractLEDeffects2);  // wait a cycle to apply GI color
         break;
       case 1100:
         EX_AttractLEDeffects2(1);                     // play another GI effect
+        LEDsetColorMode(2);
+        LEDreturn = EX_AttractLEDeffects2;
+        LEDpointer = GI_Pattern;
+        LEDshowPatterns(1);
         if (game_settings[USB_CustomText]) {
           BlockDisplay = true;                        // take control of the displays
           WriteUpper((char*) EX_CustomText);
           WriteLower((char*) EX_CustomText + 14);}
         break;
       case 1300:                                      // and stop it
-        LEDhandling(6, 103);                          // write 103 to stop the GI animation
-        LEDhandling(7, 1);
-        LEDsetColorMode(0);                           // turn off unwanted LEDs
-        LEDpattern = PME_GIon;                        // apply GI pattern
-        BlockDisplay = false;                         // give display control back to PinMame
-        ActivateTimer(40, 2, EX_AttractLEDeffects2);}}  // wait a cycle to apply GI color
+//        LEDhandling(6, 103);                          // write 103 to stop the GI animation
+//        LEDhandling(7, 1);
+        EX_AttractLEDeffects2(2);                     // stop animation
+//        LEDsetColorMode(0);                           // turn off unwanted LEDs
+//        LEDpattern = PME_GIon;                        // set GI pattern
+//        LEDhandling(9, 4);                            // apply changes
+        BlockDisplay = false;}}                         // give display control back to PinMame
     return(0);
   case WriteToDisplay0:
   case WriteToDisplay1:
