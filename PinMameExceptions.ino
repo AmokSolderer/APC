@@ -132,8 +132,8 @@ const byte GI_Pattern[74] = {4, 1, 255, 0, 0, 0b01001001, 0b10010010, 0b00100100
                                20, 255, 0, 0, 0b00100100, 0b01001001, 0b10010010, 0b00100100, 0};  // GI LEDs patterns
 
 const byte LEDflash[14] = {2,                       // 12 LEDs = 2 bytes
-                              10,255,0,0,255,31,    // 200ms, red color (255,0,0), turn on 12 LEDs
-                              25,255,0,0,0,0,       // 500ms, keep color but turn off all LEDs
+                              10,255,0,0,255,31,    // 100ms, red color (255,0,0), turn on 12 LEDs
+                              10,255,0,0,0,0,       // 500ms, keep color but turn off all LEDs
                               0};                   // stop animation
 
 byte EX_CountBallsInTrunk() {
