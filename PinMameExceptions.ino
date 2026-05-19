@@ -1268,6 +1268,7 @@ byte EX_Fire(byte Type, byte Command){                // Exceptions code for Fir
     else if (Command > 95 && Command < 104) {         // music volume command 0x6X
       MusicVolume = Command - 96;}
     else if (Command == 127) { }                      // ignore unknown sound command 1x7f
+    else if (Command == 162) { }                      // ignore unknown sound command 1xa2
     else if (Command == 163) { }                      // ignore unknown sound command 1xa3
     else if (Command == 164) { }                      // ignore unknown sound command 1xa4
     else if (Command == 247) { }                      // ignore unknown sound command 1xf7
@@ -1292,6 +1293,10 @@ byte EX_Fire(byte Type, byte Command){                // Exceptions code for Fir
       AfterMusic = 0;}                                // no looping
     else if (Command == 85) { }                       // ignore unknown sound command 0x55
     else if (Command == 170) { }                      // ignore unknown sound command 0xaa
+    else if (Command > 146 && Command < 154 && Command != 149) {
+      char FileName[9] = "1_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+        PlayMusic(50, (char*) FileName);}}
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
