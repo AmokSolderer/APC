@@ -34,7 +34,7 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 //#define USB_Option1 16                                // an option for own PinMame exceptions
 
 const byte USB_defaults[64] = {0,0,0,255,0,0,20,0,    // game default settings
-                              0,0,0,0,200,200,200,0,
+                              0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
@@ -65,10 +65,10 @@ const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting
     {" BALL   SAVER   ",HandleTextSetting,&TXTUSB_BallSave[0][0],0,1},
     {"B SAVER  TIME   ",HandleNumSetting,0,5,250},
     {"   BG   MUSIC   ",HandleTextSetting,&TxtUSB_Music[0][0],0,1},
-    {"RECYCLE SOL 1   ",HandleNumSetting,0,1,22},
-    {"RECYCLE SOL 2   ",HandleNumSetting,0,1,22},
-    {"RECYCLE SOL 3   ",HandleNumSetting,0,1,22},
-    {"RECYCLE SOL 4   ",HandleNumSetting,0,1,22},
+    {"RECYCLE SOL 1   ",HandleNumSetting,0,0,22},
+    {"RECYCLE SOL 2   ",HandleNumSetting,0,0,22},
+    {"RECYCLE SOL 3   ",HandleNumSetting,0,0,22},
+    {"RECYCLE SOL 4   ",HandleNumSetting,0,0,22},
     {" LED GI  RED    ",HandleColorSetting,0,0,255},
     {" LED GI  GREEN  ",HandleColorSetting,0,0,255},
     {" LED GI  BLUE   ",HandleColorSetting,0,0,255},

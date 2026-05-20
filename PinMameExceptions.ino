@@ -1274,24 +1274,12 @@ void EX_AttractLEDeffects2(byte State) {              // call with State = 1
       LEDhandling(9, 4);                              // apply changes
       LEDsetColorMode(2);
       LEDhandling(9, 4);}                             // re-send pattern
-
-    //    LEDreturn = 0;
-    //    LEDsetColorMode(4);                               // freeze the LEDs
-    //    LEDhandling(6, 102);                              // write 102 to the command buffer
-    //    LEDhandling(7, 1);
     break;
   case 1:
     Running = true;
-    //    LEDsetColorMode(2);
-    //    LEDpointer = GI_Pattern;
-    //    LEDpatDuration = GI_Duration;
-    //    LEDreturn = EX_AttractLEDeffects2;                // come back after the colors are set
-    //    ShowLEDpatterns(1);
     break;
   case 2:                                             // back to GI color
     Running = false;
-    //    LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
-    //    LEDsetColorMode(2);
     break;}}
 
 byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Comet
@@ -1410,13 +1398,11 @@ byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Com
       case 700:
         EX_AttractLEDeffects(0);                      // and stop it
         BlockDisplay = false;                         // give display control back to PinMame
-//        LEDhandling(6, 103);                          // write 103 to stop the GI animation
-//        LEDhandling(7, 1);
-        LEDsetColorMode(0);                           // turn off unwanted LEDs
         LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
         LEDpattern = PME_GIon;                        // set GI pattern
         LEDhandling(9, 4);                            // apply changes
-        //ActivateTimer(40, 2, EX_AttractLEDeffects2);  // wait a cycle to apply GI color
+        LEDsetColorMode(0);                           // turn off unwanted LEDs
+        LEDhandling(9, 4);                            // apply changes
         break;
       case 1100:
         EX_AttractLEDeffects2(1);                     // play another GI effect
@@ -1430,12 +1416,7 @@ byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Com
           WriteLower((char*) EX_CustomText + 14);}
         break;
       case 1300:                                      // and stop it
-//        LEDhandling(6, 103);                          // write 103 to stop the GI animation
-//        LEDhandling(7, 1);
         EX_AttractLEDeffects2(2);                     // stop animation
-//        LEDsetColorMode(0);                           // turn off unwanted LEDs
-//        LEDpattern = PME_GIon;                        // set GI pattern
-//        LEDhandling(9, 4);                            // apply changes
         BlockDisplay = false;}}                         // give display control back to PinMame
     return(0);
   case WriteToDisplay0:
@@ -1687,6 +1668,7 @@ byte EX_Fire(byte Type, byte Command){                // Exceptions code for Fir
     else if (Command > 95 && Command < 104) {         // music volume command 0x6X
       MusicVolume = Command - 96;}
     else if (Command == 127) { }                      // ignore unknown sound command 1x7f
+    else if (Command == 162) { }                      // ignore unknown sound command 1xa2
     else if (Command == 163) { }                      // ignore unknown sound command 1xa3
     else if (Command == 164) { }                      // ignore unknown sound command 1xa4
     else if (Command == 247) { }                      // ignore unknown sound command 1xf7
@@ -1711,6 +1693,10 @@ byte EX_Fire(byte Type, byte Command){                // Exceptions code for Fir
       AfterMusic = 0;}                                // no looping
     else if (Command == 85) { }                       // ignore unknown sound command 0x55
     else if (Command == 170) { }                      // ignore unknown sound command 0xaa
+    else if (Command > 146 && Command < 154 && Command != 149) {
+      char FileName[9] = "1_00.snd";                  // handle standard sound
+      if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+        PlayMusic(50, (char*) FileName);}}
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
