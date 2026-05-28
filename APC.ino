@@ -2531,7 +2531,7 @@ void Settings_Enter() {
   WriteUpper("   SETTINGS     ");                     // Show Test Mode
   WriteLower("                ");
   LampPattern = NoLamps;                              // Turn off all lamps
-  LEDhandling(0, 0);                                  // Stop LEDhandling
+  //LEDhandling(0, 0);                                  // Stop LEDhandling
   AppByte = 0;
   AppByte2 = 0;
   Switch_Pressed = SelectSettings;
