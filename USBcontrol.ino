@@ -157,8 +157,8 @@ void USB_AttractMode() {                              // Attract Mode
     if (game_settings[USB_RecycleSolenoid1+i]) {      // is a solenoid selected?
       SolRecycleTime[game_settings[USB_RecycleSolenoid1+i]-1] = 250;}} // define a recycle time of 250ms for it
   USB_ReleasedSwitches(72);                           // tell Lisy to start PinMame
-  for (byte i=0; i<5; i++) {
-    USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
+//  for (byte i=0; i<5; i++) {
+//    USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
   if (game_settings[USB_Watchdog]) {                  // watchdog enabled?
     USB_WatchdogHandler(1);}                          // initiate reset and start watchdog
   if (ComState) {
@@ -276,8 +276,8 @@ void USB_Testmode(byte Dummy) {                       // enter system settings i
   UNUSED(Dummy);
   USB_Enter_TestmodeTimer = 0;
   USB_WatchdogHandler(3);                             // stop USB watchdog
-  for (byte i=0; i<5; i++) {
-    USB_DisplayProtocol[i] = 6;}                      // use ASCII protocol for displays
+//  for (byte i=0; i<5; i++) {
+//    USB_DisplayProtocol[i] = 6;}                      // use ASCII protocol for displays
   if (ComState == 2) {                                // USB mode selected?
     Serial.end();}
   else if ((ComState == 1) && OnBoardCom) {           // onboard Pi selected and detected?
