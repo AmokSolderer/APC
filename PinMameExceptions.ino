@@ -1268,11 +1268,11 @@ void EX_AttractLEDeffects2(byte State) {              // call with State = 1
     if (Running) {
       LEDshowPatterns(1);}                            // restart pattern
     else {
-      LEDsetColorMode(0);                             // turn off unwanted LEDs
+      LEDsetColorMode(2);
       LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
       LEDpattern = PME_GIon;                          // set GI pattern
       LEDhandling(9, 4);                              // apply changes
-      LEDsetColorMode(2);
+      LEDsetColorMode(0);                             // turn off unwanted LEDs
       LEDhandling(9, 4);}                             // re-send pattern
     break;
   case 1:
