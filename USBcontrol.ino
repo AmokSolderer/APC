@@ -1262,9 +1262,10 @@ void HandleColorSetting(bool change) {
         SettingsPointer[AppByte]--;}}}                // if limit not reached just decrease the numeric value
   else {
     if (APC_settings[LEDsetting]) {                   // LEDs selected?
-      LEDinit();
-      LEDsetColorMode(2);                             // to immediately apply the selected color to the GI
-      LEDpattern = PME_GIon;}}                        // and turn on GI
+      //LEDinit();
+      LEDsetColorMode(2);}}                           // to immediately apply the selected color to the GI
   LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
+  LEDpattern = PME_GIon;                        // and turn on GI
+  LEDhandling(9, 4);                             // apply changes
   WriteLower("                ");
   DisplayScore(4,SettingsPointer[AppByte]);}          // show the current value
