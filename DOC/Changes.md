@@ -5,6 +5,7 @@
 ### New SW Version V1.05
 
 * Exception rules for System 11 Fire! have been added. [Sound files for FIRE! are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
+* In Remote Control mode you can now select whether to enter the APC Settings by using the Advance button (default) or keeping the High Score Reset button pressed ([Game Setting 12](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode)).
 
 ## March 2026
 

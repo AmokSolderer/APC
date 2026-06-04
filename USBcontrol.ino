@@ -27,6 +27,7 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 #define USB_RecycleSolenoid2 9
 #define USB_RecycleSolenoid3 10
 #define USB_RecycleSolenoid4 11
+#define USB_EnterSettings 12
 
 const byte USB_defaults[64] = {0,0,0,255,0,0,20,0,    // game default settings
                               0,0,0,0,0,0,0,0,
@@ -51,6 +52,7 @@ const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"  
 const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
 const char TXTUSB_BallSave[5][17] = {{"          OFF   "},{"           ON   "},{" LEFT  OUTLANE  "},{" BOTH  OUTLANE  "},{"       GENERAL  "}};
 const char TxtUSB_Music[2][17] = {{"PINMAMEDEFAULT  "},{"  MUSICSND      "}};
+const char TxtUSB_EnterSet[2][17] = {{"       ADVANCE  "},{"HIGH SC RESET   "}};
 
 const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
     {" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
@@ -64,7 +66,7 @@ const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting
     {"RECYCLE SOL 2   ",HandleNumSetting,0,0,22},
     {"RECYCLE SOL 3   ",HandleNumSetting,0,0,22},
     {"RECYCLE SOL 4   ",HandleNumSetting,0,0,22},
-    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {" ENTER SETTNGS  ",HandleTextSetting,&TxtUSB_EnterSet[0][0],0,1},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
@@ -222,15 +224,16 @@ void USB_SwitchHandler(byte Switch) {
   if (!PinMameException(SwitchActCommand, Switch)){   // check for machine specific exceptions
     switch (Switch) {
     case 8:                                           // high score reset
-      digitalWrite(Blanking, LOW);                    // invoke the blanking
-      StopPlayingMusic();
-      StopPlayingSound();
+      if (game_settings[USB_EnterSettings]) {         // settings on High Score Reset button?
+        StopPlayingMusic();
+        StopPlayingSound();
+        USB_Enter_TestmodeTimer = ActivateTimer(1000, 0, USB_Testmode);}  // look again in 1s
       break;
     case 72:                                          // advance button
       while (USB_ChangedSwitches[i] && (i<63)) {
         i++;}
       USB_ChangedSwitches[i] = Switch | 128;          // send switch code to USB
-      if (QuerySwitch(73)) {                          // Up/Down switch pressed?
+      if (QuerySwitch(73) && !game_settings[USB_EnterSettings]) { // settings on Advance button and Up/Down switch pressed?
         USB_Enter_TestmodeTimer = ActivateTimer(1000, 0, USB_Testmode);}  // look again in 1s
       break;
     default:
@@ -252,7 +255,6 @@ void USB_ReleasedSwitches(byte Switch) {
   if (!PinMameException(SwitchRelCommand, Switch)){   // check for machine specific exceptions
     switch (Switch) {
     case 8:                                           // high score reset
-      break;
     case 72:
       if (USB_Enter_TestmodeTimer) {
         KillTimer(USB_Enter_TestmodeTimer);
