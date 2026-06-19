@@ -83,6 +83,8 @@ If an SD card is present the settings are stored when you choose 'Exit Settings'
 While you're running PinMame you can adjust the original Williams System 4 - 11 adjustments as usual with one exception:  
 You must not keep Advance pressed for more than 1 second with Up/Down in up position as this will trigger the APC settings. If you want to browse the Williams Settings quickly, just do it backwards with Up/Down in down position.
 
+You can prevent this by selecting the High Score Reset button to enter the APC Settings. This can be done in the [Game Settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode).
+
 ### System 3 game adjustments
 
 Doing game adjustments on a System 3 game is done with DIP switches. The procedure is quite cumbersome and error prone which is why we're using the APC's settings menu instead.  

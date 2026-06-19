@@ -29,12 +29,9 @@ The corresponding code can be found in the AmokPrivate branch of this repository
 Depending on the 'LED lamps' setting the LED strip is used as a replacement for the controlled lamps (1-64) or the LEDs are added to the normal lamps which means the first LED corresponds to lamp number 65. Hence, if you choose 'playfield' in the 'LED lamps' setting in the 'System Settings' menu of the APC, the normal controlled lamps will be switched off and the LED strip will be used instead. The first LED of the strip will then work as lamp 1 and so on. If you choose 'additional' the normal lamp matrix will stay active and the LEDs will get the numbers 64+X.  
 In the 'additional' LED mode the amount of used LEDs can vary between 1 and 192. You must therefore specify this number in the 'No of LEDs' setting.
 
-The more LEDs you connect, the longer it takes to update them all. The minimum refresh cycle time for one LED would be 8ms and for 192 LEDs it's 38ms. For the default number of 64 LEDs the refresh cycle time is 20ms.
+The normal TurnOnLamp/TurnOffLamp commands are also used to control LEDs. By default (LED Color Mode = 0) the brightness of an LED being turned on or off will change gradually in 5 steps with each step taking 20ms. Hence, the whole turn on/off takes 100ms which looks similar to a lightbulb.
 
-The normal TurnOnLamp/TurnOffLamp commands are also used to control LEDs. When the status of an LED changes, it's brightness will change gradually in 5 steps with each step taking one cycle time. For the default number of LEDs (64) the whole turn on/off takes 100ms which looks similar to a lightbulb.
-
-The APC API features some special commands which work only with LEDs and not with normal matrix lamps.  
-Note that the LED_exp board can only handle one command per refresh cycle (normally 20ms) and the command buffer can just store 8 commands, so don't send too many command at a time.
+The APC API features some special commands which work only with LEDs and not with normal matrix lamps. These commands are:
 
 ### LEDsetColor(byte Red, byte Green, byte Blue)
 
@@ -46,7 +43,7 @@ How the LEDs are affected by this new set color depends on the currently selecte
 The color of the specified LED changes to the LEDsetColor. If the LED is already lit, it'll change the color immediately.  
 If mode 1 is selected then this command is the only way to change the color of an LED.
 
-As only one LED command can be sent per refresh cycle, this method is not suited to change the color of several LEDs at once. Use LED color modes for this purpose.
+However, this method is not suited to change the color of several LEDs at once. Use LED color modes for this purpose.
 
 ### LEDsetColorMode(byte Mode)
 
@@ -56,16 +53,59 @@ The LED_exp board features five color modes which can be selected by this comman
 
 | Mode number | How it works |
 |--|--|
-| 0 | LEDs being lit get the LEDsetColor. LEDs which are already lit are not affected |
-| 1 | LEDs being lit keep their color. If you want to change it use LEDchangeColor |
+| 0 | LEDs being lit get the LEDsetColor. LEDs which are already lit are not affected. LEDs are smoothly turned on and off like a bulb |
+| 1 | LEDs being lit keep their color. If you want to change it use LEDchangeColor. LEDs are smoothly turned on and off like a bulb |
 | 2 | LEDs being set in the pattern change their color to the LEDsetColor and are turned on|
 | 3 | LEDs being set in the pattern change their color to the LEDsetColor, but are not turned on|
-| 4 | LEDs are frozen, the pattern has no effect|
+| 4 | Same as mode 0, but the LEDs turn on and off instantly|
+| 5 | Same as mode 1, but the LEDs turn on and off instantly|
 
 The default mode is 0.
 
-In most cases the modes 0 and 1, TurnOnLamp/TurnOffLamp and LEDchangeColor should be sufficient to control your LEDs. However, for certain effects or for changing the color of several LEDs at once, some additional modes might come in handy.  
+### LEDshowPatterns(byte State)
+
+This command shows a sequence of LED effects including color changes.  
+In order to use this, you need to define an array of bytes of the following format:
+
+* Length of each pattern (in bytes)
+
+The following specifies one pattern to be shown:
+
+* Duration of the pattern to be shows (in 10th of ms)
+* Color of the LEDs being set in the following pattern (3 bytes -> Red, Green, Blue)
+* As many LED pattern bytes as stated in the first topic of this list. Every bit defines the state of one LED.
+
+You can define up to 255 patterns like this.  
+The definition ends with the duration being set to zero.
+
+The following example is taken from the PinMameExceptions.ino of the AmokPrivate branch and makes the 32 GI-LEDs of my Comet do an animation.
+
+                                      //LED number..00000000....11111110....22222111....33322222
+                                //Duration Color....87654321....65432109....43210987....21098765
+    const byte GI_Pattern[74] = {4, 1, 255, 0, 0, 0b01001001, 0b10010010, 0b00100100, 0b01001001,
+                                    1, 0, 255, 0, 0b10010010, 0b00100100, 0b01001001, 0b10010010,
+                                   20, 0, 0, 255, 0b00100100, 0b01001001, 0b10010010, 0b00100100,
+                                    1, 0, 0, 255, 0b01001001, 0b10010010, 0b00100100, 0b01001001,
+                                    1, 255, 0, 0, 0b10010010, 0b00100100, 0b01001001, 0b10010010,
+                                   20, 0, 255, 0, 0b00100100, 0b01001001, 0b10010010, 0b00100100,
+                                     1,0, 255, 0, 0b01001001, 0b10010010, 0b00100100, 0b01001001,
+                                    1, 0, 0, 255, 0b10010010, 0b00100100, 0b01001001, 0b10010010,
+                                   20, 255, 0, 0, 0b00100100, 0b01001001, 0b10010010, 0b00100100, 0};
+
+The first byte determines that every LED pattern consists of 4 bytes which makes 32 LEDs.  
+The next byte sets the duration for the following pattern to 1 which means 10ms.  
+Now come 3 bytes for the color of the following pattern. In this case it's 255,0,0 which is pure red.  
+Next are the 4 bytes of the pattern. The first LED is represented by the LSB of the first byte and so on. The commented lines above the array show the way.
+
+The first pattern switches the color to red and lights every third LED. The next switches to green and also turns on every third LED but shifted by one position. The third pattern lights the remaining LEDs in blue. This all happens as fast as possible (Duration = 1). What we get is red, green and blue LEDs alternating.  
+The next duration is set to 20 which means the current state is shown for 200ms.
+
+The next 3 patterns do the same as before, but everything shifted by one LED which is also shown for 200ms. The last 3 patterns are also shifted by one position.  
+The final zero signals the end of the animation
+
+In most cases the modes 0 and 1, TurnOnLamp/TurnOffLamp and LEDchangeColor should be sufficient to control your LEDs. However, for certain effects some additional modes might come in handy.  
 To be able to use these modes you'll need some basic understanding of how the communication between the APC and the LED_Exp board works.  
+
 The APC is permanently transmitting LED patterns to the Exp_board. The length of these patterns depends on the number of LEDs set in the System Settings and the LEDpattern pointer determines which pattern is used. The default pattern is LEDstatus which is an internal array of the LEDhandling routine.  
 In all of these patterns every LED is represented by one bit and the LED Color Mode determines how to handle those.
 
