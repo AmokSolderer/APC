@@ -1096,7 +1096,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
       LEDsetColor(*(LEDpointer+2), *(LEDpointer+3), *(LEDpointer+4)); // select the color
       LEDpattern = LEDpointer + 5;                    // set the pointer to the first LED pattern
       Timer = ActivateTimer(*(LEDpointer+1)*20, 1, LEDpatternTimer);}
-    if (LEDmode < 2) {                                // LEDs are turned on and off according to pattern
+    if (LEDmode < 2 || LEDmode > 3) {                 // LEDs are turned on and off according to pattern
       for (byte i=0;i<Arg/8;i++) {                    // set all change indicators
         ChangedLEDs[i] = 255;}
       byte x = 0;
@@ -1122,7 +1122,7 @@ byte LEDhandling(byte Command, byte Arg) {            // main LED handler
           break;}
         i++;}
       ActValue = ActValue + 3;                        // set address to LED pattern
-      if (LEDmode < 2) {                              // LEDs are turned on and off according to pattern
+      if (LEDmode < 2 || LEDmode > 3) {               // LEDs are turned on and off according to pattern
         PrevValue = PrevValue + 3;                    // set address to LED pattern
         for (i=0;i<*LEDpointer;i++) {                 // for all pattern bytes
           if (*(PrevValue+i) != *(ActValue+i)) {      // check for changes
@@ -1180,9 +1180,9 @@ void LEDsetColor(byte Red, byte Green, byte Blue) {   // set a new color
   LEDhandling(6, Blue);
   LEDhandling(7,0);}
 
-void LEDsetColorMode(byte Mode) {                     // Mode 0 -> lamps being lit get the LEDsetColor / Mode 1 -> lamps keep their color
-  if (Mode < 5) {                                     // Mode 2 -> lamps set in the following frame get the new color immediately / Mode 3 -> only the color of the LEDs is changed, but they're not turned on
-    LEDhandling(12, Mode);}}                          // Mode 4 -> LED state is frozen
+void LEDsetColorMode(byte Mode) {                     // determines an LED color mode
+  if (Mode < 6) {
+    LEDhandling(12, Mode);}}
 
 void LEDchangeColor(byte LED) {                       // the color of the selected LED is changed to LEDsetColor
   LEDhandling(6, 195);
@@ -2285,31 +2285,6 @@ void ShowFileNotFound(String Filename) {              // show file not found mes
   WriteUpper2(NameBuffer);                            // write filename to message buffer
   WriteLower2(" NOT    FOUND   ");
   ShowMessage(5);}                                    // switch to message buffer for 5 seconds
-
-//void ShowLEDpatterns(byte Step) {                     // call with Step = 1 to start and Step = 0 to terminate
-//  static byte Timer = 0;
-//  if ((Step > 1) || (Step ==1 && !Timer)) {           // no kill signal
-//    byte NumOfBytes = *LEDpointer + 4;                // calculate the length of each list entry (4 bytes for duration and color)
-//    if (Step == 1) {
-//      LEDsetColor(*(LEDpointer+1), *(LEDpointer+2), *(LEDpointer+3)); // select the color
-//
-//      Step++;}
-//    unsigned int Buffer = *(LEDpatDuration+Step-2);
-//
-//    LEDsetColor(*(LEDpointer+NumOfBytes*(Step-2)), *(LEDpointer+NumOfBytes*(Step-2)+1), *(LEDpointer+NumOfBytes*(Step-2)+2)); // select the color
-//    LEDpattern = LEDpointer+NumOfBytes*(Step-2)+3;    // apply the new pattern
-//    Step++;
-//    if (!(*(LEDpatDuration+Step-2))) {                // stop if Duration is zero
-//      Timer = 0;
-//      if (LEDreturn) {
-//        LEDreturn(0);}
-//      return;}
-//    Timer = ActivateTimer(Buffer, Step, ShowLEDpatterns);}  // come back if not
-//  else {
-//    if (!Step) {                                      // kill signal received
-//      if (Timer) {
-//        KillTimer(Timer);
-//        Timer = 0;}}}}
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being one - stop with step being zero
   static byte Timer = 0;
