@@ -15,11 +15,11 @@
 #define USB_BallSave 5                                // optional ball saver
 #define USB_BallSaveTime 6                            // activation time for the optional ball saver
 #define USB_BGmusic 7                                 // to select an own BG music
-#define LED_red 12                                    // to change the color of the LED GI
-#define LED_green 13
-#define LED_blue 14
-#define USB_CustomText 15                             // to select a custom text to be shown during attract mode
-#define USB_Option1 16                                // an option for own PinMame exceptions
+#define LED_red 13                                    // to change the color of the LED GI
+#define LED_green 14
+#define LED_blue 15
+#define USB_CustomText 16                             // to select a custom text to be shown during attract mode
+#define USB_Option1 17                                // an option for own PinMame exceptions
 
 byte USB_ChangedSwitches[64];                         // moved here from USBcontrol
 const byte PME_GIallOn[4] = {255, 255, 255, 255};     // all GI LEDs on
