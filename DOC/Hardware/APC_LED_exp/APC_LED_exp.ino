@@ -112,20 +112,23 @@ void loop() {
           CommandCount = 1;}}                         // wait for  one argument
       else {                                          // different command
         switch (RecByte) {
-        case 64:                                      // Mode 0 -> lamps being lit get the ColorSelect color
+        case 64:                                      // Mode 0 -> lamps being lit get the ColorSelect color / smooth turn-on/off
           Mode = 0;
           break;
-        case 65:                                      // Mode 1 -> lamps keep their color
+        case 65:                                      // Mode 1 -> lamps keep their color / smooth turn-on/off
           Mode = 1;
           break;
-        case 66:                                      // Mode 2 -> lamps set in the following frame get the new color immediately
+        case 66:                                      // Mode 2 -> LEDs being set in the pattern change their color to the LEDsetColor and are turned on
           Mode = 2;
           break;
-        case 67:                                      // Mode 3 -> only the color of the LEDs is changed, but they're not turned on
+        case 67:                                      // Mode 3 -> LEDs being set in the pattern change their color to the LEDsetColor, but are not turned on
           Mode = 3;
           break;
-        case 68:                                      // Mode 4 -> LED state is frozen
+        case 68:                                      // Mode 4 -> Same as mode 0, but the LEDs turn on and off instantly
           Mode = 4;
+          break;
+        case 69:                                      // Mode 5 ->  Same as mode 1, but the LEDs turn on and off instantly
+          Mode = 5;
           break;
         case 100:                                     // execute OwnCommand
           OwnCommands |= 1;                           // activate OwnCommand number 1
