@@ -1122,7 +1122,7 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
     WriteLower2("         BALL ");
     ShowMessage(3);
     PlaySound(51, "0_6f.snd");
-    ActA_BankSol(2);                              // release ball
+    ActA_BankSol(2);                                  // release ball
     BallWatchdogTimer = ActivateTimer(2000, Counter+1, PB_SearchBall);
     break;
   case 21:
@@ -1151,9 +1151,9 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
           BallWatchdogTimer = ActivateTimer(1000, 0, PB_SearchBall);} // and try again in 1s
         else {
           if (game_settings[PB_Multiballs]) {         // 3 ball multiball selected?
+            PB_CountBallsInLock();
             switch (PB_MballState) {
             case 1:                                   // one ball in play
-              PB_CountBallsInLock();
               if (InLock) {                           // number of locked balls not as expected
                 PB_HandleLock(0);}                    // and call it
               else {
@@ -1162,19 +1162,29 @@ void PB_SearchBall(byte Counter) {                    // ball watchdog timer has
               break;
             case 2:                                   // one ball in lock
             case 6:
-              PB_CountBallsInLock();
               if (InLock != 1) {                      // number of locked balls not as expected
                 PB_HandleLock(0);}                    // and call it
-              else {
+              else if (c == 2) {                      // all balls found?
+                PB_ClearOutLock(1);
+                PB_MballState = 1;}
+              else {                                  // look for them
                 Counter = PB_SearchBallCycle(Counter); // fire coils to search ball
                 BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}
               break;
             case 3:                                   // two balls in lock
-              PB_CountBallsInLock();
               if (InLock != 2) {                      // number of locked balls not as expected
                 PB_HandleLock(0);}                    // and call it
               else if (c > 0) {                       // unexpected ball in trunk
                 PB_BallEnd(c);}
+              else {
+                Counter = PB_SearchBallCycle(Counter); // fire coils to search ball
+                BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}
+              break;
+            case 5:                                   // still two balls after multiball
+              if (InLock == 2) {
+                PB_ClearOutLock(0);}                  // elect one ball
+              else if (c == 2) {                      // two balls in outhole?
+                PB_ClearOutLock(1);}                  // clear out lock and close visor
               else {
                 Counter = PB_SearchBallCycle(Counter); // fire coils to search ball
                 BallWatchdogTimer = ActivateTimer(1000, Counter, PB_SearchBall);}
