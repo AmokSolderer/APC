@@ -61,29 +61,28 @@ void loop() {
                   TurnOff[5][Buffer] &= (255 - Mask);}
                 Mask = Mask << 1;}}}
           else {                                      // selected lamps get the selected color immediately
-            if (RecByte) {                            // any lamps set?
-              byte Mask = 1;
-              byte Buffer = Command - 1;
-              for (byte i=0;i<8;i++) {                // for the 8 lamps currently being processed
-                if (RecByte & Mask) {                 // lamp set in RecByte?
-                  switch (Mode) {
-                  case 2:
-                  case 4:
-                    LampStatus[Buffer] |= Mask;       // turn on lamp
-                    /* no break */
-                  case 3:
-                    for (byte c=0;c<3;c++) {            // set max brightness of lamp to selected max value
-                      LampMax[Buffer*8+i][c] = LampMaxSel[c];}
-                    if (LampStatus[Buffer] & Mask) {  // LED on?
-                      pixels.setPixelColor(Buffer*8+i, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}
-                    break;
-                  case 5:
-                    LampStatus[Buffer] |= Mask;       // turn on lamp
-                    pixels.setPixelColor(Buffer*8+i, pixels.Color(LampMax[Buffer*8+i][0],LampMax[Buffer*8+i][1],LampMax[Buffer*8+i][2]));}}
-                else {                                // lamp not set in RecByte
-                  if (Mode > 3) {
-                    LampStatus[Buffer] &= (255 - Mask);
-                    pixels.setPixelColor(Buffer*8+i, pixels.Color(0,0,0));}}}
+            byte Mask = 1;
+            byte Buffer = Command - 1;
+            for (byte i=0;i<8;i++) {                  // for the 8 lamps currently being processed
+              if (RecByte & Mask) {                   // lamp set in RecByte?
+                switch (Mode) {
+                case 2:
+                case 4:
+                  LampStatus[Buffer] |= Mask;         // turn on lamp
+                  /* no break */
+                case 3:
+                  for (byte c=0;c<3;c++) {            // set max brightness of lamp to selected max value
+                    LampMax[Buffer*8+i][c] = LampMaxSel[c];}
+                  if (LampStatus[Buffer] & Mask) {    // LED on?
+                    pixels.setPixelColor(Buffer*8+i, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}
+                  break;
+                case 5:
+                  LampStatus[Buffer] |= Mask;         // turn on lamp
+                  pixels.setPixelColor(Buffer*8+i, pixels.Color(LampMax[Buffer*8+i][0],LampMax[Buffer*8+i][1],LampMax[Buffer*8+i][2]));}}
+              else {                                  // lamp not set in RecByte
+                if (Mode > 3) {
+                  LampStatus[Buffer] &= (255 - Mask);
+                  pixels.setPixelColor(Buffer*8+i, pixels.Color(0,0,0));}}
               Mask = Mask << 1;}}}}
       else {                                          // command > 25
         switch (Command) {
