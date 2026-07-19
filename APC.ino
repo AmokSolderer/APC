@@ -2287,6 +2287,7 @@ void ShowFileNotFound(String Filename) {              // show file not found mes
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being one - stop with step being zero
   static byte Timer = 0;
+  byte LEDbuffer[8];
   if ((Step > 1) || (Step ==1 && !Timer)) {           // no kill signal
     if (Step == 1) {
       Step++;}
@@ -2294,13 +2295,41 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
     if (StrobeLightsOn) {
       LampBuffer = ((PatPointer+Step-2)->Pattern);}   // show the pattern
     else {
-      LampPattern = ((PatPointer+Step-2)->Pattern);}  // show the pattern
+      LampPattern = ((PatPointer+Step-2)->Pattern);   // show the pattern
+      if (APC_settings[LEDsetting] > 1) {             // LEDs need to show the pattern also
+        switch (APC_settings[BackboxLamps]) {
+        case 0:                                       // Bbox lamps in column 1
+          if (APC_settings[LEDsetting] == 3) {        // LEDs for playfield and Bbox
+            LEDbuffer[0] = LampColumns[0];            // don't use lamp pattern for column 1
+            for (byte i=1;i<8;i++) {
+              LEDbuffer[i] = LampPattern[i];}}
+          else {                                      // LEDs for playfield only
+            for (byte i=0;i<7;i++) {
+              LEDbuffer[i] = LampPattern[i+1];}}
+          break;
+        case 1:                                       // Bbox lamps in column 8
+          for (byte i=0;i<7;i++) {
+            LEDbuffer[i] = LampPattern[i];}
+          if (APC_settings[LEDsetting] == 3) {        // LEDs for playfield and Bbox
+            LEDbuffer[7] = LampColumns[7];}           // don't use lamp pattern for column 8
+          break;
+        case 2:                                       // no Bbox lamps
+          for (byte i=0;i<8;i++) {
+            LEDbuffer[i] = LampPattern[i];}
+          break;}
+        LEDpattern = LEDbuffer;                       // set LEDpattern to buffer
+        if (APC_settings[LEDsetting] == 3) {          // LEDs for playfield and Bbox
+          LEDhandling(9, 8);}                         // process 64 LEDs
+        else {                                        // LEDs for playfield only
+          LEDhandling(9, 7);}}}                       // process 56 LEDs
     Step++;                                           // increase the pattern number
     if (!((PatPointer+Step-2)->Duration)) {           // if the duration for the next pattern is 0
       Step = 2;                                       // reset the pattern
       FlowRepeat--;                                   // decrease the number of repetitions
       if (!FlowRepeat) {                              // if no more repetitions pending
         Timer = 0;                                    // indicate that the process has stopped
+        if (APC_settings[LEDsetting] > 1) {           // LEDs need to show the pattern also
+          LEDpattern = LEDstatus;}                    // show standard LED pattern
         if (LampReturn) {                             // is a return pointer given?
           LampReturn(0);}                             // call the procedure
         return;}}                                     // otherwise just quit
@@ -2308,6 +2337,8 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
   else {                                              // kill signal
     if (!Step) {
       if (Timer) {
+        if (APC_settings[LEDsetting] > 1) {           // LEDs need to show the pattern also
+          LEDpattern = LEDstatus;}                    // show standard LED pattern
         KillTimer(Timer);
         Timer = 0;}}}}
 
