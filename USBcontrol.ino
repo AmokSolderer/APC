@@ -411,10 +411,25 @@ void USB_SerialCommand() {
     USB_WriteByte((byte) 0);
     break;
   case 3:                                             // get number of lamps
-    USB_WriteByte((byte) 65);
+    switch (APC_settings[LEDsetting]) {
+    case 0:                                           // no LEDs
+      USB_WriteByte((byte) 65);
+      break;
+    case 1:                                           // LED mode 'additional'
+      USB_WriteByte((byte) 65 + APC_settings[NumOfLEDs]);
+      break;
+    case 2:                                           // LED mode 'playfield only'
+      USB_WriteByte((byte) 8 + APC_settings[NumOfLEDs]);
+      break;
+    case 3:                                           // LED mode 'playfield and backbox'
+      USB_WriteByte((byte) APC_settings[NumOfLEDs]);
+      break;}
     break;
   case 4:                                             // get number of solenoids
-    USB_WriteByte((byte) 25);
+    if (APC_settings[SolenoidExp]) {
+      USB_WriteByte((byte) 33);}
+    else {
+      USB_WriteByte((byte) 25);}
     break;
   case 6:                                             // get number of displays
     switch (APC_settings[DisplayType]) {
