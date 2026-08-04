@@ -4,6 +4,8 @@
 
 ### New SW Version V1.05
 
+* The SW of the [LEDexpBoard](https://github.com/AmokSolderer/APC/blob/V01.05/DOC/LEDexpBoard.md) has been upgraded. That means you also have to update the SW of the LEDexpBoard when you switch to V1.05. The LED commands have also changed slightly.
+* Exception rules for System 11 Millionaire have been added. [Sound files for Millionaire are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
 * Exception rules for System 11 Fire! have been added. [Sound files for FIRE! are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
 * In Remote Control mode you can now select whether to enter the APC Settings by using the Advance button (default) or keeping the High Score Reset button pressed ([Game Setting 12](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode)).
 

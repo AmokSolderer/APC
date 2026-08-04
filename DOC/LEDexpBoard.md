@@ -27,7 +27,7 @@ The corresponding code can be found in the AmokPrivate branch of this repository
 ## Usage
 
 Depending on the 'LED lamps' setting the LED strip is used as a replacement for the controlled lamps (1-64) or the LEDs are added to the normal lamps which means the first LED corresponds to lamp number 65. Hence, if you choose 'playfield' in the 'LED lamps' setting in the 'System Settings' menu of the APC, the normal controlled lamps will be switched off and the LED strip will be used instead. The first LED of the strip will then work as lamp 1 and so on. If you choose 'additional' the normal lamp matrix will stay active and the LEDs will get the numbers 64+X.  
-In the 'additional' LED mode the amount of used LEDs can vary between 1 and 192. You must therefore specify this number in the 'No of LEDs' setting.
+The amount of used LEDs can vary between 1 and 192. You must therefore specify this number in the 'No of LEDs' setting.
 
 The normal TurnOnLamp/TurnOffLamp commands are also used to control LEDs. By default (LED Color Mode = 0) the brightness of an LED being turned on or off will gradually change in 5 steps with each step taking 20ms. Hence, the whole turn on/off takes 100ms which looks similar to a lightbulb.
 
@@ -134,7 +134,8 @@ For complex or repetitive animations it is also possible to add individual LED c
 
 At the end of APC_LED_exp.ino there's a switch statement which handles all commands of the LED_ExpBoard.
 
-    switch (RecByte) {                              // treat it as a command
+      else {                                          // different command
+        switch (RecByte) {
     
 To add a new command, just look for an unused command number and create a case for it.
 
@@ -157,22 +158,22 @@ When command 100 is received by the LED_ExpBoard, all it does is to set the LSB 
 This command clears the LSB in OwnCommands to signal the player to stop. Furthermore it switches off all LEDs and also changes their status in LampStatus to zero.
 
 Until now we just have a bit in OwnCommands which determines whether our command is active or not. The next step is to add a player which reads this bit and plays some LED animation when it is set.  
-As stated above the LEDs are updated once in every refresh cycle. Therefore it makes sense to run our LED player also just once per refresh cycle. I have marked the right position in the code with a corresponding comment which can be found in the first line of my example player.
+As stated above the LEDs are updated once in every refresh cycle. Therefore it makes sense to run our LED player also just once per refresh cycle. I have marked the right position in the code with a corresponding comment which can be found in the first line of my example player. It is part of the sync command which runs every 20ms.
 
-    if (!Sync && OwnCommands) {                       // a good place to let an own command run once per refresh cycle
-      if (OwnCommands & 1) {                          // check which command is meant
-        if (!(OwnCommandStep % 5)) {                  // only be active every 5th refresh cycle
-          byte Step = OwnCommandStep / 5;             // calculate the current step
-          for (byte i=0;i<6;i++) {                    // pattern has 6 fading grades
-            if (Step+i < 12) {                        // it's for 12 LEDs
-              pixels.setPixelColor(Step+i,OwnPattern[i][0],OwnPattern[i][1],OwnPattern[i][2]);}
-            else {
-              pixels.setPixelColor(Step+i-12,OwnPattern[i][0],OwnPattern[i][1],OwnPattern[i][2]);}}}
-        OwnCommandStep++;
-        if (OwnCommandStep > 59) {
-          OwnCommandStep = 0;}}}
-          
-The first line waits for the Sync counter becoming zero and OwnCommands being different from zero. That means if any of the bits in OwnCommands is set then the following code is executed after each Sync which is once per refresh cycle.  
+      if (OwnCommands) {                          // a good place to let an own command run once per refresh cycle
+        if (OwnCommands & 1) {                    // check which command is meant
+          if (!(OwnCommandStep % 5)) {            // only be active every 5th refresh cycle
+            byte Step = OwnCommandStep / 5;       // calculate the current step
+            for (byte i=0;i<6;i++) {              // pattern has 6 fading grades
+              if (Step+i < 12) {                  // it's for 12 LEDs
+                pixels.setPixelColor(Step+i,OwnPattern[i][0],OwnPattern[i][1],OwnPattern[i][2]);}
+              else {
+                pixels.setPixelColor(Step+i-12,OwnPattern[i][0],OwnPattern[i][1],OwnPattern[i][2]);}}}
+          OwnCommandStep++;
+          if (OwnCommandStep > 59) {
+            OwnCommandStep = 0;}}}
+
+The first whether OwnCommands is different from zero. That means if any of the bits in OwnCommands is set then the following code is executed.
 At first the player checks the LSB of OwnCommands and proceeds if it's set. In order not to play the pattern too fast the player checks next if OwnCommandStep can be divided by 5 without rest and skips the other 4 cycles. The desired effect is some kind of green radar animation for an LED ring with 12 LEDs. Basically it's always the same pattern going round and round, a bright spot which fades in 6 steps.
 
     const byte OwnPattern[6][3] = {{0,0,0},{0,50,0},{0,100,0},{0,150,0},{0,200,0},{0,250,0}};
@@ -183,9 +184,9 @@ At the end OwnCommandStep is increased by one and after 60 cycles it starts all 
 Now that we have added the command to the LED_ExpBoard SW, we still have to issue it from the program running on the APC board itself. This can be done with the LEDhandling command. For our single byte command this would be
 
     LEDhandling(6, 100);                              // write 100 to the command buffer
-    LEDhandling(7, 1);                                // send 1 byte to the LED_ExpBoard
+    LEDhandling(7, 0);                                // send the buffer to the LED_ExpBoard
     
-The first line adds our command (number 100) to the command buffer and the second line sends 1 byte of this buffer. If your command has more than one byte they all need to be send with LEDhandling(6,byte) and executed with LEDhandling(7, number of bytes).  
+The first line adds our command (number 100) to the command buffer and the second line sends 1 byte of this buffer. If your command has more than one byte they all need to be send with LEDhandling(6,byte) and executed with LEDhandling(7, 0).
 Let's use LEDsetColor as an example. This command has 4 bytes (command and 3 color values) which leads to
 
     void LEDsetColor(byte Red, byte Green, byte Blue) {   // set a new color
@@ -193,5 +194,5 @@ Let's use LEDsetColor as an example. This command has 4 bytes (command and 3 col
       LEDhandling(6, Red);
       LEDhandling(6, Green);
       LEDhandling(6, Blue);
-      LEDhandling(7, 4);}
+      LEDhandling(7, 0);}
   
