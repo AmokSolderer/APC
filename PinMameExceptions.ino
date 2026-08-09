@@ -1329,6 +1329,7 @@ byte EX_Millionaire(byte Type, byte Command){         // Exceptions code for EX_
       AfterMusic = 0;
       RestoreMusicVolume(100);
       StopPlayingMusic();}
+    else if (Command == 85) { }                       // ignore unknown sound command 0x55
     else if (Command > 95 && Command < 104) {         // music volume command 0x6X
       MusicVolume = Command - 96;}
     else if (Command == 127) { }                      // ignore unknown sound command 1x7f
