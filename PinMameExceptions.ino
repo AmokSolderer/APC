@@ -1335,39 +1335,40 @@ byte EX_Millionaire(byte Type, byte Command){         // Exceptions code for EX_
     else if (Command == 127) { }                      // ignore unknown sound command 1x7f
     else if (Command == 255) { }                      // ignore unknown sound command 1xff
     else if (Command == 1) {                          // music track 1
-      PlayMusic(50, "1_01.snd");}                     // play music track
-    //QueueNextMusic("1_01L.snd");}                   // queue looping part as next music to be played
+      PlayMusic(50, "1_01L.snd");                     // play music track
+      QueueNextMusic("1_01L.snd");}                   // track is looping so queue it also
     else if (Command == 2) {                          // music track 2
-      PlayMusic(50, "1_02.snd");}                      // play non looping part of music track
-    //QueueNextMusic("1_02L.snd");}                   // queue looping part as next music to be played
+      PlayMusic(50, "1_02L.snd");                     // play non looping part of music track
+      QueueNextMusic("1_02L.snd");}                   // track is looping so queue it also
     else if (Command == 3) {                          // music track 3
-      PlayMusic(50, "1_03.snd");}                      // play non looping part of music track
-    //QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
+      PlayMusic(50, "1_03L.snd");                     // play non looping part of music track
+      QueueNextMusic("1_03L.snd");}                   // track is looping so queue it also
     else if (Command == 4) {                          // music track 4
-      PlayMusic(50, "1_04.snd");}                      // play non looping part of music track
-    //QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
+      PlayMusic(50, "1_04.snd");                      // play non looping part of music track
+      QueueNextMusic("1_04L.snd");}                   // queue looping part as next music to be played
     else if (Command == 5) {                          // music track 5
-      PlayMusic(50, "1_05.snd");}                     // play music track
-    //QueueNextMusic("1_05L.snd");}                   // queue looping part as next music to be played
+      PlayMusic(50, "1_05L.snd");                     // play music track
+      QueueNextMusic("1_05L.snd");}                   // track is looping so queue it also
     else if (Command == 6) {                          // music track 6
-      PlayMusic(50, "1_06.snd");}                      // play non looping part of music track
+      PlayMusic(50, "1_06.snd");                      // play non looping part of music track
+      QueueNextMusic("1_06L.snd");}                   // queue looping part as next music to be played
     else if (Command == 7) {                          // music track 7
-      PlayMusic(50, "1_07.snd");}                     // play music track
-    //QueueNextMusic("1_01L.snd");}                   // queue looping part as next music to be played
+      PlayMusic(50, "1_07.snd");                      // play music track
+      QueueNextMusic("1_07L.snd");}                   // queue looping part as next music to be played
     else if (Command == 8) {                          // music track 8
-      PlayMusic(50, "1_08.snd");}                      // play non looping part of music track
-    //QueueNextMusic("1_02L.snd");}                   // queue looping part as next music to be played
+      PlayMusic(50, "1_08.snd");                      // play non looping part of music track
+      QueueNextMusic("1_08L.snd");}                   // queue looping part as next music to be played
     else if (Command == 9) {                          // music track 9
-      PlayMusic(50, "1_09.snd");}                      // play non looping part of music track
-    //QueueNextMusic("1_03L.snd");}                   // queue looping part as next music to be played
-    else if (Command == 10) {                          // music track 10
+      PlayMusic(50, "1_09.snd");                      // play non looping part of music track
+      QueueNextMusic("1_09L.snd");}                   // queue looping part as next music to be played
+    else if (Command == 10) {                         // music track 10
       PlayMusic(50, "1_0a.snd");                      // play non looping part of music track
       AfterMusic = 0;}                                // no looping
-    else if (Command == 11) {                          // music track 11
-      PlayMusic(50, "1_0b.snd");                     // play music track
+    else if (Command == 11) {                         // music track 11
+      PlayMusic(50, "1_0b.snd");                      // play music track
       AfterMusic = 0;}                                // no looping
     else if (Command == 133 || (Command > 137 && Command < 144) || (Command > 156 && Command < 160)) {
-      AfterMusic = 0;                                // no looping
+      AfterMusic = 0;                                 // no looping
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
         PlayMusic(50, (char*) FileName);}}
