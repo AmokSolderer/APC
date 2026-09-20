@@ -68,3 +68,9 @@ The APC uses an 8 bit data bus to control most of the HW. If this bus is dead th
 Finding the damaged latch can be tricky as they're all connected in parallel, but the most likely candidate is the switch driver latch U23. This latch is providing the signals of the switch row and can therefore be damaged by high voltages being shorted to the switch matrix.  
 You can remove the IC quite easily with two soldering irons. If the APC comes to live again with the IC removed, you have found your problem, but be sure to fix the short in your switch matrix before installing a new IC.
 
+## Issues with Williams Flash
+
+During the production run of Flash, Williams changed the ROM code which altered the settings menu. The manual shows the settings menu of the old ROMs, but PinMame is using the newer ones which means that the manual is not correct for PinMame and therefore for the APC.
+So if you want to use the APC in a Williams Flash, be sure to use 6 as the PinMame game number setting. For this selection, the 'New Function' column in the following table is valid for the Williams settings menu:
+
+[Flash settings menu](https://github.com/AmokSolderer/APC/blob/V01.05/DOC/Flash_settings.csv)

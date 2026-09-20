@@ -182,7 +182,7 @@ byte EX_BallSaver(byte Type, byte Command){
     if(EX_Machine[SolACrelay] && Command == EX_Machine[SolACrelay] && EX_BallSaveMonitor) {
       EX_BallSaveACstate = false;
       return(1);}                                     // hide these switches from PinMame
-    else if (Command == 25) {                         // disable ball saver when game is over (flipper relay turned off)
+    else if (Command == 24) {                         // disable ball saver when game is over (flipper relay turned off)
       if (EX_BallSaveTimer) {                         // timer still running?
         KillTimer(EX_BallSaveTimer);}                 // stop it
       EX_BallSaver(50, 0);}
@@ -222,27 +222,27 @@ byte EX_BallSaver(byte Type, byte Command){
         EX_BallSaver(50, 0);}}                        // end ball saver cycle
     return(1);
   case 47:                                            // timer after ball has been kicked to trunk run out
-  {byte CountTrunk = EX_CountBallsInTrunk();
-  if (CountTrunk == BallsInTrunk + 1) {               // ball in the trunk?
-    ActivateSolenoid(30, EX_Machine[SolShooterLn]);   // kick ball into shooter lane
-    if (!EX_BallSaveACstate) {                        // correct AC state?
-      ActivateTimer(40, 50, EX_BallSaver2);}          // end cycle
-    else {
-      ActivateTimer(40, 48, EX_BallSaver2);}}         // switch on AC relay
-  else {                                              // wrong number of balls in trunk
-    if (AppByte) {                                    // additional waiting time has already passed
-      if (CountTrunk < BallsInTrunk + 1) {            // less balls in trunk than expected
-        if (QuerySwitch(EX_Machine[SwOuthole])) {     // ball still in outhole?
-          AppByte = 0;
-          ActivateTimer(100, 46, EX_BallSaver2);}}    // try again
-      else {                                          // more balls in trunk than expected
-        USB_SwitchHandler(EX_Machine[SwTrunk1 + BallsInTrunk]); // report one drained ball to PinMame
-        BallsInTrunk++;
-        ActivateTimer(1000, 47, EX_BallSaver2);}}     // come back to handle second ball
-    else {                                            // wait and try again
-      AppByte = 1;
-      ActivateTimer(1000, 47, EX_BallSaver2);}}       // come back in 1s
-  return(1);}
+    {byte CountTrunk = EX_CountBallsInTrunk();
+    if (CountTrunk == BallsInTrunk + 1) {             // ball in the trunk?
+      ActivateSolenoid(30, EX_Machine[SolShooterLn]); // kick ball into shooter lane
+      if (!EX_BallSaveACstate) {                      // correct AC state?
+        ActivateTimer(40, 50, EX_BallSaver2);}        // end cycle
+      else {
+        ActivateTimer(40, 48, EX_BallSaver2);}}       // switch on AC relay
+    else {                                            // wrong number of balls in trunk
+      if (AppByte) {                                  // additional waiting time has already passed
+        if (CountTrunk < BallsInTrunk + 1) {          // less balls in trunk than expected
+          if (QuerySwitch(EX_Machine[SwOuthole])) {   // ball still in outhole?
+            AppByte = 0;
+            ActivateTimer(100, 46, EX_BallSaver2);}}  // try again
+        else {                                        // more balls in trunk than expected
+          USB_SwitchHandler(EX_Machine[SwTrunk1 + BallsInTrunk]); // report one drained ball to PinMame
+          BallsInTrunk++;
+          ActivateTimer(1000, 47, EX_BallSaver2);}}   // come back to handle second ball
+      else {                                          // wait and try again
+        AppByte = 1;
+        ActivateTimer(1000, 47, EX_BallSaver2);}}     // come back in 1s
+    return(1);}
   case 48:                                            // fix state of AC relay
     if (EX_BallSaveACstate) {
       ActivateSolenoid(0, EX_Machine[SolACrelay]);}   // turn on AC relay

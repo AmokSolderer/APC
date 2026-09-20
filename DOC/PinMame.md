@@ -12,7 +12,7 @@ There's also a MUSIC.snd file available which is played during the music test of
 |System|Game| Sound Files |Comments|
 |--|--|--|--|
 |3|Disco Fever| available | Only files for one audio board mode available. Ball saver and alternate music mode implemented for this machine |
-|4|Flash| available | Ball saver and alternate music mode implemented for this machine |
+|4|Flash| available | Ball saver and alternate music mode implemented for this machine / Flash uses multiple ROM versions which causes problems with the Flash settings menu. Look [here](https://github.com/AmokSolderer/APC/blob/V01.05/DOC/Problems.md) for the correct table|
 |6|Tri Zone| available | Ball saver and alternate music mode implemented for this machine |
 |6|Time Warp| available | Ball saver and alternate music mode implemented for this machine |
 |6|Gorgar| available | Ball saver and alternate music mode implemented for this machine |
