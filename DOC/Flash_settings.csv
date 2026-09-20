@@ -1,0 +1,37 @@
+New Function,Old Function,Description,Available Values / Meaning,Factory Setting
+0,0,Game Identification,1486 1,1486 1
+1,1,"Coins, Left Chute","Audit: coins through left chute, closest to coin-door hinge",—
+2,2,"Coins, Center Chute",Audit: coins through center chute,—
+3,3,"Coins, Right Chute",Audit: coins through right chute,—
+4,4,Total Paid Credits,Audit,—
+5,5,Total Specials,Audit,—
+6,6,Total Replay (Extra Ball) Scores,Audit,—
+7,7,Match and High Score-to-Date Credits,Audit,—
+8,8,Total Credits,Sum of paid credits and applicable awards,—
+9,9,Total Extra Balls,Total of game extra balls plus applicable awards,—
+10,10,Total Ball Time in Minutes,Audit,—
+11,11,Total Number of Balls Played,Audit,—
+12,12,Current High Score-to-Date,High score currently in use,550
+13,13,Backup High Score-to-Date,Backup high score,550
+14,14,Replay 1 Score,First replay threshold,270
+15,15,Replay 2 Score,Second replay threshold,370
+16,16,Replay 3 Score,Third replay threshold,470
+17,17,Replay 4 Score,Fourth replay threshold; 0 disables it,0
+18,18,Maximum Credits,Maximum number of credits stored; 0 = free play,20
+19,19,Standard and Custom Pricing Control,00–07; selects pricing scheme,1
+20,20,Left Coin Slot Multiplier,Coin-unit multiplier,1
+21,21,Center Coin Slot Multiplier,Coin-unit multiplier,1
+22,22,Right Coin Slot Multiplier,Coin-unit multiplier,1
+23,23,Coin Units Required for Credit,Number of coin units required for one credit,1
+24,24,Coin Units Bonus Point,Bonus coin units,2
+25,26,High Score Credits,Credits awarded for reaching the high score,3
+26,28,Match,00 = ON; 01 = OFF,0
+27,29,Special,00 = Credit; 01 = Extra Ball; 02 = Points,0
+28,30,Scoring Awards,00 = Credit at replay score; 01 = Extra Ball at replay score,0
+29,32,Maximum Plumb Bob Tilts,"Number of tilts allowed, 1–9",3
+30,31,Number of Balls,03 = 3 balls; 05 = 5 balls,3
+31,33,Sound Option,00 = Background Sound OFF; 01 = Background Sound ON,0
+32,34,SUPER FLASH Scoring,"00 = 50,000 points; 01 = Extra Ball",0
+33,35,SUPER FLASH Restore,00 = Restores; 01 = Does Not Restore,0
+34,27,Extra Ball Control,00 = Extra Ball Allowed; 01 = No Extra Ball,0
+35,27,Play / Eject Hole Lamps,"01 = Lamps restored, 5,000 lamp initially lit; 02 = Lamps restored, 5,000 lamp initially not lit; 11 = Lamps not restored, 5,000 lamp initially lit; 12 = Lamps not restored, 5,000 lamp initially not lit",11
