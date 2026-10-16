@@ -73,4 +73,4 @@ You can remove the IC quite easily with two soldering irons. If the APC comes to
 During the production run of Flash, Williams changed the ROM code which altered the settings menu. The manual shows the settings menu of the old ROMs, but PinMame is using the newer ones which means that the manual is not correct for PinMame and therefore for the APC.
 So if you want to use the APC in a Williams Flash, be sure to use 6 as the PinMame game number setting. For this selection, the 'New Function' column in the following table is valid for the Williams settings menu:
 
-[Flash settings menu](https://github.com/AmokSolderer/APC/blob/V01.05/DOC/Flash_settings.csv)
+[Flash settings menu](https://github.com/AmokSolderer/APC/blob/master/DOC/Flash_settings.csv)

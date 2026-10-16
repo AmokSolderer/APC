@@ -1367,11 +1367,11 @@ byte EX_Millionaire(byte Type, byte Command){         // Exceptions code for EX_
     else if (Command == 11) {                         // music track 11
       PlayMusic(50, "1_0b.snd");                      // play music track
       AfterMusic = 0;}                                // no looping
-    else if (Command == 133 || (Command > 137 && Command < 144) || (Command > 156 && Command < 160)) {
-      AfterMusic = 0;                                 // no looping
-      char FileName[9] = "1_00.snd";                  // handle standard sound
-      if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
-        PlayMusic(50, (char*) FileName);}}
+//    else if (Command == 133 || (Command > 137 && Command < 144) || (Command > 156 && Command < 160)) {
+//      AfterMusic = 0;                                 // no looping
+//      char FileName[9] = "1_00.snd";                  // handle standard sound
+//      if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
+//        PlayMusic(50, (char*) FileName);}}
     else {
       char FileName[9] = "1_00.snd";                  // handle standard sound
       if (USB_GenerateFilename(2, Command, FileName)) { // create filename and check whether file is present
