@@ -534,10 +534,7 @@ void USB_SerialCommand() {
         switch (USB_DisplayProtocol[0]) {             // which protocol shall be used?
         case 1:                                       // BCD
         case 2:                                       // BCD with comma (not possible as credit has no comma)
-          *(DisplayUpper) = LeftCredit[(USB_SerialBuffer[0]+16)*2];
-          *(DisplayUpper+16) = LeftCredit[(USB_SerialBuffer[1]+16)*2];
-          *(DisplayLower) = RightCredit[(USB_SerialBuffer[2]+16)*2];
-          *(DisplayLower+16) = RightCredit[(USB_SerialBuffer[3]+16)*2];
+          DisplayBCD(0, USB_SerialBuffer);
           break;
         case 3:                                       // 7 segment pattern (1 byte)
           *(DisplayUpper) = USB_SerialBuffer[0];
@@ -567,6 +564,18 @@ void USB_SerialCommand() {
         case 6:
           WritePlayerDisplay((char*)USB_SerialBuffer, 0);
           break;}
+      case 9:                                         // Millionaire has credit position swapped
+        switch (USB_DisplayProtocol[0]) {             // which protocol shall be used?
+        case 1:                                       // BCD
+        case 2:                                       // BCD with comma (not possible as credit has no comma)
+          DisplayBCD(0, USB_SerialBuffer);
+          break;
+        case 3:                                       // 7 segment pattern (1 byte)
+          *(DisplayUpper) = USB_SerialBuffer[2];
+          *(DisplayUpper+16) = USB_SerialBuffer[3];
+          *(DisplayLower) = ConvertPattern(0, USB_SerialBuffer[0]);
+          *(DisplayLower+16) = ConvertPattern(0, USB_SerialBuffer[1]);
+          break;}
         break;}}
     break;
   case 31:                                            // set display 1 to
@@ -575,6 +584,7 @@ void USB_SerialCommand() {
       case 0:                                         // 4 ALPHA+CREDIT
       case 1:                                         // Sys11 Pinbot
       case 2:                                         // Sys11 F-14
+      case 9:                                         // Millionaire
         switch (USB_DisplayProtocol[1]) {             // which protocol shall be used?
         case 1:                                       // BCD
           for (i=0; i<7; i++) {
@@ -662,6 +672,7 @@ void USB_SerialCommand() {
       case 0:                                         // 4 ALPHA+CREDIT
       case 1:                                         // Sys11 Pinbot
       case 2:                                         // Sys11 F-14
+      case 9:                                         // Millionaire
         switch (USB_DisplayProtocol[2]) {             // which protocol shall be used?
         case 1:                                       // BCD
           for (i=0; i<7; i++) {
@@ -807,6 +818,7 @@ void USB_SerialCommand() {
         break;
       case 1:                                         // Sys11 Pinbot
       case 2:                                         // Sys11 F-14
+      case 9:                                         // Millionaire
         switch (USB_DisplayProtocol[3]) {             // which protocol shall be used?
         case 1:                                       // BCD
           for (i=0; i<7; i++) {
@@ -889,6 +901,7 @@ void USB_SerialCommand() {
         break;
       case 1:                                         // Sys11 Pinbot
       case 2:                                         // Sys11 F-14
+      case 9:                                         // Millionaire
         switch (USB_DisplayProtocol[4]) {             // which protocol shall be used?
         case 1:                                       // BCD
           for (i=0; i<7; i++) {

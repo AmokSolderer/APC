@@ -106,6 +106,7 @@ Enter the game settings and do your changes. When you're done, just select menu 
 | 0 |  | 6 | Data East 2x16 | - | 2x 16 digit alphanumeric (non inverted segments)|
 | 0 |  | 7 | 7 | - | 4x 6 digit numeric + credit (System 3 - 6)|
 | 0 |  | 8 | 8 | - | 4x 7 digit numeric + credit (System 7 + 9)|
+| 0 |  | 9 | Millionaire | - | the same as Pinbot but with swapped credit digits |
 | 1 | Active Game | 0 | Base Code | - | The very basics of a game SW |
 | 1 |  | 1 | Black Knight | - | My own Black Knight game SW |
 | 1 |  | 2 | Pinbot | - | My own Pinbot game SW |
