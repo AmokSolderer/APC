@@ -2653,20 +2653,6 @@ void SelSetting(byte Switch) {                        // Switch mode of the sett
       if (SettingsPointer == game_settings) {
         BCDnumber[1] = 1;}
       DisplayBCD(0, BCDnumber);}
-
-
-
-//      if (APC_settings[DisplayType] == 7) {           // Sys6 display
-//        *(DisplayLower+12) = ConvertNumUpper((byte) AppByte / 10,(byte) *(DisplayLower+12));
-//        *(DisplayLower+14) = ConvertNumUpper((byte) ((AppByte) % 10),(byte) *(DisplayLower+14));}
-//      else if (APC_settings[DisplayType] == 8) {      // Sys7 display
-//        *(DisplayLower) = ConvertNumLower((byte) AppByte / 10,(byte) *(DisplayLower));
-//        *(DisplayLower+16) = ConvertNumLower((byte) ((AppByte) % 10),(byte) *(DisplayLower+16));}
-//      else {                                          // Sys11 display
-//        *(DisplayLower) = RightCredit[32+2*(AppByte / 10)];
-//        *(DisplayLower+1) = RightCredit[32+2*(AppByte / 10)+1];
-//        *(DisplayLower+16) = RightCredit[32+2*((AppByte) % 10)];
-//        *(DisplayLower+17) = RightCredit[32+2*((AppByte) % 10)+1];}}
     SettingsList[AppByte].EventPointer(false);        // call the corresponding method and indicate no changes
     break;
   case 3:
