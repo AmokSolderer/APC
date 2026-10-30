@@ -4057,9 +4057,9 @@ void PB_Testmode(byte Select) {
                   break;
                 }}}
 
-void PB_ShowLamp(byte CurrentLamp) {                  // cycle all solenoids
+void PB_ShowLamp(byte CurrentLamp) {                  // cycle all lamps
   if (QuerySwitch(73)) {                              // Up/Down switch pressed?
-    *(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual solenoid number
+    *(DisplayLower+30) = DispPattern2[32 + 2 * (CurrentLamp % 10)]; // and show the actual lamp number
     *(DisplayLower+31) = DispPattern2[33 + 2 * (CurrentLamp % 10)];
     *(DisplayLower+28) = DispPattern2[32 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
     *(DisplayLower+29) = DispPattern2[33 + 2 * (CurrentLamp - (CurrentLamp % 10)) / 10];
