@@ -206,13 +206,13 @@ const byte APC_defaults[64] =  {0,3,3,1,2,0,0,0,      // system default settings
 
 const char TxTGameSelect[5][17] = {{" BASE  CODE     "},{" BLACK KNIGHT   "},{"    PINBOT      "},{"REMOTE CONTROL  "},{" SPACE STATION  "}};
 const char TxTLEDSelect[4][17] = {{"   NO   LEDS    "},{"   ADDITIONAL   "},{"PLAYFLD ONLY    "},{"PLAYFLDBACKBOX  "}};
-const char TxTDisplaySelect[9][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{" DATA EAST 2X16 "},{"123456123456    "},{"12345671234567  "}};
+const char TxTDisplaySelect[10][17] = {{"4 ALPHA+CREDIT  "},{" SYS11 PINBOT   "},{" SYS11  F-14    "},{" SYS11  BK2K    "},{" SYS11   TAXI   "},{" SYS11 RIVERBOAT"},{" DATA EAST 2X16 "},{"123456123456    "},{"12345671234567  "},{" MILLIONAIRE    "}};
 const char TxTConType[3][17] = {{"        OFF     "},{"       ONBOARD  "},{"        USB     "}};
 const char TxTDebugSelect[3][17] = {{"        OFF     "},{"       USB ON   "},{"       USB LOG  "}};
 const char TxTLampColSelect[3][17] = {{"       COLUMN1  "},{"       COLUMN8  "},{"        NONE    "}};
 
 const struct SettingTopic APC_setList[16] = {
-    {"DISPLAY TYPE    ",HandleDisplaySetting,&TxTDisplaySelect[0][0],0,8},
+    {"DISPLAY TYPE    ",HandleDisplaySetting,&TxTDisplaySelect[0][0],0,9},
     {" ACTIVE GAME    ",HandleTextSetting,&TxTGameSelect[0][0],0,4},
     {" NO OF  BALLS   ",HandleNumSetting,0,1,5},
     {"  FREE  GAME    ",HandleBoolSetting,0,0,0},
@@ -348,7 +348,7 @@ void setup() {
     DispPattern2 = NumLower;}                         // use patterns for num displays
   else {
     DispPattern2 = AlphaLower;}
-  if (APC_settings[DisplayType] < 7) {                // non BCD display
+  if (APC_settings[DisplayType] < 7 || APC_settings[DisplayType] == 9) { // non BCD display
     WriteLower("APC REV         ");
     *(DisplayLower+24) = DispPattern2[2*(APC_Version[0]-32)];
     *(DisplayLower+25) = DispPattern2[2*(APC_Version[0]-32)+1];
@@ -491,7 +491,7 @@ void TC7_Handler() {                                  // interrupt routine - run
 
   // Display columns
 
-  if (APC_settings[DisplayType] < 7) {                // Sys11 display
+  if (APC_settings[DisplayType] < 7 || APC_settings[DisplayType] == 9) {  // Sys11 display
     if (APC_settings[DisplayType] == 3 || APC_settings[DisplayType] == 5) // BK2K or Riverboat type display with inverted segments
       REG_PIOC_SODR = AllData;
     else                                              // all other Sys11 displays
@@ -1387,6 +1387,7 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
   case 0:                                             // 4 Alpha + Credit
   case 1:                                             // Sys11 Pinbot
   case 2:                                             // Sys11 F-14
+  case 9:                                             // Millionaire
     if (Player) {                                     // player display?
       if (Player < 3) {                               // upper row?
         Player--;
@@ -1407,14 +1408,24 @@ void WritePlayerDisplay(char* DisplayText, byte Player) { // write ASCII text to
             *(DisplayLower+2+16*Player+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
             *(DisplayLower+3+16*Player+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}}}
     else {                                            // credit display
-      *(DisplayUpper) = LeftCredit[(*(DisplayText)-32)*2];
-      *(DisplayUpper+1) = LeftCredit[((*(DisplayText)-32)*2)+1];
-      *(DisplayUpper+16) = LeftCredit[(*(DisplayText+1)-32)*2];
-      *(DisplayUpper+17) = LeftCredit[((*(DisplayText+1)-32)*2)+1];
-      *(DisplayLower) = RightCredit[(*(DisplayText+2)-32)*2];
-      *(DisplayLower+1) = RightCredit[((*(DisplayText+2)-32)*2)+1];
-      *(DisplayLower+16) = RightCredit[(*(DisplayText+3)-32)*2];
-      *(DisplayLower+17) = RightCredit[((*(DisplayText+3)-32)*2)+1];}
+      if (APC_settings[DisplayType] == 9) {           // Millionaire has credit position swapped
+        *(DisplayUpper) = LeftCredit[(*(DisplayText+2)-32)*2];
+        *(DisplayUpper+1) = LeftCredit[((*(DisplayText+2)-32)*2)+1];
+        *(DisplayUpper+16) = LeftCredit[(*(DisplayText+3)-32)*2];
+        *(DisplayUpper+17) = LeftCredit[((*(DisplayText+3)-32)*2)+1];
+        *(DisplayLower) = RightCredit[(*(DisplayText)-32)*2];
+        *(DisplayLower+1) = RightCredit[((*(DisplayText)-32)*2)+1];
+        *(DisplayLower+16) = RightCredit[(*(DisplayText+1)-32)*2];
+        *(DisplayLower+17) = RightCredit[((*(DisplayText+1)-32)*2)+1];}
+      else {
+        *(DisplayUpper) = LeftCredit[(*(DisplayText)-32)*2];
+        *(DisplayUpper+1) = LeftCredit[((*(DisplayText)-32)*2)+1];
+        *(DisplayUpper+16) = LeftCredit[(*(DisplayText+1)-32)*2];
+        *(DisplayUpper+17) = LeftCredit[((*(DisplayText+1)-32)*2)+1];
+        *(DisplayLower) = RightCredit[(*(DisplayText+2)-32)*2];
+        *(DisplayLower+1) = RightCredit[((*(DisplayText+2)-32)*2)+1];
+        *(DisplayLower+16) = RightCredit[(*(DisplayText+3)-32)*2];
+        *(DisplayLower+17) = RightCredit[((*(DisplayText+3)-32)*2)+1];}}
     break;
   case 3:                                             // Sys11 BK2K
   case 6:                                             // DE 2x16
@@ -1500,7 +1511,7 @@ void WriteUpper(const char* DisplayText) {
       *(DisplayUpper+2*i) = DispPattern1[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayUpper+2*i+1) = DispPattern1[(int)((*(DisplayText+i)-32)*2)+1];}}
   else {
-    if (APC_settings[DisplayType] > 6) {              // numbers only type display
+    if (APC_settings[DisplayType] > 6 && APC_settings[DisplayType] != 9) { // numbers only type display
       for (byte i=0;i<7;i++) {                        // for all digits
         *(DisplayLower+2+2*i) = ConvertNumUpper((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+2*i));
         *(DisplayLower+18+2*i) = ConvertNumUpper((byte) *(DisplayText+7+i)-48,(byte) *(DisplayLower+18+2*i));}}
@@ -1517,7 +1528,7 @@ void WriteLower(const char* DisplayText) {
       *(DisplayLower+2*i) = DispPattern2[(int)((*(DisplayText+i)-32)*2)];
       *(DisplayLower+2*i+1) = DispPattern2[(int)((*(DisplayText+i)-32)*2)+1];}}
   else {
-    if (APC_settings[DisplayType] > 6) {              // numbers only type display
+    if (APC_settings[DisplayType] > 6 && APC_settings[DisplayType] != 9) { // numbers only type display
       for (byte i=0;i<7;i++) {                        // for all digits
         *(DisplayLower+2+2*i) = ConvertNumLower((byte) *(DisplayText+i)-48,(byte) *(DisplayLower+2+2*i));
         *(DisplayLower+18+2*i) = ConvertNumLower((byte) *(DisplayText+7+i)-48,(byte) *(DisplayLower+18+2*i));}}
@@ -1914,7 +1925,16 @@ void BlinkScore(byte State) {                         // State = 0 -> stop blink
     ShowPoints(Player);}}
 
 void DisplayBCD (byte Position, byte* BCDnumber) {    // displays BCD values on numerical displays
-  if (APC_settings[DisplayType] == 7) {               // Sys6 display
+  switch (APC_settings[DisplayType]) {
+  case 0:                                             // 4 Alpha + Credit
+  case 1:                                             // Sys11 Pinbot
+    if (!Position) {                                  // only for credit
+      *(DisplayUpper) = LeftCredit[(*BCDnumber+16)*2];
+      *(DisplayUpper+16) = LeftCredit[(*(BCDnumber+1)+16)*2];
+      *(DisplayLower) = RightCredit[(*(BCDnumber+2)+16)*2];
+      *(DisplayLower+16) = RightCredit[(*(BCDnumber+3)+16)*2];}
+    break;
+  case 7:                                             // Sys6 display
     if (Position) {                                   // player display?
       if (Position < 3) {                             // upper row
         Position--;
@@ -1928,8 +1948,9 @@ void DisplayBCD (byte Position, byte* BCDnumber) {    // displays BCD values on 
       *(DisplayLower+28) = ConvertNumUpper((byte) *BCDnumber,(byte) *(DisplayLower+28));
       *(DisplayLower+30) = ConvertNumUpper((byte) *(BCDnumber+1),(byte) *(DisplayLower+30));
       *(DisplayLower+12) = ConvertNumUpper((byte) *(BCDnumber+2),(byte) *(DisplayLower+12));
-      *(DisplayLower+14) = ConvertNumUpper((byte) *(BCDnumber+3),(byte) *(DisplayLower+14));}}
-  else {                                              // Sys7 display
+      *(DisplayLower+14) = ConvertNumUpper((byte) *(BCDnumber+3),(byte) *(DisplayLower+14));}
+    break;
+  case 8:                                             // Sys7 display
     if (Position) {                                   // player display?
       if (Position < 3) {                             // upper row
         Position--;
@@ -1949,7 +1970,14 @@ void DisplayBCD (byte Position, byte* BCDnumber) {    // displays BCD values on 
       *(DisplayLower) = ConvertNumUpper((byte) *BCDnumber,(byte) *(DisplayLower));
       *(DisplayLower+16) = ConvertNumUpper((byte) *(BCDnumber+1),(byte) *(DisplayLower+16));
       *(DisplayLower) = ConvertNumLower((byte) *(BCDnumber+2),(byte) *(DisplayLower));
-      *(DisplayLower+16) = ConvertNumLower((byte) *(BCDnumber+3),(byte) *(DisplayLower+16));}}}
+      *(DisplayLower+16) = ConvertNumLower((byte) *(BCDnumber+3),(byte) *(DisplayLower+16));}
+    break;
+  case 9:                                             // Millionaire has credit position swapped
+    if (!Position) {                                  // only for credit
+      *(DisplayUpper) = LeftCredit[(*(BCDnumber+2)+16)*2];
+      *(DisplayUpper+16) = LeftCredit[(*(BCDnumber+3)+16)*2];
+      *(DisplayLower) = RightCredit[(*BCDnumber+16)*2];
+      *(DisplayLower+16) = RightCredit[(*(BCDnumber+1)+16)*2];}}}
 
 void DisplayScore (byte Position, unsigned int Score) {
   byte i=0;                                           // use a private counter
@@ -2288,6 +2316,7 @@ void ShowFileNotFound(String Filename) {              // show file not found mes
 
 void ShowLampPatterns(byte Step) {                    // shows a series of lamp patterns - start with step being one - stop with step being zero
   static byte Timer = 0;
+  byte LEDbuffer[8];
   if ((Step > 1) || (Step ==1 && !Timer)) {           // no kill signal
     if (Step == 1) {
       Step++;}
@@ -2295,13 +2324,41 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
     if (StrobeLightsOn) {
       LampBuffer = ((PatPointer+Step-2)->Pattern);}   // show the pattern
     else {
-      LampPattern = ((PatPointer+Step-2)->Pattern);}  // show the pattern
+      LampPattern = ((PatPointer+Step-2)->Pattern);   // show the pattern
+      if (APC_settings[LEDsetting] > 1) {             // LEDs need to show the pattern also
+        switch (APC_settings[BackboxLamps]) {
+        case 0:                                       // Bbox lamps in column 1
+          if (APC_settings[LEDsetting] == 3) {        // LEDs for playfield and Bbox
+            LEDbuffer[0] = LampColumns[0];            // don't use lamp pattern for column 1
+            for (byte i=1;i<8;i++) {
+              LEDbuffer[i] = LampPattern[i];}}
+          else {                                      // LEDs for playfield only
+            for (byte i=0;i<7;i++) {
+              LEDbuffer[i] = LampPattern[i+1];}}
+          break;
+        case 1:                                       // Bbox lamps in column 8
+          for (byte i=0;i<7;i++) {
+            LEDbuffer[i] = LampPattern[i];}
+          if (APC_settings[LEDsetting] == 3) {        // LEDs for playfield and Bbox
+            LEDbuffer[7] = LampColumns[7];}           // don't use lamp pattern for column 8
+          break;
+        case 2:                                       // no Bbox lamps
+          for (byte i=0;i<8;i++) {
+            LEDbuffer[i] = LampPattern[i];}
+          break;}
+        LEDpattern = LEDbuffer;                       // set LEDpattern to buffer
+        if (APC_settings[LEDsetting] == 3) {          // LEDs for playfield and Bbox
+          LEDhandling(9, 8);}                         // process 64 LEDs
+        else {                                        // LEDs for playfield only
+          LEDhandling(9, 7);}}}                       // process 56 LEDs
     Step++;                                           // increase the pattern number
     if (!((PatPointer+Step-2)->Duration)) {           // if the duration for the next pattern is 0
       Step = 2;                                       // reset the pattern
       FlowRepeat--;                                   // decrease the number of repetitions
       if (!FlowRepeat) {                              // if no more repetitions pending
         Timer = 0;                                    // indicate that the process has stopped
+        if (APC_settings[LEDsetting] > 1) {           // LEDs need to show the pattern also
+          LEDpattern = LEDstatus;}                    // show standard LED pattern
         if (LampReturn) {                             // is a return pointer given?
           LampReturn(0);}                             // call the procedure
         return;}}                                     // otherwise just quit
@@ -2309,6 +2366,8 @@ void ShowLampPatterns(byte Step) {                    // shows a series of lamp 
   else {                                              // kill signal
     if (!Step) {
       if (Timer) {
+        if (APC_settings[LEDsetting] > 1) {           // LEDs need to show the pattern also
+          LEDpattern = LEDstatus;}                    // show standard LED pattern
         KillTimer(Timer);
         Timer = 0;}}}}
 
@@ -2510,7 +2569,7 @@ void Settings_Enter() {
   AppByte = 0;
   AppByte2 = 0;
   Switch_Pressed = SelectSettings;
-  ActivateTimer(2000, 0, SelectSettings);}            // Wait 1 second and proceed to Display Test
+  ActivateTimer(2000, 0, SelectSettings);}            // Wait 1 second and proceed to settings menu
 
 void SelectSettings(byte Switch) {                    // select system or game settings
   switch (Switch) {
@@ -2520,12 +2579,7 @@ void SelectSettings(byte Switch) {                    // select system or game s
     if (USBlog) {               // USB LOG selected
       Serial.println("SYSTEM SETTNGS ");}
     if ((APC_settings[DisplayType] < 3) || (APC_settings[DisplayType] > 6)) { // not a 2x16 character display
-      byte CreditBuffer[4];
-      CreditBuffer[0] = 48;
-      CreditBuffer[1] = 48;
-      CreditBuffer[2] = 48;
-      CreditBuffer[3] = 48;
-      WritePlayerDisplay((char*) CreditBuffer, 0);}
+      WritePlayerDisplay("0000", 0);}
     break;
   case 3:                                             // start button
     if (AppByte) {                                    // game settings selected
@@ -2547,12 +2601,7 @@ void SelectSettings(byte Switch) {                    // select system or game s
       if (USBlog) {             // USB LOG selected
         Serial.println("SYSTEM SETTNGS ");}
       if ((APC_settings[DisplayType] < 3) || (APC_settings[DisplayType] > 6)) { // not a 2x16 character display
-        byte CreditBuffer[4];
-        CreditBuffer[0] = 48;
-        CreditBuffer[1] = 48;
-        CreditBuffer[2] = 48;
-        CreditBuffer[3] = 48;
-        WritePlayerDisplay((char*) CreditBuffer, 0);}
+        WritePlayerDisplay("0000", 0);}
       AppByte = 0;}
     else {
       WriteUpper("  GAME SETTNGS  ");
@@ -2560,12 +2609,7 @@ void SelectSettings(byte Switch) {                    // select system or game s
       if (USBlog) {             // USB LOG selected
         Serial.println("GAME SETTNGS ");}
       if ((APC_settings[DisplayType] < 3) || (APC_settings[DisplayType] > 6)) { // not a 2x16 character display
-        byte CreditBuffer[4];
-        CreditBuffer[0] = 48;
-        CreditBuffer[1] = 49;
-        CreditBuffer[2] = 48;
-        CreditBuffer[3] = 48;
-        WritePlayerDisplay((char*) CreditBuffer, 0);}
+        WritePlayerDisplay("0100", 0);}
       AppByte = 1;}}}
 
 void RepeatSelectKey(byte Run) {                      // Repeat the start button (No 3) if it is pressed permanently
@@ -2606,17 +2650,10 @@ void SelSetting(byte Switch) {                        // Switch mode of the sett
     if (USBlog) {               // USB LOG selected
       Serial.println(SettingsList[AppByte].Text);}    // write the text to USB
     if ((APC_settings[DisplayType] < 3) || (APC_settings[DisplayType] > 6)) { // not a 2x16 character display
-      if (APC_settings[DisplayType] == 7) {           // Sys6 display
-        *(DisplayLower+12) = ConvertNumUpper((byte) AppByte / 10,(byte) *(DisplayLower+12));
-        *(DisplayLower+14) = ConvertNumUpper((byte) ((AppByte) % 10),(byte) *(DisplayLower+14));}
-      else if (APC_settings[DisplayType] == 8) {      // Sys7 display
-        *(DisplayLower) = ConvertNumLower((byte) AppByte / 10,(byte) *(DisplayLower));
-        *(DisplayLower+16) = ConvertNumLower((byte) ((AppByte) % 10),(byte) *(DisplayLower+16));}
-      else {                                          // Sys11 display
-        *(DisplayLower) = RightCredit[32+2*(AppByte / 10)];
-        *(DisplayLower+1) = RightCredit[32+2*(AppByte / 10)+1];
-        *(DisplayLower+16) = RightCredit[32+2*((AppByte) % 10)];
-        *(DisplayLower+17) = RightCredit[32+2*((AppByte) % 10)+1];}}
+      byte BCDnumber[4] = {0,0,AppByte / 10,AppByte % 10};
+      if (SettingsPointer == game_settings) {
+        BCDnumber[1] = 1;}
+      DisplayBCD(0, BCDnumber);}
     SettingsList[AppByte].EventPointer(false);        // call the corresponding method and indicate no changes
     break;
   case 3:
@@ -2729,7 +2766,7 @@ void HandleDisplaySetting(bool change) {              // handling method for dis
       DispPattern2 = AlphaLower;}}
   if (USBlog) {                 // USB LOG selected
     Serial.println(SettingsList[AppByte].TxTpointer+17*SettingsPointer[AppByte]);}
-  if (APC_settings[DisplayType] > 6) {                // numerical display?
+  if (APC_settings[DisplayType] > 6 && APC_settings[DisplayType] != 9) { // numerical display?
     WriteLower("                ");
     DisplayScore(4,SettingsPointer[AppByte]);}
   else {
@@ -2750,7 +2787,7 @@ void HandleTextSetting(bool change) {                 // handling method for tex
         SettingsPointer[AppByte]--;}}}                // if limit not reached just choose the previous entry
   if (USBlog) {                 // USB LOG selected
     Serial.println(SettingsList[AppByte].TxTpointer+17*SettingsPointer[AppByte]);}
-  if (APC_settings[DisplayType] > 6) {                // numerical display?
+  if (APC_settings[DisplayType] > 6 && APC_settings[DisplayType] != 9) {// numerical display?
     WriteLower("                ");
     DisplayScore(4,SettingsPointer[AppByte]);}
   else {

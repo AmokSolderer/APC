@@ -61,29 +61,28 @@ void loop() {
                   TurnOff[5][Buffer] &= (255 - Mask);}
                 Mask = Mask << 1;}}}
           else {                                      // selected lamps get the selected color immediately
-            if (RecByte) {                            // any lamps set?
-              byte Mask = 1;
-              byte Buffer = Command - 1;
-              for (byte i=0;i<8;i++) {                // for the 8 lamps currently being processed
-                if (RecByte & Mask) {                 // lamp set in RecByte?
-                  switch (Mode) {
-                  case 2:
-                  case 4:
-                    LampStatus[Buffer] |= Mask;       // turn on lamp
-                    /* no break */
-                  case 3:
-                    for (byte c=0;c<3;c++) {            // set max brightness of lamp to selected max value
-                      LampMax[Buffer*8+i][c] = LampMaxSel[c];}
-                    if (LampStatus[Buffer] & Mask) {  // LED on?
-                      pixels.setPixelColor(Buffer*8+i, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}
-                    break;
-                  case 5:
-                    LampStatus[Buffer] |= Mask;       // turn on lamp
-                    pixels.setPixelColor(Buffer*8+i, pixels.Color(LampMax[Buffer*8+i][0],LampMax[Buffer*8+i][1],LampMax[Buffer*8+i][2]));}}
-                else {                                // lamp not set in RecByte
-                  if (Mode > 3) {
-                    LampStatus[Buffer] &= (255 - Mask);
-                    pixels.setPixelColor(Buffer*8+i, pixels.Color(0,0,0));}}}
+            byte Mask = 1;
+            byte Buffer = Command - 1;
+            for (byte i=0;i<8;i++) {                  // for the 8 lamps currently being processed
+              if (RecByte & Mask) {                   // lamp set in RecByte?
+                switch (Mode) {
+                case 2:
+                case 4:
+                  LampStatus[Buffer] |= Mask;         // turn on lamp
+                  /* no break */
+                case 3:
+                  for (byte c=0;c<3;c++) {            // set max brightness of lamp to selected max value
+                    LampMax[Buffer*8+i][c] = LampMaxSel[c];}
+                  if (LampStatus[Buffer] & Mask) {    // LED on?
+                    pixels.setPixelColor(Buffer*8+i, pixels.Color(LampMaxSel[0],LampMaxSel[1],LampMaxSel[2]));}
+                  break;
+                case 5:
+                  LampStatus[Buffer] |= Mask;         // turn on lamp
+                  pixels.setPixelColor(Buffer*8+i, pixels.Color(LampMax[Buffer*8+i][0],LampMax[Buffer*8+i][1],LampMax[Buffer*8+i][2]));}}
+              else {                                  // lamp not set in RecByte
+                if (Mode > 3) {
+                  LampStatus[Buffer] &= (255 - Mask);
+                  pixels.setPixelColor(Buffer*8+i, pixels.Color(0,0,0));}}
               Mask = Mask << 1;}}}}
       else {                                          // command > 25
         switch (Command) {
@@ -112,20 +111,23 @@ void loop() {
           CommandCount = 1;}}                         // wait for  one argument
       else {                                          // different command
         switch (RecByte) {
-        case 64:                                      // Mode 0 -> lamps being lit get the ColorSelect color
+        case 64:                                      // Mode 0 -> lamps being lit get the ColorSelect color / smooth turn-on/off
           Mode = 0;
           break;
-        case 65:                                      // Mode 1 -> lamps keep their color
+        case 65:                                      // Mode 1 -> lamps keep their color / smooth turn-on/off
           Mode = 1;
           break;
-        case 66:                                      // Mode 2 -> lamps set in the following frame get the new color immediately
+        case 66:                                      // Mode 2 -> LEDs being set in the pattern change their color to the LEDsetColor and are turned on
           Mode = 2;
           break;
-        case 67:                                      // Mode 3 -> only the color of the LEDs is changed, but they're not turned on
+        case 67:                                      // Mode 3 -> LEDs being set in the pattern change their color to the LEDsetColor, but are not turned on
           Mode = 3;
           break;
-        case 68:                                      // Mode 4 -> LED state is frozen
+        case 68:                                      // Mode 4 -> Same as mode 0, but the LEDs turn on and off instantly
           Mode = 4;
+          break;
+        case 69:                                      // Mode 5 ->  Same as mode 1, but the LEDs turn on and off instantly
+          Mode = 5;
           break;
         case 100:                                     // execute OwnCommand
           OwnCommands |= 1;                           // activate OwnCommand number 1
