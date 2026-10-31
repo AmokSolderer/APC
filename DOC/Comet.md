@@ -46,14 +46,23 @@ Watch [this video](https://youtu.be/JbgMa_pn0Lo) to see how the ball saver works
 | 5 |  | 1 | Right Outlane | - | Ball saver only active for the right outlane |
 | 5 |  | 2 | Left Outlane | - | Ball saver only active for the left outlane |
 | 5 |  | 3 | Both Outlane | - | Ball saver active for both outlanes |
-| 6 | LED GI red | - | - | 255 | Numerical setting (0-255) -> GI color setting red |
-| 7 | LED GI green | - | - | 255 | Numerical setting (0-255) -> GI color setting green |
-| 8 | LED GI blue | - | - | 255 | Numerical setting (0-255) -> GI color setting blue |
-| 9 | BG Music | 0 | PinMame default | X | Normal Comet BG music |
-| 9 |  | 1 | Music snd | - | Uses the MUSIC.snd file as BG music |
-| 10 | Custom Text | - | - | No | Bool setting - Shows the custom text sometimes during attract mode |
-| 11 | Restore Default | - | - | - | No setting - restores the default settings |
-| 12 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
+| 5 |  | 4 | General | - | Ball saver active for a certain time |
+| 6 | Ball Saver Time | - | - | 20 | Numerical setting - range 5 - 250 / Active time of the Ball Saver |
+| 7 | BG Music | 0 | PinMame default | X | Normal BG music |
+| 7 |  | 1 | Music snd | - | Uses the MUSIC.SND file as BG music |
+| 8 | Recycle Sol 1 | - | - | 0 | Numerical setting - Sets a recycle time of 250ms for the selected solenoid. Useful e.g. for slingshots to prevent machine gunning |
+| 9 | Recycle Sol 2 | - | - | 0 | Same as above |
+| 10| Recycle Sol 3 | - | - | 0 | Same as above |
+| 11| Recycle Sol 4 | - | - | 0 | Same as above |
+| 12 | Enter Settings | 0 | Advance | X | Keep the Advance button pressed with the Up/Down switch being in 'up' position to enter the APC settings |
+| 12 |  | 1 | High Score Reset | - | Keep the High Score Reset button pressed to enter the APC settings |
+| 13 | LED GI red | - | - | 255 | Numerical setting (0-255) -> GI color setting red |
+| 14 | LED GI green | - | - | 255 | Numerical setting (0-255) -> GI color setting green |
+| 15 | LED GI blue | - | - | 255 | Numerical setting (0-255) -> GI color setting blue |
+| 16 | Custom Text | - | - | No | Bool setting - Shows the custom text sometimes during attract mode |
+| 17 - 63 | Setting Unused | - | – | - | They behave like boolean settings, but they have no effect |
+| 64 | Restore Default | - | - | - | No setting - restores the default settings |
+| 65 | Exit Settings | - | - | - | No setting - exits the settings mode and writes the new setting to an SD card if present |
 
 ## GI LEDs
 
