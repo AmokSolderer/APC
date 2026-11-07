@@ -62,7 +62,10 @@ You may use the defaults or settings file to activate the debug mode (as describ
 
 ## Using the settings menu
 
-To enter the APC settings you have to press the Advance button at the coin door with the Up/Down switch in 'up' position. If you're in Remote Control mode you have to keep it pressed for more than 1s.
+To enter the APC settings menu, you have to press the Advance button at the coin door with the Up/Down switch being in 'up' position.
+
+In Remote Control mode there're two optional ways to do this. By default you have to keep the Advance button pressed for more than 1s with the Up/Down switch being in 'up' position.  
+As this can easily be triggered accidentally, you can select the High Score Reset button for test mode entry in the game settings. If selected, you have to keep it pressed for more than 1 second to enter the settings menu.  
 
 After that you have to select whether you want to enter the system or game settings.
 
@@ -81,6 +84,8 @@ If an SD card is present the settings are stored when you choose 'Exit Settings'
 
 While you're running PinMame you can adjust the original Williams System 4 - 11 adjustments as usual with one exception:  
 You must not keep Advance pressed for more than 1 second with Up/Down in up position as this will trigger the APC settings. If you want to browse the Williams Settings quickly, just do it backwards with Up/Down in down position.
+
+You can prevent this by selecting the High Score Reset button to enter the APC Settings. This can be done in the [Game Settings](https://github.com/AmokSolderer/APC/blob/master/DOC/Settings.md#game-settings-in-remote-control-mode).
 
 ### System 3 game adjustments
 
@@ -103,6 +108,7 @@ Enter the game settings and do your changes. When you're done, just select menu 
 | 0 |  | 6 | Data East 2x16 | - | 2x 16 digit alphanumeric (non inverted segments)|
 | 0 |  | 7 | 7 | - | 4x 6 digit numeric + credit (System 3 - 6)|
 | 0 |  | 8 | 8 | - | 4x 7 digit numeric + credit (System 7 + 9)|
+| 0 |  | 9 | Millionaire | - | the same as Pinbot but with swapped credit digits |
 | 1 | Active Game | 0 | Base Code | - | The very basics of a game SW |
 | 1 |  | 1 | Black Knight | - | My own Black Knight game SW |
 | 1 |  | 2 | Pinbot | - | My own Pinbot game SW |
@@ -154,7 +160,9 @@ These game settings are only visible if 'Remote Control' is selected as the 'Act
 | 9 | Recycle Sol 2 | - | - | 0 | Same as above |
 | 10| Recycle Sol 3 | - | - | 0 | Same as above |
 | 11| Recycle Sol 4 | - | - | 0 | Same as above |
-| 12- 45 | Setting Unused | - | – | - | They behave like boolean settings, but they have no effect |
+| 12 | Enter Settings | 0 | Advance | X | Keep the Advance button pressed with the Up/Down switch being in 'up' position to enter the APC settings |
+| 12 |  | 1 | High Score Reset | - | Keep the High Score Reset button pressed to enter the APC settings |
+| 13 - 45 | Setting Unused | - | – | - | They behave like boolean settings, but they have no effect |
 | 46 | System3 Set 1 | - | - | - | Use this to change the 1st setting of system 3 games |
 | 47 | System3 Set 2 | - | - | - | Use this to change the 2nd setting of system 3 games |
 | 48 | System3 Set 3 | - | - | - | Use this to change the 3rd setting of system 3 games |

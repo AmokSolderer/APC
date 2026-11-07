@@ -8,7 +8,7 @@ const byte USB_CommandLength[110] = {0,0,0,0,0,0,0,1,0,0,   // Length of USB com
                               2,1,251,0,2,0,0,0,0,0,  // Length of USB commands from 50 - 59
                               10,0,0,0,2,3,0,0,0,0,   // Length of USB commands from 60 - 69
                               0,0,0,0,0,0,0,0,0,0,    // Length of USB commands from 70 - 79
-                              2,1,2,0,0,0,0,0,0,0,    // Length of USB commands from 80 - 89
+                              2,1,0,0,0,0,0,0,0,0,    // Length of USB commands from 80 - 89
                               0,0,0,0,0,0,0,0,0,0,    // Length of USB commands from 90 - 99
                               0,0,0,0,0,0,0,0,0,0};   // Length of USB commands from 100 - 109
 const byte USB_DisplayDigitNum[9][6] = {{4,7,7,7,7,0},{4,7,7,7,7,0},{0,7,7,7,7,0},{0,16,16,0,0,0},{0,16,16,0,0,0},{0,16,16,7,0,0},{0,16,16,7,4,0},{4,6,6,6,6,0},{4,7,7,7,7,0}};
@@ -27,6 +27,7 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 #define USB_RecycleSolenoid2 9
 #define USB_RecycleSolenoid3 10
 #define USB_RecycleSolenoid4 11
+#define USB_EnterSettings 12
 
 const byte USB_defaults[64] = {0,0,0,255,0,0,20,0,    // game default settings
                               0,0,0,0,0,0,0,0,
@@ -51,6 +52,7 @@ const char TxTUSB_debug[3][17] = {{"          OFF   "},{"        USB     "},{"  
 const char TxTUSB_PinMameSound[2][17] = {{"          APC   "},{"        BOARD   "}};
 const char TXTUSB_BallSave[5][17] = {{"          OFF   "},{"           ON   "},{" LEFT  OUTLANE  "},{" BOTH  OUTLANE  "},{"       GENERAL  "}};
 const char TxtUSB_Music[2][17] = {{"PINMAMEDEFAULT  "},{"  MUSICSND      "}};
+const char TxtUSB_EnterSet[2][17] = {{"       ADVANCE  "},{"HIGH SC RESET   "}};
 
 const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting,0,0,0}, // defines the game specific settings
     {" DEBUG  MODE    ",HandleTextSetting,&TxTUSB_debug[0][0],0,2},
@@ -60,11 +62,11 @@ const struct SettingTopic USB_setList[67] = {{"USB WATCHDOG  ",HandleBoolSetting
     {" BALL   SAVER   ",HandleTextSetting,&TXTUSB_BallSave[0][0],0,1},
     {"B SAVER  TIME   ",HandleNumSetting,0,5,250},
     {"   BG   MUSIC   ",HandleTextSetting,&TxtUSB_Music[0][0],0,1},
-    {"RECYCLE SOL 1   ",HandleNumSetting,0,1,22},
-    {"RECYCLE SOL 2   ",HandleNumSetting,0,1,22},
-    {"RECYCLE SOL 3   ",HandleNumSetting,0,1,22},
-    {"RECYCLE SOL 4   ",HandleNumSetting,0,1,22},
-    {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
+    {"RECYCLE SOL 1   ",HandleNumSetting,0,0,22},
+    {"RECYCLE SOL 2   ",HandleNumSetting,0,0,22},
+    {"RECYCLE SOL 3   ",HandleNumSetting,0,0,22},
+    {"RECYCLE SOL 4   ",HandleNumSetting,0,0,22},
+    {" ENTER SETTNGS  ",HandleTextSetting,&TxtUSB_EnterSet[0][0],0,1},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
     {"SETTING UNUSED  ",HandleBoolSetting,0,0,0},
@@ -157,8 +159,8 @@ void USB_AttractMode() {                              // Attract Mode
     if (game_settings[USB_RecycleSolenoid1+i]) {      // is a solenoid selected?
       SolRecycleTime[game_settings[USB_RecycleSolenoid1+i]-1] = 250;}} // define a recycle time of 250ms for it
   USB_ReleasedSwitches(72);                           // tell Lisy to start PinMame
-  for (byte i=0; i<5; i++) {
-    USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
+//  for (byte i=0; i<5; i++) {
+//    USB_DisplayProtocol[i] = USB_DisplayTypes[APC_settings[DisplayType]][i];} // use default protocol for displays
   if (game_settings[USB_Watchdog]) {                  // watchdog enabled?
     USB_WatchdogHandler(1);}                          // initiate reset and start watchdog
   if (ComState) {
@@ -222,19 +224,20 @@ void USB_SwitchHandler(byte Switch) {
   if (!PinMameException(SwitchActCommand, Switch)){   // check for machine specific exceptions
     switch (Switch) {
     case 8:                                           // high score reset
-      digitalWrite(Blanking, LOW);                    // invoke the blanking
-      StopPlayingMusic();
-      StopPlayingSound();
+      if (game_settings[USB_EnterSettings]) {         // settings on High Score Reset button?
+        StopPlayingMusic();
+        StopPlayingSound();
+        USB_Enter_TestmodeTimer = ActivateTimer(1000, 0, USB_Testmode);}  // look again in 1s
       break;
     case 72:                                          // advance button
       while (USB_ChangedSwitches[i] && (i<63)) {
         i++;}
       USB_ChangedSwitches[i] = Switch | 128;          // send switch code to USB
-      if (QuerySwitch(73)) {                          // Up/Down switch pressed?
+      if (QuerySwitch(73) && !game_settings[USB_EnterSettings]) { // settings on Advance button and Up/Down switch pressed?
         USB_Enter_TestmodeTimer = ActivateTimer(1000, 0, USB_Testmode);}  // look again in 1s
       break;
     default:
-      if (game_settings[USB_PinMameGame] > 47 || QuerySolenoid(24)) { // games prior to SpaceStation need to have the special solenoids disabled when the flipper relay is off
+      if (game_settings[USB_PinMameGame] == 255 || QuerySolenoid(24)) {  // disable special solenoids when the flipper relay is off except for MPF
         while (USB_HWrule_ActSw[i][0]) {              // check for HW rules for this switch
           if (USB_HWrule_ActSw[i][0] == Switch) {
             if (USB_HWrule_ActSw[i][2]) {             // duration != 0 ?
@@ -252,7 +255,6 @@ void USB_ReleasedSwitches(byte Switch) {
   if (!PinMameException(SwitchRelCommand, Switch)){   // check for machine specific exceptions
     switch (Switch) {
     case 8:                                           // high score reset
-      break;
     case 72:
       if (USB_Enter_TestmodeTimer) {
         KillTimer(USB_Enter_TestmodeTimer);
@@ -276,8 +278,8 @@ void USB_Testmode(byte Dummy) {                       // enter system settings i
   UNUSED(Dummy);
   USB_Enter_TestmodeTimer = 0;
   USB_WatchdogHandler(3);                             // stop USB watchdog
-  for (byte i=0; i<5; i++) {
-    USB_DisplayProtocol[i] = 6;}                      // use ASCII protocol for displays
+//  for (byte i=0; i<5; i++) {
+//    USB_DisplayProtocol[i] = 6;}                      // use ASCII protocol for displays
   if (ComState == 2) {                                // USB mode selected?
     Serial.end();}
   else if ((ComState == 1) && OnBoardCom) {           // onboard Pi selected and detected?
@@ -409,10 +411,25 @@ void USB_SerialCommand() {
     USB_WriteByte((byte) 0);
     break;
   case 3:                                             // get number of lamps
-    USB_WriteByte((byte) 65);
+    switch (APC_settings[LEDsetting]) {
+    case 0:                                           // no LEDs
+      USB_WriteByte((byte) 65);
+      break;
+    case 1:                                           // LED mode 'additional'
+      USB_WriteByte((byte) 65 + APC_settings[NumOfLEDs]);
+      break;
+    case 2:                                           // LED mode 'playfield only'
+      USB_WriteByte((byte) 8 + APC_settings[NumOfLEDs]);
+      break;
+    case 3:                                           // LED mode 'playfield and backbox'
+      USB_WriteByte((byte) APC_settings[NumOfLEDs]);
+      break;}
     break;
   case 4:                                             // get number of solenoids
-    USB_WriteByte((byte) 25);
+    if (APC_settings[SolenoidExp]) {
+      USB_WriteByte((byte) 33);}
+    else {
+      USB_WriteByte((byte) 25);}
     break;
   case 6:                                             // get number of displays
     switch (APC_settings[DisplayType]) {
@@ -517,10 +534,7 @@ void USB_SerialCommand() {
         switch (USB_DisplayProtocol[0]) {             // which protocol shall be used?
         case 1:                                       // BCD
         case 2:                                       // BCD with comma (not possible as credit has no comma)
-          *(DisplayUpper) = LeftCredit[(USB_SerialBuffer[0]+16)*2];
-          *(DisplayUpper+16) = LeftCredit[(USB_SerialBuffer[1]+16)*2];
-          *(DisplayLower) = RightCredit[(USB_SerialBuffer[2]+16)*2];
-          *(DisplayLower+16) = RightCredit[(USB_SerialBuffer[3]+16)*2];
+          DisplayBCD(0, USB_SerialBuffer);
           break;
         case 3:                                       // 7 segment pattern (1 byte)
           *(DisplayUpper) = USB_SerialBuffer[0];
@@ -550,6 +564,18 @@ void USB_SerialCommand() {
         case 6:
           WritePlayerDisplay((char*)USB_SerialBuffer, 0);
           break;}
+      case 9:                                         // Millionaire has credit position swapped
+        switch (USB_DisplayProtocol[0]) {             // which protocol shall be used?
+        case 1:                                       // BCD
+        case 2:                                       // BCD with comma (not possible as credit has no comma)
+          DisplayBCD(0, USB_SerialBuffer);
+          break;
+        case 3:                                       // 7 segment pattern (1 byte)
+          *(DisplayUpper) = USB_SerialBuffer[2];
+          *(DisplayUpper+16) = USB_SerialBuffer[3];
+          *(DisplayLower) = ConvertPattern(0, USB_SerialBuffer[0]);
+          *(DisplayLower+16) = ConvertPattern(0, USB_SerialBuffer[1]);
+          break;}
         break;}}
     break;
   case 31:                                            // set display 1 to
@@ -558,6 +584,7 @@ void USB_SerialCommand() {
       case 0:                                         // 4 ALPHA+CREDIT
       case 1:                                         // Sys11 Pinbot
       case 2:                                         // Sys11 F-14
+      case 9:                                         // Millionaire
         switch (USB_DisplayProtocol[1]) {             // which protocol shall be used?
         case 1:                                       // BCD
           for (i=0; i<7; i++) {
@@ -645,6 +672,7 @@ void USB_SerialCommand() {
       case 0:                                         // 4 ALPHA+CREDIT
       case 1:                                         // Sys11 Pinbot
       case 2:                                         // Sys11 F-14
+      case 9:                                         // Millionaire
         switch (USB_DisplayProtocol[2]) {             // which protocol shall be used?
         case 1:                                       // BCD
           for (i=0; i<7; i++) {
@@ -790,6 +818,7 @@ void USB_SerialCommand() {
         break;
       case 1:                                         // Sys11 Pinbot
       case 2:                                         // Sys11 F-14
+      case 9:                                         // Millionaire
         switch (USB_DisplayProtocol[3]) {             // which protocol shall be used?
         case 1:                                       // BCD
           for (i=0; i<7; i++) {
@@ -872,6 +901,7 @@ void USB_SerialCommand() {
         break;
       case 1:                                         // Sys11 Pinbot
       case 2:                                         // Sys11 F-14
+      case 9:                                         // Millionaire
         switch (USB_DisplayProtocol[4]) {             // which protocol shall be used?
         case 1:                                       // BCD
           for (i=0; i<7; i++) {
@@ -1133,7 +1163,7 @@ void USB_SerialCommand() {
     LEDhandling(6, USB_SerialBuffer[0]);
     break;
   case 82:                                            // send queue
-    LEDhandling(USB_SerialBuffer[0], USB_SerialBuffer[1]);
+    LEDhandling(7, 0);
     break;
   case 100:                                           // init
     USB_WatchdogHandler(1);

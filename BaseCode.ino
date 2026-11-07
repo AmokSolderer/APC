@@ -609,7 +609,7 @@ void BC_Testmode(byte Select) {
       AppByte2 = 0;
       break;
     case 3:                                           // credit button
-      if (APC_settings[DisplayType] < 7) {            // Sys11 display
+      if (APC_settings[DisplayType] < 7 && APC_settings[DisplayType] == 9) { // Sys11 display
         WriteUpper("0000000000000000");
         WriteLower("0000000000000000");
         AppByte2 = ActivateTimer(1000, 32, BC_DisplayCycle);}
