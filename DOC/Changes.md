@@ -4,6 +4,7 @@
 
 ### New SW Version V1.05
 
+* New display type for Millionaire has been added.
 * The SW of the [LEDexpBoard](https://github.com/AmokSolderer/APC/blob/master/DOC/LEDexpBoard.md) has been upgraded. That means you also have to update the SW of the LEDexpBoard when you switch to V1.05. The LED commands have also changed slightly.
 * Exception rules for System 11 Millionaire have been added. [Sound files for Millionaire are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
 * Exception rules for System 11 Fire! have been added. [Sound files for FIRE! are also available](https://github.com/AmokSolderer/APC/blob/master/DOC/PinMame.md)
