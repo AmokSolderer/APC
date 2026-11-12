@@ -15,9 +15,9 @@
 #define USB_BallSave 5                                // optional ball saver
 #define USB_BallSaveTime 6                            // activation time for the optional ball saver
 #define USB_BGmusic 7                                 // to select an own BG music
-#define LED_red 13                                    // to change the color of the LED GI
-#define LED_green 14
-#define LED_blue 15
+#define PME_LED_red 13                                // to change the color of the LED GI
+#define PME_LED_green 14
+#define PME_LED_blue 15
 #define USB_CustomText 16                             // to select a custom text to be shown during attract mode
 #define USB_Option1 17                                // an option for own PinMame exceptions
 
@@ -1272,7 +1272,7 @@ void EX_AttractLEDeffects2(byte State) {              // call with State = 1
       LEDshowPatterns(1);}                            // restart pattern
     else {
       LEDsetColorMode(2);
-      LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
+      LEDsetColor(game_settings[PME_LED_green], game_settings[PME_LED_red], game_settings[PME_LED_blue]); // set GI color
       LEDpattern = PME_GIon;                          // set GI pattern
       LEDhandling(9, 4);                              // apply changes
       LEDsetColorMode(0);                             // turn off unwanted LEDs
@@ -1383,7 +1383,7 @@ byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Com
     return(0);
   case SolenoidRelCommand:
     if (Command == 11) {                              // GI relais?
-      LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
+      LEDsetColor(game_settings[PME_LED_green], game_settings[PME_LED_red], game_settings[PME_LED_blue]); // set GI color
       LEDpattern = PME_GIon;                          // turn on GI
       LEDhandling(9, 4);}                             // apply changes
     return(0);
@@ -1401,7 +1401,7 @@ byte EX_Comet(byte Type, byte Command) {              // Exceptions code for Com
       case 700:
         EX_AttractLEDeffects(0);                      // and stop it
         BlockDisplay = false;                         // give display control back to PinMame
-        LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
+        LEDsetColor(game_settings[PME_LED_green], game_settings[PME_LED_red], game_settings[PME_LED_blue]); // set GI color
         LEDpattern = PME_GIon;                        // set GI pattern
         LEDhandling(9, 4);                            // apply changes
         LEDsetColorMode(0);                           // turn off unwanted LEDs
@@ -2172,7 +2172,7 @@ void EX_Init(byte GameNumber) {
     break;
   case 39:                                            // Comet
     if (APC_settings[LEDsetting]) {                   // LEDs used?
-      LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
+      LEDsetColor(game_settings[PME_LED_green], game_settings[PME_LED_red], game_settings[PME_LED_blue]); // set GI color
       LEDpattern = PME_GIon;                          // and turn on GI
       LEDhandling(9, 4);}
     if (SDfound) {                                    // SD card found?

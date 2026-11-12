@@ -28,9 +28,9 @@ const byte USB_DisplayTypes[9][6] = {{3,4,4,4,4,0},{3,4,4,3,3,0},{0,4,4,3,3,0},{
 #define USB_RecycleSolenoid3 10
 #define USB_RecycleSolenoid4 11
 #define USB_EnterSettings 12
-//#define LED_red 13                                     // to change the color of the LED GI
-//#define LED_green 14
-//#define LED_blue 15
+//#define PME_LED_red 13                                // to change the color of the LED GI
+//#define PME_LED_green 14
+//#define PME_LED_blue 15
 //#define USB_CustomText 16                             // to select a custom text to be shown during attract mode
 //#define USB_Option1 17                                // an option for own PinMame exceptions
 
@@ -1294,7 +1294,7 @@ void HandleColorSetting(bool change) {
     if (APC_settings[LEDsetting]) {                   // LEDs selected?
       //LEDinit();
       LEDsetColorMode(2);}}                           // to immediately apply the selected color to the GI
-  LEDsetColor(game_settings[LED_green], game_settings[LED_red], game_settings[LED_blue]); // set GI color
+  LEDsetColor(game_settings[PME_LED_green], game_settings[PME_LED_red], game_settings[PME_LED_blue]); // set GI color
   LEDpattern = PME_GIon;                        // and turn on GI
   LEDhandling(9, 4);                             // apply changes
   WriteLower("                ");

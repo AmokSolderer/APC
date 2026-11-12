@@ -4,8 +4,8 @@ const byte SS_SearchCoils[15] = {1,3,4,6,8,13,18,19,20,21,22,17,32,0}; // coils 
 unsigned int SS_SolTimes[32] = {50,50,50,50,50,50,30,50,0,0,0,0,50,50,100,0,50,50,50,50,50,50,0,0,100,100,100,100,100,100,100,50}; // Activation times for solenoids
 const byte SS_ACselectRelay = 14;                     // solenoid number of the A/C select relay
 const char SS_TestSounds[10][15] = {{"1_01L.snd"},{"1_02.snd"},{"1_02L.snd"},{"1_03L.snd"},{"1_04.snd"},{"1_04L.snd"},{"1_05.snd"},{"1_06.snd"},{"1_06L.snd"},0};
-
-const byte SS_defaults[64] = {9,13,12,11,20,12,1,2,        // game default settings
+const byte SS_GIallOn[4] = {255, 255, 255, 255};      // all GI LEDs on
+const byte SS_defaults[64] = {0,255,100,10,0,0,0,0,   // game default settings
                               3,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
@@ -13,16 +13,16 @@ const byte SS_defaults[64] = {9,13,12,11,20,12,1,2,        // game default setti
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0,
                               0,0,0,0,0,0,0,0};
+                                                      // offsets of settings in the settings array
+#define SS_ConditionRed 0
+#define SS_LED_red 1                                  // to change the color of the LED GI
+#define SS_LED_green 2
+#define SS_LED_blue 3
 
-const struct SettingTopic SS_setList[12] = {{"OUTHOLESWITCH ",HandleNumSetting,0,1,64}, // defines the game specific settings
-    {" BALL  THRU 1 ",HandleNumSetting,0,1,64},
-    {" BALL  THRU 2 ",HandleNumSetting,0,1,64},
-    {" BALL  THRU 3 ",HandleNumSetting,0,1,64},
-    {"PLUNGERLN SW  ",HandleNumSetting,0,1,64},
-    {"AC SEL RELAY  ",HandleNumSetting,0,0,22},
-    {"OUTHOLEKICKER ",HandleNumSetting,0,1,22},
-    {"SHOOTERLN FEED",HandleNumSetting,0,1,22},
-    {"INSTALD BALLS ",HandleNumSetting,0,1,3},
+const struct SettingTopic SS_setList[7] = {{"CONDITION RED ",HandleBoolSetting,0,0,0}, // defines the game specific settings
+    {" LED GI  RED    ",SS_HandleColorSetting,0,0,255},
+    {" LED GI  GREEN  ",SS_HandleColorSetting,0,0,255},
+    {" LED GI  BLUE   ",SS_HandleColorSetting,0,0,255},
    // {" RESET  HIGH  ",SS_ResetHighScores,0,0,0},
     {"RESTOREDEFAULT",RestoreDefaults,0,0,0},
     {"  EXIT SETTNGS",ExitSettings,0,0,0},
@@ -890,6 +890,8 @@ void SS_AttractMode() {                               // Attract Mode
   DispRow2 = DisplayLower;
   digitalWrite(VolumePin,HIGH);                       // set volume to zero
   LampPattern = NoLamps;
+  if (APC_settings[LEDsetting]) {                     // LEDs used?
+    SS_HandleColorSetting(0);}                        // turn on GI
   Switch_Pressed = SS_AttractModeSW;
   Switch_Released = DummyProcess;
   AppByte2 = 0;
@@ -2069,3 +2071,21 @@ void SS_NextTestSound(byte Dummy) {
   if (!SS_TestSounds[AppByte2][0]) {
     AppByte2 = 0;}}
 
+void SS_HandleColorSetting(bool change) {
+  if (change) {                                       // if the start button has been pressed
+    AppByte2 = 1;                                     // set the change indicator
+    if (QuerySwitch(73)) {                            // go forward or backward depending on UpDown switch
+      if (SettingsPointer[AppByte] != SettingsList[AppByte].UpperLimit) { // upper numeric limit reached?
+        SettingsPointer[AppByte]++;}}                 // if limit not reached just increase the numeric value
+    else {                                            // if the start button has not been pressed
+      if (SettingsPointer[AppByte] != SettingsList[AppByte].LowerLimit) { // lower numeric limit reached?
+        SettingsPointer[AppByte]--;}}}                // if limit not reached just decrease the numeric value
+  else {
+    if (APC_settings[LEDsetting]) {                   // LEDs selected?
+      //LEDinit();
+      LEDsetColorMode(2);}}                           // to immediately apply the selected color to the GI
+  LEDsetColor(game_settings[SS_LED_red], game_settings[SS_LED_green], game_settings[SS_LED_blue]); // set GI color
+  LEDpattern = SS_GIallOn;                            // and turn on GI
+  LEDhandling(9, 4);                                  // apply changes
+  WriteLower("                ");
+  DisplayScore(4,SettingsPointer[AppByte]);}          // show the current value
